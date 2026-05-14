@@ -23,3 +23,20 @@ Thumbs.db
 # Build
 dist/
 build/
+
+# Infra local / banco local
+.mysql-data/
+
+# Artefatos temporários do projeto
+response.tmp
+response_*.txt
+
+# Mídias e arquivos auxiliares não essenciais no repositório
+*.mp4
+*.mp3
+*.mov
+*.avi
+Css.txt
+Html.txt
+npm run dev.txt
+regitro.com.txt

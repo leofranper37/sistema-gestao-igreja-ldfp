@@ -25,3 +25,22 @@ Thumbs.db
 .mysql-data/
 .vercel/
 dist/
+
+# Arquivos temporários e de debug
+response.tmp
+response_*.txt
+*.tmp
+*.log
+
+# Arquivos de texto avulsos (notas pessoais)
+npm run dev.txt
+Css.txt
+Html.txt
+regitro.com.txt
+"Novo(a) Documento de Texto.txt"
+
+# Vídeos e arquivos de mídia grandes
+*.mp4
+*.mp3
+*.mov
+*.avi

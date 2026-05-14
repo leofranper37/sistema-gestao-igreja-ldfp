@@ -45,6 +45,61 @@ const pickFirstValue = (...values) => {
 
 const readEnv = (...keys) => pickFirstValue(...keys.map((key) => process.env[key]));
 
+const DEFAULT_SAAS_MODULES = [
+    { slug: 'dashboard', nome: 'Visão Geral', descricao: 'Resumo executivo do painel', icon: 'chart-line', feature_key: 'dashboard', route_path: 'dashboard.html' },
+    { slug: 'secretaria', nome: 'Secretaria', descricao: 'Módulos de membros e cadastro', icon: 'users', feature_key: 'membros', route_path: 'membros.html' },
+    { slug: 'tesouraria', nome: 'Tesouraria', descricao: 'Financeiro e caixa', icon: 'coins', feature_key: 'financeiro', route_path: 'financeiro.html' },
+    { slug: 'contabilidade', nome: 'Contabilidade', descricao: 'Plano de contas e relatórios', icon: 'scale-balanced', feature_key: 'financeiro', route_path: 'plano_contas.html' },
+    { slug: 'graficos', nome: 'Gráficos', descricao: 'Indicadores visuais', icon: 'chart-pie', feature_key: 'financeiro', route_path: 'graficos_secretaria.html' },
+    { slug: 'relatorios', nome: 'Relatórios', descricao: 'Relatórios do sistema', icon: 'file-lines', feature_key: 'financeiro', route_path: 'relatorios_secretaria.html' },
+    { slug: 'agenda', nome: 'Agenda', descricao: 'Eventos e escalas', icon: 'calendar-days', feature_key: 'agenda', route_path: 'agenda.html' },
+    { slug: 'visitantes', nome: 'Visitantes', descricao: 'Controle de visitantes', icon: 'person-walking', feature_key: 'visitantes', route_path: 'visitantes.html' },
+    { slug: 'criancas', nome: 'Crianças e EBD', descricao: 'EBD e turmas', icon: 'child', feature_key: 'criancas', route_path: 'criancas.html' },
+    { slug: 'missionarios', nome: 'Missionários', descricao: 'Contatos de missão', icon: 'earth-americas', feature_key: 'missionarios', route_path: 'missionarios.html' },
+    { slug: 'outras-igrejas', nome: 'Outras Igrejas', descricao: 'Rede e comunhão', icon: 'church', feature_key: 'igrejas', route_path: 'outras_igrejas.html' },
+    { slug: 'oracao', nome: 'Pedidos de Oração', descricao: 'Mural e intercessão', icon: 'hands-praying', feature_key: 'oracoes', route_path: 'oracoes.html' },
+    { slug: 'whatsapp', nome: 'WhatsApp', descricao: 'Atendimento e comunicação', icon: 'comments', feature_key: 'whatsapp', route_path: 'comunicacao_whatsapp.html' },
+    { slug: 'autocadastro', nome: 'Auto Cadastro', descricao: 'Aprovação de registros', icon: 'user-check', feature_key: 'autocadastro', route_path: 'autocadastro_aprovacoes.html' },
+    { slug: 'portaria-qr', nome: 'Portaria QR', descricao: 'Check-in e acesso', icon: 'qrcode', feature_key: 'portaria_qr', route_path: 'portaria_checkin.html' },
+    { slug: 'app-midia', nome: 'App Midia', descricao: 'Exibição e mídia', icon: 'tv', feature_key: 'app_midia', route_path: 'app_midia.html' },
+    { slug: 'telao', nome: 'Telão', descricao: 'Modo telão', icon: 'display', feature_key: 'telao', route_path: 'telao_visitantes.html' },
+    { slug: 'app-membro', nome: 'App do Membro', descricao: 'Portal do membro', icon: 'mobile-screen-button', feature_key: 'app_membro', route_path: 'app_membro.html' },
+    { slug: 'configuracoes', nome: 'Configurações', descricao: 'Preferências do sistema', icon: 'gear', feature_key: 'configuracoes', route_path: 'configuracoes.html' },
+    { slug: 'pagamentos', nome: 'Pagamentos', descricao: 'Links e assinaturas', icon: 'file-invoice-dollar', feature_key: 'pagamentos', route_path: 'pagamentos.html' },
+    { slug: 'cargos', nome: 'Cargos', descricao: 'Funções e acessos', icon: 'briefcase', feature_key: 'cargos', route_path: 'cargos.html' }
+];
+
+const DEFAULT_SAAS_PLAN_MODULES = {
+    eden: ['dashboard', 'secretaria', 'agenda', 'oracao', 'tesouraria', 'relatorios'],
+    hebrom: ['dashboard', 'secretaria', 'agenda', 'oracao', 'tesouraria', 'relatorios', 'visitantes', 'missionarios'],
+    betel: ['dashboard', 'secretaria', 'agenda', 'oracao', 'tesouraria', 'relatorios', 'visitantes', 'missionarios', 'criancas', 'whatsapp', 'outras-igrejas'],
+    siao: ['dashboard', 'secretaria', 'agenda', 'oracao', 'tesouraria', 'contabilidade', 'graficos', 'relatorios', 'visitantes', 'missionarios', 'criancas', 'whatsapp', 'outras-igrejas', 'autocadastro', 'portaria-qr', 'app-midia', 'telao', 'app-membro', 'configuracoes', 'pagamentos', 'cargos']
+};
+
+const sqlLiteral = (value) => {
+    if (value === null || value === undefined) {
+        return 'NULL';
+    }
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return String(value);
+    }
+
+    if (typeof value === 'boolean') {
+        return value ? '1' : '0';
+    }
+
+    return `'${String(value).replace(/'/g, "''")}'`;
+};
+
+const buildValuesTuple = (values) => `(${values.map(sqlLiteral).join(', ')})`;
+
+function buildPlanModuleRows(planSlug) {
+    return (DEFAULT_SAAS_PLAN_MODULES[planSlug] || []).map((moduleSlug) =>
+        buildValuesTuple([planSlug, moduleSlug, 1])
+    ).join(',\n');
+}
+
 const parseDbUrl = () => {
     const rawUrl = readEnv(
         'DB_URL',
@@ -522,6 +577,49 @@ async function initializeDatabase() {
             ON CONFLICT (slug) DO NOTHING`);
         await activePgPool.query(`DELETE FROM saas_planos WHERE LOWER(slug) = 'edon'`);
         await activePgPool.query(`UPDATE igrejas SET plano = 'eden' WHERE LOWER(plano) = 'edon'`);
+        await activePgPool.query(`CREATE TABLE IF NOT EXISTS saas_modulos (
+            id SERIAL PRIMARY KEY,
+            slug VARCHAR(80) NOT NULL UNIQUE,
+            nome VARCHAR(120) NOT NULL,
+            descricao TEXT NULL,
+            icon VARCHAR(120) NOT NULL DEFAULT 'fa-puzzle-piece',
+            feature_key VARCHAR(120) NOT NULL UNIQUE,
+            route_path VARCHAR(255) NULL,
+            ativo SMALLINT NOT NULL DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+        await activePgPool.query(`CREATE TABLE IF NOT EXISTS saas_plano_modulos (
+            id SERIAL PRIMARY KEY,
+            plano_slug VARCHAR(80) NOT NULL,
+            modulo_slug VARCHAR(80) NOT NULL,
+            ativo SMALLINT NOT NULL DEFAULT 1,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT uq_saas_plano_modulos UNIQUE (plano_slug, modulo_slug)
+        )`);
+        await activePgPool.query(`CREATE TABLE IF NOT EXISTS igreja_modulos (
+            id SERIAL PRIMARY KEY,
+            igreja_id INTEGER NOT NULL,
+            modulo_slug VARCHAR(80) NOT NULL,
+            ativo SMALLINT NOT NULL DEFAULT 1,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT uq_igreja_modulos UNIQUE (igreja_id, modulo_slug)
+        )`);
+        await activePgPool.query(`INSERT INTO saas_modulos (slug,nome,descricao,icon,feature_key,route_path,ativo) VALUES
+            ${DEFAULT_SAAS_MODULES.map((module) => buildValuesTuple([module.slug, module.nome, module.descricao, module.icon, module.feature_key, module.route_path, 1])).join(',\n            ')}
+            ON CONFLICT (slug) DO UPDATE SET
+                nome = EXCLUDED.nome,
+                descricao = EXCLUDED.descricao,
+                icon = EXCLUDED.icon,
+                feature_key = EXCLUDED.feature_key,
+                route_path = EXCLUDED.route_path,
+                ativo = EXCLUDED.ativo,
+                updated_at = CURRENT_TIMESTAMP`);
+        await activePgPool.query(`INSERT INTO saas_plano_modulos (plano_slug, modulo_slug, ativo) VALUES
+            ${Object.entries(DEFAULT_SAAS_PLAN_MODULES).flatMap(([planSlug, modules]) => modules.map((moduleSlug) => buildValuesTuple([planSlug, moduleSlug, 1]))).join(',\n            ')}
+            ON CONFLICT (plano_slug, modulo_slug) DO UPDATE SET
+                ativo = EXCLUDED.ativo,
+                updated_at = CURRENT_TIMESTAMP`);
         try { await activePgPool.query(`ALTER TABLE igrejas ADD COLUMN responsavel VARCHAR(255)`); } catch(_){}
         try { await activePgPool.query(`ALTER TABLE igrejas ADD COLUMN email_admin VARCHAR(255)`); } catch(_){}
         try { await activePgPool.query(`ALTER TABLE igrejas ADD COLUMN telefone VARCHAR(60)`); } catch(_){}
@@ -670,6 +768,38 @@ async function initializeDatabase() {
             ('siao','Sião','Igrejas consolidadas',100,1000,500,10,1,'["App Web (PWA)","App do Membro","Até 500 cadastros","Até 10 congregações","EBD Dominical","Credencial de Membro","Grupos/Células","Financeiro completo","Relatórios completos","Suporte via Telefone","Consultoria Contábil"]')`);
         await activeMysqlPool.query(`DELETE FROM saas_planos WHERE LOWER(slug) = 'edon'`);
         await activeMysqlPool.query(`UPDATE igrejas SET plano = 'eden' WHERE LOWER(plano) = 'edon'`);
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS saas_modulos (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            slug VARCHAR(80) NOT NULL UNIQUE,
+            nome VARCHAR(120) NOT NULL,
+            descricao TEXT NULL,
+            icon VARCHAR(120) NOT NULL DEFAULT 'fa-puzzle-piece',
+            feature_key VARCHAR(120) NOT NULL UNIQUE,
+            route_path VARCHAR(255) NULL,
+            ativo TINYINT(1) NOT NULL DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`);
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS saas_plano_modulos (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            plano_slug VARCHAR(80) NOT NULL,
+            modulo_slug VARCHAR(80) NOT NULL,
+            ativo TINYINT(1) NOT NULL DEFAULT 1,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_saas_plano_modulos (plano_slug, modulo_slug)
+        )`);
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS igreja_modulos (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            igreja_id INT NOT NULL,
+            modulo_slug VARCHAR(80) NOT NULL,
+            ativo TINYINT(1) NOT NULL DEFAULT 1,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_igreja_modulos (igreja_id, modulo_slug)
+        )`);
+        await activeMysqlPool.query(`INSERT IGNORE INTO saas_modulos (slug,nome,descricao,icon,feature_key,route_path,ativo) VALUES
+            ${DEFAULT_SAAS_MODULES.map((module) => buildValuesTuple([module.slug, module.nome, module.descricao, module.icon, module.feature_key, module.route_path, 1])).join(',\n            ')}`);
+        await activeMysqlPool.query(`INSERT IGNORE INTO saas_plano_modulos (plano_slug, modulo_slug, ativo) VALUES
+            ${Object.entries(DEFAULT_SAAS_PLAN_MODULES).flatMap(([planSlug, modules]) => modules.map((moduleSlug) => buildValuesTuple([planSlug, moduleSlug, 1]))).join(',\n            ')}`);
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN responsavel VARCHAR(255)`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN email_admin VARCHAR(255)`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN telefone VARCHAR(60)`); } catch(_){}
@@ -873,6 +1003,38 @@ async function initializeDatabase() {
             );
             db.run(`DELETE FROM saas_planos WHERE LOWER(slug) = 'edon'`);
             db.run(`UPDATE igrejas SET plano = 'eden' WHERE LOWER(plano) = 'edon'`);
+            db.run(`CREATE TABLE IF NOT EXISTS saas_modulos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                slug TEXT NOT NULL UNIQUE,
+                nome TEXT NOT NULL,
+                descricao TEXT,
+                icon TEXT NOT NULL DEFAULT 'fa-puzzle-piece',
+                feature_key TEXT NOT NULL UNIQUE,
+                route_path TEXT,
+                ativo INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )`);
+            db.run(`CREATE TABLE IF NOT EXISTS saas_plano_modulos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                plano_slug TEXT NOT NULL,
+                modulo_slug TEXT NOT NULL,
+                ativo INTEGER NOT NULL DEFAULT 1,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (plano_slug, modulo_slug)
+            )`);
+            db.run(`CREATE TABLE IF NOT EXISTS igreja_modulos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                igreja_id INTEGER NOT NULL,
+                modulo_slug TEXT NOT NULL,
+                ativo INTEGER NOT NULL DEFAULT 1,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (igreja_id, modulo_slug)
+            )`);
+            db.run(`INSERT OR IGNORE INTO saas_modulos (slug,nome,descricao,icon,feature_key,route_path,ativo) VALUES
+                ${DEFAULT_SAAS_MODULES.map((module) => buildValuesTuple([module.slug, module.nome, module.descricao, module.icon, module.feature_key, module.route_path, 1])).join(',\n                ')}`);
+            db.run(`INSERT OR IGNORE INTO saas_plano_modulos (plano_slug, modulo_slug, ativo) VALUES
+                ${Object.entries(DEFAULT_SAAS_PLAN_MODULES).flatMap(([planSlug, modules]) => modules.map((moduleSlug) => buildValuesTuple([planSlug, moduleSlug, 1]))).join(',\n                ')}`);
             safeAlter('ALTER TABLE igrejas ADD COLUMN responsavel TEXT');
             safeAlter('ALTER TABLE igrejas ADD COLUMN email_admin TEXT');
             safeAlter('ALTER TABLE igrejas ADD COLUMN telefone TEXT');

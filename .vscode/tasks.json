@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "LDFP: Retomar Sessao",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "gatilho:resume"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "LDFP: Salvar Checkpoint",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "gatilho:save"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

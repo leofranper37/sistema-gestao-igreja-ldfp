@@ -1,46 +1,25 @@
 # Dependências
 node_modules/
 
-# Variáveis de ambiente e senhas (Segurança)
+# Variáveis de ambiente — NUNCA subir para o GitHub
 .env
 .env.local
-.env*.local
-
-# Banco de dados SQLite local (nunca subir para o GitHub)
-*.sqlite
-*.db
+.env.production
+.env.staging
 
 # Logs
-logs/
 *.log
-combined.log
-error.log
+npm-debug.log*
+logs/
 
-# Ficheiros de sistema
+# Sistema operacional
 .DS_Store
 Thumbs.db
+
+# Editor
+.vscode/settings.json
 .idea/
-.vscode/*
-!.vscode/settings.json
-.mysql-data/
-.vercel/
+
+# Build
 dist/
-
-# Arquivos temporários e de debug
-response.tmp
-response_*.txt
-*.tmp
-*.log
-
-# Arquivos de texto avulsos (notas pessoais)
-npm run dev.txt
-Css.txt
-Html.txt
-regitro.com.txt
-"Novo(a) Documento de Texto.txt"
-
-# Vídeos e arquivos de mídia grandes
-*.mp4
-*.mp3
-*.mov
-*.avi
+build/

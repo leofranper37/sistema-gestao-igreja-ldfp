@@ -1,0 +1,613 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planos &amp; Preços - LDFP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --gold: #f59e0b;
+            --gold-light: #fbbf24;
+            --gold-dark: #d97706;
+            --bg: #07090f;
+            --bg2: #0d1117;
+            --surface: #111827;
+            --surface2: #1a2235;
+            --border: rgba(255,255,255,0.07);
+            --text: #f1f5f9;
+            --text-muted: #64748b;
+            --green: #22c55e;
+            --red: #ef4444;
+            --radius: 16px;
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+        /* ───── NAVBAR FLUTUANTE ───── */
+        .navbar {
+            position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+            width: min(960px, calc(100% - 32px));
+            background: rgba(13,17,23,0.72); backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border: 1px solid rgba(245,158,11,0.18);
+            border-radius: 100px; padding: 12px 24px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 1px rgba(245,158,11,0.06);
+            transition: background 0.3s;
+        }
+        .navbar.scrolled { background: rgba(7,9,15,0.92); }
+        .navbar-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .navbar-logo img { height: 36px; filter: drop-shadow(0 0 8px rgba(245,158,11,0.35)); }
+        .navbar-logo span { font-weight: 800; font-size: 16px; color: var(--text); letter-spacing: -0.3px; }
+        .navbar-logo span em { color: var(--gold); font-style: normal; }
+        .navbar-links { display: flex; align-items: center; gap: 8px; }
+        .navbar-links a {
+            color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500;
+            padding: 8px 16px; border-radius: 100px; transition: all 0.2s;
+        }
+        .navbar-links a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+        .navbar-links a.active { color: var(--gold); }
+        .navbar-cta {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #000 !important; font-weight: 700 !important;
+            padding: 9px 20px !important; border-radius: 100px !important;
+            box-shadow: 0 4px 14px rgba(245,158,11,0.35);
+            transition: all 0.2s !important;
+        }
+        .navbar-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,0.45) !important; background: rgba(0,0,0,0) !important; background: linear-gradient(135deg, #fbbf24, #f59e0b) !important; }
+        .navbar-back {
+            display: flex; align-items: center; gap: 6px;
+            color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500;
+            padding: 8px 14px; border-radius: 100px; border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        .navbar-back:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+        /* ───── HERO ───── */
+        .hero {
+            padding: 140px 24px 60px;
+            text-align: center;
+            background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%);
+        }
+        .hero-eyebrow {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25);
+            color: var(--gold-light); font-size: 12px; font-weight: 600; letter-spacing: 1.2px;
+            text-transform: uppercase; padding: 6px 16px; border-radius: 100px; margin-bottom: 24px;
+        }
+        .hero h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 900; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 16px; }
+        .hero h1 span { color: var(--gold); }
+        .hero p { color: var(--text-muted); font-size: 18px; max-width: 560px; margin: 0 auto 36px; line-height: 1.6; }
+
+        /* ───── TOGGLE MENSAL / ANUAL ───── */
+        .billing-toggle {
+            display: inline-flex; align-items: center; gap: 14px;
+            background: var(--surface); border: 1px solid var(--border);
+            padding: 6px; border-radius: 100px; margin-bottom: 56px;
+            position: relative;
+        }
+        .billing-toggle button {
+            background: none; border: none; color: var(--text-muted); font-family: 'Inter', sans-serif;
+            font-size: 14px; font-weight: 600; padding: 9px 22px; border-radius: 100px; cursor: pointer;
+            transition: all 0.25s; position: relative; z-index: 1;
+        }
+        .billing-toggle button.active { color: #000; }
+        .toggle-slider {
+            position: absolute; top: 6px; left: 6px; height: calc(100% - 12px);
+            background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+            border-radius: 100px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 10px rgba(245,158,11,0.4);
+        }
+        .discount-badge {
+            background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
+            color: var(--green); font-size: 11px; font-weight: 700;
+            padding: 3px 10px; border-radius: 100px; margin-left: 4px;
+        }
+
+        /* ───── PRICING GRID ───── */
+        .pricing-section { max-width: 1240px; margin: 0 auto; padding: 0 24px 100px; }
+        .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: end; }
+
+        /* CARD */
+        .plan-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 32px 28px 28px;
+            display: flex; flex-direction: column; gap: 0;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            position: relative; overflow: hidden;
+            animation: fadeUp 0.5s ease both;
+        }
+        .plan-card:hover { transform: translateY(-8px); box-shadow: 0 24px 48px rgba(0,0,0,0.4); border-color: rgba(245,158,11,0.3); }
+        .plan-card.featured {
+            background: linear-gradient(160deg, #1a2235 0%, #111827 100%);
+            border: 2px solid var(--gold-light);
+            box-shadow: 0 0 0 1px rgba(245,158,11,0.1), 0 20px 48px rgba(0,0,0,0.4), 0 0 80px rgba(245,158,11,0.06);
+            transform: translateY(-12px);
+        }
+        .plan-card.featured:hover { transform: translateY(-20px); }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .plan-card:nth-child(1) { animation-delay: 0s; }
+        .plan-card:nth-child(2) { animation-delay: 0.08s; }
+        .plan-card:nth-child(3) { animation-delay: 0.16s; }
+        .plan-card:nth-child(4) { animation-delay: 0.24s; }
+
+        /* BADGE POPULAR */
+        .popular-badge {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(90deg, var(--gold-light), var(--gold-dark));
+            color: #000; font-size: 10px; font-weight: 800; letter-spacing: 1px;
+            text-transform: uppercase; padding: 4px 18px;
+            border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;
+            white-space: nowrap;
+        }
+
+        /* PLANO HEADER */
+        .plan-icon { font-size: 28px; margin-bottom: 12px; }
+        .plan-name-tag {
+            display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--gold-light); background: rgba(245,158,11,0.1);
+            border: 1px solid rgba(245,158,11,0.2); padding: 3px 10px; border-radius: 100px;
+            margin-bottom: 8px;
+        }
+        .plan-name { font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; margin-bottom: 4px; }
+        .plan-subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; }
+        .plan-verse { font-style: italic; font-size: 12px; color: rgba(245,158,11,0.7); margin-bottom: 20px; border-left: 2px solid rgba(245,158,11,0.3); padding-left: 10px; line-height: 1.5; }
+
+        /* PRICE */
+        .plan-price-block { margin-bottom: 24px; }
+        .plan-price-block .currency { font-size: 18px; font-weight: 700; color: var(--gold-light); vertical-align: top; margin-top: 6px; display: inline-block; }
+        .plan-price-block .amount { font-size: 48px; font-weight: 900; color: var(--text); letter-spacing: -2px; line-height: 1; }
+        .plan-price-block .amount.free { color: var(--gold-light); font-size: 40px; }
+        .plan-price-block .period { font-size: 14px; color: var(--text-muted); font-weight: 500; display: block; margin-top: 4px; }
+        .plan-price-block .annual-note { font-size: 12px; color: var(--green); font-weight: 600; margin-top: 2px; display: block; }
+
+        /* DIVIDER */
+        .plan-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0 20px; }
+
+        /* FEATURES */
+        .plan-features { list-style: none; flex: 1; margin-bottom: 28px; display: flex; flex-direction: column; gap: 10px; }
+        .plan-features li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text); }
+        .plan-features li.disabled { color: var(--text-muted); text-decoration: line-through; opacity: 0.5; }
+        .feat-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+        .feat-icon.yes { background: rgba(34,197,94,0.15); color: var(--green); }
+        .feat-icon.no { background: rgba(239,68,68,0.1); color: var(--red); }
+
+        /* CTA BUTTON */
+        .plan-btn {
+            display: block; text-align: center; text-decoration: none; font-family: 'Inter', sans-serif;
+            font-weight: 700; font-size: 15px; padding: 14px 24px; border-radius: 10px;
+            cursor: pointer; border: none; transition: all 0.2s;
+        }
+        .plan-btn.outline { background: transparent; border: 1.5px solid rgba(255,255,255,0.15); color: var(--text); }
+        .plan-btn.outline:hover { border-color: var(--gold); color: var(--gold); background: rgba(245,158,11,0.05); }
+        .plan-btn.primary { background: linear-gradient(135deg, var(--gold-light), var(--gold-dark)); color: #000; box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
+        .plan-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,158,11,0.45); }
+        .plan-btn.ghost { background: rgba(245,158,11,0.08); border: 1.5px solid rgba(245,158,11,0.2); color: var(--gold-light); }
+        .plan-btn.ghost:hover { background: rgba(245,158,11,0.15); border-color: var(--gold); }
+        .trial-note { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 10px; }
+
+        /* ───── FAQ / GARANTIA ───── */
+        .bottom-section { max-width: 1000px; margin: 0 auto; padding: 0 24px 80px; }
+        .guarantee-band {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 32px 40px;
+            display: flex; align-items: center; gap: 24px; margin-bottom: 60px;
+        }
+        .guarantee-icon { font-size: 48px; flex-shrink: 0; }
+        .guarantee-text h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+        .guarantee-text p { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+
+        .faq-section h2 { font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 32px; letter-spacing: -0.5px; }
+        .faq-item { border-bottom: 1px solid var(--border); }
+        .faq-question {
+            width: 100%; display: flex; justify-content: space-between; align-items: center;
+            padding: 18px 0; background: none; border: none; color: var(--text);
+            font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer;
+            text-align: left; gap: 16px;
+        }
+        .faq-question .faq-icon { color: var(--gold); font-size: 13px; transition: transform 0.3s; flex-shrink: 0; }
+        .faq-question.open .faq-icon { transform: rotate(45deg); }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.35s ease; }
+        .faq-answer p { color: var(--text-muted); font-size: 14px; line-height: 1.7; padding-bottom: 18px; }
+
+        /* ───── FOOTER ───── */
+        .page-footer { text-align: center; padding: 32px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 13px; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        /* ───── RESPONSIVE ───── */
+        @media (max-width: 1100px) { .pricing-grid { grid-template-columns: repeat(2, 1fr); } .plan-card.featured { transform: none; } }
+        @media (max-width: 640px) {
+            .pricing-grid { grid-template-columns: 1fr; }
+            .navbar-links { display: none; }
+            .guarantee-band { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR FLUTUANTE -->
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="navbar-logo">
+            <img src="logo.png" alt="LDFP">
+            <span>LDF<em>P</em></span>
+        </a>
+        <div class="navbar-links">
+            <a href="index.html">Início</a>
+            <a href="planos.html" class="active">Planos</a>
+            <a href="login.html">Área do Cliente</a>
+            <a href="criar_conta.html" class="navbar-cta">Começar Agora</a>
+        </div>
+        <a href="index.html" class="navbar-back"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+    </nav>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-eyebrow"><i class="fa-solid fa-star"></i> Planos &amp; Preços</div>
+        <h1>O plano certo para<br><span>cada ministério</span></h1>
+        <p>Comece gratuitamente. Escale conforme sua igreja cresce. Cancele quando quiser.</p>
+
+        <!-- TOGGLE MENSAL / ANUAL -->
+        <div class="billing-toggle" id="billingToggle">
+            <div class="toggle-slider" id="toggleSlider"></div>
+            <button class="active" id="btnMensal" onclick="setBilling('mensal')">Mensal</button>
+            <button id="btnAnual" onclick="setBilling('anual')">Anual <span class="discount-badge">-10%</span></button>
+        </div>
+    </div>
+
+    <!-- PRICING GRID -->
+    <section class="pricing-section">
+        <div class="pricing-grid" id="pricingGrid">
+            <div style="grid-column:1/-1;text-align:center;color:#64748b;padding:40px;"><i class="fa-solid fa-spinner fa-spin"></i> Carregando planos...</div>
+            <div class="plan-card">
+                <div class="plan-icon">⛰️</div>
+                <div class="plan-name-tag">Básico</div>
+                <div class="plan-name">Hebrom</div>
+                <div class="plan-subtitle">Igrejas em formação</div>
+                <p class="plan-verse">"Ali Abraão construiu um altar ao Senhor..." — Gn 13:18</p>
+                <div class="plan-price-block">
+                    <span class="currency">R$</span><span class="amount" id="price-hebrom">50</span>
+                    <span class="period" id="period-hebrom">por mês · cobrado mensalmente</span>
+                    <span class="annual-note" id="annual-hebrom" style="display:none;">equivale a R$ 42/mês · cobrado R$ 500/ano</span>
+                </div>
+                <hr class="plan-divider">
+                <ul class="plan-features">
+                    <li><span class="feat-icon yes"><i class="fa-solid fa-check"></i></span> App Web Instalável (PWA)</li>
+                    <li class="disabled"><span class="feat-icon no"><i class="fa-solid fa-xmark"></i></span> App do Membro</li>
+                    <li><span class="feat-icon yes"><i class="fa-solid fa-check"></i></span> Até 150 cadastros</li>
+                    <li><span class="feat-icon yes"><i class="fa-solid fa-check"></i></span> 1 congregação</li>
+                    <li><span class="feat-icon yes"><i class="fa-solid fa-check"></i></span> Suporte via e-mail</li>
+                </ul>
+                <a href="criar_conta.html" class="plan-btn ghost">Assinar Hebrom</a>
+                <p class="trial-note">✦ 7 dias de teste gratuito</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- GARANTIA + FAQ -->
+    <div class="bottom-section">
+        <div class="guarantee-band">
+            <div class="guarantee-icon">🛡️</div>
+            <div class="guarantee-text">
+                <h3>Garantia de 7 dias — sem risco</h3>
+                <p>Teste qualquer plano pago por 7 dias completamente grátis. Se não gostar, basta cancelar antes do vencimento e você não paga nada. Sem letras miúdas, sem burocracia.</p>
+            </div>
+        </div>
+
+        <div class="faq-section">
+            <h2>Perguntas frequentes</h2>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Posso mudar de plano depois?
+                    <i class="fa-solid fa-plus faq-icon"></i>
+                </button>
+                <div class="faq-answer"><p>Sim. Você pode fazer upgrade ou downgrade do seu plano a qualquer momento. O valor é ajustado proporcionalmente no ciclo atual.</p></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    O que acontece se eu ultrapassar o limite de cadastros?
+                    <i class="fa-solid fa-plus faq-icon"></i>
+                </button>
+                <div class="faq-answer"><p>O sistema avisa quando você está próximo do limite. Você pode fazer upgrade de plano a qualquer hora para ampliar a capacidade.</p></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Quais formas de pagamento são aceitas?
+                    <i class="fa-solid fa-plus faq-icon"></i>
+                </button>
+                <div class="faq-answer"><p>Aceitamos cartão de crédito, boleto bancário e Pix. Para planos anuais, há desconto especial no pagamento à vista via Pix ou boleto.</p></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Meus dados ficam seguros?
+                    <i class="fa-solid fa-plus faq-icon"></i>
+                </button>
+                <div class="faq-answer"><p>Todos os dados são armazenados com criptografia e backups automáticos diários. Sua igreja tem total propriedade das informações cadastradas.</p></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Existe contrato de fidelidade?
+                    <i class="fa-solid fa-plus faq-icon"></i>
+                </button>
+                <div class="faq-answer"><p>Não. Os planos mensais podem ser cancelados a qualquer momento. Planos anuais têm desconto justamente pelo comprometimento de 12 meses.</p></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="page-footer">
+        Copyright &copy; 2026 LDFP — <a href="mailto:contato@ldfp.com.br">contato@ldfp.com.br</a>
+    </footer>
+
+    <script src="speed-insights.js" defer></script>
+    <script>
+        // ── Navbar scroll ──
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 40);
+        });
+
+        // ── Toggle Mensal / Anual ──
+        let billing = 'mensal';
+        const btnMensal = document.getElementById('btnMensal');
+        const btnAnual  = document.getElementById('btnAnual');
+        const slider    = document.getElementById('toggleSlider');
+
+        let planosData = [];
+        const ROOT_HOSTS = new Set(['ldfp.com.br', 'www.ldfp.com.br']);
+        const CANONICAL_BASE = 'https://ldfp.com.br';
+        const host = String(window.location.hostname || '').toLowerCase();
+        const appWebBase = ROOT_HOSTS.has(host) ? '' : CANONICAL_BASE;
+        const PLANOS_FALLBACK = [
+            {
+                slug: 'eden',
+                nome: 'Eden',
+                subtitulo: 'Comece sem custo',
+                preco_mensal: 0,
+                preco_anual: 0,
+                features_json: JSON.stringify([
+                    'App Web Instalavel (PWA)',
+                    '40 cadastros',
+                    '1 congregacao',
+                    'Recursos essenciais para iniciar'
+                ])
+            },
+            {
+                slug: 'hebrom',
+                nome: 'Hebrom',
+                subtitulo: 'Igrejas em formacao',
+                preco_mensal: 50,
+                preco_anual: 500,
+                features_json: JSON.stringify([
+                    'App Web Instalavel (PWA)',
+                    '150 cadastros',
+                    '1 congregacao',
+                    'Suporte via e-mail'
+                ])
+            },
+            {
+                slug: 'betel',
+                nome: 'Betel',
+                subtitulo: 'Igrejas em crescimento',
+                preco_mensal: 80,
+                preco_anual: 800,
+                features_json: JSON.stringify([
+                    'App do Membro',
+                    '300 cadastros',
+                    '5 congregacoes',
+                    'Suporte via e-mail e WhatsApp'
+                ])
+            },
+            {
+                slug: 'siao',
+                nome: 'Siao',
+                subtitulo: 'Operacao avancada',
+                preco_mensal: 100,
+                preco_anual: 1000,
+                features_json: JSON.stringify([
+                    'App do Membro',
+                    '500 cadastros',
+                    '10 congregacoes',
+                    'Suporte prioritario'
+                ])
+            }
+        ];
+
+        function buildApiCandidates(pathname) {
+            const path = pathname.startsWith('/') ? pathname : `/${pathname}`;
+            const candidates = ROOT_HOSTS.has(host)
+                ? [path]
+                : [path, `${CANONICAL_BASE}${path}`];
+            return [...new Set(candidates)];
+        }
+
+        function buildAppPageUrl(pathname) {
+            const path = pathname.startsWith('/') ? pathname : `/${pathname}`;
+            return appWebBase ? `${appWebBase}${path}` : path.replace(/^\//, '');
+        }
+
+        async function loadPlanosFromStatic() {
+            const resp = await fetch('planos-data.json', { headers: { Accept: 'application/json' } });
+            if (!resp.ok) {
+                throw new Error(`HTTP ${resp.status} ao consultar planos-data.json`);
+            }
+
+            const planos = await resp.json();
+            if (!Array.isArray(planos)) {
+                throw new Error('planos-data.json nao retornou um array.');
+            }
+
+            return planos;
+        }
+
+        async function loadPlanosFromApi() {
+            let lastError = null;
+
+            for (const url of buildApiCandidates('/api/pagamentos/planos')) {
+                try {
+                    const resp = await fetch(url, { headers: { Accept: 'application/json' } });
+                    if (!resp.ok) {
+                        lastError = new Error(`HTTP ${resp.status} em ${url}`);
+                        continue;
+                    }
+
+                    const planos = await resp.json();
+                    if (!Array.isArray(planos)) {
+                        lastError = new Error(`Resposta invalida em ${url}`);
+                        continue;
+                    }
+
+                    return planos;
+                } catch (error) {
+                    lastError = error;
+                }
+            }
+
+            throw lastError || new Error('Nao foi possivel consultar API de planos.');
+        }
+
+        function setBilling(mode) {
+            billing = mode;
+            if (mode === 'mensal') {
+                btnMensal.classList.add('active');
+                btnAnual.classList.remove('active');
+                slider.style.left = '6px';
+                slider.style.width = btnMensal.offsetWidth + 'px';
+            } else {
+                btnAnual.classList.add('active');
+                btnMensal.classList.remove('active');
+                slider.style.left = (btnMensal.offsetWidth + 6) + 'px';
+                slider.style.width = btnAnual.offsetWidth + 'px';
+            }
+            // Atualiza preços exibidos
+            planosData.forEach(p => {
+                const amtEl = document.getElementById('price-' + p.slug);
+                const perEl = document.getElementById('period-' + p.slug);
+                const annEl = document.getElementById('annual-' + p.slug);
+                if (!amtEl) return;
+                if (mode === 'anual' && p.preco_anual > 0) {
+                    const mensal = Math.round(p.preco_anual / 12);
+                    amtEl.textContent = mensal;
+                    if (perEl) perEl.style.display = 'none';
+                    if (annEl) annEl.style.display = 'block';
+                } else {
+                    amtEl.textContent = p.preco_mensal;
+                    if (perEl) perEl.style.display = 'block';
+                    if (annEl) annEl.style.display = 'none';
+                }
+            });
+        }
+
+        const PLAN_ICONS = ['⛰️','🏛️','👑','🌟','💎','🔑'];
+        const PLAN_TAGS  = ['Básico','Recomendado','Premium','Avançado','Enterprise','Especial'];
+        const PLAN_FEATURED_IDX = 1; // segundo plano com destaque por padrão
+
+        async function loadPlanos() {
+            try {
+                let planos = [];
+
+                try {
+                    planos = await loadPlanosFromStatic();
+                } catch (staticError) {
+                    planos = [];
+                }
+
+                if (!Array.isArray(planos) || planos.length === 0) {
+                    planos = await loadPlanosFromApi();
+                }
+
+                if (!Array.isArray(planos) || planos.length === 0) {
+                    throw new Error('Nenhum plano disponivel nas fontes publicas.');
+                }
+
+                planosData = planos;
+                renderGrid(planos);
+            } catch (e) {
+                planosData = PLANOS_FALLBACK;
+                renderGrid(PLANOS_FALLBACK);
+                const grid = document.getElementById('pricingGrid');
+                grid.insertAdjacentHTML(
+                    'afterbegin',
+                    '<div style="grid-column:1/-1;text-align:center;color:#f59e0b;padding:16px 0 8px;">Tabela exibida em modo fallback. Atualize em alguns instantes para sincronizar valores oficiais.</div>'
+                );
+            }
+        }
+
+        function renderGrid(planos) {
+            const grid = document.getElementById('pricingGrid');
+            if (!planos.length) {
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#64748b;padding:40px;">Nenhum plano disponível.</div>';
+                return;
+            }
+
+            // Ajusta colunas conforme quantidade
+            grid.style.gridTemplateColumns = planos.length <= 3
+                ? `repeat(${planos.length}, 1fr)`
+                : 'repeat(4, 1fr)';
+
+            // Índice do plano em destaque: preferir o do meio ou o segundo
+            const featIdx = planos.length > 1 ? Math.min(PLAN_FEATURED_IDX, planos.length - 1) : 0;
+
+            grid.innerHTML = planos.map((p, i) => {
+                const isFeat = (i === featIdx);
+                const features = (() => { try { return JSON.parse(p.features_json || '[]'); } catch(_){ return []; } })();
+                const mensal = Math.round(p.preco_mensal || 0);
+                const anualTotal = Math.round(p.preco_anual || 0);
+                const anualMensal = anualTotal > 0 ? Math.round(anualTotal / 12) : mensal;
+                const isFree = mensal === 0;
+
+                const featuresHtml = features.map(f =>
+                    `<li><span class="feat-icon yes"><i class="fa-solid fa-check"></i></span> ${f}</li>`
+                ).join('');
+
+                return `
+                <div class="plan-card${isFeat ? ' featured' : ''}" style="animation-delay:${i * 0.08}s">
+                    ${isFeat ? '<div class="popular-badge">✦ Mais Popular</div>' : ''}
+                    <div class="plan-icon"${isFeat ? ' style="margin-top:12px;"' : ''}>${PLAN_ICONS[i % PLAN_ICONS.length]}</div>
+                    <div class="plan-name-tag">${PLAN_TAGS[i % PLAN_TAGS.length]}</div>
+                    <div class="plan-name">${p.nome}</div>
+                    <div class="plan-subtitle">${p.subtitulo || ''}</div>
+                    ${p.versiculo ? `<p class="plan-verse">${p.versiculo}</p>` : ''}
+                    <div class="plan-price-block">
+                        <span class="currency">R$</span><span class="amount${isFree ? ' free' : ''}" id="price-${p.slug}">${mensal}</span>
+                        <span class="period" id="period-${p.slug}">por mês · cobrado mensalmente</span>
+                        ${anualTotal > 0 ? `<span class="annual-note" id="annual-${p.slug}" style="display:none;">equivale a R$ ${anualMensal}/mês · cobrado R$ ${anualTotal}/ano</span>` : ''}
+                    </div>
+                    <hr class="plan-divider">
+                    <ul class="plan-features">${featuresHtml}</ul>
+                    <a href="${buildAppPageUrl(`criar_conta.html?plano=${encodeURIComponent(p.slug)}`)}" class="plan-btn ${isFeat ? 'primary' : 'ghost'}">${isFree ? 'Comecar Gratis' : 'Assinar ' + p.nome}</a>
+                    <p class="trial-note">${isFree ? '✦ 1 mês de teste grátis' : '✦ 7 dias de teste gratuito'}</p>
+                </div>`;
+            }).join('');
+
+            // Reinicializa slider
+            setTimeout(() => {
+                slider.style.width = btnMensal.offsetWidth + 'px';
+            }, 50);
+        }
+
+        // ── FAQ accordion ──
+        function toggleFaq(btn) {
+            const answer = btn.nextElementSibling;
+            const isOpen = btn.classList.contains('open');
+            document.querySelectorAll('.faq-question.open').forEach(q => {
+                q.classList.remove('open');
+                q.nextElementSibling.style.maxHeight = null;
+            });
+            if (!isOpen) {
+                btn.classList.add('open');
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            slider.style.width = btnMensal.offsetWidth + 'px';
+            loadPlanos();
+        });
+    </script>
+</body>
+</html>

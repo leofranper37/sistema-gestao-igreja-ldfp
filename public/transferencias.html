@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Transferencias</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); margin-bottom:16px; }
+        .grid { display:grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap:10px; align-items:end; }
+        .field { width:100%; padding:10px; border:1px solid #dbe3ef; border-radius:8px; }
+        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
+        .table { width:100%; border-collapse:collapse; }
+        .table th, .table td { border-bottom:1px solid #e5e7eb; text-align:left; padding:10px; font-size:13px; }
+        .muted { color:#64748b; }
+        @media (max-width:1100px) { .grid { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="transferencias.html" data-shell-title="Transferencias" data-shell-breadcrumb="LDFP / Tesouraria / Transferencias" data-shell-chip="Financeiro" data-shell-role="Tesouraria">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Transferencias internas</h2>
+                <p>Registre transferencias entre caixa, banco e centros de custo.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-right-left"></i> Controle interno</div>
+        </div>
+
+        <section class="card">
+            <h3>Novo registro</h3>
+            <div class="grid">
+                <input id="origem" class="field" placeholder="Origem (ex: Caixa)">
+                <input id="destino" class="field" placeholder="Destino (ex: Banco)">
+                <input id="valor" class="field" type="number" step="0.01" placeholder="Valor">
+                <input id="data" class="field" type="date">
+                <button id="btnSalvar" class="btn" type="button">Salvar</button>
+            </div>
+            <p id="status" class="muted" style="margin-top:10px"></p>
+        </section>
+
+        <section class="card">
+            <h3>Historico</h3>
+            <table class="table">
+                <thead><tr><th>Data</th><th>Origem</th><th>Destino</th><th>Valor</th></tr></thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </section>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+requireAuthSession();
+
+const KEY = 'ldfp_transferencias_v1';
+
+function moeda(v) {
+    return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function getItems() {
+    try {
+        return JSON.parse(localStorage.getItem(KEY) || '[]');
+    } catch (_) {
+        return [];
+    }
+}
+
+function setItems(items) {
+    localStorage.setItem(KEY, JSON.stringify(items));
+}
+
+function render() {
+    const tbody = document.getElementById('tbody');
+    const items = getItems().sort((a, b) => String(b.data).localeCompare(String(a.data)));
+    if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="muted">Nenhuma transferencia registrada.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = items.map((item) => {
+        return '<tr>' +
+            '<td>' + new Date(item.data + 'T00:00:00').toLocaleDateString('pt-BR') + '</td>' +
+            '<td>' + item.origem + '</td>' +
+            '<td>' + item.destino + '</td>' +
+            '<td>' + moeda(item.valor) + '</td>' +
+            '</tr>';
+    }).join('');
+}
+
+document.getElementById('btnSalvar').addEventListener('click', () => {
+    const origem = document.getElementById('origem').value.trim();
+    const destino = document.getElementById('destino').value.trim();
+    const valor = document.getElementById('valor').value;
+    const data = document.getElementById('data').value;
+    const status = document.getElementById('status');
+
+    if (!origem || !destino || !valor || !data) {
+        status.textContent = 'Preencha todos os campos para registrar.';
+        return;
+    }
+
+    const items = getItems();
+    items.push({ origem, destino, valor: Number(valor), data });
+    setItems(items);
+    status.textContent = 'Transferencia registrada com sucesso.';
+
+    document.getElementById('origem').value = '';
+    document.getElementById('destino').value = '';
+    document.getElementById('valor').value = '';
+    document.getElementById('data').value = '';
+
+    render();
+});
+
+render();
+</script>
+</body>
+</html>

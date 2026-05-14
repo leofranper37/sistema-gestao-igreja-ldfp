@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Lancamentos Contabeis</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); margin-bottom:16px; }
+        .grid { display:grid; grid-template-columns: 1fr 1fr 140px 140px auto; gap:10px; align-items:end; }
+        .field { width:100%; padding:10px; border:1px solid #dbe3ef; border-radius:8px; }
+        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
+        .table { width:100%; border-collapse:collapse; }
+        .table th, .table td { border-bottom:1px solid #e5e7eb; text-align:left; padding:10px; font-size:13px; }
+        @media (max-width:1200px) { .grid { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="lancamentos_contabeis.html" data-shell-title="Lancamentos Contabeis" data-shell-breadcrumb="LDFP / Contabilidade / Lancamentos Contabeis" data-shell-chip="Contabilidade" data-shell-role="Financeiro">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Lancamentos Contabeis</h2>
+                <p>Registre partidas com conta de debito e credito para o controle contabil.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-clipboard-list"></i> Diario contabil</div>
+        </div>
+
+        <section class="card">
+            <h3>Novo lancamento</h3>
+            <div class="grid">
+                <input id="debito" class="field" placeholder="Conta debito">
+                <input id="credito" class="field" placeholder="Conta credito">
+                <input id="valor" class="field" type="number" step="0.01" placeholder="Valor">
+                <input id="data" class="field" type="date">
+                <button id="btnAdd" class="btn" type="button">Registrar</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <h3>Livro diario</h3>
+            <table class="table">
+                <thead><tr><th>Data</th><th>Debito</th><th>Credito</th><th>Valor</th></tr></thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </section>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+requireAuthSession();
+
+const KEY = 'ldfp_lancamentos_contabeis_v1';
+
+function moeda(v) {
+    return Number(v || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+}
+
+function getItems() {
+    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (_) { return []; }
+}
+
+function setItems(items) {
+    localStorage.setItem(KEY, JSON.stringify(items));
+}
+
+function render() {
+    const tbody = document.getElementById('tbody');
+    const items = getItems().sort((a, b) => String(b.data).localeCompare(String(a.data)));
+    if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="4">Nenhum lancamento contabil registrado.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = items.map((i) => {
+        return '<tr><td>' + new Date(i.data + 'T00:00:00').toLocaleDateString('pt-BR') + '</td><td>' + i.debito + '</td><td>' + i.credito + '</td><td>' + moeda(i.valor) + '</td></tr>';
+    }).join('');
+}
+
+document.getElementById('btnAdd').addEventListener('click', () => {
+    const debito = document.getElementById('debito').value.trim();
+    const credito = document.getElementById('credito').value.trim();
+    const valor = document.getElementById('valor').value;
+    const data = document.getElementById('data').value;
+    if (!debito || !credito || !valor || !data) return;
+
+    const items = getItems();
+    items.push({ debito, credito, valor: Number(valor), data });
+    setItems(items);
+
+    document.getElementById('debito').value = '';
+    document.getElementById('credito').value = '';
+    document.getElementById('valor').value = '';
+    document.getElementById('data').value = '';
+    render();
+});
+
+render();
+</script>
+</body>
+</html>

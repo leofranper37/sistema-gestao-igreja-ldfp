@@ -1,0 +1,328 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Zeke - Cadastro de Membros</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ESTILOS ESPECIFICOS DO CADASTRO */
+        .form-container {
+            background: white; border: 1px solid #e5e7eb; border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-height: 600px; padding-bottom: 20px;
+        }
+
+        /* SISTEMA DE ABAS (TABS) */
+        .tabs-header {
+            display: flex; border-bottom: 1px solid #eee; background: #fff;
+            padding: 0 20px; border-radius: 8px 8px 0 0; margin-bottom: 20px;
+        }
+        .tab-btn {
+            background: none; border: none; padding: 15px 20px;
+            font-size: 13px; font-weight: 600; color: #6b7280; cursor: pointer;
+            border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 8px;
+        }
+        .tab-btn:hover { color: #1f2937; }
+        .tab-btn.active { color: #111; border-bottom-color: #00bef0; }
+
+        /* CONTEUDO DAS ABAS */
+        .tab-content { display: none; padding: 0 30px; }
+        .tab-content.active { display: block; }
+
+        /* GRID DO FORMULARIO */
+        .form-row { display: flex; gap: 20px; margin-bottom: 15px; }
+        .form-group { flex: 1; display: flex; flex-direction: column; }
+        
+        label { font-size: 11px; font-weight: 700; color: #374151; margin-bottom: 5px; }
+        
+        input[type="text"], input[type="date"], input[type="email"], select, textarea {
+            padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 4px;
+            font-size: 13px; color: #374151; outline: none; width: 100%; box-sizing: border-box; background: #fff;
+        }
+        input:focus, select:focus, textarea:focus { border-color: #00bef0; }
+
+        /* BOTAO SALVAR VERDE */
+        .btn-salvar {
+            background-color: #28a745; color: white; border: none; padding: 8px 20px;
+            border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 13px;
+        }
+        .btn-salvar:hover { background-color: #218838; }
+
+        /* Estilos Especiais */
+        .search-input-group { position: relative; }
+        .search-input-group i { position: absolute; right: 10px; top: 10px; color: #999; cursor: pointer; }
+
+        /* Aviso Azul (Ministeriais) */
+        .info-box-blue {
+            background-color: #00bef0; color: white; padding: 15px; border-radius: 4px;
+            font-size: 12px; line-height: 1.5;
+        }
+
+        /* Botoes da Foto */
+        .photo-btn-group { display: flex; gap: 5px; margin-bottom: 10px; }
+        .btn-photo {
+            padding: 5px 10px; border: 1px solid #ccc; background: #eee; border-radius: 3px;
+            cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px;
+        }
+        .btn-photo.orange { background: #f0ad4e; color: white; border: none; }
+        .btn-photo.green { background: #5cb85c; color: white; border: none; }
+        
+        .photo-canvas {
+            border: 1px solid #ddd; height: 300px; background: #fafafa; border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Ficha de Cadastro" data-shell-breadcrumb="LDFP / Secretaria / Membros / Cadastro" data-shell-active="cadastro.html">
+
+    <main class="main-content">
+        <div style="padding: 30px;">
+            <h2 class="page-title" style="font-size: 20px;">Membros <span style="font-weight:400; font-size:16px; color:#777;">Cadastro</span></h2>
+            
+            <div class="form-container">
+                
+                <div class="tabs-header">
+                    <button class="tab-btn active" onclick="abrirAba(event, 'pessoais')"><i class="fa-solid fa-user"></i> Dados Pessoais</button>
+                    <button class="tab-btn" onclick="abrirAba(event, 'familiares')"><i class="fa-solid fa-users"></i> Dados Familiares</button>
+                    <button class="tab-btn" onclick="abrirAba(event, 'ministeriais')"><i class="fa-solid fa-church"></i> Dados Ministeriais</button>
+                    <button class="tab-btn" onclick="abrirAba(event, 'foto')"><i class="fa-solid fa-camera"></i> Foto</button>
+                </div>
+
+                <form id="formCadastro" style="padding-bottom: 20px;">
+                    
+                    <div id="pessoais" class="tab-content active">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2;">
+                                <label>Nome</label>
+                                <input type="text" placeholder="Nome do membro">
+                            </div>
+                            <div class="form-group">
+                                <label>Apelido</label>
+                                <input type="text">
+                            </div>
+                            <div class="form-group" style="flex: 0.5;">
+                                <label>Ficha Nº</label>
+                                <input type="text">
+                            </div>
+                            <div class="form-group">
+                                <label>Nascimento</label>
+                                <input type="date">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Sexo</label>
+                                <select><option>-- Selecione --</option><option>Masculino</option><option>Feminino</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Estado Civil</label>
+                                <select><option>Selecione</option><option>Casado(a)</option><option>Solteiro(a)</option></select>
+                            </div>
+                            <div class="form-group" style="flex: 2;">
+                                <label>Profissao</label>
+                                <input type="text">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Grau de Instrucao</label>
+                                <select><option>Selecione</option><option>Ensino Medio</option><option>Superior</option></select>
+                            </div>
+                            <div class="form-group" style="flex: 0.5;">
+                                <label>Tipo de Sangue</label>
+                                <select><option>-- Selecione --</option><option>A+</option><option>O+</option></select>
+                            </div>
+                            <div class="form-group" style="flex: 2;"></div> </div>
+
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 0.5;">
+                                <label>CEP</label>
+                                <div class="search-input-group">
+                                    <input type="text">
+                                    <i class="fa-solid fa-search"></i>
+                                </div>
+                            </div>
+                            <div class="form-group" style="flex: 2;">
+                                <label>Endereco</label>
+                                <input type="text">
+                            </div>
+                            <div class="form-group" style="flex: 0.5;">
+                                <label>Numero</label>
+                                <input type="text">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group"><label>Bairro</label><input type="text"></div>
+                            <div class="form-group"><label>Complemento</label><input type="text"></div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group"><label>Cidade</label><input type="text"></div>
+                            <div class="form-group"><label>Estado</label><select><option>-- Selecione --</option><option>RJ</option><option>SP</option></select></div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group"><label>Telefone</label><input type="text"></div>
+                            <div class="form-group"><label>Celular</label><input type="text"></div>
+                            <div class="form-group"><label>Email</label><input type="text"></div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group"><label>Mae</label><input type="text"></div>
+                            <div class="form-group"><label>RG</label><input type="text"></div>
+                            <div class="form-group"><label>Emissor RG</label><input type="text"></div>
+                            <div class="form-group"><label>Dt. EmissÃ£o RG</label><input type="date"></div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group"><label>Nacionalidade</label><input type="text"></div>
+                            <div class="form-group"><label>Natural de</label><input type="text"></div>
+                            <div class="form-group"><label>UF</label><select><option>-- Selecione --</option></select></div>
+                        </div>
+
+                        <button type="button" class="btn-salvar">Salvar</button>
+                    </div>
+
+                    <div id="familiares" class="tab-content">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2;">
+                                <label>CÃ´njuge</label>
+                                <input type="text">
+                            </div>
+                            <div class="form-group">
+                                <label>Casamento</label>
+                                <input type="date">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Pai</label>
+                                <input type="text">
+                            </div>
+                            <div class="form-group">
+                                <label>MÃ£e</label>
+                                <input type="text">
+                            </div>
+                        </div>
+                        <button type="button" class="btn-salvar">Salvar</button>
+                    </div>
+
+                    <div id="ministeriais" class="tab-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Batismo Aguas</label>
+                                <input type="date">
+                            </div>
+                            <div class="form-group" style="flex: 2;">
+                                <label>Igreja e Local</label>
+                                <input type="text">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Batizado no Espirito Santo?</label>
+                                <select><option>Sim</option><option>Nao</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Dt. Batismo no Espirito</label>
+                                <input type="date">
+                            </div>
+                            <div class="form-group">
+                                <label>Local Batismo no EspÃ­rito</label>
+                                <input type="text">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Admissao</label>
+                                <input type="date">
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Admissao</label>
+                                <select><option>Batismo</option><option>Aclamacao</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Igreja e Local de Procedencia</label>
+                                <input type="text">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group"><label>Emissao Carteira</label><input type="date"></div>
+                            <div class="form-group"><label>Vencto Carteira</label><input type="date"></div>
+                            <div class="form-group"><label>Situacao</label><select><option>Ativo</option></select></div>
+                            <div class="form-group"><label>Cargo</label><select><option>Membro</option></select></div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Congregacao</label>
+                                <select><option>igreja congregacional de Angra dos Reis</option></select>
+                            </div>
+                            <div class="form-group" style="flex: 1.5;">
+                                <div class="info-box-blue">
+                                    Salve o Cadastro do Membro para Gerenciar seus Grupos e Funcoes.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 0.5;">
+                                <label>Data da Saida</label>
+                                <input type="date">
+                            </div>
+                            <div class="form-group" style="flex: 1.5;">
+                                <label>Obs</label>
+                                <textarea rows="3"></textarea>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn-salvar">Salvar</button>
+                    </div>
+
+                    <div id="foto" class="tab-content">
+                        <div class="photo-btn-group">
+                            <button type="button" class="btn-photo orange"><i class="fa-regular fa-folder-open"></i> Abrir</button>
+                            <button type="button" class="btn-photo green"><i class="fa-solid fa-scissors"></i> Cortar</button>
+                            <button type="button" class="btn-photo orange"><i class="fa-solid fa-rotate-right"></i> Reiniciar</button>
+                            <button type="button" class="btn-photo"><i class="fa-solid fa-minus"></i></button>
+                            <button type="button" class="btn-photo"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                        
+                        <div class="photo-canvas"></div>
+                        
+                        <button type="button" class="btn-salvar">Salvar</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // LOGICA DAS ABAS (TABS)
+        function abrirAba(evt, nomeAba) {
+            evt.preventDefault();
+            
+            var conteudos = document.getElementsByClassName("tab-content");
+            for (var i = 0; i < conteudos.length; i++) {
+                conteudos[i].style.display = "none";
+            }
+
+            var botoes = document.getElementsByClassName("tab-btn");
+            for (var i = 0; i < botoes.length; i++) {
+                botoes[i].className = botoes[i].className.replace(" active", "");
+            }
+
+            document.getElementById(nomeAba).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+    </script>
+    <script src="session.js"></script>
+    <script src="enterprise-shell.js"></script>
+</body>
+</html>

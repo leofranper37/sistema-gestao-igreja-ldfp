@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDFP Gestão — Entrar</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/ldfp-design-system.css">
+</head>
+<body class="login-page">
+
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">L</div>
+      <div class="login-brand">LDFP Gestão</div>
+      <div class="login-brand-sub">Plataforma de Gestão Cristã</div>
+    </div>
+
+    <div id="loginError" class="login-error"></div>
+
+    <div class="form-group mb-16">
+      <label class="login-form-label">E-mail</label>
+      <input id="email" type="email" class="login-input" placeholder="seu@email.com" autocomplete="email">
+    </div>
+
+    <div class="form-group mb-16">
+      <label class="login-form-label">Senha</label>
+      <input id="password" type="password" class="login-input" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button id="btnLogin" class="btn btn-ouro btn-full btn-lg" style="margin-top: 8px;">
+      <i class="fa-solid fa-right-to-bracket"></i> Entrar na plataforma
+    </button>
+
+    <p class="login-versículo">
+      "Tudo posso naquele que me fortalece." — Filipenses 4:13
+    </p>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>
+    const btn = document.getElementById('btnLogin');
+    const errorBox = document.getElementById('loginError');
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = 'block';
+    }
+
+    function hideError() {
+      errorBox.style.display = 'none';
+    }
+
+    async function doLogin() {
+      hideError();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        showError('Informe e-mail e senha para continuar.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Entrando...';
+
+      try {
+        const res  = await fetch('/api/auth/login', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Credenciais inválidas');
+
+        saveAuth(data);
+
+        if (['super-admin','super_admin','superadmin','master'].includes(data.user.role)) {
+          window.location.href = 'super-admin.html';
+        } else {
+          window.location.href = 'dashboard.html';
+        }
+      } catch (err) {
+        showError(err.message || 'Erro ao conectar. Tente novamente.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar na plataforma';
+      }
+    }
+
+    btn.addEventListener('click', doLogin);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+
+    // Se já estiver logado, redirecionar
+    const auth = getAuth();
+    if (auth?.token && auth?.user) {
+      window.location.href = auth.user.role === 'super-admin'
+        ? 'super-admin.html'
+        : 'dashboard.html';
+    }
+  </script>
+</body>
+</html>

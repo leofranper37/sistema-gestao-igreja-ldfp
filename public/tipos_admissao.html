@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Tipos de Admissão</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap {
+            padding: 24px 30px 30px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            border: 1px solid #dbe3ef;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .table-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .muted {
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Tipos de Admissão" data-shell-breadcrumb="LDFP / Secretaria / Tipos de Admissão" data-shell-active="tipos_admissao.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <div class="page-header">
+                <div>
+                    <h2 style="margin:0;color:#0f172a;">Tipos de Admissão</h2>
+                    <small class="muted">Secretaria / Membros</small>
+                </div>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Pesquisar...">
+                </div>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Observação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tiposBody">
+                        <tr><td>Batismo</td><td>Entrada</td><td>Membro admitido por batismo nas águas.</td></tr>
+                        <tr><td>Aclamação</td><td>Entrada</td><td>Membro recebido por aclamação pública.</td></tr>
+                        <tr><td>Transferência</td><td>Entrada</td><td>Vindo de outra igreja com carta.</td></tr>
+                        <tr><td>Reconciliação</td><td>Retorno</td><td>Membro restaurado ao rol.</td></tr>
+                        <tr><td>Carta de Mudança</td><td>Saída</td><td>Transferido para outra congregação.</td></tr>
+                        <tr><td>Desligamento</td><td>Saída</td><td>Saída registrada pela secretaria.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const searchInput = document.getElementById('searchInput');
+        const tiposBody = document.getElementById('tiposBody');
+        const rows = Array.from(tiposBody.querySelectorAll('tr'));
+
+        searchInput.addEventListener('input', () => {
+            const term = searchInput.value.trim().toLowerCase();
+            rows.forEach((row) => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telão de Visitantes</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --bg-1: #04121a;
+            --bg-2: #0b2a3a;
+            --ink: #f8fafc;
+            --muted: #cbd5e1;
+            --accent: #67e8f9;
+            --panel: rgba(9, 30, 41, 0.72);
+            --line: rgba(103, 232, 249, 0.24);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(103, 232, 249, 0.18), transparent 32%),
+                radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.16), transparent 28%),
+                linear-gradient(135deg, var(--bg-1), var(--bg-2));
+            overflow: hidden;
+        }
+
+        .screen {
+            min-height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            padding: 32px;
+            gap: 24px;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 3.8rem);
+            letter-spacing: 0.04em;
+        }
+
+        .hero p {
+            margin: 10px 0 0;
+            max-width: 760px;
+            color: var(--muted);
+            font-size: clamp(1rem, 1.5vw, 1.3rem);
+        }
+
+        .badge {
+            border: 1px solid var(--line);
+            background: rgba(8, 47, 73, 0.56);
+            color: var(--accent);
+            padding: 12px 16px;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+            align-content: start;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(2, 12, 18, 0.35);
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            backdrop-filter: blur(12px);
+        }
+
+        .card h2 {
+            margin: 0;
+            font-size: clamp(1.6rem, 2.6vw, 2.4rem);
+        }
+
+        .meta {
+            margin-top: 10px;
+            color: var(--accent);
+            font-size: clamp(1rem, 1.4vw, 1.2rem);
+            font-weight: 700;
+        }
+
+        .city {
+            margin-top: 12px;
+            font-size: clamp(1rem, 1.3vw, 1.15rem);
+            color: var(--muted);
+        }
+
+        .prayer {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(203, 213, 225, 0.15);
+            color: #e2e8f0;
+            font-size: clamp(1rem, 1.3vw, 1.2rem);
+            line-height: 1.45;
+        }
+
+        .empty {
+            display: grid;
+            place-items: center;
+            text-align: center;
+            border: 1px dashed var(--line);
+            border-radius: 28px;
+            min-height: 340px;
+            color: var(--muted);
+            background: rgba(8, 47, 73, 0.28);
+            padding: 32px;
+        }
+
+        .empty strong {
+            display: block;
+            font-size: clamp(1.8rem, 3vw, 2.6rem);
+            color: var(--ink);
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 1rem;
+        }
+
+        .footer button {
+            border: 1px solid var(--line);
+            background: rgba(8, 47, 73, 0.56);
+            color: var(--ink);
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 900px) {
+            body {
+                overflow: auto;
+            }
+
+            .screen {
+                padding: 18px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero,
+            .footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="screen">
+        <header class="hero">
+            <div>
+                <h1>Visitantes em Destaque</h1>
+                <p>Recepção ao vivo para exibição no telão. A lista é atualizada automaticamente conforme a equipe da mídia seleciona novos visitantes.</p>
+            </div>
+            <div class="badge" id="syncBadge">Sincronizando</div>
+        </header>
+
+        <section id="grid" class="grid"></section>
+
+        <footer class="footer">
+            <div id="lastUpdate">Aguardando atualização...</div>
+            <button type="button" id="btnFullscreen">Tela cheia</button>
+        </footer>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="realtime-client.js"></script>
+    <script>
+        requireAuthSession();
+
+        const grid = document.getElementById('grid');
+        const syncBadge = document.getElementById('syncBadge');
+        const lastUpdate = document.getElementById('lastUpdate');
+        const btnFullscreen = document.getElementById('btnFullscreen');
+
+        function setSyncLabel(text) {
+            syncBadge.textContent = text;
+        }
+
+        function formatTime(date) {
+            return new Intl.DateTimeFormat('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }).format(date);
+        }
+
+        function renderVisitors(items) {
+            if (!Array.isArray(items) || !items.length) {
+                grid.innerHTML = `
+                    <div class="empty" style="grid-column: 1 / -1;">
+                        <div>
+                            <strong>Nenhum visitante selecionado</strong>
+                            <span>Assim que a equipe da mídia marcar visitantes para o telão, eles aparecerão aqui automaticamente.</span>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = items.map((item) => `
+                <article class="card">
+                    <div>
+                        <h2>${item.nome}</h2>
+                        <div class="meta">${item.evento || 'Evento não informado'}</div>
+                        <div class="city">${item.cidade || 'Cidade não informada'}</div>
+                    </div>
+                    ${item.pedido_oracao ? `<div class="prayer">Pedido de oração: ${item.pedido_oracao}</div>` : ''}
+                </article>
+            `).join('');
+        }
+
+        async function loadTelao() {
+            const response = await fetch('/midia/telao/visitantes');
+            const data = await response.json().catch(() => []);
+            if (!response.ok) {
+                throw new Error((data && data.error) || 'Erro ao carregar visitantes do telão.');
+            }
+
+            renderVisitors(data || []);
+            lastUpdate.textContent = `Última atualização às ${formatTime(new Date())}`;
+            setSyncLabel('Ao vivo');
+        }
+
+        async function refreshTelao() {
+            try {
+                await loadTelao();
+            } catch (_error) {
+                setSyncLabel('Reconectando');
+            }
+        }
+
+        btnFullscreen.addEventListener('click', async () => {
+            const element = document.documentElement;
+            if (!document.fullscreenElement) {
+                await element.requestFullscreen?.();
+                return;
+            }
+
+            await document.exitFullscreen?.();
+        });
+
+        refreshTelao();
+
+        const realtimeStream = window.subscribeRealtime?.('midia.telao', () => {
+            refreshTelao();
+        }, () => {
+            setSyncLabel('Reconectando');
+        });
+
+        if (!realtimeStream) {
+            setInterval(refreshTelao, 10000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Inscrições Batismo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap { padding: 24px 30px 30px; }
+        .filter-card, .table-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06); }
+        .filter-card { padding: 14px; margin-bottom: 12px; }
+        .grid-3 { display: grid; grid-template-columns: 2fr 2fr auto; gap: 12px; align-items: end; }
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label { color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .field input, .field select { border: 1px solid #dbe3ef; border-radius: 8px; padding: 10px; font-size: 14px; background: #fff; }
+        .btn-primary { border: none; border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #eef2f7; font-size: 13px; color: #334155; }
+        th { background: #f8fafc; color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercase; }
+        .muted { color: #94a3b8; }
+        @media (max-width: 900px) {
+            .grid-3 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Inscrições de Batismo" data-shell-breadcrumb="LDFP / Secretaria / Batismos / Inscrições" data-shell-active="batismos_inscricoes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <div class="filter-card">
+                <div class="grid-3">
+                    <div class="field">
+                        <label for="batismoSelect">Batismo</label>
+                        <select id="batismoSelect"></select>
+                    </div>
+                    <div class="field">
+                        <label for="nomeInscrito">Nome do Inscrito</label>
+                        <input type="text" id="nomeInscrito" placeholder="Nome completo">
+                    </div>
+                    <button class="btn-primary" type="button" id="btnInscrever">Inscrever</button>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Batismo</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="enrollmentsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const STORAGE_BAPTISMS = 'ldfpBaptisms';
+        const STORAGE_ENROLLMENTS = 'ldfpBaptismEnrollments';
+        const batismoSelect = document.getElementById('batismoSelect');
+        const enrollmentsBody = document.getElementById('enrollmentsBody');
+
+        function readStorage(key) {
+            return JSON.parse(localStorage.getItem(key) || '[]');
+        }
+
+        function writeEnrollments(list) {
+            localStorage.setItem(STORAGE_ENROLLMENTS, JSON.stringify(list));
+        }
+
+        function makeId() {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                return window.crypto.randomUUID();
+            }
+            return String(Date.now());
+        }
+
+        function fillBaptismOptions() {
+            const baptisms = readStorage(STORAGE_BAPTISMS);
+            batismoSelect.innerHTML = '<option value="">Selecione...</option>' + baptisms.map((item) => {
+                return `<option value="${item.id}">${item.descricao} - ${item.dataBatismo || '-'}</option>`;
+            }).join('');
+        }
+
+        function getBaptismLabel(id) {
+            const baptisms = readStorage(STORAGE_BAPTISMS);
+            const found = baptisms.find((item) => String(item.id) === String(id));
+            return found ? found.descricao : '-';
+        }
+
+        function renderEnrollments() {
+            const items = readStorage(STORAGE_ENROLLMENTS);
+            if (!items.length) {
+                enrollmentsBody.innerHTML = '<tr><td colspan="3" class="muted">Nenhum resultado foi encontrado.</td></tr>';
+                return;
+            }
+
+            enrollmentsBody.innerHTML = items.map((item) => {
+                return `
+                    <tr>
+                        <td>${item.nome || '-'}</td>
+                        <td>${getBaptismLabel(item.batismoId)}</td>
+                        <td>${item.createdAt ? new Date(item.createdAt).toLocaleDateString('pt-BR') : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('btnInscrever').addEventListener('click', () => {
+            const batismoId = batismoSelect.value;
+            const nome = document.getElementById('nomeInscrito').value.trim();
+
+            if (!batismoId || !nome) {
+                return;
+            }
+
+            const items = readStorage(STORAGE_ENROLLMENTS);
+            items.push({
+                id: makeId(),
+                batismoId,
+                nome,
+                createdAt: new Date().toISOString()
+            });
+            writeEnrollments(items);
+            document.getElementById('nomeInscrito').value = '';
+            renderEnrollments();
+        });
+
+        fillBaptismOptions();
+        renderEnrollments();
+    </script>
+</body>
+</html>

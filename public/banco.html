@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Banco</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .wrap { max-width: 1280px; margin: 0 auto; padding: 0; }
+        .hero {
+            background: linear-gradient(130deg, #0f172a 0%, #0b3340 55%, #115e59 100%);
+            border-radius: 16px;
+            padding: 18px 20px;
+            color: #e2e8f0;
+            margin-bottom: 16px;
+            box-shadow: 0 16px 36px rgba(15, 23, 42, .22);
+        }
+        .hero h2 { margin: 0 0 6px; font-size: 21px; }
+        .hero p { margin: 0; color: #bfdbfe; font-size: 13px; }
+        .main-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(360px, 1fr); gap: 14px; }
+        .main-grid > * { min-width: 0; }
+        .card {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid #d9e4f0;
+            border-radius: 14px;
+            box-shadow: 0 10px 24px rgba(15,23,42,.08);
+            padding: 16px;
+        }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 8px; flex-wrap: wrap; }
+        .card-header h2 { margin: 0; font-size: 15px; color: #0f4c66; }
+        .btn {
+            border: 0;
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #fff;
+            transition: transform .12s ease, filter .12s ease;
+        }
+        .btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+        .btn-primary { background: linear-gradient(135deg, #0ea5e9, #0f766e); }
+        .btn-del { background: #dc2626; padding: 5px 8px; font-size: 11px; }
+        .btn-edit { background: #0284c7; padding: 5px 8px; font-size: 11px; }
+        input, select, textarea { width: 100%; border: 1px solid #dbe3ef; border-radius: 8px; padding: 9px 12px; font-size: 13.5px; box-sizing: border-box; margin-bottom: 6px; }
+        textarea { resize: vertical; min-height: 55px; }
+        .form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .form-row .full { grid-column: 1/-1; }
+        table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+        th, td { border-bottom: 1px solid #f1f5f9; padding: 9px 8px; text-align: left; }
+        td { word-break: break-word; }
+        th { background: #eff6ff; color: #475569; font-size: 11px; text-transform: uppercase; font-weight: 700; }
+        tbody tr:hover { background: #f0f9ff; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 700; }
+        .badge-corrente { background: #dbeafe; color: #1d4ed8; }
+        .badge-poupanca { background: #dcfce7; color: #15803d; }
+        .badge-caixa_interno { background: #fef9c3; color: #a16207; }
+        .badge-investimento { background: #f3e8ff; color: #7e22ce; }
+        .badge-outro { background: #f1f5f9; color: #475569; }
+        .msg { font-size: 13px; min-height: 18px; margin-top: 6px; }
+        .msg.ok { color: #0f766e; } .msg.error { color: #b91c1c; }
+        .ativo-off { opacity: .5; }
+        .saldo { font-weight: 700; color: #0f766e; }
+        @media (max-width: 1180px) { .main-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 760px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+    <body class="theme-petroleo enterprise-shell-page" data-shell-title="Contas Bancárias" data-shell-breadcrumb="LDFP / Tesouraria / Banco" data-shell-active="banco.html" data-shell-chip="Tesouraria ativa" data-shell-role="Admin financeiro">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+    <div class="wrap">
+    <section class="hero">
+        <h2><i class="fa-solid fa-building-columns"></i> Contas Bancarias</h2>
+        <p>Gestao centralizada das contas da igreja com operacao rapida e visual profissional no padrao LDFP.</p>
+    </section>
+
+    <div class="main-grid">
+
+        <!-- Lista de contas -->
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-building-columns"></i> Contas cadastradas</h2>
+                <button class="btn" style="background:#64748b;font-size:12px;" onclick="loadContas()">
+                    <i class="fa-solid fa-rotate-right"></i> Atualizar
+                </button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Banco</th>
+                            <th>Tipo</th>
+                            <th>Saldo inicial</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbContas"></tbody>
+                </table>
+            </div>
+            <p class="msg" id="msgLista"></p>
+        </section>
+
+        <!-- Formulário -->
+        <section class="card">
+            <div class="card-header">
+                <h2 id="formTitle"><i class="fa-solid fa-plus"></i> Nova conta</h2>
+                <button class="btn" style="background:#64748b;font-size:11px;display:none;" id="btnCancelarEdit" onclick="cancelarEdicao()">Cancelar</button>
+            </div>
+            <form id="formConta">
+                <input type="hidden" id="editId" value="">
+                <div class="form-row">
+                    <input class="full" type="text" id="nome" placeholder="Nome da conta *" required>
+                    <input type="text" id="banco" placeholder="Banco (ex: Bradesco)">
+                    <input type="text" id="agencia" placeholder="Agência">
+                    <input type="text" id="conta" placeholder="Número da conta">
+                    <select id="tipo">
+                        <option value="corrente">Conta Corrente</option>
+                        <option value="poupanca">Poupança</option>
+                        <option value="caixa_interno">Caixa Interno</option>
+                        <option value="investimento">Investimento</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                    <input type="text" id="saldoInicial" placeholder="Saldo inicial (ex: 0,00)">
+                    <textarea class="full" id="observacao" placeholder="Observação (opcional)"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:4px;">
+                    <i class="fa-solid fa-floppy-disk"></i> <span id="btnLabel">Criar conta</span>
+                </button>
+            </form>
+            <p class="msg" id="msgForm"></p>
+        </section>
+
+    </div>
+</div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+    requireAuthSession();
+
+    const tbContas = document.getElementById('tbContas');
+    const msgLista = document.getElementById('msgLista');
+    const msgForm = document.getElementById('msgForm');
+
+    function setMsg(el, text, isError = false) {
+        el.className = isError ? 'msg error' : 'msg ok';
+        el.textContent = text || '';
+    }
+
+    function fmtVal(v) {
+        return 'R$ ' + Number(v).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    const tipoLabels = { corrente: 'Corrente', poupanca: 'Poupança', caixa_interno: 'Caixa', investimento: 'Investimento', outro: 'Outro' };
+
+    async function loadContas() {
+        const r = await fetch('/banco/contas');
+        const rows = await r.json().catch(() => []);
+
+        if (!r.ok) {
+            setMsg(msgLista, rows.error || 'Erro ao carregar.', true);
+            return;
+        }
+
+        if (!rows.length) {
+            tbContas.innerHTML = '<tr><td colspan="5" style="color:#94a3b8;text-align:center;padding:20px;">Nenhuma conta cadastrada.</td></tr>';
+            return;
+        }
+
+        tbContas.innerHTML = rows.map(c => `
+            <tr class="${c.ativo ? '' : 'ativo-off'}">
+                <td><strong>${c.nome}</strong>${c.observacao ? `<br><small style="color:#94a3b8">${c.observacao}</small>` : ''}</td>
+                <td>${c.banco || '-'}${c.agencia ? `<br><small>Ag: ${c.agencia}</small>` : ''}${c.conta ? `<small> Cc: ${c.conta}</small>` : ''}</td>
+                <td><span class="badge badge-${c.tipo}">${tipoLabels[c.tipo] || c.tipo}</span></td>
+                <td class="saldo">${fmtVal(c.saldo_inicial)}</td>
+                <td style="white-space:nowrap;">
+                    <button class="btn btn-edit" onclick="editarConta(${c.id})">Editar</button>
+                    <button class="btn btn-del" onclick="excluirConta(${c.id})" title="Excluir">×</button>
+                </td>
+            </tr>
+        `).join('');
+
+        setMsg(msgLista, '');
+        window._contasCache = rows;
+    }
+
+    window.excluirConta = async function(id) {
+        if (!confirm('Remover esta conta?')) return;
+        const r = await fetch(`/banco/contas/${id}`, { method: 'DELETE' });
+        if (r.ok) {
+            setMsg(msgLista, 'Conta removida.');
+            loadContas();
+        } else {
+            const d = await r.json().catch(() => ({}));
+            setMsg(msgLista, d.error || 'Erro ao remover.', true);
+        }
+    };
+
+    window.editarConta = function(id) {
+        const conta = (window._contasCache || []).find(c => c.id === id);
+        if (!conta) return;
+
+        document.getElementById('editId').value = id;
+        document.getElementById('nome').value = conta.nome;
+        document.getElementById('banco').value = conta.banco || '';
+        document.getElementById('agencia').value = conta.agencia || '';
+        document.getElementById('conta').value = conta.conta || '';
+        document.getElementById('tipo').value = conta.tipo;
+        document.getElementById('saldoInicial').value = Number(conta.saldo_inicial).toFixed(2).replace('.', ',');
+        document.getElementById('observacao').value = conta.observacao || '';
+        document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-pen"></i> Editar conta';
+        document.getElementById('btnLabel').textContent = 'Salvar alterações';
+        document.getElementById('btnCancelarEdit').style.display = '';
+    };
+
+    window.cancelarEdicao = function() {
+        document.getElementById('formConta').reset();
+        document.getElementById('editId').value = '';
+        document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-plus"></i> Nova conta';
+        document.getElementById('btnLabel').textContent = 'Criar conta';
+        document.getElementById('btnCancelarEdit').style.display = 'none';
+        setMsg(msgForm, '');
+    };
+
+    document.getElementById('formConta').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        setMsg(msgForm, '');
+
+        const saldoRaw = document.getElementById('saldoInicial').value.trim().replace(',', '.');
+        const saldoInicial = saldoRaw ? parseFloat(saldoRaw) : 0;
+
+        const body = {
+            nome: document.getElementById('nome').value.trim(),
+            banco: document.getElementById('banco').value.trim() || null,
+            agencia: document.getElementById('agencia').value.trim() || null,
+            conta: document.getElementById('conta').value.trim() || null,
+            tipo: document.getElementById('tipo').value,
+            saldoInicial,
+            observacao: document.getElementById('observacao').value.trim() || null
+        };
+
+        const editId = document.getElementById('editId').value;
+        const method = editId ? 'PUT' : 'POST';
+        const url = editId ? `/banco/contas/${editId}` : '/banco/contas';
+
+        const r = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const d = await r.json().catch(() => ({}));
+
+        if (!r.ok) {
+            setMsg(msgForm, d.error || 'Erro ao salvar.', true);
+            return;
+        }
+
+        setMsg(msgForm, editId ? 'Conta atualizada!' : 'Conta criada!');
+        cancelarEdicao();
+        loadContas();
+    });
+
+    loadContas();
+</script>
+</body>
+</html>

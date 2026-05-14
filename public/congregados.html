@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Congregados</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .congregados-wrap {
+            padding: 24px 30px 30px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-novo {
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            flex: 1;
+            min-width: 220px;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 9px 10px;
+        }
+
+        .btn-buscar {
+            border: 1px solid #dbe3ef;
+            background: #fff;
+            border-radius: 8px;
+            padding: 9px 12px;
+            cursor: pointer;
+        }
+
+        .table-wrap {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #eef2f7;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .badge-data {
+            background: #e0f2fe;
+            color: #075985;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .row-actions button {
+            border: 1px solid #dbe3ef;
+            background: #fff;
+            border-radius: 6px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .row-actions .delete {
+            border-color: #fecaca;
+            color: #b91c1c;
+            background: #fef2f2;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.65);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 26px;
+            border-radius: 12px;
+            width: min(94vw, 980px);
+            max-height: 90vh;
+            overflow: auto;
+            box-shadow: 0 12px 28px rgba(2, 6, 23, 0.24);
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .modal-grid .full { grid-column: span 4; }
+        .modal-grid .col-2 { grid-column: span 2; }
+
+        .field-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field-wrap label {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .modal input,
+        .modal textarea,
+        .modal select {
+            width: 100%;
+            padding: 10px;
+            margin: 0;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .modal input:focus,
+        .modal textarea:focus,
+        .modal select:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .status-msg {
+            margin: 10px 0 14px;
+            font-size: 13px;
+            color: #0f766e;
+        }
+
+        .status-msg.error {
+            color: #b91c1c;
+        }
+
+        .status-msg:empty {
+            display: none;
+        }
+
+        .btn-save:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 780px) {
+            .congregados-wrap {
+                padding: 18px 16px 22px;
+            }
+
+            th,
+            td {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .modal-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .modal-grid .full,
+            .modal-grid .col-2 {
+                grid-column: span 2;
+            }
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Congregados" data-shell-breadcrumb="LDFP / Secretaria / Congregados" data-shell-active="congregados.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="congregados-wrap">
+            <div class="page-header">
+                <h2 style="margin:0;color:#1f2937;">Congregados</h2>
+                <button class="btn-novo" onclick="abrirModal()"><i class="fa-solid fa-plus"></i> Novo Congregado</button>
+            </div>
+            <div class="search-bar">
+                <input type="search" id="searchCongregado" placeholder="Buscar por nome, telefone, celular ou cidade...">
+                <button type="button" class="btn-buscar" onclick="carregarLista()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+            </div>
+            <div id="pageStatus" class="status-msg"></div>
+
+            <div class="table-wrap">
+                <table id="tabelaCongregados">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Cadastro</th>
+                            <th>Telefone</th>
+                            <th>Cidade</th>
+                            <th>Estado Civil</th>
+                            <th>Obs</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalCadastro">
+        <div class="modal">
+            <h3 id="modalTitulo">Registrar Congregado</h3>
+            <input type="hidden" id="congregadoId">
+            <div class="modal-grid">
+                <div class="field-wrap col-2"><label>Nome</label><input type="text" id="nome" placeholder="Nome Completo"></div>
+                <div class="field-wrap"><label>Nascimento</label><input type="date" id="nascimento"></div>
+                <div class="field-wrap"><label>Sexo</label><select id="sexo"><option value="">Selecione</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select></div>
+                <div class="field-wrap"><label>Estado civil</label><input type="text" id="estadoCivil" placeholder="Estado civil"></div>
+                <div class="field-wrap"><label>CPF</label><input type="text" id="cpf" placeholder="CPF"></div>
+                <div class="field-wrap"><label>CEP</label><input type="text" id="cep" placeholder="CEP"></div>
+                <div class="field-wrap col-2"><label>Endereço</label><input type="text" id="endereco" placeholder="Endereço"></div>
+                <div class="field-wrap"><label>Número</label><input type="text" id="numero" placeholder="Número"></div>
+                <div class="field-wrap"><label>Bairro</label><input type="text" id="bairro" placeholder="Bairro"></div>
+                <div class="field-wrap"><label>Cidade</label><input type="text" id="cidade" placeholder="Cidade"></div>
+                <div class="field-wrap"><label>Estado</label><input type="text" id="estado" placeholder="Estado"></div>
+                <div class="field-wrap"><label>Telefone</label><input type="text" id="telefone" placeholder="Telefone"></div>
+                <div class="field-wrap"><label>Celular</label><input type="text" id="celular" placeholder="Celular"></div>
+                <div class="field-wrap col-2"><label>E-mail</label><input type="text" id="email" placeholder="E-mail"></div>
+                <div class="field-wrap"><label>Data cadastro</label><input type="date" id="dataCadastro"></div>
+                <div class="field-wrap col-2"><label>URL da foto</label><input type="text" id="fotoUrl" placeholder="https://..."></div>
+                <div class="field-wrap full"><label>Observação</label><textarea id="obs" rows="3" placeholder="Observações"></textarea></div>
+            </div>
+            <div id="modalStatus" class="status-msg"></div>
+            <div class="modal-buttons">
+                <button onclick="fecharModal()" style="padding: 8px 15px; border: 1px solid #ccc; background: white; cursor: pointer;">Cancelar</button>
+                <button id="btnSalvarCongregado" class="btn-save" onclick="salvarCongregado()" style="padding: 8px 15px; background: #0f172a; color: white; border: none; cursor: pointer;">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        let congregadosCache = [];
+
+        function mapField(id) {
+            return document.getElementById(id);
+        }
+
+        function sanitizeText(value) {
+            return String(value || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function abrirModal() {
+            mapField('modalTitulo').textContent = 'Registrar Congregado';
+            mapField('congregadoId').value = '';
+            limparFormulario();
+            mapField('modalCadastro').style.display = 'flex';
+        }
+
+        function editarCongregado(id) {
+            const congregado = congregadosCache.find((item) => Number(item.id) === Number(id));
+            if (!congregado) return;
+
+            mapField('modalTitulo').textContent = 'Editar Congregado';
+            mapField('congregadoId').value = String(congregado.id);
+            mapField('nome').value = congregado.nome || '';
+            mapField('nascimento').value = congregado.nascimento || '';
+            mapField('sexo').value = congregado.sexo || '';
+            mapField('estadoCivil').value = congregado.estado_civil || '';
+            mapField('cpf').value = congregado.cpf || '';
+            mapField('cep').value = congregado.cep || '';
+            mapField('endereco').value = congregado.endereco || '';
+            mapField('numero').value = congregado.numero || '';
+            mapField('bairro').value = congregado.bairro || '';
+            mapField('cidade').value = congregado.cidade || '';
+            mapField('estado').value = congregado.estado || '';
+            mapField('telefone').value = congregado.telefone || '';
+            mapField('celular').value = congregado.celular || '';
+            mapField('email').value = congregado.email || '';
+            mapField('dataCadastro').value = congregado.data_cadastro || '';
+            mapField('obs').value = congregado.obs || '';
+            mapField('fotoUrl').value = congregado.foto_url || '';
+
+            mapField('modalCadastro').style.display = 'flex';
+        }
+
+        function fecharModal() {
+            mapField('modalCadastro').style.display = 'none';
+            setStatus('modalStatus', '', false);
+        }
+
+        function limparFormulario() {
+            mapField('nome').value = '';
+            mapField('nascimento').value = '';
+            mapField('sexo').value = '';
+            mapField('estadoCivil').value = '';
+            mapField('cpf').value = '';
+            mapField('cep').value = '';
+            mapField('endereco').value = '';
+            mapField('numero').value = '';
+            mapField('bairro').value = '';
+            mapField('cidade').value = '';
+            mapField('estado').value = '';
+            mapField('telefone').value = '';
+            mapField('celular').value = '';
+            mapField('email').value = '';
+            mapField('dataCadastro').value = '';
+            mapField('obs').value = '';
+            mapField('fotoUrl').value = '';
+        }
+
+        function setStatus(id, text, isError = false) {
+            const el = mapField(id);
+            if (!el) return;
+            el.textContent = text;
+            el.classList.toggle('error', isError);
+        }
+
+        function extractErrorMessage(data, fallbackMessage) {
+            if (!data) return fallbackMessage;
+            return data.error || data.message || fallbackMessage;
+        }
+
+        async function carregarLista() {
+            const tbody = document.querySelector('#tabelaCongregados tbody');
+            tbody.innerHTML = '<tr><td colspan="7" style="color:#64748b;">Carregando congregados...</td></tr>';
+
+            try {
+                const query = new URLSearchParams();
+                const search = mapField('searchCongregado').value.trim();
+                if (search) query.set('search', search);
+
+                const res = await fetch(`/congregados?${query.toString()}`);
+                const lista = await res.json().catch(() => []);
+
+                if (!res.ok) {
+                    throw new Error(extractErrorMessage(lista, 'Não foi possível carregar congregados.'));
+                }
+
+                if (!Array.isArray(lista) || !lista.length) {
+                    congregadosCache = [];
+                    tbody.innerHTML = '<tr><td colspan="7" style="color:#64748b;">Nenhum congregado registrado.</td></tr>';
+                    return;
+                }
+
+                congregadosCache = lista;
+                tbody.innerHTML = '';
+
+                lista.forEach((c) => {
+                    const cadastroDate = c.data_cadastro ? new Date(c.data_cadastro) : null;
+                    const cadastroFormatado = cadastroDate && !Number.isNaN(cadastroDate.getTime())
+                        ? cadastroDate.toLocaleDateString('pt-BR')
+                        : '-';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight:bold; color:#1f2937;">${sanitizeText(c.nome || '-')}</td>
+                            <td><span class="badge-data">${cadastroFormatado}</span></td>
+                            <td>${sanitizeText(c.telefone || c.celular || '-')}</td>
+                            <td>${sanitizeText(c.cidade || '-')}</td>
+                            <td>${sanitizeText(c.estado_civil || '-')}</td>
+                            <td style="color:#64748b;">${sanitizeText(c.obs || '-')}</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button type="button" onclick="editarCongregado(${Number(c.id)})">Editar</button>
+                                    <button type="button" class="delete" onclick="excluirCongregado(${Number(c.id)})">Excluir</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="color:#b91c1c;">${err.message || 'Erro ao carregar congregados.'}</td></tr>`;
+                setStatus('pageStatus', 'Não foi possível carregar congregados agora.', true);
+            }
+        }
+
+        async function salvarCongregado() {
+            const nome = mapField('nome').value.trim();
+            const id = mapField('congregadoId').value;
+            const btn = mapField('btnSalvarCongregado');
+
+            setStatus('modalStatus', '', false);
+            setStatus('pageStatus', '', false);
+
+            if (!nome) {
+                setStatus('modalStatus', 'Informe o nome do congregado.', true);
+                return;
+            }
+
+            const dados = {
+                nome,
+                nascimento: mapField('nascimento').value || null,
+                sexo: mapField('sexo').value || null,
+                estadoCivil: mapField('estadoCivil').value.trim() || null,
+                cpf: mapField('cpf').value.trim() || null,
+                cep: mapField('cep').value.trim() || null,
+                endereco: mapField('endereco').value.trim() || null,
+                numero: mapField('numero').value.trim() || null,
+                bairro: mapField('bairro').value.trim() || null,
+                cidade: mapField('cidade').value.trim() || null,
+                estado: mapField('estado').value.trim() || null,
+                telefone: mapField('telefone').value.trim() || null,
+                celular: mapField('celular').value.trim() || null,
+                email: mapField('email').value.trim() || null,
+                dataCadastro: mapField('dataCadastro').value || null,
+                obs: mapField('obs').value.trim() || null,
+                fotoUrl: mapField('fotoUrl').value.trim() || null
+            };
+
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+
+            try {
+                const resp = await fetch(id ? `/congregados/${id}` : '/congregados', {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const payload = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    throw new Error(extractErrorMessage(payload, 'Não foi possível salvar congregado.'));
+                }
+
+                setStatus('pageStatus', id ? 'Congregado atualizado com sucesso!' : 'Congregado salvo com sucesso!');
+                fecharModal();
+                limparFormulario();
+                carregarLista();
+            } catch (err) {
+                setStatus('modalStatus', err.message || 'Erro ao salvar congregado.', true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Salvar';
+            }
+        }
+
+        async function excluirCongregado(id) {
+            if (!confirm('Deseja excluir este congregado?')) {
+                return;
+            }
+
+            setStatus('pageStatus', '', false);
+            try {
+                const resp = await fetch(`/congregados/${id}`, { method: 'DELETE' });
+                const payload = await resp.json().catch(() => ({}));
+
+                if (!resp.ok) {
+                    throw new Error(extractErrorMessage(payload, 'Não foi possível excluir congregado.'));
+                }
+
+                setStatus('pageStatus', 'Congregado removido com sucesso!');
+                carregarLista();
+            } catch (err) {
+                setStatus('pageStatus', err.message || 'Erro ao excluir congregado.', true);
+            }
+        }
+
+        mapField('searchCongregado').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                carregarLista();
+            }
+        });
+
+        carregarLista();
+    </script>
+</body>
+</html>

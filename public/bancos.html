@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LDFP - Bancos</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="theme-azul-verde">
+  <main class="main-content">
+    <div class="top-header" style="background: #fff; padding: 20px; border-bottom: 1px solid #ddd;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h2>Bancos <small style="color:#999;font-size:0.8rem;">Visão Geral</small></h2>
+        <button class="btn-caixa btn-salvar-caixa" onclick="location.href='novo-banco.html'" style="width:auto;padding:10px 20px;">+ NOVO BANCO</button>
+      </div>
+    </div>
+
+    <div style="background:#ffc107;padding:15px;margin:20px;border-radius:4px;display:flex;gap:10px;">
+      <input id="searchBanco" type="text" placeholder="Pesquisar banco..." style="flex:1;border:none;padding:10px;border-radius:4px;">
+      <button id="btnPesquisarBanco" style="background:#333;color:#fff;border:none;padding:0 20px;border-radius:4px;cursor:pointer;">🔍</button>
+    </div>
+
+    <div style="padding:0 20px 40px 20px;">
+      <table class="activity-table" style="background:#fff;border-radius:4px;box-shadow:0 2px 5px rgba(0,0,0,0.05);width:100%;">
+        <thead>
+          <tr style="background:#f8f9fa;">
+            <th style="color:#555;">BANCO</th>
+            <th style="color:#555;">TIPO</th>
+            <th style="color:#555;text-align:right;">SALDO ATUAL</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaBancos">
+          <tr>
+            <td colspan="3" style="text-align:center;padding:40px;color:#999;">Carregando...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="session.js?v=20260501"></script>
+  <script>
+    requireAuthSession();
+
+    async function carregarBancos(filter='') {
+      const tbody = document.getElementById('tabelaBancos');
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:40px;color:#999;">Carregando...</td></tr>`;
+      try {
+        const resp = await fetch('/banco/contas' + (filter ? '?q='+encodeURIComponent(filter) : ''));
+        if (!resp.ok) throw new Error('Erro');
+        const data = await resp.json();
+        if (!data.length) {
+          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:40px;color:#999;">Nenhum banco cadastrado.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = data.map(b => `
+          <tr>
+            <td>${b.nomeBanco} <div style="color:#888;font-size:12px">Ag ${b.agencia || '-'} • C ${b.conta || '-'}</div></td>
+            <td>${b.tipo || 'Corrente'}</td>
+            <td style="text-align:right;">R$ ${Number(b.saldoInicial || 0).toLocaleString('pt-br',{minimumFractionDigits:2})}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:40px;color:#999;">Erro ao carregar bancos.</td></tr>`;
+      }
+    }
+
+    document.getElementById('btnPesquisarBanco').addEventListener('click', () => {
+      const q = document.getElementById('searchBanco').value.trim();
+      carregarBancos(q);
+    });
+
+    // Carrega inicial
+    carregarBancos();
+  </script>
+</body>
+</html>

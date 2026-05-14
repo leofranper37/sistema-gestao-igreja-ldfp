@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>LDFP - Saldo Inicial do Caixa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Seu CSS principal -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-azul-verde">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-profile">
+            <div class="profile-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="profile-info">
+                <h4>LEONARDO FRANCISCO...</h4>
+                <span>Online</span>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <!-- MEU LDFP -->
+            <div class="menu-section-label">Meu LDFP</div>
+            <button class="dropdown-btn">
+                <span><i class="fa-solid fa-house icon-left"></i> Visão Geral</span>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </button>
+            <div class="dropdown-container">
+                <a href="dashboard.html">Painel</a>
+                <a href="novidades.html">Novidades</a>
+                <a href="meu_plano.html">Meu Plano</a>
+                <a href="configuracoes.html">Configurações</a>
+                <a href="index.html">Sair</a>
+            </div>
+
+            <!-- SECRETARIA -->
+            <div class="menu-section-label">Secretaria</div>
+            <button class="dropdown-btn secretaria-btn">
+                <span><i class="fa-solid fa-folder icon-left"></i> Secretaria</span>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </button>
+            <div class="dropdown-container secretaria-menu">
+                <a href="lista_membros.html"><i class="fa-solid fa-users"></i> Membros</a>
+                <a href="membros.html"><i class="fa-regular fa-id-card"></i> Ficha Cadastral</a>
+                <a href="cargos.html"><i class="fa-solid fa-briefcase"></i> Cargos</a>
+                <a href="situacoes.html"><i class="fa-solid fa-toggle-on"></i> Situações</a>
+                <a href="congregacoes.html"><i class="fa-solid fa-church"></i> Congregações</a>
+                <a href="tipos_admissao.html"><i class="fa-solid fa-door-open"></i> Tipos de Admissão</a>
+                <a href="historico_pastoral.html"><i class="fa-solid fa-book-bible"></i> Histórico Pastoral</a>
+                <a href="grupos.html"><i class="fa-solid fa-people-group"></i> Grupos</a>
+                <a href="escalas.html"><i class="fa-solid fa-calendar-check"></i> Escalas</a>
+                <a href="ebd_alunos.html"><i class="fa-solid fa-user-graduate"></i> EBD - Alunos</a>
+                <a href="ebd_turmas.html"><i class="fa-solid fa-people-line"></i> EBD - Turmas</a>
+                <a href="ebd_grades.html"><i class="fa-solid fa-table-cells"></i> EBD - Grades</a>
+                <a href="batismos_cadastro.html"><i class="fa-solid fa-water"></i> Batismos - Cadastro</a>
+                <a href="batismos_inscricoes.html"><i class="fa-solid fa-note-sticky"></i> Batismos - Inscrições</a>
+                <a href="agenda.html"><i class="fa-solid fa-calendar-days"></i> Agenda</a>
+                <a href="outras_igrejas.html"><i class="fa-solid fa-globe"></i> Outras Igrejas</a>
+                <a href="missionarios.html"><i class="fa-solid fa-person-hiking"></i> Missionários</a>
+                <a href="visitantes.html"><i class="fa-solid fa-user-plus"></i> Visitantes</a>
+                <a href="congregados.html"><i class="fa-solid fa-people-arrows"></i> Congregados</a>
+                <a href="criancas.html"><i class="fa-solid fa-child"></i> Crianças</a>
+                <a href="oracoes.html"><i class="fa-solid fa-praying-hands"></i> Meus Pedidos</a>
+                <a href="oracoes.html"><i class="fa-regular fa-comment-dots"></i> Mural de Pedidos</a>
+            </div>
+
+            <!-- TESOURARIA -->
+            <div class="menu-section-label">Tesouraria</div>
+            <button class="dropdown-btn tesouraria-btn active">
+                <span><i class="fa-solid fa-money-bill-1 icon-left"></i> Tesouraria</span>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </button>
+            <div class="dropdown-container tesouraria-menu" style="display:block;">
+                <a href="dizimos_lancamentos.html"><i class="fa-solid fa-coins"></i> Lançamentos de Dízimo</a>
+                <a href="dizimos_tipos_receita.html"><i class="fa-solid fa-list"></i> Tipos de Receita</a>
+                <a href="caixa.html"><i class="fa-solid fa-cash-register"></i> Caixa</a>
+                <a href="caixa_lancamentos.html"><i class="fa-solid fa-file-invoice"></i> Lançamentos do Caixa</a>
+                <a href="caixa_saldo_inicial.html" class="current-page"><i class="fa-solid fa-circle-dollar-to-slot"></i> Saldo Inicial do Caixa</a>
+                <a href="bancos.html"><i class="fa-solid fa-building-columns"></i> Cadastro de Bancos</a>
+                <a href="bancos_lancamentos.html"><i class="fa-solid fa-file-invoice-dollar"></i> Lançamentos Bancários</a>
+                <a href="bancos_importacao_extrato.html"><i class="fa-solid fa-file-import"></i> Importação de Extrato</a>
+                <a href="contas_pagar_cadastro.html"><i class="fa-solid fa-file-circle-dollar"></i> Cadastro de Duplicatas</a>
+                <a href="contas_pagar_baixa.html"><i class="fa-solid fa-circle-check"></i> Baixa de Duplicatas</a>
+                <a href="contas_pagar_tipos_doc.html"><i class="fa-solid fa-receipt"></i> Tipos de Documento</a>
+                <a href="fornecedores.html"><i class="fa-solid fa-truck"></i> Fornecedores</a>
+                <a href="recibos.html"><i class="fa-solid fa-scroll"></i> Recibos</a>
+                <a href="transferencias.html"><i class="fa-solid fa-right-left"></i> Transferências</a>
+            </div>
+
+            <!-- CONTABILIDADE -->
+            <div class="menu-section-label">Contabilidade</div>
+            <button class="dropdown-btn contabilidade-btn">
+                <span><i class="fa-solid fa-scale-balanced icon-left"></i> Contabilidade</span>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </button>
+            <div class="dropdown-container contabilidade-menu">
+                <a href="plano_contas.html"><i class="fa-solid fa-list-ol"></i> Plano de Contas</a>
+                <a href="balancete_abertura.html"><i class="fa-solid fa-book-open"></i> Balancete de Abertura</a>
+                <a href="lancamentos_contabeis.html"><i class="fa-solid fa-clipboard-list"></i> Lançamentos Contábeis</a>
+                <a href="encerramento_exercicio.html"><i class="fa-solid fa-flag-checkered"></i> Encerramento do Exercício</a>
+            </div>
+
+            <!-- GRÁFICOS -->
+            <div class="menu-section-label">Gráficos e Relatórios</div>
+            <button class="dropdown-btn">
+                <span><i class="fa-solid fa-chart-column icon-left"></i> Gráficos</span>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </button>
+            <div class="dropdown-container">
+                <a href="graficos_secretaria.html"><i class="fa-solid fa-chart-pie"></i> Secretaria</a>
+                <a href="graficos_tesouraria.html"><i class="fa-solid fa-chart-line"></i> Tesouraria</a>
+            </div>
+
+            <button class="dropdown-btn">
+                <span><i class="fa-solid fa-print icon-left"></i> Relatórios</span>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </button>
+            <div class="dropdown-container">
+                <a href="relatorios_secretaria.html"><i class="fa-regular fa-file-lines"></i> Secretaria</a>
+                <a href="relatorios_tesouraria.html"><i class="fa-regular fa-file-lines"></i> Tesouraria</a>
+                <a href="relatorios_contabilidade.html"><i class="fa-regular fa-file-lines"></i> Contabilidade</a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            Copyright © 2026 LDFP.<br>Todos os Direitos Reservados.
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+            <div class="header-right">
+                <span>LEONARDO FRANCISCO PEREIRA</span>
+                <i class="fa-solid fa-user-circle"></i>
+            </div>
+        </header>
+
+        <!-- Conteúdo da página -->
+        <div class="pagina-conteudo">
+
+            <!-- Breadcrumb + título -->
+            <div class="pagina-topo">
+                <div>
+                    <div class="breadcrumb">
+                        Tesouraria <span>/</span> Caixa <span>/</span> Saldo Inicial
+                    </div>
+                    <h1>Saldo Inicial <span>do Caixa</span></h1>
+                </div>
+            </div>
+
+            <!-- Card de Informações e Formulário -->
+            <section class="info-form-card">
+                <div class="info-header">
+                    <h2>Configure o saldo inicial para começar</h2>
+                </div>
+                <div class="info-body">
+                    <div class="info-box info">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <p>
+                            O saldo inicial é o ponto de partida para o controle financeiro do caixa.
+                            Informe a competência (mês/ano) e o valor inicial em caixa.
+                        </p>
+                    </div>
+                    <div class="info-box warning">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <p>
+                            A competência não poderá ser alterada após informada.
+                            O valor do saldo inicial pode ser ajustado posteriormente, mas a competência ficará bloqueada.
+                        </p>
+                    </div>
+
+                    <form class="form-grid" id="saldoInicialForm">
+                        <div class="campo">
+                            <label for="competencia">Competência</label>
+                            <div class="campo-icone">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                <input type="text" id="competencia" placeholder="MM/AAAA" maxlength="7" required>
+                            </div>
+                        </div>
+                        <div class="campo">
+                            <label for="saldoInicial">Saldo Inicial</label>
+                            <div class="campo-icone">
+                                <i class="fa-solid fa-dollar-sign"></i>
+                                <input type="text" id="saldoInicial" placeholder="R$ 0,00" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="info-footer">
+                    <button class="btn-secundario" id="btnCancelar">
+                        Cancelar
+                    </button>
+                    <button class="btn-primario" id="btnSalvar" type="submit" form="saldoInicialForm">
+                        <i class="fa-solid fa-save"></i>
+                        Salvar
+                    </button>
+                </div>
+                <div class="status-msg" id="statusMsg"></div>
+            </section>
+
+        </div><!-- /pagina-conteudo -->
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        // --- Toggle dos menus da sidebar ---
+        const botoes = document.querySelectorAll(".dropdown-btn");
+        botoes.forEach(btn => {
+            btn.addEventListener("click", function () {
+                // Fecha outros dropdowns se não for o mesmo
+                botoes.forEach(otherBtn => {
+                    if (otherBtn !== this && otherBtn.classList.contains('active')) {
+                        otherBtn.classList.remove('active');
+                        const otherContent = otherBtn.nextElementSibling;
+                        if (otherContent && otherContent.classList.contains('dropdown-container')) {
+                            otherContent.style.display = "none";
+                        }
+                    }
+                });
+
+                // Abre/fecha o dropdown clicado
+                this.classList.toggle("active");
+                const conteudo = this.nextElementSibling;
+                if (conteudo && conteudo.classList.contains('dropdown-container')) {
+                    conteudo.style.display = conteudo.style.display === "block" ? "none" : "block";
+                }
+            });
+        });
+
+        // --- Lógica para o botão de menu (header-left) - para responsividade ---
+        document.querySelector('.header-left i.fa-bars').addEventListener('click', function() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.style.display = sidebar.style.display === 'none' || sidebar.style.display === '' ? 'flex' : 'none';
+        });
+
+        // --- Esconder sidebar em telas pequenas ao carregar ---
+        function checkSidebarVisibility() {
+            const sidebar = document.querySelector('.sidebar');
+            if (window.innerWidth <= 900) { // Ajuste este valor conforme o breakpoint do seu CSS
+                sidebar.style.display = 'none';
+            } else {
+                sidebar.style.display = 'flex';
+            }
+        }
+        window.addEventListener('resize', checkSidebarVisibility);
+        checkSidebarVisibility(); // Chama ao carregar a página
+
+        // --- Lógica de formulário com backend ---
+        const competenciaInput = document.getElementById('competencia');
+        const saldoInput = document.getElementById('saldoInicial');
+        const statusMsg = document.getElementById('statusMsg');
+        const form = document.getElementById('saldoInicialForm');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const btnCancelar = document.getElementById('btnCancelar');
+
+        // Máscara para Competência (MM/AAAA)
+        function formatCompetencia(value) {
+            const digits = value.replace(/\D/g, '').slice(0, 6);
+            if (digits.length <= 2) return digits;
+            return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+        }
+
+        // Máscara para Saldo Inicial (R$ 0,00)
+        function toCurrency(value) {
+            const digits = value.replace(/\D/g, '');
+            const number = (parseInt(digits || 0) / 100).toFixed(2);
+            return number.toString().replace('.', ',');
+        }
+
+        competenciaInput.addEventListener('input', (e) => {
+            e.target.value = formatCompetencia(e.target.value);
+        });
+
+        saldoInput.addEventListener('input', (e) => {
+            const formatted = toCurrency(e.target.value);
+            e.target.value = formatted;
+        });
+
+        btnCancelar.addEventListener('click', () => {
+            form.reset();
+            statusMsg.textContent = '';
+        });
+
+        btnSalvar.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const competencia = competenciaInput.value.trim();
+            const saldoInicial = saldoInput.value.trim();
+
+            const validoCompetencia = /^\d{2}\/\d{4}$/.test(competencia);
+            if (!validoCompetencia) {
+                statusMsg.textContent = 'Competência inválida. Use o formato MM/AAAA.';
+                statusMsg.classList.add('error');
+                return;
+            }
+
+            try {
+                const resp = await fetch('/caixa/saldo-inicial', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ competencia, saldoInicial })
+                });
+
+                if (!resp.ok) {
+                    const data = await resp.json().catch(() => ({}));
+                    throw new Error(data.error || 'Não foi possível salvar.');
+                }
+
+                statusMsg.textContent = 'Saldo inicial salvo com sucesso.';
+                statusMsg.classList.remove('error');
+                form.reset();
+                await carregarSaldoInicial();
+            } catch (err) {
+                statusMsg.textContent = err.message;
+                statusMsg.classList.add('error');
+            }
+        });
+
+        async function carregarSaldoInicial() {
+            try {
+                const resp = await fetch('/caixa/saldo-inicial');
+                if (!resp.ok) return;
+                const dados = await resp.json();
+                if (dados.competencia) competenciaInput.value = dados.competencia;
+                if (dados.saldoInicial) saldoInput.value = dados.saldoInicial;
+            } catch {
+                // Mantém a tela funcional mesmo sem conexão.
+            }
+        }
+
+        carregarSaldoInicial();
+    </script>
+</body>
+</html>

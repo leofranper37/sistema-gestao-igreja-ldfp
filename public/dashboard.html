@@ -1,0 +1,505 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f766e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Sistema de gestão completo para igrejas com suporte mobile">
+    <title>LDFP - Visão Geral</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .dashboard-wrap {
+            padding: 28px 32px 40px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            min-height: 100vh;
+        }
+
+        .dashboard-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dashboard-title i {
+            color: #0f766e;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 32px;
+            margin-bottom: 16px;
+            padding-left: 4px;
+        }
+
+        .dash-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.15);
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1e293b;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .stat-footer {
+            font-size: 12px;
+            color: #0f766e;
+            margin-top: 4px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Color schemes for different cards */
+        .stat-card.members { border-left-color: #0ea5e9; }
+        .stat-card.members .stat-icon { background: #e0f2fe; color: #0284c7; }
+
+        .stat-card.birthday { border-left-color: #f59e0b; }
+        .stat-card.birthday .stat-icon { background: #fef3c7; color: #d97706; }
+
+        .stat-card.visitors { border-left-color: #8b5cf6; }
+        .stat-card.visitors .stat-icon { background: #f3e8ff; color: #7c3aed; }
+
+        .stat-card.prayers { border-left-color: #ec4899; }
+        .stat-card.prayers .stat-icon { background: #fce7f3; color: #db2777; }
+
+        .stat-card.events { border-left-color: #10b981; }
+        .stat-card.events .stat-icon { background: #d1fae5; color: #059669; }
+
+        .stat-card.missionaries { border-left-color: #f43f5e; }
+        .stat-card.missionaries .stat-icon { background: #ffe4e6; color: #e11d48; }
+
+        .stat-card.children { border-left-color: #06b6d4; }
+        .stat-card.children .stat-icon { background: #cffafe; color: #0891b2; }
+
+        .stat-card.churches { border-left-color: #14b8a6; }
+        .stat-card.churches .stat-icon { background: #ccfbf1; color: #0d9488; }
+
+        .recent-panel {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            margin-top: 28px;
+        }
+
+        .recent-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+
+        .recent-head strong {
+            color: #1e293b;
+            font-size: 16px;
+        }
+
+        .recent-list {
+            min-height: 100px;
+        }
+
+        .recent-item,
+        .recent-empty {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr;
+            gap: 12px;
+            padding: 12px 0;
+            border-top: 1px solid #f1f5f9;
+            font-size: 13px;
+            color: #475569;
+            align-items: center;
+        }
+
+        .recent-item:first-child,
+        .recent-empty:first-child {
+            border-top: 0;
+        }
+
+        .recent-item strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .recent-empty {
+            grid-template-columns: 1fr;
+            color: #94a3b8;
+            text-align: center;
+            padding: 40px 0;
+            font-size: 14px;
+        }
+
+        .view-all-link {
+            font-size: 12px;
+            text-decoration: none;
+            color: #0284c7;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .view-all-link:hover {
+            color: #0ea5e9;
+        }
+
+        @media (max-width: 1200px) {
+            .dash-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dash-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .dashboard-wrap {
+                padding: 20px 16px 32px;
+            }
+            
+            .recent-item,
+            .recent-empty {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dash-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-value {
+                font-size: 24px;
+            }
+            
+            .dashboard-title {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Visão Geral" data-shell-breadcrumb="LDFP / Visão Geral" data-shell-active="dashboard.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="dashboard-wrap">
+            <div class="dashboard-title">
+                <i class="fa-solid fa-chart-line"></i>
+                Visão Geral do Sistema
+            </div>
+
+            <!-- Seção: Comunidade -->
+            <div class="section-title"><i class="fa-solid fa-people-group" style="margin-right: 8px; color: #0ea5e9;"></i>Comunidade</div>
+            <div class="dash-grid">
+                <div class="stat-card members" onclick="location.href='membros.html'">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-label">Total de Membros</div>
+                            <div class="stat-value" id="totalMembros">0</div>
+                        </div>
+                        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                    </div>
+                    <div class="stat-footer">
+                        <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
+                        Visualizar membros
+                    </div>
+                </div>
+
+                <div class="stat-card birthday" onclick="location.href='lista_membros.html?filtro=aniversariantes'">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-label">Aniversariantes</div>
+                            <div class="stat-value" id="totalAniversariantes">0</div>
+                        </div>
+                        <div class="stat-icon"><i class="fa-solid fa-cake-candles"></i></div>
+                    </div>
+                    <div class="stat-footer">
+                        <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
+                        Ver hoje
+                    </div>
+                </div>
+
+                <div class="stat-card visitors" onclick="location.href='visitantes.html'">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-label">Visitantes</div>
+                            <div class="stat-value" id="totalVisitantes">0</div>
+                        </div>
+                        <div class="stat-icon"><i class="fa-solid fa-person-walking"></i></div>
+                    </div>
+                    <div class="stat-footer">
+                        <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
+                        Gerenciar visitantes
+                    </div>
+                </div>
+
+                <div class="stat-card children" onclick="location.href='criancas.html'">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-label">Crianças EBD</div>
+                            <div class="stat-value" id="totalCriancas">0</div>
+                        </div>
+                        <div class="stat-icon"><i class="fa-solid fa-child"></i></div>
+                    </div>
+                    <div class="stat-footer">
+                        <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
+                        Turmas e alunos
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Espiritualidade -->
+            <div class="section-title"><i class="fa-solid fa-hands-praying" style="margin-right: 8px; color: #ec4899;"></i>Espiritualidade</div>
+            <div class="dash-grid">
+                <div class="stat-card prayers" onclick="location.href='oracoes.html'">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-label">Pedidos de Oração</div>
+                            <div class="stat-value" id="totalOracoes">0</div>
+                        </div>
+                        <div class="stat-icon"><i class="fa-solid fa-hands-praying"></i></div>
+                    </div>
+                    <div class="stat-footer">
+                        <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
+                        Acompanhar mural
+                    </div>
+                </div>
+
+                <div class="stat-card events" onclick="location.href='agenda.html'">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-label">Eventos Agendados</div>
+                            <div class="stat-value" id="totalEventos">0</div>
+                        </div>
+                        <div class="stat-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                    </div>
+                    <div class="stat-footer">
+                        <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
+                        Ver agenda completa
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Missões -->
+            <div class="section-title"><i class="fa-solid fa-globe" style="margin-right: 8px; color: #f59e0b;"></i>Missões e Comunhão</div>
+            <div class="dash-grid">
+                <div class="stat-card missionaries" onclick="location.href='missionarios.html'">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-label">Missionários</div>
+                            <div class="stat-value" id="totalMissionarios">0</div>
+                        </div>
+                        <div class="stat-icon"><i class="fa-solid fa-person-hiking"></i></div>
+                    </div>
+                    <div class="stat-footer">
+                        <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
+                        Contatos e informações
+                    </div>
+                </div>
+
+                <div class="stat-card churches" onclick="location.href='outras_igrejas.html'">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-label">Outras Igrejas</div>
+                            <div class="stat-value" id="totalOutrasIgrejas">0</div>
+                        </div>
+                        <div class="stat-icon"><i class="fa-solid fa-gopuram"></i></div>
+                    </div>
+                    <div class="stat-footer">
+                        <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
+                        Comunhão e rede
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Membros Recentes -->
+            <div class="recent-panel">
+                <div class="recent-head">
+                    <strong><i class="fa-solid fa-users" style="margin-right: 8px; color: #0284c7;"></i>Membros Recentes</strong>
+                    <a href="lista_membros.html" class="view-all-link">Ver todos</a>
+                </div>
+                <div id="recentMembersGrid" class="recent-list">
+                    <div class="recent-empty">
+                        <i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i>
+                        Carregando membros...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="pwa.js"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        function parseDate(dateValue) {
+            if (!dateValue) return null;
+            const parsed = new Date(dateValue);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        }
+
+        function isBirthdayThisMonth(member) {
+            const parsed = parseDate(member.nascimento || member.birth_date || member.data_nascimento);
+            return Boolean(parsed && parsed.getMonth() === new Date().getMonth());
+        }
+
+        function renderRecentMembers(members) {
+            const target = document.getElementById('recentMembersGrid');
+            if (!target) return;
+
+            if (!members.length) {
+                target.innerHTML = '<div class="recent-empty">Nenhum membro cadastrado.</div>';
+                return;
+            }
+
+            target.innerHTML = members.slice(0, 6).map((member) => {
+                const name = member.full_name || member.nome || 'Sem nome';
+                const email = member.email || 'Sem e-mail';
+                const cidade = member.city || member.cidade || '-';
+                return `
+                    <div class="recent-item">
+                        <strong>${name}</strong>
+                        <span>${email}</span>
+                        <span>${cidade}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function fetchJson(url, fallback) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) return fallback;
+                return await response.json();
+            } catch (_error) {
+                return fallback;
+            }
+        }
+
+        async function carregarDashboard() {
+            // Membros e Aniversariantes
+            const membrosData = await fetchJson('/membros', []);
+            const members = Array.isArray(membrosData) ? membrosData : (membrosData.items || []);
+            const birthdayMembers = members.filter(isBirthdayThisMonth);
+            document.getElementById('totalMembros').textContent = String(members.length);
+            document.getElementById('totalAniversariantes').textContent = String(birthdayMembers.length);
+            renderRecentMembers(members);
+
+            // Visitantes
+            const visitantesData = await fetchJson('/visitantes', []);
+            const visitantes = Array.isArray(visitantesData) ? visitantesData : (visitantesData.items || []);
+            document.getElementById('totalVisitantes').textContent = String(visitantes.length);
+
+            // Crianças
+            const criancasData = await fetchJson('/criancas', []);
+            const criancas = Array.isArray(criancasData) ? criancasData : (criancasData.items || []);
+            document.getElementById('totalCriancas').textContent = String(criancas.length);
+
+            // Orações
+            const oracoesData = await fetchJson('/oracoes/mural', []);
+            const oracoes = Array.isArray(oracoesData) ? oracoesData : (oracoesData.items || []);
+            document.getElementById('totalOracoes').textContent = String(oracoes.length);
+
+            // Agenda/Eventos
+            const eventosData = await fetchJson('/agenda', []);
+            const eventos = Array.isArray(eventosData) ? eventosData : (eventosData.items || []);
+            document.getElementById('totalEventos').textContent = String(eventos.length);
+
+            // Missionários
+            const missionariosData = await fetchJson('/missionarios', []);
+            const missionarios = Array.isArray(missionariosData) ? missionariosData : (missionariosData.items || []);
+            document.getElementById('totalMissionarios').textContent = String(missionarios.length);
+
+            // Outras Igrejas
+            const outrasIgrejasData = await fetchJson('/outras-igrejas', []);
+            const outrasIgrejas = Array.isArray(outrasIgrejasData) ? outrasIgrejasData : (outrasIgrejasData.items || []);
+            document.getElementById('totalOutrasIgrejas').textContent = String(outrasIgrejas.length);
+        }
+
+        carregarDashboard().catch(() => {
+            const target = document.getElementById('recentMembersGrid');
+            if (target) {
+                target.innerHTML = '<div class="recent-empty">Não foi possível carregar os dados agora.</div>';
+            }
+        });
+    </script>
+</body>
+</html>

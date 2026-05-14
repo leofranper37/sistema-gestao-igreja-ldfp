@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Crianças</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .criancas-wrap { padding: 24px 30px 30px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
+        .btn-novo { background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%); color: #fff; padding: 10px 16px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; font-size: 13px; }
+        .search-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .search-bar input { flex: 1; min-width: 220px; border: 1px solid #dbe3ef; border-radius: 8px; padding: 9px 10px; }
+        .btn-buscar { border: 1px solid #dbe3ef; background: #fff; border-radius: 8px; padding: 9px 12px; cursor: pointer; }
+        .table-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px; border-bottom: 1px solid #eef2f7; text-align: left; font-size: 13px; }
+        th { background: #f8fafc; color: #475569; font-size: 12px; text-transform: uppercase; }
+        .badge-data { background: #e0f2fe; color: #075985; padding: 3px 8px; border-radius: 999px; font-size: 12px; }
+        .row-actions { display: flex; gap: 6px; }
+        .row-actions button { border: 1px solid #dbe3ef; background: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; }
+        .row-actions .delete { border-color: #fecaca; color: #b91c1c; background: #fef2f2; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.65); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal { background: white; padding: 26px; border-radius: 12px; width: min(94vw, 980px); max-height: 90vh; overflow: auto; box-shadow: 0 12px 28px rgba(2, 6, 23, 0.24); }
+        .modal-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+        .modal-grid .full { grid-column: span 4; }
+        .modal-grid .col-2 { grid-column: span 2; }
+        .field-wrap { display: flex; flex-direction: column; gap: 4px; }
+        .field-wrap label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+        .modal input, .modal textarea, .modal select { width: 100%; padding: 10px; margin: 0; border: 1px solid #dbe3ef; border-radius: 8px; font-family: inherit; box-sizing: border-box; }
+        .modal input:focus, .modal textarea:focus, .modal select:focus { outline: none; border-color: #0ea5e9; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15); }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+        .status-msg { margin: 10px 0 14px; font-size: 13px; color: #0f766e; }
+        .status-msg.error { color: #b91c1c; }
+        .status-msg:empty { display: none; }
+        .btn-save:disabled { opacity: 0.7; cursor: not-allowed; }
+        @media (max-width: 780px) {
+            .criancas-wrap { padding: 18px 16px 22px; }
+            th, td { padding: 10px; font-size: 12px; }
+            .modal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .modal-grid .full, .modal-grid .col-2 { grid-column: span 2; }
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Crianças" data-shell-breadcrumb="LDFP / Secretaria / Crianças" data-shell-active="criancas.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="criancas-wrap">
+            <div class="page-header">
+                <h2 style="margin:0;color:#1f2937;">Crianças</h2>
+                <button class="btn-novo" onclick="abrirModal()"><i class="fa-solid fa-plus"></i> Nova Criança</button>
+            </div>
+            <div class="search-bar">
+                <input type="search" id="searchCrianca" placeholder="Buscar por nome, pai, mãe, telefone ou cidade...">
+                <button type="button" class="btn-buscar" onclick="carregarLista()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+            </div>
+            <div id="pageStatus" class="status-msg"></div>
+
+            <div class="table-wrap">
+                <table id="tabelaCriancas">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Nascimento</th>
+                            <th>Apresentação</th>
+                            <th>Nome do Pai</th>
+                            <th>Nome da Mãe</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalCadastro">
+        <div class="modal">
+            <h3 id="modalTitulo">Registrar Criança</h3>
+            <input type="hidden" id="criancaId">
+            <div class="modal-grid">
+                <div class="field-wrap col-2"><label>Nome</label><input type="text" id="nome" placeholder="Nome Completo"></div>
+                <div class="field-wrap"><label>Nascimento</label><input type="date" id="nascimento"></div>
+                <div class="field-wrap"><label>Apresentação</label><input type="text" id="apresentacao" placeholder="Data/descrição"></div>
+                <div class="field-wrap"><label>Sexo</label><select id="sexo"><option value="">Selecione</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select></div>
+                <div class="field-wrap"><label>Situação</label><input type="text" id="situacao" placeholder="Situação"></div>
+                <div class="field-wrap"><label>Pai</label><input type="text" id="pai" placeholder="Pai"></div>
+                <div class="field-wrap"><label>Mãe</label><input type="text" id="mae" placeholder="Mãe"></div>
+                <div class="field-wrap col-2"><label>Nome do Pai</label><input type="text" id="nomePai" placeholder="Nome completo do pai"></div>
+                <div class="field-wrap col-2"><label>Nome da Mãe</label><input type="text" id="nomeMae" placeholder="Nome completo da mãe"></div>
+                <div class="field-wrap"><label>CEP</label><input type="text" id="cep" placeholder="CEP"></div>
+                <div class="field-wrap col-2"><label>Endereço</label><input type="text" id="endereco" placeholder="Endereço"></div>
+                <div class="field-wrap"><label>Número</label><input type="text" id="numero" placeholder="Número"></div>
+                <div class="field-wrap"><label>Bairro</label><input type="text" id="bairro" placeholder="Bairro"></div>
+                <div class="field-wrap"><label>Complemento</label><input type="text" id="complemento" placeholder="Complemento"></div>
+                <div class="field-wrap"><label>Cidade</label><input type="text" id="cidade" placeholder="Cidade"></div>
+                <div class="field-wrap"><label>Estado</label><input type="text" id="estado" placeholder="Estado"></div>
+                <div class="field-wrap"><label>Telefone</label><input type="text" id="telefone" placeholder="Telefone"></div>
+                <div class="field-wrap"><label>Celular</label><input type="text" id="celular" placeholder="Celular"></div>
+                <div class="field-wrap col-2"><label>E-mail</label><input type="text" id="email" placeholder="E-mail"></div>
+                <div class="field-wrap col-2"><label>URL da foto</label><input type="text" id="fotoUrl" placeholder="https://..."></div>
+            </div>
+            <div id="modalStatus" class="status-msg"></div>
+            <div class="modal-buttons">
+                <button onclick="fecharModal()" style="padding: 8px 15px; border: 1px solid #ccc; background: white; cursor: pointer;">Cancelar</button>
+                <button id="btnSalvarCrianca" class="btn-save" onclick="salvarCrianca()" style="padding: 8px 15px; background: #0f172a; color: white; border: none; cursor: pointer;">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        let criancasCache = [];
+
+        function mapField(id) { return document.getElementById(id); }
+
+        function sanitizeText(value) {
+            return String(value || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function abrirModal() {
+            mapField('modalTitulo').textContent = 'Registrar Criança';
+            mapField('criancaId').value = '';
+            limparFormulario();
+            mapField('modalCadastro').style.display = 'flex';
+        }
+
+        function editarCrianca(id) {
+            const crianca = criancasCache.find((item) => Number(item.id) === Number(id));
+            if (!crianca) return;
+
+            mapField('modalTitulo').textContent = 'Editar Criança';
+            mapField('criancaId').value = String(crianca.id);
+            mapField('nome').value = crianca.nome || '';
+            mapField('nascimento').value = crianca.nascimento || '';
+            mapField('apresentacao').value = crianca.apresentacao || '';
+            mapField('sexo').value = crianca.sexo || '';
+            mapField('situacao').value = crianca.situacao || '';
+            mapField('pai').value = crianca.pai || '';
+            mapField('mae').value = crianca.mae || '';
+            mapField('nomePai').value = crianca.nome_pai || '';
+            mapField('nomeMae').value = crianca.nome_mae || '';
+            mapField('cep').value = crianca.cep || '';
+            mapField('endereco').value = crianca.endereco || '';
+            mapField('numero').value = crianca.numero || '';
+            mapField('bairro').value = crianca.bairro || '';
+            mapField('complemento').value = crianca.complemento || '';
+            mapField('cidade').value = crianca.cidade || '';
+            mapField('estado').value = crianca.estado || '';
+            mapField('telefone').value = crianca.telefone || '';
+            mapField('celular').value = crianca.celular || '';
+            mapField('email').value = crianca.email || '';
+            mapField('fotoUrl').value = crianca.foto_url || '';
+            mapField('modalCadastro').style.display = 'flex';
+        }
+
+        function fecharModal() {
+            mapField('modalCadastro').style.display = 'none';
+            setStatus('modalStatus', '', false);
+        }
+
+        function limparFormulario() {
+            mapField('nome').value = '';
+            mapField('nascimento').value = '';
+            mapField('apresentacao').value = '';
+            mapField('sexo').value = '';
+            mapField('situacao').value = '';
+            mapField('pai').value = '';
+            mapField('mae').value = '';
+            mapField('nomePai').value = '';
+            mapField('nomeMae').value = '';
+            mapField('cep').value = '';
+            mapField('endereco').value = '';
+            mapField('numero').value = '';
+            mapField('bairro').value = '';
+            mapField('complemento').value = '';
+            mapField('cidade').value = '';
+            mapField('estado').value = '';
+            mapField('telefone').value = '';
+            mapField('celular').value = '';
+            mapField('email').value = '';
+            mapField('fotoUrl').value = '';
+        }
+
+        function setStatus(id, text, isError = false) {
+            const el = mapField(id);
+            if (!el) return;
+            el.textContent = text;
+            el.classList.toggle('error', isError);
+        }
+
+        function extractErrorMessage(data, fallbackMessage) {
+            if (!data) return fallbackMessage;
+            return data.error || data.message || fallbackMessage;
+        }
+
+        function formatDate(value) {
+            if (!value) return '-';
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? '-' : parsed.toLocaleDateString('pt-BR');
+        }
+
+        async function carregarLista() {
+            const tbody = document.querySelector('#tabelaCriancas tbody');
+            tbody.innerHTML = '<tr><td colspan="6" style="color:#64748b;">Carregando crianças...</td></tr>';
+
+            try {
+                const query = new URLSearchParams();
+                const search = mapField('searchCrianca').value.trim();
+                if (search) query.set('search', search);
+
+                const res = await fetch(`/criancas?${query.toString()}`);
+                const lista = await res.json().catch(() => []);
+
+                if (!res.ok) {
+                    throw new Error(extractErrorMessage(lista, 'Não foi possível carregar crianças.'));
+                }
+
+                if (!Array.isArray(lista) || !lista.length) {
+                    criancasCache = [];
+                    tbody.innerHTML = '<tr><td colspan="6" style="color:#64748b;">Nenhuma criança registrada.</td></tr>';
+                    return;
+                }
+
+                criancasCache = lista;
+                tbody.innerHTML = '';
+
+                lista.forEach((c) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight:bold; color:#1f2937;">${sanitizeText(c.nome || '-')}</td>
+                            <td><span class="badge-data">${formatDate(c.nascimento)}</span></td>
+                            <td>${sanitizeText(c.apresentacao || '-')}</td>
+                            <td>${sanitizeText(c.nome_pai || c.pai || '-')}</td>
+                            <td>${sanitizeText(c.nome_mae || c.mae || '-')}</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button type="button" onclick="editarCrianca(${Number(c.id)})">Editar</button>
+                                    <button type="button" class="delete" onclick="excluirCrianca(${Number(c.id)})">Excluir</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="6" style="color:#b91c1c;">${err.message || 'Erro ao carregar crianças.'}</td></tr>`;
+                setStatus('pageStatus', 'Não foi possível carregar crianças agora.', true);
+            }
+        }
+
+        async function salvarCrianca() {
+            const nome = mapField('nome').value.trim();
+            const id = mapField('criancaId').value;
+            const btn = mapField('btnSalvarCrianca');
+
+            setStatus('modalStatus', '', false);
+            setStatus('pageStatus', '', false);
+
+            if (!nome) {
+                setStatus('modalStatus', 'Informe o nome da criança.', true);
+                return;
+            }
+
+            const dados = {
+                nome,
+                nascimento: mapField('nascimento').value || null,
+                apresentacao: mapField('apresentacao').value.trim() || null,
+                sexo: mapField('sexo').value || null,
+                situacao: mapField('situacao').value.trim() || null,
+                pai: mapField('pai').value.trim() || null,
+                mae: mapField('mae').value.trim() || null,
+                nomePai: mapField('nomePai').value.trim() || null,
+                nomeMae: mapField('nomeMae').value.trim() || null,
+                cep: mapField('cep').value.trim() || null,
+                endereco: mapField('endereco').value.trim() || null,
+                numero: mapField('numero').value.trim() || null,
+                bairro: mapField('bairro').value.trim() || null,
+                complemento: mapField('complemento').value.trim() || null,
+                cidade: mapField('cidade').value.trim() || null,
+                estado: mapField('estado').value.trim() || null,
+                telefone: mapField('telefone').value.trim() || null,
+                celular: mapField('celular').value.trim() || null,
+                email: mapField('email').value.trim() || null,
+                fotoUrl: mapField('fotoUrl').value.trim() || null
+            };
+
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+
+            try {
+                const resp = await fetch(id ? `/criancas/${id}` : '/criancas', {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const payload = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    throw new Error(extractErrorMessage(payload, 'Não foi possível salvar criança.'));
+                }
+
+                setStatus('pageStatus', id ? 'Criança atualizada com sucesso!' : 'Criança salva com sucesso!');
+                fecharModal();
+                limparFormulario();
+                carregarLista();
+            } catch (err) {
+                setStatus('modalStatus', err.message || 'Erro ao salvar criança.', true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Salvar';
+            }
+        }
+
+        async function excluirCrianca(id) {
+            if (!confirm('Deseja excluir esta criança?')) {
+                return;
+            }
+
+            setStatus('pageStatus', '', false);
+            try {
+                const resp = await fetch(`/criancas/${id}`, { method: 'DELETE' });
+                const payload = await resp.json().catch(() => ({}));
+
+                if (!resp.ok) {
+                    throw new Error(extractErrorMessage(payload, 'Não foi possível excluir criança.'));
+                }
+
+                setStatus('pageStatus', 'Criança removida com sucesso!');
+                carregarLista();
+            } catch (err) {
+                setStatus('pageStatus', err.message || 'Erro ao excluir criança.', true);
+            }
+        }
+
+        mapField('searchCrianca').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                carregarLista();
+            }
+        });
+
+        carregarLista();
+    </script>
+</body>
+</html>

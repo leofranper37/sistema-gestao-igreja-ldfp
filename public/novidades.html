@@ -1,0 +1,390 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Novidades</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .nv-wrap { max-width: 1250px; margin: 0 auto; }
+        .nv-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .nv-kpi {
+            background: #fff;
+            border: 1px solid #dbe4ef;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+            padding: 15px;
+        }
+        .nv-kpi small {
+            display: block;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        .nv-kpi strong {
+            display: block;
+            color: #0f172a;
+            font-size: 25px;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+        .nv-kpi span {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .nv-highlight {
+            border: 1px solid #99f6e4;
+            background:
+                radial-gradient(circle at 12% 18%, rgba(45,212,191,.18), transparent 38%),
+                radial-gradient(circle at 85% 20%, rgba(14,165,233,.15), transparent 42%),
+                #f0fdfa;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+        .nv-highlight h3 { margin: 0 0 6px; color: #0f172a; font-size: 18px; }
+        .nv-highlight p { margin: 0; color: #155e75; font-size: 13px; line-height: 1.6; }
+
+        .nv-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        .nv-card {
+            background: #fff;
+            border: 1px solid #dbe4ef;
+            border-radius: 14px;
+            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+            padding: 16px;
+        }
+        .nv-card h3 {
+            margin: 0 0 10px;
+            color: #0f172a;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nv-feed {
+            display: grid;
+            gap: 12px;
+        }
+        .nv-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px;
+            background: #ffffff;
+        }
+        .nv-item-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .nv-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            background: #ecfeff;
+            border: 1px solid #bae6fd;
+            color: #0c4a6e;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+        .nv-date {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 700;
+        }
+        .nv-item h4 {
+            margin: 0 0 6px;
+            color: #0f172a;
+            font-size: 15px;
+        }
+        .nv-item p {
+            margin: 0;
+            color: #475569;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .nv-pill-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 10px;
+        }
+        .nv-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            border: 1px solid #dbe4ef;
+            background: #f8fafc;
+            color: #1e293b;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .nv-link-row {
+            margin-top: 11px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nv-link {
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 7px 11px;
+            border: 1px solid #99f6e4;
+            color: #115e59;
+            background: #f0fdfa;
+        }
+        .nv-link:hover { filter: brightness(0.97); }
+
+        .nv-tech-list {
+            margin: 0;
+            padding-left: 18px;
+            color: #334155;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        .nv-tech-list li { margin: 2px 0; }
+
+        .nv-roadmap {
+            display: grid;
+            gap: 10px;
+        }
+        .nv-road-item {
+            border-left: 3px solid #0ea5e9;
+            background: #f8fafc;
+            border-radius: 0 10px 10px 0;
+            padding: 10px 12px;
+        }
+        .nv-road-item b {
+            display: block;
+            color: #0f172a;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+        .nv-road-item span {
+            color: #475569;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        @media (max-width: 1080px) {
+            .nv-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 760px) {
+            .nv-wrap { padding: 0; }
+            .nv-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 560px) {
+            .nv-kpi-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Novidades LDFP" data-shell-breadcrumb="LDFP / Plataforma / Novidades" data-shell-active="novidades.html" data-shell-chip="Release Notes" data-shell-role="Gestao e acompanhamento">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Novidades Tecnicas do LDFP</h2>
+                <p>Visao executiva e tecnica das funcionalidades ja entregues no ecossistema de gestao da igreja.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-rocket"></i> Atualizacoes</div>
+        </div>
+
+        <div class="nv-wrap">
+            <section class="nv-kpi-grid">
+                <article class="nv-kpi">
+                    <small>Dominios Ativos</small>
+                    <strong>5</strong>
+                    <span>Secretaria, Tesouraria, Contabilidade, Operacao e Plataforma</span>
+                </article>
+                <article class="nv-kpi">
+                    <small>Modulos Publicos</small>
+                    <strong>+60</strong>
+                    <span>Paginas operacionais e analiticas no shell enterprise</span>
+                </article>
+                <article class="nv-kpi">
+                    <small>Padrao Visual</small>
+                    <strong>LDFP UI</strong>
+                    <span>Navegacao lateral unificada com identidade verde/azul</span>
+                </article>
+                <article class="nv-kpi">
+                    <small>Status</small>
+                    <strong>Producao</strong>
+                    <span>Fluxos principais estabilizados e monitorados</span>
+                </article>
+            </section>
+
+            <section class="nv-highlight">
+                <h3><i class="fa-solid fa-circle-info"></i> Resumo Executivo</h3>
+                <p>
+                    O LDFP evoluiu para uma plataforma integrada com foco em rastreabilidade de dados, padronizacao de operacao
+                    e aceleracao do trabalho administrativo da igreja. Esta pagina centraliza o valor tecnico dos modulos,
+                    descrevendo capacidade funcional, integracoes e resultado esperado por area.
+                </p>
+            </section>
+
+            <section class="nv-grid">
+                <article class="nv-card">
+                    <h3><i class="fa-solid fa-newspaper"></i> Feed de Releases por Dominio</h3>
+                    <div class="nv-feed">
+                        <div class="nv-item">
+                            <div class="nv-item-head">
+                                <span class="nv-tag"><i class="fa-solid fa-users"></i> Secretaria</span>
+                                <span class="nv-date">24/04/2026</span>
+                            </div>
+                            <h4>Cadastro integrado de membros, congregados e turmas</h4>
+                            <p>
+                                Consolidacao dos fluxos de cadastro, historico pastoral, batismos, EBD e grupos com
+                                telas especializadas para reducao de retrabalho operacional.
+                            </p>
+                            <div class="nv-pill-list">
+                                <span class="nv-pill">Membros</span>
+                                <span class="nv-pill">Criancas</span>
+                                <span class="nv-pill">Batismos</span>
+                                <span class="nv-pill">EBD</span>
+                            </div>
+                            <div class="nv-link-row">
+                                <a class="nv-link" href="membros.html">Abrir membros</a>
+                                <a class="nv-link" href="batismos.html">Abrir batismos</a>
+                            </div>
+                        </div>
+
+                        <div class="nv-item">
+                            <div class="nv-item-head">
+                                <span class="nv-tag"><i class="fa-solid fa-wallet"></i> Tesouraria</span>
+                                <span class="nv-date">25/04/2026</span>
+                            </div>
+                            <h4>Motor financeiro com caixa, bancos, dizimos e contas a pagar</h4>
+                            <p>
+                                Camada de controle financeiro com visao por categoria, vencimento e status de pagamento,
+                                apoiando previsao, liquidacao e conciliacao de lancamentos.
+                            </p>
+                            <div class="nv-pill-list">
+                                <span class="nv-pill">Caixa</span>
+                                <span class="nv-pill">Bancos</span>
+                                <span class="nv-pill">Dizimos</span>
+                                <span class="nv-pill">Contas a Pagar</span>
+                            </div>
+                            <div class="nv-link-row">
+                                <a class="nv-link" href="caixa.html">Abrir caixa</a>
+                                <a class="nv-link" href="contas_pagar.html">Abrir contas a pagar</a>
+                            </div>
+                        </div>
+
+                        <div class="nv-item">
+                            <div class="nv-item-head">
+                                <span class="nv-tag"><i class="fa-solid fa-scale-balanced"></i> Contabilidade</span>
+                                <span class="nv-date">25/04/2026</span>
+                            </div>
+                            <h4>Ciclo contabil completo com plano de contas e encerramento</h4>
+                            <p>
+                                Implantacao dos modulos de plano de contas, balancete de abertura, lancamentos
+                                contabeis, relatorios e fechamento de exercicio para governanca tecnica.
+                            </p>
+                            <div class="nv-pill-list">
+                                <span class="nv-pill">Plano de Contas</span>
+                                <span class="nv-pill">Balancete</span>
+                                <span class="nv-pill">Lancamentos</span>
+                                <span class="nv-pill">Encerramento</span>
+                            </div>
+                            <div class="nv-link-row">
+                                <a class="nv-link" href="plano_contas.html">Abrir plano de contas</a>
+                                <a class="nv-link" href="relatorios_contabilidade.html">Abrir relatorios</a>
+                            </div>
+                        </div>
+
+                        <div class="nv-item">
+                            <div class="nv-item-head">
+                                <span class="nv-tag"><i class="fa-solid fa-network-wired"></i> Plataforma</span>
+                                <span class="nv-date">26/04/2026</span>
+                            </div>
+                            <h4>Padronizacao enterprise shell e navegacao orientada a contexto</h4>
+                            <p>
+                                Unificacao do comportamento de menu, breadcrumb, badge contextual e navegacao para
+                                reduzir friccao entre modulos e garantir consistencia de experiencia.
+                            </p>
+                            <div class="nv-pill-list">
+                                <span class="nv-pill">Enterprise Shell</span>
+                                <span class="nv-pill">Session Guard</span>
+                                <span class="nv-pill">RBAC</span>
+                                <span class="nv-pill">UX padrao</span>
+                            </div>
+                            <div class="nv-link-row">
+                                <a class="nv-link" href="dashboard.html">Abrir dashboard</a>
+                                <a class="nv-link" href="graficos_tesouraria.html">Abrir graficos</a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="nv-card">
+                    <h3><i class="fa-solid fa-diagram-project"></i> Visao Tecnica da Solucao</h3>
+                    <ul class="nv-tech-list">
+                        <li>Arquitetura modular por dominio com rotas, servicos e modelos desacoplados.</li>
+                        <li>Persistencia em banco relacional com camada de compatibilidade entre ambientes.</li>
+                        <li>Controle de acesso por sessao e perfil para proteger operacoes sensiveis.</li>
+                        <li>Paginas operacionais com shell unificado para padrao de navegacao e produtividade.</li>
+                        <li>Fluxos financeiros com estados de vida: pendente, vencido, pago e cancelado.</li>
+                        <li>Suporte a visualizacoes analiticas em graficos para secretaria e tesouraria.</li>
+                        <li>Base preparada para evolucao continua com releases incrementais.</li>
+                    </ul>
+
+                    <h3 style="margin-top:14px;"><i class="fa-solid fa-list-check"></i> Roadmap Tecnico Proximo Ciclo</h3>
+                    <div class="nv-roadmap">
+                        <div class="nv-road-item">
+                            <b>1. API para modulo de recibo e transferencias</b>
+                            <span>Trocar armazenamento local por persistencia transacional com auditoria.</span>
+                        </div>
+                        <div class="nv-road-item">
+                            <b>2. Indicadores de fechamento mensal automatizado</b>
+                            <span>Gerar KPI de execucao financeira por competencia e centro de custo.</span>
+                        </div>
+                        <div class="nv-road-item">
+                            <b>3. Trilha de eventos administrativos</b>
+                            <span>Registrar quem alterou, quando alterou e qual recurso foi impactado.</span>
+                        </div>
+                        <div class="nv-road-item">
+                            <b>4. Exportacao operacional e contabil padronizada</b>
+                            <span>Padronizar CSV/PDF para secretaria, tesouraria e contabilidade.</span>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script>
+    requireAuthSession();
+</script>
+</body>
+</html>

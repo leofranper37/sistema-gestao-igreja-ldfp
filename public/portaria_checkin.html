@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portaria Check-in QR</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .wrap {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 18px 12px 28px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 12px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+            padding: 14px;
+        }
+
+        .card h2 {
+            margin: 0 0 10px;
+            font-size: 15px;
+            color: #155e75;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .form-grid .full {
+            grid-column: 1 / -1;
+        }
+
+        input,
+        select {
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 8px;
+            background: #0f766e;
+            color: #fff;
+            padding: 10px 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn.secondary {
+            background: #0284c7;
+        }
+
+        .qr-box {
+            text-align: center;
+            border: 1px dashed #99f6e4;
+            border-radius: 12px;
+            padding: 12px;
+            background: #f0fdfa;
+        }
+
+        .qr-box img {
+            max-width: 220px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ccfbf1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 8px;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .msg {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #0f766e;
+        }
+
+        .msg.error {
+            color: #b91c1c;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Portaria QR" data-shell-breadcrumb="LDFP / Portaria / Check-in QR" data-shell-active="portaria_checkin.html" data-shell-chip="Ambiente autenticado" data-shell-role="Oficial">
+    <main class="main-content enterprise-main">
+        <div class="wrap">
+            <div class="grid">
+                <section class="card">
+                    <h2><i class="fa-solid fa-qrcode"></i> Gerar QR de check-in</h2>
+                    <div class="form-grid">
+                        <input class="full" type="text" id="eventoQr" placeholder="Nome do culto/evento" value="Culto Domingo 19h">
+                        <input type="datetime-local" id="expiraEm" placeholder="Expiração (opcional)">
+                        <button class="btn secondary" type="button" id="btnGerarQr">Gerar QR</button>
+                    </div>
+                    <div class="qr-box" style="margin-top:10px;">
+                        <img id="qrImg" alt="QR check-in" src="">
+                        <div style="font-size:12px;color:#0f766e;margin-top:8px;" id="qrCodeTxt"></div>
+                        <div style="font-size:12px;color:#0369a1;margin-top:4px;word-break:break-all;" id="qrUrlTxt"></div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2><i class="fa-solid fa-clipboard-check"></i> Registrar check-in</h2>
+                    <form id="formCheckin" class="form-grid">
+                        <input class="full" type="text" id="nomeVisitante" placeholder="Nome do visitante" required>
+                        <input type="text" id="telefone" placeholder="Telefone">
+                        <select id="status">
+                            <option value="entrada">Entrada</option>
+                            <option value="saida">Saída</option>
+                        </select>
+                        <input class="full" type="text" id="evento" placeholder="Evento">
+                        <input class="full" type="text" id="codigoQrManual" placeholder="Código QR lido/manual">
+                        <button class="btn full" type="submit">Registrar check-in</button>
+                    </form>
+                    <div id="statusMsg" class="msg"></div>
+                </section>
+            </div>
+
+            <section class="card" style="margin-top:12px;">
+                <h2><i class="fa-solid fa-list"></i> Check-ins do dia</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Evento</th>
+                            <th>Origem</th>
+                            <th>Status</th>
+                            <th>Horário</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbCheckins"></tbody>
+                </table>
+            </section>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="realtime-client.js"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const qrImg = document.getElementById('qrImg');
+        const qrCodeTxt = document.getElementById('qrCodeTxt');
+        const qrUrlTxt = document.getElementById('qrUrlTxt');
+        const statusMsg = document.getElementById('statusMsg');
+        const tbCheckins = document.getElementById('tbCheckins');
+
+        function setMsg(text, error) {
+            statusMsg.className = error ? 'msg error' : 'msg';
+            statusMsg.textContent = text || '';
+        }
+
+        async function gerarQr() {
+            const evento = document.getElementById('eventoQr').value.trim() || 'Evento';
+            const expiraEmRaw = document.getElementById('expiraEm').value;
+
+            const response = await fetch('/portaria/qr-sessoes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    evento,
+                    expiraEm: expiraEmRaw ? new Date(expiraEmRaw).toISOString() : null
+                })
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data.error || 'Nao foi possivel gerar QR.');
+            }
+
+            const src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(data.publicUrl)}`;
+            qrImg.src = src;
+            qrCodeTxt.textContent = `Token: ${data.token}`;
+            qrUrlTxt.textContent = data.publicUrl;
+            document.getElementById('codigoQrManual').value = data.token;
+            document.getElementById('evento').value = data.evento;
+        }
+
+        async function loadCheckins() {
+            const dateRef = new Date().toISOString().slice(0, 10);
+            const response = await fetch(`/portaria/checkins?data=${dateRef}`);
+            const data = await response.json().catch(() => []);
+            if (!response.ok) {
+                throw new Error(data.error || 'Nao foi possivel carregar check-ins.');
+            }
+
+            tbCheckins.innerHTML = (data || []).map((item) => `
+                <tr>
+                    <td>${item.nome_visitante}</td>
+                    <td>${item.evento || '-'}</td>
+                    <td>${item.origem}</td>
+                    <td>${item.status}</td>
+                    <td>${new Date(item.created_at).toLocaleTimeString('pt-BR')}</td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('btnGerarQr').addEventListener('click', () => {
+            gerarQr().catch((error) => setMsg(error.message, true));
+        });
+
+        document.getElementById('formCheckin').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            setMsg('');
+
+            const body = {
+                nomeVisitante: document.getElementById('nomeVisitante').value.trim(),
+                telefone: document.getElementById('telefone').value.trim(),
+                evento: document.getElementById('evento').value.trim(),
+                codigoQr: document.getElementById('codigoQrManual').value.trim(),
+                origem: document.getElementById('codigoQrManual').value.trim() ? 'qr' : 'manual',
+                status: document.getElementById('status').value
+            };
+
+            try {
+                const response = await fetch('/portaria/checkins', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.error || 'Nao foi possivel registrar check-in.');
+                }
+
+                setMsg(`Check-in registrado. Código: ${data.codigoQr}`);
+                document.getElementById('nomeVisitante').value = '';
+                document.getElementById('telefone').value = '';
+                await loadCheckins();
+            } catch (error) {
+                setMsg(error.message, true);
+            }
+        });
+
+        gerarQr().catch((error) => setMsg(error.message, true));
+        loadCheckins().catch((error) => setMsg(error.message, true));
+
+        const checkinStream = window.subscribeRealtime?.('portaria.checkins', () => {
+            loadCheckins().catch((error) => setMsg(error.message, true));
+        }, () => {});
+
+        if (!checkinStream) {
+            setInterval(() => {
+                loadCheckins().catch((error) => setMsg(error.message, true));
+            }, 15000);
+        }
+    </script>
+</body>
+</html>

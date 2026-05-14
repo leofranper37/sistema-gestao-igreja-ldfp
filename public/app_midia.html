@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App da Midia</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 14px 12px 24px; }
+        .grid { display:grid; grid-template-columns: 1.2fr 1fr; gap: 12px; }
+        .card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 8px 22px rgba(15,23,42,.08); padding:12px; }
+        .card h2 { margin:0 0 10px; font-size:15px; color:#155e75; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { border-bottom:1px solid #e2e8f0; padding:8px; font-size:12px; text-align:left; vertical-align:top; }
+        th { background:#f8fafc; color:#64748b; font-size:11px; text-transform:uppercase; }
+        .btn { border:0; border-radius:8px; padding:6px 8px; font-size:11px; font-weight:700; cursor:pointer; color:#fff; }
+        .sel { background:#0284c7; }
+        .ok { background:#16a34a; }
+        .arc { background:#64748b; }
+        .msg { font-size:13px; color:#0f766e; margin-top:8px; }
+        .msg.error { color:#b91c1c; }
+        .screen-item { border:1px solid #bae6fd; background:#ecfeff; border-radius:10px; padding:10px; margin-bottom:8px; }
+        .screen-item strong { display:block; color:#0c4a6e; }
+        .screen-item small { color:#475569; }
+        @media (max-width: 900px) { .grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="App Midia" data-shell-breadcrumb="LDFP / Midia / Visitantes" data-shell-active="app_midia.html" data-shell-chip="Ambiente autenticado" data-shell-role="Midia">
+    <main class="main-content enterprise-main">
+        <div class="wrap">
+            <div class="grid">
+                <section class="card">
+                    <h2><i class="fa-solid fa-users-viewfinder"></i> Fila de visitantes autorizados</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Visitante</th>
+                                <th>Evento</th>
+                                <th>Cidade</th>
+                                <th>Pedido</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbFila"></tbody>
+                    </table>
+                    <p class="msg" id="statusMsg"></p>
+                </section>
+
+                <section class="card">
+                    <h2><i class="fa-solid fa-tv"></i> Lista para telao (selecionados)</h2>
+                    <div style="margin-bottom:10px;">
+                        <a href="telao_visitantes.html" target="_blank" rel="noreferrer" class="btn sel" style="text-decoration:none;display:inline-block;">Abrir modo telao</a>
+                    </div>
+                    <div id="listaTelao"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="realtime-client.js"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const tbFila = document.getElementById('tbFila');
+        const listaTelao = document.getElementById('listaTelao');
+        const statusMsg = document.getElementById('statusMsg');
+
+        function setStatus(text, isError) {
+            statusMsg.className = isError ? 'msg error' : 'msg';
+            statusMsg.textContent = text || '';
+        }
+
+        async function alterarStatus(id, status) {
+            try {
+                const response = await fetch(`/midia/visitantes/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || 'Erro ao atualizar status.');
+                setStatus('Status atualizado.');
+                await Promise.all([loadFila(), loadTelao()]);
+            } catch (error) {
+                setStatus(error.message, true);
+            }
+        }
+
+        window.alterarStatus = alterarStatus;
+
+        async function loadFila() {
+            const response = await fetch('/midia/visitantes');
+            const data = await response.json().catch(() => []);
+            if (!response.ok) throw new Error((data && data.error) || 'Erro ao carregar fila.');
+
+            tbFila.innerHTML = data.map((item) => `
+                <tr>
+                    <td><strong>${item.nome}</strong><br><small>${item.telefone || '-'} / ${item.email || '-'}</small></td>
+                    <td>${item.evento}</td>
+                    <td>${item.cidade || '-'}</td>
+                    <td>${item.pedido_oracao || '-'}</td>
+                    <td>${item.status}</td>
+                    <td>
+                        <button class="btn sel" onclick="alterarStatus(${item.id}, 'selecionado')">Selecionar</button>
+                        <button class="btn ok" onclick="alterarStatus(${item.id}, 'exibido')">Exibido</button>
+                        <button class="btn arc" onclick="alterarStatus(${item.id}, 'arquivado')">Arquivar</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (!data.length) {
+                tbFila.innerHTML = '<tr><td colspan="6">Sem visitantes autorizados no momento.</td></tr>';
+            }
+        }
+
+        async function loadTelao() {
+            const response = await fetch('/midia/telao/visitantes');
+            const data = await response.json().catch(() => []);
+            if (!response.ok) throw new Error((data && data.error) || 'Erro ao carregar lista do telão.');
+
+            listaTelao.innerHTML = data.map((item) => `
+                <div class="screen-item">
+                    <strong>${item.nome}</strong>
+                    <small>${item.evento} • ${item.cidade || 'Sem cidade'}</small>
+                    ${item.pedido_oracao ? `<div style="margin-top:6px;font-size:12px;color:#334155;">Pedido: ${item.pedido_oracao}</div>` : ''}
+                </div>
+            `).join('');
+
+            if (!data.length) {
+                listaTelao.innerHTML = '<div style="font-size:12px;color:#64748b;">Nenhum visitante selecionado para exibição.</div>';
+            }
+        }
+
+        async function init() {
+            try {
+                await Promise.all([loadFila(), loadTelao()]);
+            } catch (error) {
+                setStatus(error.message, true);
+            }
+        }
+
+        init();
+
+        const midiaStream = window.subscribeRealtime?.('midia.visitantes', () => {
+            init();
+        }, () => {});
+
+        const telaoStream = window.subscribeRealtime?.('midia.telao', () => {
+            loadTelao().catch((error) => setStatus(error.message, true));
+            loadFila().catch((error) => setStatus(error.message, true));
+        }, () => {});
+
+        if (!midiaStream && !telaoStream) {
+            setInterval(init, 15000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+/* Menu recolhível */
+.menu-group .menu-content {
+	display: none;
+}
+.menu-group.open .menu-content {
+	display: block;
+}
+.menu-toggle {
+	cursor: pointer;
+	font-weight: bold;
+	padding: 8px 12px;
+	background: #f3f4f6;
+	border: none;
+	outline: none;
+}

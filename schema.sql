@@ -1,0 +1,56 @@
+CREATE TABLE IF NOT EXISTS situacoes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  descricao VARCHAR(100) NOT NULL,
+  ativo ENUM('Sim','Não') DEFAULT 'Sim',
+  aniversario ENUM('Sim','Não') DEFAULT 'Não',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS cargos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  descricao VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- Esquema mínimo para o MVP (MySQL/MariaDB)
+
+CREATE TABLE IF NOT EXISTS churches (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  church_id INT NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL DEFAULT 'admin',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_users_church FOREIGN KEY (church_id) REFERENCES churches(id)
+);
+
+CREATE TABLE IF NOT EXISTS members (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  church_id INT NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NULL,
+  phone VARCHAR(50) NULL,
+  nickname VARCHAR(100) NULL,
+  birth_date DATE NULL,
+  gender VARCHAR(20) NULL,
+  civil_status VARCHAR(50) NULL,
+  profession VARCHAR(100) NULL,
+  zip_code VARCHAR(20) NULL,
+  address VARCHAR(255) NULL,
+  number VARCHAR(20) NULL,
+  neighborhood VARCHAR(100) NULL,
+  city VARCHAR(100) NULL,
+  state VARCHAR(20) NULL,
+  mobile_phone VARCHAR(50) NULL,
+  cpf VARCHAR(30) NULL,
+  rg VARCHAR(30) NULL,
+  nationality VARCHAR(100) NULL,
+  natural_from VARCHAR(100) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_members_church FOREIGN KEY (church_id) REFERENCES churches(id)
+);

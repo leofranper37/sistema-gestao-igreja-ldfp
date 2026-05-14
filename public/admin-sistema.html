@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logs e Sistema - LDFP Master</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--dark:#0f172a;--panel:#1e293b;--blue:#2563eb;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--bg:#f8fafc;--white:#fff;--text:#334155;--muted:#64748b;--border:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--dark);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}
+.logo-icon{background:linear-gradient(135deg,var(--blue),#60a5fa);width:32px;height:32px;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:800;font-size:14px}
+.sidebar-header h2{font-size:17px;font-weight:800}.sidebar-header span{font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.menu{padding:16px 0;flex:1;overflow-y:auto}
+.menu-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:0 18px;margin:12px 0 6px;font-weight:600}
+.menu-item{padding:11px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.2s;border-left:3px solid transparent}
+.menu-item:hover{background:var(--panel);color:#fff}.menu-item.active{background:var(--panel);border-left-color:var(--blue);color:#fff;font-weight:600}
+.menu-item i{width:18px;text-align:center;font-size:15px}
+.main-content{flex:1;display:flex;flex-direction:column;overflow-y:auto}
+.topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.badge{font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px}
+.badge.live{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.workspace{padding:26px;max-width:1360px;margin:0 auto;width:100%;display:grid;grid-template-columns:1.25fr 1fr;gap:18px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.card-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card-header h3{font-size:15px;font-weight:800;color:var(--dark)}
+.card-body{padding:18px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.form-row input,.form-row textarea,.form-row select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;color:var(--text)}
+.form-row textarea{resize:vertical;min-height:74px}
+.form-row input:focus,.form-row textarea:focus,.form-row select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.switch{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);font-weight:600}
+.switch input{transform:scale(1.1)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:10px}
+.btn{padding:9px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:8px;transition:.2s}
+.btn.primary{background:var(--blue);color:#fff}.btn.primary:hover{background:#1d4ed8}
+.btn.secondary{background:#fff;border:1px solid var(--border);color:var(--text)}.btn.secondary:hover{background:#f8fafc}
+.btn.gold{background:linear-gradient(135deg,#f59e0b,#f97316);color:#111827}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kpi{border:1px solid var(--border);border-radius:10px;padding:12px;background:#fff}
+.kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700}
+.kpi .value{font-size:16px;color:var(--dark);font-weight:800;margin-top:5px}
+.table-wrap{max-height:270px;overflow:auto;border:1px solid var(--border);border-radius:10px}
+table{width:100%;border-collapse:collapse;background:#fff}
+th,td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;text-align:left}
+th{position:sticky;top:0;background:#f8fafc;color:var(--muted);text-transform:uppercase;font-size:10px;letter-spacing:.5px}
+.status{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+.status.on{background:#dcfce7;color:#166534}
+.status.off{background:#fee2e2;color:#991b1b}
+#toast{position:fixed;right:20px;bottom:20px;background:#0f172a;color:#fff;padding:12px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(10px);transition:.25s;z-index:50}
+#toast.show{opacity:1;transform:translateY(0)}
+@media (max-width: 1180px){.workspace{grid-template-columns:1fr}}
+@media (max-width: 720px){.form-grid,.kpi-grid{grid-template-columns:1fr}.topbar{padding:0 14px}.workspace{padding:14px}}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">L</div>
+    <div><h2>LDFP Master</h2><span>Fábrica SaaS</span></div>
+  </div>
+  <div class="menu">
+    <div class="menu-label">Negócio</div>
+    <a href="super-admin.htm" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="admin-igrejas.html" class="menu-item"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+    <a href="admin-assinaturas.html" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Assinaturas & Faturas</a>
+    <a href="admin-retomada.html" class="menu-item"><i class="fa-solid fa-rocket"></i> Retomada Inteligente</a>
+    <div class="menu-label">Configurações SaaS</div>
+    <a href="admin-planos.html" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+    <a href="admin-inovacoes.html" class="menu-item"><i class="fa-solid fa-lightbulb"></i> Fábrica de Inovações</a>
+    <a href="admin-sistema.html" class="menu-item active"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
+    <div class="menu-label" style="margin-top:auto">Sessão</div>
+    <a href="login.html" class="menu-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <header class="topbar">
+    <h1><i class="fa-solid fa-server" style="color:var(--blue);margin-right:8px"></i>Painel de Operações Master</h1>
+    <div class="topbar-right">
+      <span class="badge live"><i class="fa-solid fa-wave-square"></i> Produção Viva</span>
+      <button class="btn secondary" id="refreshBtn"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+    </div>
+  </header>
+
+  <section class="workspace">
+    <article class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-sliders"></i> Configuração Global LDFP</h3>
+        <span style="font-size:11px;color:var(--muted)">Reflete nas telas com shell enterprise</span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Nome da marca</label>
+            <input id="brandName" type="text" placeholder="LDFP">
+          </div>
+          <div class="form-row">
+            <label>Título Master</label>
+            <input id="masterTitle" type="text" placeholder="LDFP Master">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Comunicado global (todas as telas)</label>
+          <textarea id="announcementText" placeholder="Ex: manutenção programada hoje às 22h..."></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Tom do comunicado</label>
+            <select id="announcementTone">
+              <option value="info">Informativo</option>
+              <option value="success">Sucesso</option>
+              <option value="warning">Atenção</option>
+              <option value="danger">Crítico</option>
+            </select>
+          </div>
+          <div class="form-row" style="display:flex;align-items:flex-end">
+            <label class="switch"><input id="announcementEnabled" type="checkbox"> Ativar comunicado global</label>
+          </div>
+        </div>
+
+        <hr style="border:0;border-top:1px solid var(--border);margin:10px 0 12px">
+
+        <h4 style="font-size:13px;color:var(--dark);margin-bottom:10px"><i class="fa-solid fa-crown" style="color:var(--gold)"></i> Exclusivo Plano Sião</h4>
+        <div class="form-row">
+          <label class="switch"><input id="siaoCustomEnabled" type="checkbox"> Habilitar perfil personalizado (Sião)</label>
+        </div>
+        <div class="form-row">
+          <label>Nome comercial do recurso Sião</label>
+          <input id="siaoLabel" type="text" placeholder="Perfil Personalizado Sião">
+        </div>
+        <div class="form-row">
+          <label>Diretriz de inovação (Sião)</label>
+          <textarea id="siaoNotes" placeholder="Explique o que o cliente Sião ganha com personalização avançada..."></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="btn gold" id="checkpointBtn"><i class="fa-solid fa-floppy-disk-circle-arrow-right"></i> Salvar checkpoint</button>
+          <button class="btn primary" id="saveBtn"><i class="fa-solid fa-cloud-arrow-up"></i> Salvar configuração global</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-gauge-high"></i> Observabilidade & Logs</h3>
+        <span style="font-size:11px;color:var(--muted)" id="diagAt">-</span>
+      </div>
+      <div class="card-body">
+        <div class="kpi-grid" style="margin-bottom:12px">
+          <div class="kpi"><div class="label">Branch</div><div class="value" id="kpiBranch">-</div></div>
+          <div class="kpi"><div class="label">Commit</div><div class="value" id="kpiCommit">-</div></div>
+          <div class="kpi"><div class="label">Uptime API</div><div class="value" id="kpiUptime">-</div></div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h4 style="font-size:13px;color:var(--dark)">Backups recentes</h4>
+          <span id="backupStatus" class="status off"><i class="fa-solid fa-circle"></i> Sem dados</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Arquivo</th><th>Tamanho</th><th>Atualizado</th></tr></thead>
+            <tbody id="backupsBody"><tr><td colspan="3">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:14px;font-size:12px;color:var(--muted);line-height:1.6">
+          <strong style="color:var(--text)">Objetivo atual:</strong> <span id="focusObjective">-</span><br>
+          <strong style="color:var(--text)">Último checkpoint:</strong> <span id="lastCheckpoint">-</span>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<script src="session.js"></script>
+<script>
+const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
+const headers = () => ({ 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() });
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+function toSize(bytes){
+  const n = Number(bytes || 0);
+  if (n < 1024) return n + ' B';
+  if (n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
+  return (n/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function roleAllowed(user){
+  const role = String(user?.role || '').toLowerCase();
+  const igreja = String(user?.igreja || '').toLowerCase();
+  const superRoles = new Set(['super-admin','super_admin','superadmin','master','owner','root','super admin']);
+  return superRoles.has(role) || (role === 'admin' && igreja === 'ldfp master');
+}
+
+async function loadConfig(){
+  const r = await fetch('/api/saas/sistema/config', { headers: headers() });
+  if (!r.ok) throw new Error('Falha ao carregar configuração global.');
+  const cfg = await r.json();
+
+  document.getElementById('brandName').value = cfg?.branding?.brandName || 'LDFP';
+  document.getElementById('masterTitle').value = cfg?.branding?.masterTitle || 'LDFP Master';
+  document.getElementById('announcementEnabled').checked = !!cfg?.branding?.globalAnnouncementEnabled;
+  document.getElementById('announcementText').value = cfg?.branding?.globalAnnouncementText || '';
+  document.getElementById('announcementTone').value = cfg?.branding?.globalAnnouncementTone || 'info';
+
+  document.getElementById('siaoCustomEnabled').checked = !!cfg?.plans?.siaoCustomProfileEnabled;
+  document.getElementById('siaoLabel').value = cfg?.plans?.siaoCustomProfileLabel || 'Perfil Personalizado Sião';
+  document.getElementById('siaoNotes').value = cfg?.plans?.siaoInnovationNotes || '';
+}
+
+async function saveConfig(){
+  const payload = {
+    branding: {
+      brandName: document.getElementById('brandName').value.trim(),
+      masterTitle: document.getElementById('masterTitle').value.trim(),
+      globalAnnouncementEnabled: document.getElementById('announcementEnabled').checked,
+      globalAnnouncementText: document.getElementById('announcementText').value.trim(),
+      globalAnnouncementTone: document.getElementById('announcementTone').value
+    },
+    plans: {
+      siaoCustomProfileEnabled: document.getElementById('siaoCustomEnabled').checked,
+      siaoCustomProfileLabel: document.getElementById('siaoLabel').value.trim(),
+      siaoInnovationNotes: document.getElementById('siaoNotes').value.trim()
+    }
+  };
+
+  const r = await fetch('/api/saas/sistema/config', { method: 'PUT', headers: headers(), body: JSON.stringify(payload) });
+  if (!r.ok) throw new Error('Não foi possível salvar configuração global.');
+  toast('Configuração global salva com sucesso.');
+}
+
+async function createCheckpoint(){
+  const note = prompt('Descreva este checkpoint operacional:', 'Checkpoint manual do painel Logs e Sistema');
+  if (!note) return;
+  const r = await fetch('/api/saas/retomada/checkpoint', { method: 'POST', headers: headers(), body: JSON.stringify({ note }) });
+  if (!r.ok) throw new Error('Falha ao salvar checkpoint.');
+  toast('Checkpoint salvo.');
+  await loadDiagnostics();
+}
+
+async function loadDiagnostics(){
+  const r = await fetch('/api/saas/sistema/diagnostico', { headers: headers() });
+  if (!r.ok) throw new Error('Falha ao carregar diagnóstico.');
+  const data = await r.json();
+
+  document.getElementById('diagAt').textContent = 'Atualizado em ' + new Date(data.now).toLocaleString('pt-BR');
+  document.getElementById('kpiBranch').textContent = data?.git?.branch || '-';
+  document.getElementById('kpiCommit').textContent = data?.git?.shortHead || '-';
+  document.getElementById('kpiUptime').textContent = (data?.runtime?.uptimeSec || 0) + 's';
+
+  document.getElementById('focusObjective').textContent = data?.retomada?.focus?.currentObjective || 'Sem objetivo definido';
+  const cp = data?.retomada?.lastCheckpoint;
+  document.getElementById('lastCheckpoint').textContent = cp ? `${cp.note} (${new Date(cp.at).toLocaleString('pt-BR')})` : 'Nenhum';
+
+  const backups = Array.isArray(data?.backups) ? data.backups : [];
+  const tbody = document.getElementById('backupsBody');
+  if (!backups.length) {
+    tbody.innerHTML = '<tr><td colspan="3">Nenhum backup encontrado.</td></tr>';
+    document.getElementById('backupStatus').className = 'status off';
+    document.getElementById('backupStatus').innerHTML = '<i class="fa-solid fa-circle"></i> Sem backups';
+  } else {
+    tbody.innerHTML = backups.map(b => `
+      <tr>
+        <td>${b.name}</td>
+        <td>${toSize(b.size)}</td>
+        <td>${new Date(b.updatedAt).toLocaleString('pt-BR')}</td>
+      </tr>
+    `).join('');
+    document.getElementById('backupStatus').className = 'status on';
+    document.getElementById('backupStatus').innerHTML = '<i class="fa-solid fa-circle"></i> Backup ativo';
+  }
+}
+
+(function guard(){
+  if (!window.requireAuthSession || !window.requireAuthSession()) return;
+  const user = window.getStoredAuth?.()?.user || null;
+  if (!roleAllowed(user)) { window.location.href = 'dashboard.html'; }
+})();
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  try { await saveConfig(); } catch (e) { toast(e.message || 'Erro ao salvar.'); }
+});
+
+document.getElementById('checkpointBtn').addEventListener('click', async () => {
+  try { await createCheckpoint(); } catch (e) { toast(e.message || 'Erro ao salvar checkpoint.'); }
+});
+
+document.getElementById('refreshBtn').addEventListener('click', async () => {
+  try { await Promise.all([loadConfig(), loadDiagnostics()]); toast('Dados atualizados.'); } catch (e) { toast(e.message || 'Falha ao atualizar.'); }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  window.clearAuthSession?.();
+});
+
+(async function init(){
+  try {
+    await Promise.all([loadConfig(), loadDiagnostics()]);
+  } catch (e) {
+    toast(e.message || 'Erro ao iniciar painel.');
+  }
+})();
+</script>
+</body>
+</html>

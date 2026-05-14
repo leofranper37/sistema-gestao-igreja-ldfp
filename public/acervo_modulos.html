@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Acervo de Modulos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .am-wrap { padding: 24px 26px 44px; }
+
+        .am-hero {
+            border-radius: 18px;
+            padding: 20px;
+            color: #e2e8f0;
+            background: radial-gradient(circle at 80% 10%, rgba(14,165,233,.24), rgba(14,165,233,0) 40%),
+                        radial-gradient(circle at 20% 20%, rgba(16,185,129,.22), rgba(16,185,129,0) 42%),
+                        linear-gradient(135deg, #0f172a 0%, #0b3340 52%, #115e59 100%);
+            box-shadow: 0 20px 34px rgba(15,23,42,.22);
+        }
+
+        .am-hero h2 { margin: 0 0 8px; font-size: 30px; line-height: 1.05; }
+        .am-hero p { margin: 0; color: #bfdbfe; max-width: 860px; }
+
+        .am-grid {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 12px;
+        }
+
+        .am-card {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid #d9e4f0;
+            border-radius: 14px;
+            box-shadow: 0 10px 24px rgba(15,23,42,.08);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .am-card-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+        .am-card h3 { margin: 0; color: #0f172a; font-size: 16px; }
+        .am-card p { margin: 0; color: #334155; font-size: 13px; line-height: 1.55; min-height: 60px; }
+
+        .am-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 3px 10px;
+            border: 1px solid;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .am-badge.build { color: #b45309; border-color: #fcd34d; background: #fffbeb; }
+
+        .am-links { margin-top: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .am-btn {
+            text-decoration: none;
+            border-radius: 9px;
+            padding: 9px 11px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: transform .12s ease, filter .12s ease;
+        }
+
+        .am-btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+        .am-btn.primary { color: #fff; background: linear-gradient(135deg, #0ea5e9, #0f766e); }
+        .am-btn.secondary { color: #1e293b; background: #e2e8f0; }
+
+        @media (max-width: 900px) {
+            .am-wrap { padding: 16px; }
+            .am-hero h2 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Acervo de Modulos" data-shell-breadcrumb="LDFP / Plataforma / Acervo" data-shell-active="construcao.html" data-shell-chip="Product Studio" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <section class="am-wrap">
+            <article class="am-hero">
+                <h2>Fabrica de Inovacoes LDFP</h2>
+                <p>Este acervo foi movido para o painel super-admin, onde apenas o LDFP Master cria e publica novos menus e modulos para os clientes.</p>
+            </article>
+
+            <div class="am-grid" id="amGrid"></div>
+        </section>
+    </main>
+
+    <script src="session.js"></script>
+    <script src="enterprise-shell.js"></script>
+    <script>
+        requireAuthSession();
+
+        function roleAllowed(user){
+            const role = String(user?.role || '').toLowerCase();
+            const igreja = String(user?.igreja || '').toLowerCase();
+            const superRoles = new Set(['super-admin','super_admin','superadmin','master','owner','root','super admin']);
+            return superRoles.has(role) || (role === 'admin' && igreja === 'ldfp master');
+        }
+
+        (function guard(){
+            const user = window.getStoredAuth?.()?.user || null;
+            if (roleAllowed(user)) {
+                window.location.href = 'admin-inovacoes.html';
+                return;
+            }
+            const gridRef = document.getElementById('amGrid');
+            if (gridRef) {
+                gridRef.innerHTML = '<article class="am-card"><h3>Acesso restrito</h3><p>A criacao e publicacao de inovacoes agora e exclusiva do painel super-admin.</p><div class="am-links"><a class="am-btn secondary" href="dashboard.html">Voltar ao painel</a></div></article>';
+            }
+        })();
+
+        const modules = [
+            ['Importacao de Extrato', 'Concilia arquivos bancarios em lote com seguranca e rastreabilidade.'],
+            ['Recibo', 'Emissao de recibo com identificador unico e trilha de auditoria.'],
+            ['Transferencias', 'Fluxo de transferencia entre contas com aprovacao por perfil.'],
+            ['Plano de Contas', 'Estrutura contabil pronta para governanca e relatorios executivos.'],
+            ['Balancete de Abertura', 'Abertura de exercicio contabil com validacoes inteligentes.'],
+            ['Lancamentos Contabeis', 'Modulo operacional para debito e credito com consistencia.'],
+            ['Encerramento do Exercicio', 'Fechamento anual com checklist e trava de seguranca.'],
+            ['Graficos Secretaria', 'Painel de crescimento ministerial com visao por periodo e congregacao.'],
+            ['Graficos Tesouraria', 'Indicadores financeiros para decisoes rapidas e precisas.'],
+            ['Relatorios Secretaria', 'Relatorios de membros e visitantes com filtros avancados.'],
+            ['Relatorios Tesouraria', 'Relatorios de caixa, bancos e compromissos financeiros.'],
+            ['Relatorios Contabilidade', 'Relatorios contabeis para diretoria, conselho e compliance.']
+        ];
+
+        const grid = document.getElementById('amGrid');
+        if (grid && !grid.children.length) {
+            grid.innerHTML = modules.map((mod) => {
+            const page = encodeURIComponent(mod[0]);
+            return `
+                <article class="am-card">
+                    <div class="am-card-top">
+                        <h3>${mod[0]}</h3>
+                        <span class="am-badge build">Em desenvolvimento</span>
+                    </div>
+                    <p>${mod[1]}</p>
+                    <div class="am-links">
+                        <a class="am-btn primary" href="construcao.html?pag=${page}">Abrir blueprint</a>
+                        <a class="am-btn secondary" href="dashboard.html">Visao geral</a>
+                    </div>
+                </article>
+            `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

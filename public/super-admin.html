@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Admin - LDFP SaaS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Paleta SaaS Master (Mais escura e executiva) */
+            --master-dark: #0f172a; 
+            --master-panel: #1e293b;
+            --primary-blue: #2563eb; 
+            --action-green: #10b981; 
+            --warning-orange: #f59e0b;
+            --danger-red: #ef4444;
+            --bg-light: #f8fafc; 
+            --white: #ffffff;
+            --text-dark: #334155; 
+            --text-muted: #64748b; 
+            --border-color: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { display: flex; background-color: var(--bg-light); color: var(--text-dark); height: 100vh; overflow: hidden; }
+
+        /* MENU LATERAL SUPER ADMIN */
+        .sidebar { width: 280px; background-color: var(--master-dark); color: var(--white); display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; }
+        .sidebar-header .logo-icon { background: linear-gradient(135deg, var(--primary-blue), #60a5fa); width: 35px; height: 35px; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+        .sidebar-header h2 { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
+        .sidebar-header span { display: block; font-size: 11px; color: var(--action-green); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+        .menu { padding: 20px 0; flex: 1; }
+        .menu-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; padding: 0 20px; margin-bottom: 10px; font-weight: 600; }
+        .menu-item { padding: 12px 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; color: #cbd5e1; text-decoration: none; font-size: 14px; transition: 0.2s; border-left: 3px solid transparent; }
+        .menu-item:hover { background-color: var(--master-panel); color: var(--white); }
+        .menu-item.active { background-color: var(--master-panel); border-left-color: var(--primary-blue); color: var(--white); font-weight: 600; }
+        .menu-item i { width: 20px; text-align: center; font-size: 16px; }
+
+        /* CONTEÚDO PRINCIPAL */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar { background-color: var(--white); height: 70px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; flex-shrink: 0; }
+        .search-global { display: flex; align-items: center; background-color: var(--bg-light); padding: 8px 15px; border-radius: 8px; width: 300px; border: 1px solid var(--border-color); }
+        .search-global input { border: none; background: transparent; outline: none; margin-left: 10px; width: 100%; font-size: 14px; }
+        
+        .admin-profile { display: flex; align-items: center; gap: 15px; }
+        .admin-profile img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--border-color); }
+
+        .workspace { padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; }
+        
+        .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
+        .page-header h1 { font-size: 28px; color: var(--master-dark); margin-bottom: 5px; font-weight: 800; }
+        .page-header p { color: var(--text-muted); font-size: 15px; }
+
+        /* KPIs (Indicadores de Performance) */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background-color: var(--white); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s; }
+        .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .kpi-info h3 { font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 8px; }
+        .kpi-info .value { font-size: 28px; font-weight: 800; color: var(--master-dark); }
+        .kpi-info .trend { font-size: 12px; font-weight: 600; margin-top: 5px; display: inline-block; }
+        .trend.up { color: var(--action-green); }
+        .trend.down { color: var(--danger-red); }
+        .kpi-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 20px; }
+        .icon-blue { background-color: #eff6ff; color: var(--primary-blue); }
+        .icon-green { background-color: #ecfdf5; color: var(--action-green); }
+        .icon-orange { background-color: #fffbeb; color: var(--warning-orange); }
+
+        /* Tabela de Igrejas/Clientes */
+        .panel-card { background-color: var(--white); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0,0,0,0.02); overflow: hidden; }
+        .panel-header { padding: 20px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .panel-header h3 { font-size: 16px; font-weight: 700; color: var(--master-dark); }
+        .btn-outline { padding: 8px 15px; border: 1px solid var(--border-color); background: transparent; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-dark); transition: 0.2s; }
+        .btn-outline:hover { background-color: var(--bg-light); border-color: #cbd5e1; }
+
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 15px 25px; text-align: left; font-size: 14px; border-bottom: 1px solid var(--border-color); }
+        .data-table th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .data-table tbody tr:hover { background-color: #f8fafc; }
+        
+        .client-info { display: flex; align-items: center; gap: 12px; }
+        .client-avatar { width: 35px; height: 35px; border-radius: 8px; background-color: var(--master-dark); color: var(--white); display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; }
+        .client-details strong { display: block; color: var(--master-dark); margin-bottom: 2px; }
+        .client-details span { font-size: 12px; color: var(--text-muted); }
+
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-active { background-color: #dcfce7; color: #166534; }
+        .status-trial { background-color: #fef9c3; color: #854d0e; }
+        .status-blocked { background-color: #fee2e2; color: #991b1b; }
+
+        .plan-badge { font-weight: 700; color: var(--primary-blue); }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-icon">L</div>
+            <div>
+                <h2>LDFP Master</h2>
+                <span>Painel SaaS</span>
+            </div>
+        </div>
+        
+        <div class="menu">
+            <div class="menu-label">Negócio</div>
+            <a href="#" class="menu-item active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="#" class="menu-item"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+            <a href="#" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Assinaturas & Faturas</a>
+            
+            <div class="menu-label" style="margin-top: 20px;">Configurações SaaS</div>
+            <a href="#" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+            <a href="admin-modulos.html" class="menu-item"><i class="fa-solid fa-puzzle-piece"></i> Catálogo de Módulos</a>
+            <a href="#" class="menu-item"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="search-global">
+                <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted);"></i>
+                <input id="globalSearch" type="text" placeholder="Buscar por igreja, CNPJ ou responsável...">
+            </div>
+            <div class="admin-profile">
+                <i class="fa-regular fa-bell" style="font-size: 20px; color: var(--text-muted); cursor: pointer;"></i>
+                <img id="adminAvatar" src="https://ui-avatars.com/api/?name=Admin+LDFP&background=0f172a&color=fff" alt="Admin">
+                <button id="logoutBtn" class="btn-outline">Sair</button>
+            </div>
+        </header>
+
+        <div class="workspace">
+            <div class="page-header">
+                <div>
+                    <h1>Visão Geral do Negócio</h1>
+                    <p>Acompanhe o crescimento do LDFP Gestão em tempo real.</p>
+                </div>
+                <button id="newChurchBtn" class="btn-outline" style="background-color: var(--master-dark); color: var(--white); border: none; padding: 10px 20px;">
+                    <i class="fa-solid fa-plus"></i> Cadastrar Igreja Manualmente
+                </button>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Faturamento Mensal (MRR)</h3>
+                        <div id="kpiMrr" class="value">R$ 0,00</div>
+                        <span class="trend up"><i class="fa-solid fa-chart-column"></i> Receita atual</span>
+                    </div>
+                    <div class="kpi-icon icon-green"><i class="fa-solid fa-sack-dollar"></i></div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Igrejas Ativas</h3>
+                        <div id="kpiActiveChurches" class="value">0</div>
+                        <span class="trend up"><i class="fa-solid fa-church"></i> Base ativa</span>
+                    </div>
+                    <div class="kpi-icon icon-blue"><i class="fa-solid fa-church"></i></div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-info">
+                        <h3>Aguardando Pagamento</h3>
+                        <div id="kpiPendingPayments" class="value">0</div>
+                        <span id="kpiPendingAmount" class="trend down"><i class="fa-solid fa-triangle-exclamation"></i> R$ 0,00 pendentes</span>
+                    </div>
+                    <div class="kpi-icon icon-orange"><i class="fa-solid fa-file-invoice"></i></div>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h3>Últimas Assinaturas e Atualizações</h3>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
+                        <select id="statusFilter" class="btn-outline" style="padding: 8px 10px;">
+                            <option value="">Todos os status</option>
+                            <option value="ativa">Ativo</option>
+                            <option value="trial">Trial</option>
+                            <option value="inativa">Inativo</option>
+                            <option value="cancelada">Cancelado</option>
+                            <option value="suspensa">Suspenso</option>
+                        </select>
+                        <select id="planFilter" class="btn-outline" style="padding: 8px 10px;">
+                            <option value="">Todos os planos</option>
+                        </select>
+                        <button id="refreshBtn" class="btn-outline">Atualizar</button>
+                        <span id="lastSyncAt" style="font-size: 12px; color: var(--text-muted);">Sincronizando...</span>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Igreja / Cliente</th>
+                            <th>Plano Atual</th>
+                            <th>Membros Ativos</th>
+                            <th>Status</th>
+                            <th>Próximo Vencimento</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted);">Carregando dados...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script>
+        (function () {
+            const superAdminRoles = new Set(['super-admin', 'super_admin', 'superadmin', 'master', 'owner', 'root', 'admin', 'administrador']);
+            let allCustomers = [];
+            let autoRefreshHandle = null;
+
+            function formatCurrencyBRL(value) {
+                const amount = Number(value || 0);
+                return amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            }
+
+            function formatDate(value) {
+                if (!value) {
+                    return '-';
+                }
+
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) {
+                    return '-';
+                }
+
+                return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+            }
+
+            function escapeHtml(text) {
+                return String(text || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function getStatusBadge(status) {
+                const normalized = String(status || '').toLowerCase();
+                if (normalized === 'ativa') {
+                    return { className: 'status-active', label: 'Ativo' };
+                }
+
+                if (normalized === 'trial') {
+                    return { className: 'status-trial', label: 'Trial' };
+                }
+
+                if (normalized === 'inativa' || normalized === 'cancelada' || normalized === 'suspensa') {
+                    return { className: 'status-blocked', label: 'Inativo' };
+                }
+
+                return { className: 'status-blocked', label: normalized ? normalized.toUpperCase() : 'Sem status' };
+            }
+
+            function getCurrentUser() {
+                return window.getStoredAuth?.()?.user || null;
+            }
+
+            function isSuperAdmin(user) {
+                const role = String(user?.role || user?.perfil || '').trim().toLowerCase();
+                return superAdminRoles.has(role);
+            }
+
+            function setupHeaderProfile(user) {
+                const name = user?.nome || 'Master Admin';
+                const avatar = document.getElementById('adminAvatar');
+
+                if (avatar) {
+                    avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0f172a&color=fff`;
+                    avatar.alt = name;
+                }
+            }
+
+            function setupSearch() {
+                const input = document.getElementById('globalSearch');
+                if (!input) {
+                    return;
+                }
+
+                input.addEventListener('input', () => {
+                    applyTableFilters();
+                });
+            }
+
+            function setLastSyncNow() {
+                const target = document.getElementById('lastSyncAt');
+                if (!target) {
+                    return;
+                }
+
+                const now = new Date();
+                target.textContent = `Atualizado às ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+            }
+
+            function updatePlanFilterOptions(customers) {
+                const planFilter = document.getElementById('planFilter');
+                if (!planFilter) {
+                    return;
+                }
+
+                const selectedValue = planFilter.value;
+                const uniquePlans = Array.from(
+                    new Set(
+                        (customers || [])
+                            .map((item) => String(item?.plano || '').trim())
+                            .filter(Boolean)
+                    )
+                ).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+                planFilter.innerHTML = '<option value="">Todos os planos</option>';
+                uniquePlans.forEach((plan) => {
+                    const option = document.createElement('option');
+                    option.value = plan.toLowerCase();
+                    option.textContent = plan;
+                    planFilter.appendChild(option);
+                });
+
+                if (selectedValue && Array.from(planFilter.options).some((option) => option.value === selectedValue)) {
+                    planFilter.value = selectedValue;
+                }
+            }
+
+            function applyTableFilters() {
+                const searchInput = document.getElementById('globalSearch');
+                const statusFilter = document.getElementById('statusFilter');
+                const planFilter = document.getElementById('planFilter');
+
+                const term = String(searchInput?.value || '').trim().toLowerCase();
+                const status = String(statusFilter?.value || '').trim().toLowerCase();
+                const plan = String(planFilter?.value || '').trim().toLowerCase();
+
+                const filtered = allCustomers.filter((item) => {
+                    const rowText = [
+                        item?.nome,
+                        item?.responsavel_nome,
+                        item?.responsavel_email,
+                        item?.plano,
+                        item?.status_assinatura
+                    ].join(' ').toLowerCase();
+
+                    const matchesSearch = !term || rowText.includes(term);
+                    const matchesStatus = !status || String(item?.status_assinatura || '').toLowerCase() === status;
+                    const matchesPlan = !plan || String(item?.plano || '').toLowerCase() === plan;
+
+                    return matchesSearch && matchesStatus && matchesPlan;
+                });
+
+                renderCustomers(filtered);
+            }
+
+            function setupTableFilters() {
+                const statusFilter = document.getElementById('statusFilter');
+                const planFilter = document.getElementById('planFilter');
+
+                if (statusFilter) {
+                    statusFilter.addEventListener('change', applyTableFilters);
+                }
+
+                if (planFilter) {
+                    planFilter.addEventListener('change', applyTableFilters);
+                }
+            }
+
+            function renderCustomers(customers) {
+                const tableBody = document.getElementById('customersTableBody');
+                if (!tableBody) {
+                    return;
+                }
+
+                if (!Array.isArray(customers) || !customers.length) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Nenhuma igreja encontrada.</td></tr>';
+                    return;
+                }
+
+                tableBody.innerHTML = customers.map((item) => {
+                    const churchName = item.nome || 'Sem nome';
+                    const initials = churchName.split(' ').filter(Boolean).slice(0, 2).map((part) => part.charAt(0)).join('').toUpperCase() || 'IG';
+                    const memberCount = Number(item.membros_ativos || 0);
+                    const maxMembers = Number(item.max_cadastros || 0);
+                    const badge = getStatusBadge(item.status_assinatura);
+                    const responsibleName = item.responsavel_nome || 'Sem responsavel';
+                    const responsibleEmail = item.responsavel_email || 'Sem email';
+
+                    return `
+                        <tr>
+                            <td>
+                                <div class="client-info">
+                                    <div class="client-avatar">${escapeHtml(initials)}</div>
+                                    <div class="client-details">
+                                        <strong>${escapeHtml(churchName)}</strong>
+                                        <span>${escapeHtml(responsibleName)} - ${escapeHtml(responsibleEmail)}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="plan-badge">${escapeHtml(item.plano || '-')}</span></td>
+                            <td>${memberCount} / ${maxMembers || '-'}</td>
+                            <td><span class="status-badge ${badge.className}">${escapeHtml(badge.label)}</span></td>
+                            <td>${escapeHtml(formatDate(item.trial_ends_at || item.created_at))}</td>
+                            <td><i class="fa-solid fa-ellipsis-vertical" style="cursor: pointer; padding: 5px;"></i></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            function applyKpis(kpis) {
+                const mrr = document.getElementById('kpiMrr');
+                const activeChurches = document.getElementById('kpiActiveChurches');
+                const pendingPayments = document.getElementById('kpiPendingPayments');
+                const pendingAmount = document.getElementById('kpiPendingAmount');
+
+                if (mrr) {
+                    mrr.textContent = formatCurrencyBRL(kpis?.mrr);
+                }
+                if (activeChurches) {
+                    activeChurches.textContent = String(Number(kpis?.activeChurches || 0));
+                }
+                if (pendingPayments) {
+                    pendingPayments.textContent = String(Number(kpis?.pendingPayments || 0));
+                }
+                if (pendingAmount) {
+                    pendingAmount.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${escapeHtml(formatCurrencyBRL(kpis?.pendingAmount))} pendentes`;
+                }
+            }
+
+            async function loadOverview() {
+                const response = await fetch('/super-admin/overview');
+                if (!response.ok) {
+                    throw new Error('Nao foi possivel carregar os dados do super-admin.');
+                }
+
+                const payload = await response.json();
+                applyKpis(payload?.kpis || {});
+                allCustomers = Array.isArray(payload?.customers) ? payload.customers : [];
+                updatePlanFilterOptions(allCustomers);
+                applyTableFilters();
+                setLastSyncNow();
+            }
+
+            function setupActions() {
+                const logoutBtn = document.getElementById('logoutBtn');
+                const newChurchBtn = document.getElementById('newChurchBtn');
+                const refreshBtn = document.getElementById('refreshBtn');
+
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', () => {
+                        window.clearAuthSession?.();
+                        window.location.href = 'login.html';
+                    });
+                }
+
+                if (newChurchBtn) {
+                    newChurchBtn.addEventListener('click', () => {
+                        window.location.href = 'criar_conta.html';
+                    });
+                }
+
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', () => {
+                        loadOverview().catch(() => {
+                            const tableBody = document.getElementById('customersTableBody');
+                            if (tableBody && !tableBody.children.length) {
+                                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger-red);">Erro ao carregar dados do painel.</td></tr>';
+                            }
+                        });
+                    });
+                }
+            }
+
+            function setupAutoRefresh() {
+                if (autoRefreshHandle) {
+                    clearInterval(autoRefreshHandle);
+                }
+
+                autoRefreshHandle = setInterval(() => {
+                    loadOverview().catch(() => {
+                        // Keep last successful data on screen when refresh fails.
+                    });
+                }, 30000);
+            }
+
+            if (!window.requireAuthSession || !window.requireAuthSession()) {
+                return;
+            }
+
+            const user = getCurrentUser();
+
+            if (!isSuperAdmin(user)) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            setupHeaderProfile(user);
+            setupSearch();
+            setupTableFilters();
+            setupActions();
+            setupAutoRefresh();
+
+            loadOverview().catch(() => {
+                const tableBody = document.getElementById('customersTableBody');
+                if (tableBody) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger-red);">Erro ao carregar dados do painel.</td></tr>';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LDFP - Novo Banco</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="theme-azul-verde">
+  <main class="main-content">
+    <div class="caixa-card" style="max-width:800px;margin:40px auto;">
+      <div style="background:#ffc107;padding:20px;margin:-25px -25px 25px -25px;border-radius:8px 8px 0 0;display:flex;align-items:center;gap:15px;">
+        <span style="font-size:1.5rem;">🏦</span>
+        <h3 style="margin:0;color:#000;">Cadastro de Banco</h3>
+      </div>
+
+      <form id="formNovoBanco">
+        <div class="input-grid" style="grid-template-columns:2fr 1fr;">
+          <div class="input-group">
+            <label>NOME DO BANCO *</label>
+            <input type="text" id="nomeBanco" placeholder="Ex: Banco do Brasil" required>
+          </div>
+          <div class="input-group">
+            <label>CÓDIGO (OPCIONAL)</label>
+            <input type="text" id="codigo" placeholder="Ex: 001">
+          </div>
+        </div>
+
+        <div class="input-grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:20px;">
+          <div class="input-group">
+            <label>AGÊNCIA</label>
+            <input type="text" id="agencia">
+          </div>
+          <div class="input-group">
+            <label>CONTA</label>
+            <input type="text" id="conta">
+          </div>
+          <div class="input-group">
+            <label>SALDO INICIAL (R$)</label>
+            <input type="number" step="0.01" id="saldoInicial" value="0.00">
+          </div>
+        </div>
+
+        <div style="margin-top:25px;display:flex;justify-content:flex-end;gap:10px;">
+          <button type="button" class="btn-caixa btn-voltar-caixa" onclick="history.back()" style="width:auto;">VOLTAR</button>
+          <button type="submit" class="btn-caixa btn-salvar-caixa" style="width:auto;padding:10px 40px;">💾 SALVAR BANCO</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="session.js?v=20260501"></script>
+  <script>
+    requireAuthSession();
+
+    document.getElementById('formNovoBanco').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const payload = {
+        nomeBanco: document.getElementById('nomeBanco').value.trim(),
+        codigo: document.getElementById('codigo').value.trim(),
+        agencia: document.getElementById('agencia').value.trim(),
+        conta: document.getElementById('conta').value.trim(),
+        saldoInicial: parseFloat(document.getElementById('saldoInicial').value || 0)
+      };
+
+      if (!payload.nomeBanco) {
+        alert('Informe o nome do banco.');
+        return;
+      }
+
+      try {
+        const resp = await fetch('/api/bancos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!resp.ok) throw new Error('Erro');
+        alert('Banco cadastrado com sucesso!');
+        window.location.href = 'bancos.html';
+      } catch (err) {
+        console.error(err);
+        alert('Falha ao salvar banco.');
+      }
+    });
+  </script>
+</body>
+</html>

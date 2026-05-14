@@ -1,0 +1,27 @@
+RewriteEngine On
+
+# Nunca exibir listagem de diretórios no domínio raiz.
+Options -Indexes
+
+# Forca HTTPS (considera tambem cabecalho de proxy/reverse proxy).
+RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Preserva Authorization para APIs protegidas por Bearer token.
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+# Em hospedagem compartilhada, este projeto fica com código na raiz e front em /public.
+# Reescreve a URL raiz para /public e trata /public como web root.
+RewriteRule ^$ /public/ [L]
+
+# Mantém /api intacto (pode ser tratado por Node/Passenger quando ativo).
+RewriteCond %{REQUEST_URI} !^/api(?:/|$) [NC]
+RewriteCond %{REQUEST_URI} !^/public(?:/|$) [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /public/$1 [L]
+
+# Nao faca proxy manual para 127.0.0.1:3000 aqui.
+# No cPanel, o Setup Node.js App (Passenger) ja encaminha as requisicoes.

@@ -1,0 +1,335 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Congregações</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap {
+            padding: 24px 30px 30px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .title-area h2 {
+            margin: 0;
+            color: #0f172a;
+        }
+
+        .title-area small {
+            color: #64748b;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .filters,
+        .table-card,
+        .form-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .filters {
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr);
+            gap: 10px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .field input,
+        .field select {
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 9px 10px;
+            font-size: 13px;
+        }
+
+        .filters-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .form-card {
+            display: none;
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+
+        .form-card.active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .table-card {
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eef2f7;
+            text-align: left;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        th {
+            background: #f8fafc;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
+        .row-actions button {
+            border: none;
+            border-radius: 6px;
+            padding: 6px 8px;
+            margin-right: 6px;
+            cursor: pointer;
+        }
+
+        .row-actions .remove {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status-msg {
+            margin: 8px 0 14px;
+            font-size: 13px;
+            color: #047857;
+        }
+
+        .status-msg.error {
+            color: #b91c1c;
+        }
+
+        @media (max-width: 900px) {
+            .filters-grid,
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Congregações" data-shell-breadcrumb="LDFP / Secretaria / Congregações" data-shell-active="congregacoes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <div class="page-header">
+                <div class="title-area">
+                    <h2>Congregações</h2>
+                    <small>Gestão de unidades e vínculos da secretaria</small>
+                </div>
+                <button class="btn-primary" type="button" id="toggleFormBtn"><i class="fa-solid fa-plus"></i> Nova Congregação</button>
+            </div>
+
+            <div class="filters">
+                <div class="filters-grid">
+                    <div class="field">
+                        <label for="filterNome">Nome</label>
+                        <input id="filterNome" type="text" placeholder="Pesquisar por nome...">
+                    </div>
+                    <div class="field">
+                        <label for="filterCidade">Cidade</label>
+                        <input id="filterCidade" type="text" placeholder="Pesquisar por cidade...">
+                    </div>
+                </div>
+                <div class="filters-actions">
+                    <button class="btn-secondary" type="button" id="clearFiltersBtn">Limpar</button>
+                    <button class="btn-primary" type="button" id="applyFiltersBtn">Filtrar</button>
+                </div>
+            </div>
+
+            <form class="form-card" id="formCard">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="nomeCongregacao">Nome</label>
+                        <input id="nomeCongregacao" type="text" required>
+                    </div>
+                    <div class="field">
+                        <label for="cidadeCongregacao">Cidade</label>
+                        <input id="cidadeCongregacao" type="text" required>
+                    </div>
+                    <div class="field">
+                        <label for="pastorCongregacao">Pastor Responsável</label>
+                        <input id="pastorCongregacao" type="text">
+                    </div>
+                </div>
+                <div class="filters-actions">
+                    <button class="btn-primary" type="submit">Salvar</button>
+                    <button class="btn-secondary" type="button" id="cancelFormBtn">Cancelar</button>
+                </div>
+            </form>
+
+            <div id="statusMsg" class="status-msg"></div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Cidade</th>
+                            <th>Pastor Responsável</th>
+                            <th style="width:140px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rowsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const baseData = [
+            { id: 1, nome: 'Sede Central', cidade: 'São Paulo', pastor: 'Pr. Daniel Ramos' },
+            { id: 2, nome: 'Congregação Jardim Norte', cidade: 'São Paulo', pastor: 'Pr. Carlos Menezes' },
+            { id: 3, nome: 'Congregação Bela Vista', cidade: 'Guarulhos', pastor: 'Pr. Marcos Elias' },
+            { id: 4, nome: 'Congregação Nova Aliança', cidade: 'Osasco', pastor: 'Pr. Tiago Souza' }
+        ];
+
+        let state = [...baseData];
+        let filtered = [...baseData];
+
+        const rowsBody = document.getElementById('rowsBody');
+        const formCard = document.getElementById('formCard');
+        const statusMsg = document.getElementById('statusMsg');
+
+        function setStatus(text, isError = false) {
+            statusMsg.textContent = text;
+            statusMsg.classList.toggle('error', isError);
+        }
+
+        function renderRows(list) {
+            rowsBody.innerHTML = '';
+            if (!list.length) {
+                rowsBody.innerHTML = '<tr><td colspan="4" style="color:#94a3b8;">Nenhuma congregação encontrada.</td></tr>';
+                return;
+            }
+
+            rowsBody.innerHTML = list.map((item) => `
+                <tr>
+                    <td>${item.nome}</td>
+                    <td>${item.cidade}</td>
+                    <td>${item.pastor || '-'}</td>
+                    <td class="row-actions">
+                        <button class="remove" onclick="removerCongregacao(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function aplicarFiltros() {
+            const nome = document.getElementById('filterNome').value.trim().toLowerCase();
+            const cidade = document.getElementById('filterCidade').value.trim().toLowerCase();
+
+            filtered = state.filter((item) => {
+                const matchNome = !nome || item.nome.toLowerCase().includes(nome);
+                const matchCidade = !cidade || item.cidade.toLowerCase().includes(cidade);
+                return matchNome && matchCidade;
+            });
+
+            renderRows(filtered);
+        }
+
+        function toggleForm(show) {
+            formCard.classList.toggle('active', show);
+        }
+
+        window.removerCongregacao = function(id) {
+            if (!confirm('Deseja excluir esta congregação?')) return;
+            state = state.filter((item) => item.id !== id);
+            aplicarFiltros();
+            setStatus('Congregação removida com sucesso!');
+        };
+
+        document.getElementById('toggleFormBtn').addEventListener('click', () => toggleForm(true));
+        document.getElementById('cancelFormBtn').addEventListener('click', () => toggleForm(false));
+        document.getElementById('applyFiltersBtn').addEventListener('click', aplicarFiltros);
+        document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+            document.getElementById('filterNome').value = '';
+            document.getElementById('filterCidade').value = '';
+            filtered = [...state];
+            renderRows(filtered);
+        });
+
+        formCard.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const nome = document.getElementById('nomeCongregacao').value.trim();
+            const cidade = document.getElementById('cidadeCongregacao').value.trim();
+            const pastor = document.getElementById('pastorCongregacao').value.trim();
+
+            if (!nome || !cidade) {
+                setStatus('Informe nome e cidade para cadastrar.', true);
+                return;
+            }
+
+            state.push({ id: Date.now(), nome, cidade, pastor });
+            aplicarFiltros();
+            setStatus('Congregação cadastrada com sucesso!');
+            formCard.reset();
+            toggleForm(false);
+        });
+
+        renderRows(filtered);
+    </script>
+</body>
+</html>

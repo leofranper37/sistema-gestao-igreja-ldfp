@@ -1,0 +1,34 @@
+[
+  {
+    "slug": "eden",
+    "nome": "Eden",
+    "subtitulo": "Comece sem custo",
+    "preco_mensal": 0,
+    "preco_anual": 0,
+    "features_json": "[\"App Web Instalavel (PWA)\",\"40 cadastros\",\"1 congregacao\",\"Recursos essenciais para iniciar\"]"
+  },
+  {
+    "slug": "hebrom",
+    "nome": "Hebrom",
+    "subtitulo": "Igrejas em formacao",
+    "preco_mensal": 50,
+    "preco_anual": 500,
+    "features_json": "[\"App Web Instalavel (PWA)\",\"150 cadastros\",\"1 congregacao\",\"Suporte via e-mail\"]"
+  },
+  {
+    "slug": "betel",
+    "nome": "Betel",
+    "subtitulo": "Igrejas em crescimento",
+    "preco_mensal": 80,
+    "preco_anual": 800,
+    "features_json": "[\"App do Membro\",\"300 cadastros\",\"5 congregacoes\",\"Suporte via e-mail e WhatsApp\"]"
+  },
+  {
+    "slug": "siao",
+    "nome": "Siao",
+    "subtitulo": "Operacao avancada",
+    "preco_mensal": 100,
+    "preco_anual": 1000,
+    "features_json": "[\"App do Membro\",\"500 cadastros\",\"10 congregacoes\",\"Suporte prioritario\"]"
+  }
+]

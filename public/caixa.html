@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>LDFP - Lançamentos de Caixa</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="theme-azul-verde">
+
+    <main class="main-content">
+        <div class="pagina-topo">
+            <div>
+                <h1>Lançamentos de Caixa</h1>
+                <div class="breadcrumb">Meu LDFP › Tesouraria › Caixa</div>
+            </div>
+            <div style="align-self:center;color:#6b7280;">Caixa Ativo: <strong>04/2026</strong></div>
+        </div>
+
+        <div class="caixa-container">
+            <div class="caixa-card">
+                <div class="competencia-badge">
+                    <span>📅</span>
+                    <span>Abril 2026</span>
+                    <small style="font-weight:normal;margin-left:8px;color:#666;">(Competência Aberta)</small>
+                </div>
+
+                <form id="formCaixa">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div class="input-group">
+                            <label>DATA DO LANÇAMENTO</label>
+                            <input type="date" id="data" value="2026-04-17">
+                        </div>
+                        <div class="input-group">
+                            <label>Nº DOCUMENTO (OPCIONAL)</label>
+                            <input type="text" id="doc" placeholder="Ex: 123">
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>HISTÓRICO / DESCRIÇÃO</label>
+                        <input type="text" id="historico" placeholder="Ex: Pagamento Luz Março" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div class="input-group">
+                            <label>VALOR (R$)</label>
+                            <input type="number" step="0.01" id="valor" placeholder="0,00" required>
+                        </div>
+                        <div class="input-group">
+                            <label>TIPO DE OPERAÇÃO</label>
+                            <select id="tipo">
+                                <option value="ENTRADA">🟢 Crédito (Entrada)</option>
+                                <option value="SAIDA">🔴 Débito (Saída)</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="resumo-caixa">
+                <div class="caixa-card">
+                    <div style="text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+                        <small style="color: #999; text-transform: uppercase;">Resumo do Lançamento</small>
+                    </div>
+                    
+                    <div class="resumo-item">
+                        <span>Valor:</span>
+                        <span id="resumoValor" class="valor-grande">R$ 0,00</span>
+                    </div>
+                    
+                    <div class="resumo-item">
+                        <span>Tipo:</span>
+                        <span id="resumoTipo" style="font-weight: bold;">-</span>
+                    </div>
+
+                    <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn-caixa btn-salvar-caixa" id="btnSalvarCaixa">💾 SALVAR LANÇAMENTO</button>
+                        <a href="caixa_lancamentos.html" class="btn-caixa btn-voltar-caixa" style="display:inline-block;text-align:center;padding-top:10px;text-decoration:none;">⬅ VOLTAR</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        // Atualizar resumo em tempo real
+        const valorEl = document.getElementById('valor');
+        const tipoEl = document.getElementById('tipo');
+
+        if (valorEl) valorEl.addEventListener('input', function(e) {
+            const val = parseFloat(e.target.value || 0);
+            document.getElementById('resumoValor').innerText = `R$ ${val.toLocaleString('pt-br', {minimumFractionDigits: 2})}`;
+        });
+
+        if (tipoEl) tipoEl.addEventListener('change', function(e) {
+            document.getElementById('resumoTipo').innerText = e.target.value;
+        });
+
+        document.getElementById('btnSalvarCaixa').addEventListener('click', async function(e) {
+            e.preventDefault();
+            const data = document.getElementById('data').value;
+            const doc = document.getElementById('doc').value;
+            const historico = document.getElementById('historico').value;
+            const valor = parseFloat(document.getElementById('valor').value || 0);
+            const tipo = document.getElementById('tipo').value;
+
+            // Simples validação
+            if (!historico || !valor) {
+                alert('Preencha histórico e valor.');
+                return;
+            }
+
+            try {
+                // Substitua a URL pela sua rota real
+                const resp = await fetch('/transacoes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ descricao: historico, valor, tipo: tipo.toLowerCase() })
+                });
+
+                if (!resp.ok) throw new Error('Erro ao salvar');
+
+                alert('Lançamento salvo com sucesso!');
+                // opcional: redirecionar para lista
+                window.location.href = 'caixa_lancamentos.html';
+            } catch (err) {
+                console.error(err);
+                alert('Falha ao salvar lançamento.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+const jwt = require('jsonwebtoken');
+
+const config = require('../config');
+const { pool } = require('../config/db');
+const moduleAccessService = require('../services/moduleAccessService');
+const { createHttpError } = require('../utils/httpError');
+
+async function requireAuth(req, res, next) {
+    const authorization = req.headers.authorization || '';
+    const queryToken = typeof req.query?.token === 'string' ? req.query.token.trim() : '';
+
+    if (!authorization.startsWith('Bearer ') && !queryToken) {
+        return next(createHttpError(401, 'Token de acesso não informado.'));
+    }
+
+    const token = authorization.startsWith('Bearer ')
+        ? authorization.slice('Bearer '.length).trim()
+        : queryToken;
+
+    try {
+        const payload = jwt.verify(token, config.security.jwtSecret);
+        const [rows] = await pool.query(
+            `SELECT u.id, u.nome, u.email, u.igreja, u.igreja_id, u.role,
+                    i.plano, i.status_assinatura, i.trial_starts_at, i.trial_ends_at, i.max_cadastros, i.max_congregacoes
+             FROM usuarios u
+             LEFT JOIN igrejas i ON i.id = u.igreja_id
+             WHERE u.id = ?
+             LIMIT 1`,
+            [payload.sub]
+        );
+
+        const user = rows[0];
+
+        if (!user) {
+            return next(createHttpError(401, 'Usuário do token não encontrado.'));
+        }
+
+        req.auth = {
+            ...payload,
+            id: user.id,
+            nome: user.nome,
+            email: user.email,
+            igreja: user.igreja,
+            igrejaId: user.igreja_id,
+            role: user.role,
+            plano: user.plano || 'teste-7-dias',
+            statusAssinatura: user.status_assinatura || 'trial',
+            trialStartsAt: user.trial_starts_at || null,
+            trialEndsAt: user.trial_ends_at || null,
+            maxCadastros: user.max_cadastros || 40,
+            maxCongregacoes: user.max_congregacoes || 1,
+            moduleFeatures: []
+        };
+
+        try {
+            const access = await moduleAccessService.getEffectiveAccessForChurch(user.igreja_id, user.plano || 'eden');
+            req.auth.moduleFeatures = access.featureKeys || [];
+        } catch (_) {
+            // Mantém autenticação funcionando mesmo se o catálogo ainda estiver em migração.
+            req.auth.moduleFeatures = [];
+        }
+
+        next();
+    } catch (error) {
+        next(createHttpError(401, 'Token inválido ou expirado.'));
+    }
+}
+
+function authorize(allowedRoles = []) {
+    const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+
+    return (req, res, next) => {
+        if (!req.auth) {
+            return next(createHttpError(401, 'Usuário não autenticado.'));
+        }
+
+        if (!roles.length) {
+            return next();
+        }
+
+        if (!roles.includes(req.auth.role)) {
+            return next(createHttpError(403, 'Acesso negado para este perfil.'));
+        }
+
+        next();
+    };
+}
+
+module.exports = {
+    authorize,
+    requireAuth
+};

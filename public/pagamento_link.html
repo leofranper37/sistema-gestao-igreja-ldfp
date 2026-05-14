@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento - LDFP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --border: rgba(255,255,255,.12);
+            --accent: #14b8a6;
+            --ok: #22c55e;
+            --warn: #f59e0b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: radial-gradient(circle at 10% 10%, #1f2937, var(--bg));
+            color: var(--text);
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            width: min(680px, 100%);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 20px 40px rgba(0,0,0,.35);
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 26px;
+        }
+
+        .sub {
+            color: var(--muted);
+            margin: 0 0 20px;
+            font-size: 14px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+
+        .row:last-of-type { border-bottom: 0; }
+
+        .label { color: var(--muted); font-size: 13px; }
+        .value { font-weight: 700; }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: lowercase;
+        }
+
+        .status.pendente { background: rgba(245,158,11,.15); color: #fbbf24; }
+        .status.aguardando_confirmacao { background: rgba(59,130,246,.18); color: #93c5fd; }
+        .status.pago { background: rgba(34,197,94,.2); color: #86efac; }
+
+        .pix-box, .card-box {
+            margin-top: 16px;
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 12px;
+            padding: 14px;
+            background: rgba(0,0,0,.15);
+        }
+
+        .pix-key {
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+            color: #5eead4;
+        }
+
+        .actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            color: #062a27;
+        }
+
+        .btn.secondary {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .msg {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+
+        .msg.ok { color: var(--ok); }
+        .msg.warn { color: var(--warn); }
+        .msg.err { color: #fca5a5; }
+    </style>
+</head>
+<body>
+    <section class="card">
+        <h1>Link de Pagamento</h1>
+        <p class="sub">Realize o pagamento e depois clique em "Ja paguei" para avisar a igreja.</p>
+
+        <div class="row">
+            <span class="label">Descricao</span>
+            <span class="value" id="descricao">Carregando...</span>
+        </div>
+        <div class="row">
+            <span class="label">Valor</span>
+            <span class="value" id="valor">-</span>
+        </div>
+        <div class="row">
+            <span class="label">Metodo</span>
+            <span class="value" id="metodo">-</span>
+        </div>
+        <div class="row">
+            <span class="label">Status</span>
+            <span id="statusWrap"><span class="status pendente">pendente</span></span>
+        </div>
+
+        <div id="pixBox" class="pix-box" style="display:none;">
+            <div class="label" style="margin-bottom:6px;">Chave PIX</div>
+            <div id="pixKey" class="pix-key">-</div>
+            <div class="actions">
+                <button class="btn secondary" id="btnCopiarPix" type="button"><i class="fa-solid fa-copy"></i> Copiar chave PIX</button>
+            </div>
+        </div>
+
+        <div id="cardBox" class="card-box" style="display:none;">
+            <div class="label" style="margin-bottom:8px;">Pagamento por cartao</div>
+            <a id="cardCheckoutUrl" href="#" target="_blank" rel="noreferrer" class="btn secondary" style="display:inline-block;text-decoration:none;">
+                <i class="fa-solid fa-up-right-from-square"></i> Ir para checkout
+            </a>
+        </div>
+
+        <div class="actions">
+            <button id="btnJaPaguei" type="button" class="btn primary">Ja paguei</button>
+        </div>
+        <div id="msg" class="msg"></div>
+    </section>
+
+    <script>
+        const params = new URLSearchParams(location.search);
+        const ref = params.get('ref');
+
+        const elDescricao = document.getElementById('descricao');
+        const elValor = document.getElementById('valor');
+        const elMetodo = document.getElementById('metodo');
+        const elStatusWrap = document.getElementById('statusWrap');
+        const elPixBox = document.getElementById('pixBox');
+        const elPixKey = document.getElementById('pixKey');
+        const elCardBox = document.getElementById('cardBox');
+        const elCardUrl = document.getElementById('cardCheckoutUrl');
+        const elBtnJaPaguei = document.getElementById('btnJaPaguei');
+        const elBtnCopiarPix = document.getElementById('btnCopiarPix');
+        const elMsg = document.getElementById('msg');
+
+        let currentData = null;
+
+        function setMsg(text, type) {
+            elMsg.className = 'msg';
+            if (type) elMsg.classList.add(type);
+            elMsg.textContent = text || '';
+        }
+
+        function formatCurrency(value) {
+            return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function renderStatus(status) {
+            const label = String(status || 'pendente');
+            elStatusWrap.innerHTML = `<span class="status ${label}">${label.replace('_', ' ')}</span>`;
+            elBtnJaPaguei.disabled = label !== 'pendente';
+            if (label === 'aguardando_confirmacao') {
+                setMsg('Pagamento informado. Agora aguarde a confirmacao da igreja.', 'warn');
+            }
+            if (label === 'pago') {
+                setMsg('Pagamento confirmado. Obrigado!', 'ok');
+            }
+        }
+
+        async function carregarLink() {
+            if (!ref) {
+                setMsg('Referencia de pagamento ausente no link.', 'err');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/pagamentos/publico/${encodeURIComponent(ref)}`);
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.error || 'Link de pagamento nao encontrado.');
+                }
+
+                currentData = data;
+                elDescricao.textContent = data.descricao || '-';
+                elValor.textContent = formatCurrency(data.valor);
+                elMetodo.textContent = (data.paymentMethod || data.provider || 'pix').toUpperCase();
+                renderStatus(data.status);
+
+                if ((data.paymentMethod || data.provider) === 'pix') {
+                    elPixBox.style.display = '';
+                    elCardBox.style.display = 'none';
+                    elPixKey.textContent = data.pixKey || 'Chave PIX nao informada pela igreja.';
+                } else {
+                    elPixBox.style.display = 'none';
+                    elCardBox.style.display = '';
+                    if (data.cardCheckoutUrl) {
+                        elCardUrl.href = data.cardCheckoutUrl;
+                        elCardUrl.style.pointerEvents = 'auto';
+                        elCardUrl.style.opacity = '1';
+                    } else {
+                        elCardUrl.href = '#';
+                        elCardUrl.style.pointerEvents = 'none';
+                        elCardUrl.style.opacity = '.6';
+                    }
+                }
+            } catch (error) {
+                setMsg((error.message || 'Falha ao carregar pagamento.') + ' Confira se o link foi copiado completo.', 'err');
+            }
+        }
+
+        async function sinalizarPagamento() {
+            if (!ref) return;
+            if (!currentData || currentData.status !== 'pendente') return;
+
+            elBtnJaPaguei.disabled = true;
+            try {
+                const response = await fetch(`/pagamentos/publico/${encodeURIComponent(ref)}/cliente-pago`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ observacao: 'Cliente sinalizou pagamento pela tela publica.' })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.error || 'Nao foi possivel sinalizar pagamento.');
+                }
+                setMsg(data.message || 'Pagamento sinalizado com sucesso.', 'ok');
+                await carregarLink();
+            } catch (error) {
+                setMsg(error.message || 'Erro ao sinalizar pagamento.', 'err');
+                elBtnJaPaguei.disabled = false;
+            }
+        }
+
+        elBtnJaPaguei.addEventListener('click', sinalizarPagamento);
+        elBtnCopiarPix.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(elPixKey.textContent || '');
+                setMsg('Chave PIX copiada.', 'ok');
+            } catch (_error) {
+                setMsg('Nao foi possivel copiar a chave PIX.', 'err');
+            }
+        });
+
+        carregarLink();
+    </script>
+</body>
+</html>

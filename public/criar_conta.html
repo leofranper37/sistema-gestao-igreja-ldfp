@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Criar Conta - LDFP</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: #e5e7eb; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .register-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
+        
+        /* LOGO CENTRALIZADO */
+        .logo img { height: 70px; margin-bottom: 10px; }
+
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; color: #555; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .btn-register { background-color: #111; color: white; width: 100%; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-register:hover { background-color: #333; }
+        .btn-register:disabled { opacity: 0.7; cursor: not-allowed; }
+        .status { margin-top: 12px; font-size: 13px; text-align: left; }
+        .status.error { color: #b91c1c; }
+        .status.success { color: #15803d; }
+    </style>
+</head>
+<body class="theme-petroleo">
+    <div class="register-card">
+        <div class="logo">
+            <img src="logo.png" alt="LDFP">
+        </div>
+        <h2 style="margin-bottom: 10px; font-size: 22px;">Comece Gratis</h2>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Crie a conta da sua igreja em segundos.</p>
+        <form>
+            <div class="form-group"><label>Nome da Igreja</label><input id="igreja" type="text" placeholder="Ex: Assembleia de Deus..." required></div>
+            <div class="form-group"><label>Seu Nome Completo</label><input id="nome" type="text" placeholder="Ex: Pr. Leonardo..." required></div>
+            <div class="form-group"><label>Email</label><input id="email" type="email" placeholder="seu@email.com" required></div>
+            <div class="form-group"><label>Crie uma Senha</label><input id="senha" type="password" placeholder="********" required></div>
+            <button id="btnCriar" type="button" class="btn-register" onclick="criarConta()">Criar Conta</button>
+            <div id="status" class="status"></div>
+        </form>
+        <p style="margin-top: 20px; font-size: 13px;">Ja tem conta? <a href="login.html" style="color:#f59e0b; font-weight:bold; text-decoration:none;">Fazer Login</a></p>
+    </div>
+    <script src="session.js?v=20260501"></script>
+    <script>
+        function getAuthToken() {
+            try {
+                if (typeof window.getStoredAuth === 'function') {
+                    const token = window.getStoredAuth()?.token;
+                    if (token) {
+                        return token;
+                    }
+                }
+
+                const raw = localStorage.getItem('ldfpAuth');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed?.token) {
+                        return parsed.token;
+                    }
+                }
+            } catch (_) {
+                // Ignora erro de parse e tenta outros storages.
+            }
+
+            return sessionStorage.getItem('token') || localStorage.getItem('token') || '';
+        }
+
+        function extractErrorMessage(data, fallbackMessage) {
+            if (!data) {
+                return fallbackMessage;
+            }
+
+            return data.error || data.message || fallbackMessage;
+        }
+
+        async function criarConta() {
+            const status = document.getElementById('status');
+            const btn = document.getElementById('btnCriar');
+            const igreja = document.getElementById('igreja').value.trim();
+            const nome = document.getElementById('nome').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+
+            status.textContent = '';
+            status.className = 'status';
+
+            if (!igreja || !nome || !email || !senha) {
+                status.textContent = 'Preencha todos os campos antes de continuar.';
+                status.className = 'status error';
+                return;
+            }
+
+            if (!/^\S+@\S+\.\S+$/.test(email)) {
+                status.textContent = 'Digite um e-mail valido.';
+                status.className = 'status error';
+                return;
+            }
+
+            if (senha.length < 8) {
+                status.textContent = 'A senha deve ter pelo menos 8 caracteres.';
+                status.className = 'status error';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+
+            try {
+                const token = getAuthToken();
+                const headers = { 'Content-Type': 'application/json' };
+
+                if (token) {
+                    headers.Authorization = `Bearer ${token}`;
+                }
+
+                const resp = await fetch('/criar-conta', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ igreja, nome, email, senha })
+                });
+
+                const data = await resp.json().catch(() => ({}));
+
+                if (resp.status === 401) {
+                    throw new Error('Cadastro bloqueado por token no servidor. Atualize o deploy da rota /criar-conta para modo publico ou autentique-se como admin.');
+                }
+
+                if (!resp.ok) {
+                    throw new Error(extractErrorMessage(data, 'Nao foi possivel criar a conta agora.'));
+                }
+
+                if (data.token && data.user) {
+                    saveAuthSession(data);
+                }
+
+                if (data.user) {
+                    localStorage.setItem('ldfpUser', JSON.stringify(data.user));
+                }
+
+                status.textContent = 'Conta criada com sucesso!';
+                status.className = 'status success';
+                setTimeout(() => {
+                    window.location.href = 'membros.html';
+                }, 900);
+            } catch (err) {
+                status.textContent = err.message || 'Erro inesperado ao criar conta.';
+                status.className = 'status error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Criar Conta';
+            }
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                criarConta();
+            }
+        });
+    </script>
+    <script src="speed-insights.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: ldfp-app
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_BASE_URL
+        value: https://app.ldfp.com.br
+      - key: APP_PUBLIC_BASE_URL
+        value: https://app.ldfp.com.br
+      - key: CORS_ORIGIN
+        value: https://app.ldfp.com.br,https://ldfp.com.br,https://www.ldfp.com.br,https://ldfp-app.onrender.com
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 12h
+      - key: PASSWORD_SALT_ROUNDS
+        value: "10"
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_CONNECTION_LIMIT
+        value: "10"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        value: "LDFP <no-reply@ldfp.local>"

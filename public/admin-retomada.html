@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retomada Inteligente - LDFP Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--dark:#0f172a;--panel:#1e293b;--blue:#2563eb;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--bg:#f8fafc;--white:#fff;--text:#334155;--muted:#64748b;--border:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--dark);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}
+.logo-icon{background:linear-gradient(135deg,var(--blue),#60a5fa);width:32px;height:32px;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:800;font-size:14px}
+.sidebar-header h2{font-size:17px;font-weight:800}.sidebar-header span{font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.menu{padding:16px 0;flex:1;overflow-y:auto}.menu-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:0 18px;margin:12px 0 6px;font-weight:600}
+.menu-item{padding:11px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.2s;border-left:3px solid transparent}
+.menu-item:hover{background:var(--panel);color:#fff}.menu-item.active{background:var(--panel);border-left-color:var(--blue);color:#fff;font-weight:600}
+.menu-item i{width:18px;text-align:center;font-size:15px}
+.main{flex:1;display:flex;flex-direction:column;overflow-y:auto}
+.topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
+.workspace{padding:24px;display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 2px 12px rgba(2,6,23,.03)}
+.card-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-header h3{font-size:15px;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:8px}
+.card-body{padding:16px 18px}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:6px}
+.form-row input,.form-row textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px}
+.form-row textarea{min-height:108px;resize:vertical}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:9px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:7px}
+.btn-outline{background:#fff;border:1px solid var(--border);color:var(--text)}
+.btn-primary{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff}
+.btn-success{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+.btn-gold{background:linear-gradient(135deg,#f59e0b,#d97706);color:#111827}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:8px;margin-bottom:10px;font-size:13px}
+.kv b{color:var(--muted);font-size:12px;text-transform:uppercase}
+.pill{padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;background:#eff6ff;color:#1d4ed8}
+.list{margin:8px 0 0 0;padding-left:18px}
+.list li{margin-bottom:6px;font-size:13px;color:#475569}
+.mono{font-family:Consolas,'Courier New',monospace;font-size:12px;background:#f8fafc;padding:3px 7px;border-radius:6px;border:1px solid #e2e8f0}
+.toast{position:fixed;right:24px;bottom:24px;background:#10b981;color:#fff;padding:12px 18px;border-radius:8px;opacity:0;transform:translateY(8px);transition:.2s}
+.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:980px){.workspace{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="logo-icon">L</div><div><h2>LDFP Master</h2><span>Painel SaaS</span></div></div>
+  <div class="menu">
+    <div class="menu-label">Negócio</div>
+    <a href="super-admin.htm" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="admin-igrejas.html" class="menu-item"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+    <a href="admin-assinaturas.html" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Assinaturas & Faturas</a>
+    <a href="admin-retomada.html" class="menu-item active"><i class="fa-solid fa-rocket"></i> Retomada Inteligente</a>
+    <div class="menu-label">Configurações SaaS</div>
+    <a href="admin-planos.html" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+    <a href="admin-inovacoes.html" class="menu-item"><i class="fa-solid fa-lightbulb"></i> Fábrica de Inovações</a>
+    <a href="login.html" class="menu-item"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+  </div>
+</nav>
+
+<main class="main">
+  <header class="topbar">
+    <h1><i class="fa-solid fa-rocket" style="color:var(--blue);margin-right:8px"></i>Retomada Inteligente</h1>
+    <span class="pill" id="triggerLabel">Trigger: LDFP_CONTINUAR</span>
+  </header>
+
+  <div class="workspace">
+    <section class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-bullseye"></i> Foco Atual</h3>
+        <div class="actions">
+          <button class="btn btn-outline" onclick="loadState()"><i class="fa-solid fa-rotate-right"></i> Recarregar</button>
+          <button class="btn btn-primary" onclick="saveFocus()"><i class="fa-solid fa-floppy-disk"></i> Salvar Foco</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <label>Objetivo Atual</label>
+          <textarea id="currentObjective" placeholder="Ex.: Finalizar padronização LDFP nas páginas de tesouraria e liberar módulo contábil"></textarea>
+        </div>
+        <div class="form-row">
+          <label>Próximos Passos (1 por linha)</label>
+          <textarea id="nextSteps" placeholder="Passo 1\nPasso 2\nPasso 3"></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>URL Produção</label>
+          <input id="productionUrl" type="text" value="https://www.ldfp.com.br">
+        </div>
+        <div class="form-row">
+          <label>URL Cloud IDE (github.dev)</label>
+          <input id="cloudIdeUrl" type="text" value="https://improved-funicular-5xjvrqxg4q9hpv6r.github.dev/">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Continuidade</h3>
+      </div>
+      <div class="card-body">
+        <div class="kv"><b>Última Atualização</b><span id="updatedAt">-</span></div>
+        <div class="kv"><b>Branch</b><span id="branchNow">-</span></div>
+        <div class="kv"><b>Commit Atual</b><span class="mono" id="headNow">-</span></div>
+        <div class="kv"><b>Alterações Locais</b><span id="dirtyNow">-</span></div>
+        <div class="kv"><b>Arquivo Estado</b><span class="mono" id="stateFile">.ldfp-resume/state.json</span></div>
+
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:12px 0;">
+
+        <div class="form-row">
+          <label>Nota do Checkpoint</label>
+          <input id="checkpointNote" type="text" placeholder="Ex.: concluída tela de relatórios contábeis e deploy validado">
+        </div>
+        <div class="actions" style="margin-bottom:12px;">
+          <button class="btn btn-success" onclick="createCheckpoint()"><i class="fa-solid fa-bookmark"></i> Salvar Checkpoint</button>
+          <button class="btn btn-gold" onclick="continueWork()"><i class="fa-solid fa-play"></i> Continuar Trabalho</button>
+        </div>
+
+        <div>
+          <b style="font-size:12px;color:var(--muted);text-transform:uppercase;">Últimos Checkpoints</b>
+          <ul class="list" id="checkpointsList"></ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="session.js"></script>
+<script>
+const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
+const hdr = () => ({ Authorization: 'Bearer ' + token(), 'Content-Type': 'application/json' });
+let currentState = null;
+
+async function loadState() {
+  try {
+    const r = await fetch('/api/saas/retomada', { headers: hdr() });
+    if (r.status === 401) { location.href = 'login.html'; return; }
+    if (!r.ok) throw new Error(await r.text());
+    currentState = await r.json();
+
+    document.getElementById('triggerLabel').textContent = 'Trigger: ' + (currentState.trigger || 'LDFP_CONTINUAR');
+    document.getElementById('updatedAt').textContent = currentState.updatedAt ? new Date(currentState.updatedAt).toLocaleString('pt-BR') : '-';
+    document.getElementById('branchNow').textContent = currentState.git?.branch || '-';
+    document.getElementById('headNow').textContent = currentState.git?.shortHead || '-';
+    document.getElementById('dirtyNow').textContent = currentState.git?.dirty ? 'Sim' : 'Não';
+    document.getElementById('stateFile').textContent = currentState.filePath || '.ldfp-resume/state.json';
+
+    document.getElementById('currentObjective').value = currentState.focus?.currentObjective || '';
+    document.getElementById('nextSteps').value = (currentState.focus?.nextSteps || []).join('\n');
+    document.getElementById('productionUrl').value = currentState.environment?.productionUrl || 'https://www.ldfp.com.br';
+    document.getElementById('cloudIdeUrl').value = currentState.environment?.cloudIdeUrl || 'https://improved-funicular-5xjvrqxg4q9hpv6r.github.dev/';
+
+    const checkpoints = Array.isArray(currentState.checkpoints) ? currentState.checkpoints.slice(0, 8) : [];
+    const ul = document.getElementById('checkpointsList');
+    if (!checkpoints.length) {
+      ul.innerHTML = '<li>Nenhum checkpoint registrado.</li>';
+      return;
+    }
+
+    ul.innerHTML = checkpoints.map(cp => {
+      const dt = cp.at ? new Date(cp.at).toLocaleString('pt-BR') : '-';
+      const note = esc(cp.note || 'Checkpoint');
+      const commit = esc(cp.git?.shortHead || '-');
+      const branch = esc(cp.git?.branch || '-');
+      return `<li><b>${dt}</b> - ${note}<br><small><span class="mono">${branch}</span> <span class="mono">${commit}</span></small></li>`;
+    }).join('');
+  } catch (e) {
+    toast('Erro ao carregar estado de retomada', false);
+  }
+}
+
+async function saveFocus() {
+  try {
+    const body = {
+      focus: {
+        currentObjective: document.getElementById('currentObjective').value,
+        nextSteps: document.getElementById('nextSteps').value
+      },
+      environment: {
+        productionUrl: document.getElementById('productionUrl').value,
+        cloudIdeUrl: document.getElementById('cloudIdeUrl').value
+      }
+    };
+
+    const r = await fetch('/api/saas/retomada', {
+      method: 'PUT', headers: hdr(), body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error(await r.text());
+
+    await loadState();
+    toast('Foco salvo com sucesso', true);
+  } catch (_e) {
+    toast('Erro ao salvar foco', false);
+  }
+}
+
+async function createCheckpoint() {
+  try {
+    const note = document.getElementById('checkpointNote').value.trim() || 'Checkpoint manual';
+    const r = await fetch('/api/saas/retomada/checkpoint', {
+      method: 'POST', headers: hdr(), body: JSON.stringify({ note })
+    });
+    if (!r.ok) throw new Error(await r.text());
+
+    document.getElementById('checkpointNote').value = '';
+    await loadState();
+    toast('Checkpoint salvo', true);
+  } catch (_e) {
+    toast('Erro ao salvar checkpoint', false);
+  }
+}
+
+function continueWork() {
+  const prod = document.getElementById('productionUrl').value.trim();
+  const cloud = document.getElementById('cloudIdeUrl').value.trim();
+
+  if (!prod && !cloud) {
+    toast('Defina ao menos uma URL de continuidade', false);
+    return;
+  }
+
+  if (cloud) {
+    window.open(cloud, '_blank');
+  }
+  if (prod) {
+    window.open(prod, '_blank');
+  }
+
+  toast('Ambientes de continuidade abertos', true);
+}
+
+function esc(s) {
+  return String(s || '').replace(/[&<>\"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+}
+
+function toast(msg, ok) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok ? '#10b981' : '#ef4444';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+(function () {
+  const t = token();
+  if (!t) { location.href = 'login.html'; return; }
+  try {
+    const p = JSON.parse(atob(t.split('.')[1]));
+    if (!['super-admin', 'admin'].includes(p.role)) location.href = 'login.html';
+  } catch (_) {}
+})();
+
+loadState();
+</script>
+</body>
+</html>

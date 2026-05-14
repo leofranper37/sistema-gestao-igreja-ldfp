@@ -1,0 +1,1101 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Ficha Cadastral</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* =====================================================
+           MEMBROS.HTML — Layout Enterprise 4 Colunas
+        ===================================================== */
+        .page-wrap {
+            padding: 24px 30px 36px;
+        }
+
+        .page-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .page-top h2 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 22px;
+        }
+
+        .page-top p {
+            margin: 4px 0 0;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .page-top-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* ---- Form Card ---- */
+        .member-form-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        /* ---- Tabs ---- */
+        .form-tabs {
+            display: flex;
+            background: linear-gradient(90deg, #ecfeff 0%, #f0fdf4 100%);
+            border-bottom: 1px solid #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 14px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 13px;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            transition: 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #0f172a;
+        }
+
+        .tab-btn.active {
+            color: #0284c7;
+            background: #fff;
+            border-bottom-color: #0ea5e9;
+        }
+
+        /* ---- Tab Panels ---- */
+        .tab-panel {
+            display: none;
+            padding: 22px 22px 16px;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---- Grid 4 Colunas ---- */
+        .fg {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px 16px;
+        }
+
+        .fg .g-full  { grid-column: span 4; }
+        .fg .g-3     { grid-column: span 3; }
+        .fg .g-2     { grid-column: span 2; }
+        .fg .g-1     { grid-column: span 1; }
+
+        @media (max-width: 1024px) {
+            .fg { grid-template-columns: repeat(2, 1fr); }
+            .fg .g-full { grid-column: span 2; }
+            .fg .g-3    { grid-column: span 2; }
+            .fg .g-2    { grid-column: span 2; }
+        }
+
+        @media (max-width: 640px) {
+            .fg { grid-template-columns: 1fr; }
+            .fg .g-full, .fg .g-3, .fg .g-2 { grid-column: span 1; }
+        }
+
+        /* ---- Campos ---- */
+        .f {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .f label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.03em;
+        }
+
+        .f input,
+        .f select,
+        .f textarea {
+            border: 1px solid #dbe3ef;
+            border-radius: 7px;
+            padding: 9px 10px;
+            font-size: 13px;
+            color: #0f172a;
+            background: #fafbfc;
+            transition: border-color 0.15s;
+        }
+
+        .f input:focus,
+        .f select:focus,
+        .f textarea:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            background: #fff;
+        }
+
+        .f textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* ---- Seção título dentro de painel ---- */
+        .section-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #0284c7;
+            letter-spacing: 0.06em;
+            margin: 14px 0 8px;
+            padding-bottom: 4px;
+            border-bottom: 1px dashed #bae6fd;
+        }
+
+        .section-label:first-child {
+            margin-top: 0;
+        }
+
+        /* ---- Form Actions ---- */
+        .form-actions {
+            padding: 14px 22px 18px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-save {
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-save:disabled {
+            opacity: 0.6;
+        }
+
+        .btn-ghost {
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #0284c7;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-danger {
+            background: #fff;
+            color: #dc2626;
+            border: 1px solid #dc2626;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .form-status {
+            font-size: 13px;
+            color: #047857;
+            font-weight: 600;
+        }
+
+        .form-status.error {
+            color: #b91c1c;
+        }
+
+        /* ---- Foto ---- */
+        .photo-panel {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .photo-preview-box {
+            width: 140px;
+            height: 140px;
+            border: 2px dashed #bae6fd;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+        }
+
+        .photo-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .zoom-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .zoom-row input[type="range"] {
+            flex: 1;
+        }
+
+        .btn-sm {
+            border: 1px solid #dbe3ef;
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 4px 10px;
+            cursor: pointer;
+            color: #334155;
+        }
+
+        /* ---- Members table ---- */
+        .table-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .table-card-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-card-header h3 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 14px;
+        }
+
+        .btn-sm-primary {
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .members-table {
+            width: 100%;
+            min-width: 680px;
+            border-collapse: collapse;
+        }
+
+        .members-table th,
+        .members-table td {
+            padding: 11px 12px;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 13px;
+            color: #334155;
+            text-align: left;
+        }
+
+        .members-table tbody tr {
+            cursor: pointer;
+        }
+
+        .members-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .members-table tbody tr.is-selected {
+            background: #ecfeff;
+            box-shadow: inset 3px 0 0 #0284c7;
+        }
+
+        .members-table th {
+            background: #f8fafc;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .muted { color: #94a3b8; }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Ficha Cadastral" data-shell-breadcrumb="LDFP / Secretaria / Ficha Cadastral" data-shell-active="membros.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+
+            <div class="page-top">
+                <div>
+                    <h2>Ficha Cadastral de Membro</h2>
+                    <p>Preencha os dados pessoais, familiares, ministeriais e a foto do membro.</p>
+                </div>
+                <div class="page-top-actions">
+                    <button class="btn-ghost" type="button" id="btnImprimirTopo">
+                        <i class="fa-solid fa-print"></i> Imprimir
+                    </button>
+                    <button class="btn-primary" type="button" id="btnEditarTopo">
+                        <i class="fa-solid fa-pen"></i> Editar
+                    </button>
+                    <button class="btn-danger" type="button" id="btnExcluirTopo">
+                        <i class="fa-solid fa-trash"></i> Excluir
+                    </button>
+                    <button class="btn-save" type="button" id="btnSalvarTopo">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar Cadastro
+                    </button>
+                </div>
+            </div>
+
+            <div class="member-form-card">
+                <!-- Abas -->
+                <div class="form-tabs">
+                    <button class="tab-btn active" data-tab="pessoais">
+                        <i class="fa-solid fa-user"></i> Dados Pessoais
+                    </button>
+                    <button class="tab-btn" data-tab="contato">
+                        <i class="fa-solid fa-address-book"></i> Contato &amp; Endereço
+                    </button>
+                    <button class="tab-btn" data-tab="familiares">
+                        <i class="fa-solid fa-people-roof"></i> Dados Familiares
+                    </button>
+                    <button class="tab-btn" data-tab="ministeriais">
+                        <i class="fa-solid fa-church"></i> Dados Eclesiásticos
+                    </button>
+                    <button class="tab-btn" data-tab="foto">
+                        <i class="fa-solid fa-camera"></i> Foto
+                    </button>
+                </div>
+
+                <form id="memberForm" autocomplete="off">
+
+                    <!-- ======================== ABA 1: DADOS PESSOAIS ======================== -->
+                    <div class="tab-panel active" id="tab-pessoais">
+                        <div class="section-label">Identificação Pessoal</div>
+                        <div class="fg">
+                            <div class="f g-3">
+                                <label>Nome Completo *</label>
+                                <input type="text" name="nome" placeholder="Nome completo do membro" required>
+                            </div>
+                            <div class="f g-1">
+                                <label>Apelido</label>
+                                <input type="text" name="apelido" placeholder="Apelido">
+                            </div>
+                            <div class="f g-1">
+                                <label>Ficha Nº</label>
+                                <input type="text" name="ficha" placeholder="0000">
+                            </div>
+                            <div class="f g-1">
+                                <label>Data de Nascimento</label>
+                                <input type="date" name="nascimento">
+                            </div>
+                            <div class="f g-1">
+                                <label>Sexo</label>
+                                <select name="sexo">
+                                    <option value="">-- Selecione --</option>
+                                    <option>Masculino</option>
+                                    <option>Feminino</option>
+                                </select>
+                            </div>
+                            <div class="f g-1">
+                                <label>Estado Civil</label>
+                                <select name="estadoCivil">
+                                    <option value="">-- Selecione --</option>
+                                    <option>Solteiro(a)</option>
+                                    <option>Casado(a)</option>
+                                    <option>Divorciado(a)</option>
+                                    <option>Viúvo(a)</option>
+                                    <option>União Estável</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="section-label">Documentação</div>
+                        <div class="fg">
+                            <div class="f g-1">
+                                <label>CPF</label>
+                                <input type="text" name="cpf" placeholder="000.000.000-00">
+                            </div>
+                            <div class="f g-1">
+                                <label>RG</label>
+                                <input type="text" name="rg" placeholder="0000000">
+                            </div>
+                            <div class="f g-1">
+                                <label>Órgão Emissor RG</label>
+                                <input type="text" name="emissorRg" placeholder="SSP/RJ">
+                            </div>
+                            <div class="f g-1">
+                                <label>Data de Emissão RG</label>
+                                <input type="date" name="dtEmissaoRg">
+                            </div>
+                            <div class="f g-1">
+                                <label>Nacionalidade</label>
+                                <input type="text" name="nacionalidade" value="Brasileiro(a)">
+                            </div>
+                            <div class="f g-1">
+                                <label>Natural de</label>
+                                <input type="text" name="naturalidade" placeholder="Cidade natal">
+                            </div>
+                            <div class="f g-1">
+                                <label>UF de Nascimento</label>
+                                <select name="uf">
+                                    <option value="">--</option>
+                                    <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+                                    <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+                                    <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+                                    <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+                                    <option>PE</option><option>PI</option><option selected>RJ</option><option>RN</option>
+                                    <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+                                    <option>SP</option><option>SE</option><option>TO</option>
+                                </select>
+                            </div>
+                            <div class="f g-1">
+                                <label>Tipo Sanguíneo</label>
+                                <select name="tipoSangue">
+                                    <option value="">--</option>
+                                    <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                                    <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="section-label">Profissional</div>
+                        <div class="fg">
+                            <div class="f g-2">
+                                <label>Profissão / Ocupação</label>
+                                <input type="text" name="profissao" placeholder="Ex: Enfermeira, Pastor, Empresário">
+                            </div>
+                            <div class="f g-2">
+                                <label>Grau de Instrução</label>
+                                <select name="grauInstrucao">
+                                    <option value="">-- Selecione --</option>
+                                    <option>Sem instrução</option>
+                                    <option>Fundamental incompleto</option>
+                                    <option>Fundamental completo</option>
+                                    <option>Médio incompleto</option>
+                                    <option>Médio completo</option>
+                                    <option>Superior incompleto</option>
+                                    <option>Superior completo</option>
+                                    <option>Pós-graduação</option>
+                                    <option>Mestrado</option>
+                                    <option>Doutorado</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ======================== ABA 2: CONTATO & ENDEREÇO ======================== -->
+                    <div class="tab-panel" id="tab-contato">
+                        <div class="section-label">Contato</div>
+                        <div class="fg">
+                            <div class="f g-1">
+                                <label>Telefone Fixo</label>
+                                <input type="text" name="telefone" placeholder="(00) 0000-0000">
+                            </div>
+                            <div class="f g-1">
+                                <label>Celular / WhatsApp</label>
+                                <input type="text" name="celular" placeholder="(00) 00000-0000">
+                            </div>
+                            <div class="f g-2">
+                                <label>E-mail</label>
+                                <input type="email" name="email" placeholder="email@exemplo.com">
+                            </div>
+                        </div>
+
+                        <div class="section-label">Endereço</div>
+                        <div class="fg">
+                            <div class="f g-1">
+                                <label>CEP</label>
+                                <input type="text" name="cep" placeholder="00000-000">
+                            </div>
+                            <div class="f g-3">
+                                <label>Logradouro / Endereço</label>
+                                <input type="text" name="endereco" placeholder="Rua, Avenida, Travessa...">
+                            </div>
+                            <div class="f g-1">
+                                <label>Número</label>
+                                <input type="text" name="numero" placeholder="Nº">
+                            </div>
+                            <div class="f g-1">
+                                <label>Complemento</label>
+                                <input type="text" name="complemento" placeholder="Apto, Bloco...">
+                            </div>
+                            <div class="f g-2">
+                                <label>Bairro</label>
+                                <input type="text" name="bairro" placeholder="Bairro">
+                            </div>
+                            <div class="f g-2">
+                                <label>Cidade</label>
+                                <input type="text" name="cidade" placeholder="Cidade">
+                            </div>
+                            <div class="f g-1">
+                                <label>Estado</label>
+                                <select name="estado">
+                                    <option value="">--</option>
+                                    <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+                                    <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+                                    <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+                                    <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+                                    <option>PE</option><option>PI</option><option selected>RJ</option><option>RN</option>
+                                    <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+                                    <option>SP</option><option>SE</option><option>TO</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ======================== ABA 3: FAMILIARES ======================== -->
+                    <div class="tab-panel" id="tab-familiares">
+                        <div class="section-label">Filiação</div>
+                        <div class="fg">
+                            <div class="f g-2">
+                                <label>Nome do Pai</label>
+                                <input type="text" name="pai" placeholder="Nome do pai">
+                            </div>
+                            <div class="f g-2">
+                                <label>Nome da Mãe</label>
+                                <input type="text" name="mae" placeholder="Nome da mãe">
+                            </div>
+                        </div>
+
+                        <div class="section-label">Cônjuge</div>
+                        <div class="fg">
+                            <div class="f g-2">
+                                <label>Nome do Cônjuge</label>
+                                <input type="text" name="conjuge" placeholder="Nome do cônjuge">
+                            </div>
+                            <div class="f g-1">
+                                <label>Data do Casamento</label>
+                                <input type="date" name="casamento">
+                            </div>
+                            <div class="f g-1">
+                                <label>Local do Casamento</label>
+                                <input type="text" name="localCasamento" placeholder="Igreja / Cartório">
+                            </div>
+                        </div>
+
+                        <div class="section-label">Filhos</div>
+                        <div class="fg">
+                            <div class="f g-full">
+                                <label>Observações sobre filhos</label>
+                                <textarea name="obsFilhos" placeholder="Ex: 3 filhos, João (10), Maria (7), Pedro (3)"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ======================== ABA 4: ECLESIÁSTICOS ======================== -->
+                    <div class="tab-panel" id="tab-ministeriais">
+                        <div class="section-label">Situação na Igreja</div>
+                        <div class="fg">
+                            <div class="f g-1">
+                                <label>Situação</label>
+                                <select name="situacao">
+                                    <option value="">-- Selecione --</option>
+                                    <option>Ativo</option>
+                                    <option>Inativo</option>
+                                    <option>Afastado</option>
+                                    <option>Disciplinado</option>
+                                    <option>Desviado</option>
+                                    <option>Falecido</option>
+                                    <option>Mudou de Ministério</option>
+                                    <option>Removido LGPD</option>
+                                </select>
+                            </div>
+                            <div class="f g-1">
+                                <label>Cargo / Função</label>
+                                <input type="text" name="cargo" value="Membro" placeholder="Cargo na igreja">
+                            </div>
+                            <div class="f g-2">
+                                <label>Congregação</label>
+                                <input type="text" name="congregacao" placeholder="Nome da congregação">
+                            </div>
+                            <div class="f g-1">
+                                <label>Tipo de Admissão</label>
+                                <input type="text" name="tipoAdmissao" placeholder="Batismo, Aclamação...">
+                            </div>
+                            <div class="f g-1">
+                                <label>Data de Admissão</label>
+                                <input type="date" name="admissao">
+                            </div>
+                            <div class="f g-1">
+                                <label>Data de Saída</label>
+                                <input type="date" name="dataSaida">
+                            </div>
+                            <div class="f g-1">
+                                <label>Membro desde</label>
+                                <input type="text" name="membro" placeholder="Ex: Membro desde 2010">
+                            </div>
+                        </div>
+
+                        <div class="section-label">Batismo nas Águas</div>
+                        <div class="fg">
+                            <div class="f g-1">
+                                <label>Data do Batismo</label>
+                                <input type="date" name="batismoAguas">
+                            </div>
+                            <div class="f g-1">
+                                <label>Batismo</label>
+                                <input type="text" name="batismo" placeholder="Tipo de batismo">
+                            </div>
+                            <div class="f g-2">
+                                <label>Igreja e Local</label>
+                                <input type="text" name="igrejaLocal" placeholder="Igreja onde foi batizado(a)">
+                            </div>
+                            <div class="f g-2">
+                                <label>Igreja de Procedência</label>
+                                <input type="text" name="procedencia" placeholder="Igreja de origem">
+                            </div>
+                        </div>
+
+                        <div class="section-label">Batismo no Espírito Santo</div>
+                        <div class="fg">
+                            <div class="f g-1">
+                                <label>Batizado(a) no Espírito?</label>
+                                <select name="batismoEspirito">
+                                    <option value="">-- Selecione --</option>
+                                    <option>Sim</option>
+                                    <option>Não</option>
+                                </select>
+                            </div>
+                            <div class="f g-1">
+                                <label>Data (Espírito Santo)</label>
+                                <input type="date" name="dtBatismoEspirito">
+                            </div>
+                            <div class="f g-2">
+                                <label>Local (Espírito Santo)</label>
+                                <input type="text" name="localBatismoEspirito" placeholder="Local do batismo no Espírito">
+                            </div>
+                        </div>
+
+                        <div class="section-label">Carteira de Membro</div>
+                        <div class="fg">
+                            <div class="f g-1">
+                                <label>Emissão da Carteira</label>
+                                <input type="date" name="emissaoCarteira">
+                            </div>
+                            <div class="f g-1">
+                                <label>Vencimento da Carteira</label>
+                                <input type="date" name="venctoCarteira">
+                            </div>
+                            <div class="f g-full">
+                                <label>Observações</label>
+                                <textarea name="observacoes" placeholder="Informações adicionais sobre o membro..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ======================== ABA 5: FOTO ======================== -->
+                    <div class="tab-panel" id="tab-foto">
+                        <div class="photo-panel">
+                            <div>
+                                <div class="photo-preview-box">
+                                    <img id="fotoPreview" src="logo.png" alt="Prévia da foto" onerror="this.style.display='none'">
+                                </div>
+                                <div class="zoom-row">
+                                    <button class="btn-sm" type="button" id="zoomOut">−</button>
+                                    <input type="range" id="zoomRange" min="1" max="2.5" step="0.1" value="1">
+                                    <button class="btn-sm" type="button" id="zoomIn">+</button>
+                                </div>
+                            </div>
+                            <div class="f" style="flex:1;">
+                                <label>Selecionar Foto</label>
+                                <input type="file" id="fotoInput" accept="image/*">
+                                <small class="muted" style="margin-top:8px;">Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 5 MB.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ======================== AÇÕES ======================== -->
+                    <div class="form-actions">
+                        <button class="btn-ghost" type="button" id="btnImprimir">
+                            <i class="fa-solid fa-print"></i> Imprimir
+                        </button>
+                        <button class="btn-primary" type="button" id="btnEditar">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                        <button class="btn-danger" type="button" id="btnExcluir">
+                            <i class="fa-solid fa-trash"></i> Excluir
+                        </button>
+                        <button class="btn-save" type="button" id="btnSalvar">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar Cadastro
+                        </button>
+                        <button class="btn-ghost" type="reset">
+                            <i class="fa-solid fa-eraser"></i> Limpar
+                        </button>
+                        <div id="memberStatus" class="form-status"></div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ======================== LISTA DE MEMBROS ======================== -->
+            <div class="table-card">
+                <div class="table-card-header">
+                    <h3><i class="fa-solid fa-users"></i> Lista de Membros Cadastrados</h3>
+                    <button class="btn-sm-primary" type="button" id="btnRecarregar">
+                        <i class="fa-solid fa-rotate-right"></i> Recarregar
+                    </button>
+                </div>
+                <table class="members-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>E-mail</th>
+                            <th>Telefone</th>
+                            <th>Cidade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersTableBody">
+                        <tr><td colspan="4" class="muted">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        /* ---- Abas ---- */
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabPanels  = document.querySelectorAll('.tab-panel');
+
+        tabButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                tabButtons.forEach((b) => b.classList.remove('active'));
+                tabPanels.forEach((p)  => p.classList.remove('active'));
+                btn.classList.add('active');
+                const target = document.getElementById(`tab-${btn.dataset.tab}`);
+                if (target) target.classList.add('active');
+            });
+        });
+
+        /* ---- Foto ---- */
+        const fotoInput  = document.getElementById('fotoInput');
+        const fotoPreview = document.getElementById('fotoPreview');
+        const zoomRange  = document.getElementById('zoomRange');
+
+        const aplicarZoom = () => {
+            fotoPreview.style.transform = `scale(${zoomRange.value})`;
+        };
+
+        zoomRange.addEventListener('input', aplicarZoom);
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            zoomRange.value = Math.min(Number(zoomRange.max), Number(zoomRange.value) + 0.1);
+            aplicarZoom();
+        });
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            zoomRange.value = Math.max(Number(zoomRange.min), Number(zoomRange.value) - 0.1);
+            aplicarZoom();
+        });
+
+        fotoInput.addEventListener('change', (evt) => {
+            const file = evt.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                fotoPreview.src = reader.result;
+                fotoPreview.style.display = 'block';
+                zoomRange.value = 1;
+                aplicarZoom();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        /* ---- Helpers ---- */
+        const statusEl = document.getElementById('memberStatus');
+
+        const setStatus = (text, isError = false) => {
+            statusEl.textContent = text;
+            statusEl.classList.toggle('error', isError);
+        };
+
+        const getUser = () => {
+            try { return JSON.parse(localStorage.getItem('ldfpAuth') || 'null')?.user || null; }
+            catch { return null; }
+        };
+
+        const extractError = (data, fallback) => (data?.error || data?.message || fallback);
+        let loadedMembers = [];
+        let selectedMemberId = null;
+
+        const memberIdOf = (row) => Number(row?.id || row?.membro_id || row?.member_id || 0);
+
+        const fillMemberForm = (row) => {
+            const form = document.getElementById('memberForm');
+            if (!form || !row) {
+                return;
+            }
+
+            const setValue = (name, value) => {
+                const field = form.elements.namedItem(name);
+                if (!field) {
+                    return;
+                }
+                field.value = value ?? '';
+            };
+
+            setValue('nome', row.full_name || row.nome);
+            setValue('email', row.email);
+            setValue('telefone', row.phone || row.telefone);
+            setValue('celular', row.mobile_phone || row.celular);
+            setValue('apelido', row.nickname || row.apelido);
+            setValue('nascimento', row.birth_date || row.nascimento);
+            setValue('sexo', row.gender || row.sexo);
+            setValue('estadoCivil', row.marital_status || row.estado_civil || row.estadoCivil);
+            setValue('profissao', row.profession || row.profissao);
+            setValue('cep', row.zip_code || row.cep);
+            setValue('endereco', row.address || row.endereco);
+            setValue('numero', row.address_number || row.numero);
+            setValue('bairro', row.neighborhood || row.bairro);
+            setValue('cidade', row.city || row.cidade);
+            setValue('estado', row.state || row.estado);
+            setValue('cpf', row.cpf);
+            setValue('rg', row.rg);
+            setValue('nacionalidade', row.nationality || row.nacionalidade);
+            setValue('naturalidade', row.birth_place || row.naturalidade);
+
+            setStatus(`Membro selecionado para edição: ${row.full_name || row.nome || 'Sem nome'}`);
+        };
+
+        const selectMemberById = (id) => {
+            selectedMemberId = Number(id || 0) || null;
+            document.querySelectorAll('#membersTableBody tr[data-member-id]').forEach((row) => {
+                row.classList.toggle('is-selected', Number(row.dataset.memberId) === selectedMemberId);
+            });
+
+            const selected = loadedMembers.find((row) => memberIdOf(row) === selectedMemberId);
+            if (selected) {
+                fillMemberForm(selected);
+            }
+        };
+
+        /* ---- Montar payload ---- */
+        const getFormData = () => {
+            const d = Object.fromEntries(new FormData(document.getElementById('memberForm')).entries());
+            return {
+                churchId: getUser()?.churchId || 1,
+                nome:        d.nome || '',
+                email:       d.email || '',
+                telefone:    d.telefone || '',
+                celular:     d.celular || '',
+                apelido:     d.apelido || '',
+                nascimento:  d.nascimento || null,
+                sexo:        d.sexo || '',
+                estado_civil: d.estadoCivil || '',
+                profissao:   d.profissao || '',
+                cep:         d.cep || '',
+                endereco:    d.endereco || '',
+                numero:      d.numero || '',
+                bairro:      d.bairro || '',
+                cidade:      d.cidade || '',
+                estado:      d.estado || '',
+                cpf:         d.cpf || '',
+                rg:          d.rg || '',
+                nacionalidade: d.nacionalidade || '',
+                naturalidade:  d.naturalidade || '',
+            };
+        };
+
+        /* ---- Carregar lista ---- */
+        const carregarMembros = async () => {
+            const tbody = document.getElementById('membersTableBody');
+            tbody.innerHTML = '<tr><td colspan="4" class="muted">Carregando...</td></tr>';
+            const churchId = getUser()?.churchId || 1;
+
+            try {
+                const resp = await fetch(`/membros?churchId=${encodeURIComponent(churchId)}`);
+                const data = await resp.json().catch(() => []);
+
+                if (!resp.ok) throw new Error(extractError(data, 'Erro ao carregar membros.'));
+
+                if (!data.length) {
+                    loadedMembers = [];
+                    selectedMemberId = null;
+                    tbody.innerHTML = '<tr><td colspan="4" class="muted">Nenhum membro cadastrado.</td></tr>';
+                    return;
+                }
+
+                loadedMembers = data;
+
+                tbody.innerHTML = data.map((row) => {
+                    return `
+                    <tr>
+                        <td>${row.full_name || row.nome || ''}</td>
+                        <td>${row.email || '-'}</td>
+                        <td>${row.phone || row.mobile_phone || '-'}</td>
+                        <td>${row.city || row.cidade || '-'}</td>
+                    </tr>
+                `;
+                }).join('');
+
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                rows.forEach((tr, idx) => {
+                    const id = Number(memberIdOf(data[idx]));
+                    tr.dataset.memberId = String(id || '');
+                    tr.addEventListener('click', () => selectMemberById(id));
+                    if (selectedMemberId && id === selectedMemberId) {
+                        tr.classList.add('is-selected');
+                    }
+                });
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="4" class="muted">${err.message}</td></tr>`;
+            }
+        };
+
+        const imprimirFicha = () => {
+            window.print();
+        };
+
+        const habilitarEdicao = () => {
+            const nome = document.querySelector('[name="nome"]');
+            if (nome) {
+                nome.focus();
+                nome.select();
+            }
+            if (selectedMemberId) {
+                setStatus('Modo de edição habilitado para o membro selecionado.');
+            } else {
+                setStatus('Modo de edição habilitado. Selecione um membro da lista para carregar os dados.');
+            }
+        };
+
+        const excluirMembroSelecionado = async () => {
+            if (!selectedMemberId) {
+                setStatus('Selecione um membro na lista para excluir.', true);
+                return;
+            }
+
+            const selected = loadedMembers.find((row) => memberIdOf(row) === selectedMemberId);
+            const nome = selected?.full_name || selected?.nome || `ID ${selectedMemberId}`;
+            const ok = window.confirm(`Tem certeza que deseja excluir o membro ${nome}? Esta ação não pode ser desfeita.`);
+            if (!ok) {
+                return;
+            }
+
+            try {
+                const resp = await fetch(`/membros/${selectedMemberId}`, { method: 'DELETE' });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    throw new Error(extractError(data, 'Não foi possível excluir o membro.'));
+                }
+
+                selectedMemberId = null;
+                setStatus('Membro excluído com sucesso.');
+                await carregarMembros();
+            } catch (err) {
+                setStatus(err.message || 'Erro ao excluir membro.', true);
+            }
+        };
+
+        /* ---- Salvar membro ---- */
+        const salvarMembro = async () => {
+            setStatus('');
+            const payload = getFormData();
+
+            if (!payload.nome) {
+                setStatus('Informe o nome do membro.', true);
+                return;
+            }
+
+            if (payload.email && !/^\S+@\S+\.\S+$/.test(payload.email)) {
+                setStatus('Informe um e-mail válido.', true);
+                return;
+            }
+
+            const btns = [document.getElementById('btnSalvar'), document.getElementById('btnSalvarTopo')];
+            btns.forEach((b) => { b.disabled = true; b.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...'; });
+
+            try {
+                const resp = await fetch('/membros', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json().catch(() => ({}));
+
+                if (!resp.ok) throw new Error(extractError(data, 'Não foi possível salvar o membro.'));
+
+                setStatus('Membro salvo com sucesso!');
+                document.getElementById('memberForm').reset();
+                await carregarMembros();
+            } catch (err) {
+                setStatus(err.message || 'Erro inesperado ao salvar.', true);
+            } finally {
+                btns.forEach((b) => {
+                    b.disabled = false;
+                    b.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Cadastro';
+                });
+            }
+        };
+
+        document.getElementById('btnSalvar').addEventListener('click', salvarMembro);
+        document.getElementById('btnSalvarTopo').addEventListener('click', salvarMembro);
+        document.getElementById('btnRecarregar').addEventListener('click', carregarMembros);
+        document.getElementById('btnImprimir').addEventListener('click', imprimirFicha);
+        document.getElementById('btnImprimirTopo').addEventListener('click', imprimirFicha);
+        document.getElementById('btnEditar').addEventListener('click', habilitarEdicao);
+        document.getElementById('btnEditarTopo').addEventListener('click', habilitarEdicao);
+        document.getElementById('btnExcluir').addEventListener('click', excluirMembroSelecionado);
+        document.getElementById('btnExcluirTopo').addEventListener('click', excluirMembroSelecionado);
+
+        carregarMembros();
+    </script>
+    <script src="speed-insights.js" defer></script>
+</body>
+</html>

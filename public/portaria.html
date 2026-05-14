@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f766e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Portaria">
+    <title>LDFP - Portaria</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f3f4f6;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 56px;
+            padding-bottom: 80px;
+        }
+
+        /* Header fixo */
+        .portaria-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+            color: #fff;
+            padding: 14px 16px;
+            box-shadow: 0 2px 12px rgba(15, 118, 110, 0.3);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .portaria-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            flex: 1;
+        }
+
+        .portaria-header-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            font-size: 18px;
+        }
+
+        .portaria-content {
+            flex: 1;
+            padding: 20px 16px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f766e;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            font-size: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 6px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #1e293b;
+            transition: all 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #0f766e;
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .required::after {
+            content: ' *';
+            color: #dc2626;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+            margin-bottom: 12px;
+        }
+
+        .btn-secondary:active {
+            background: #cbd5e1;
+        }
+
+        .recent-visitors {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+        }
+
+        .recent-visitors-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f766e;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .visitor-item {
+            padding: 12px 0;
+            border-top: 1px solid #f1f5f9;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .visitor-item:first-child {
+            border-top: 0;
+            padding-top: 0;
+        }
+
+        .visitor-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 13px;
+        }
+
+        .visitor-time {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .visitor-status {
+            font-size: 11px;
+            padding: 4px 8px;
+            background: #d1fae5;
+            color: #065f46;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .success-message {
+            display: none;
+            background: #d1fae5;
+            color: #065f46;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .error-message {
+            display: none;
+            background: #fee2e2;
+            color: #7f1d1d;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-top: 52px;
+                padding-bottom: 60px;
+            }
+
+            .portaria-header {
+                padding: 12px 12px;
+            }
+
+            .portaria-header h1 {
+                font-size: 16px;
+            }
+
+            .portaria-content {
+                padding: 16px 12px;
+            }
+
+            .section-card {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+        }
+
+        /* Bottom action bar */
+        .portaria-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-top: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            z-index: 99;
+        }
+
+        .portaria-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .portaria-actions .btn-clear {
+            background: #f3f4f6;
+            color: #475569;
+        }
+
+        .portaria-actions .btn-list {
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+
+        .visitor-list-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .visitor-list-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-radius: 16px 16px 0 0;
+            padding: 24px 16px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .visitor-list-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #64748b;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="portaria-header">
+        <div class="portaria-header-icon">
+            <i class="fa-solid fa-clipboard-check"></i>
+        </div>
+        <h1>Registro de Visitantes</h1>
+    </div>
+
+    <!-- Main Content -->
+    <div class="portaria-content">
+        <div id="successMessage" class="success-message">
+            <i class="fa-solid fa-check-circle"></i> Visitante registrado com sucesso!
+        </div>
+        <div id="errorMessage" class="error-message"></div>
+
+        <!-- Formulário de Visitante -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fa-solid fa-user-plus"></i>
+                Novo Visitante
+            </div>
+
+            <form id="formVisitante">
+                <div class="form-group">
+                    <label for="nome" class="required">Nome Completo</label>
+                    <input type="text" id="nome" name="nome" required placeholder="Ex: João Silva">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="Ex: joao@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone">Telefone / WhatsApp</label>
+                    <input type="tel" id="telefone" name="telefone" placeholder="Ex: (11) 99999-9999">
+                </div>
+
+                <div class="form-group">
+                    <label for="cidade">Cidade</label>
+                    <input type="text" id="cidade" name="cidade" placeholder="Ex: São Paulo">
+                </div>
+
+                <div class="form-group">
+                    <label for="genero">Gênero</label>
+                    <select id="genero" name="genero">
+                        <option value="">Selecione</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="evento">Como conheceu?</label>
+                    <select id="evento" name="evento">
+                        <option value="">Selecione</option>
+                        <option value="culto">Culto</option>
+                        <option value="evento">Evento</option>
+                        <option value="amigo">Indicação de amigo</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="observacoes">Observações</label>
+                    <textarea id="observacoes" name="observacoes" placeholder="Espaço para anotações..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-check"></i>
+                    Registrar Visitante
+                </button>
+            </form>
+        </div>
+
+        <!-- Últimos Visitantes -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                Últimos Registrados (hoje)
+            </div>
+            <div id="recentVisitors">
+                <p style="color: #94a3b8; font-size: 13px; text-align: center; padding: 20px 0;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Carregando...
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="portaria-actions">
+        <button class="btn-clear" onclick="document.getElementById('formVisitante').reset(); document.getElementById('successMessage').style.display='none';">
+            <i class="fa-solid fa-eraser"></i> Limpar
+        </button>
+        <button class="btn-list" onclick="abrirListaCompleta();">
+            <i class="fa-solid fa-list"></i> Ver Todos
+        </button>
+    </div>
+
+    <!-- Modal Lista Completa -->
+    <div id="visitorListModal" class="visitor-list-modal">
+        <div class="visitor-list-content">
+            <button class="visitor-list-close" onclick="document.getElementById('visitorListModal').style.display='none';">&times;</button>
+            <h2 style="margin-bottom: 16px; color: #0f766e;">Todos os Visitantes Hoje</h2>
+            <div id="completeVisitorList">
+                <p style="color: #94a3b8; text-align: center; padding: 20px;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Carregando...
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="pwa.js"></script>
+    <script>
+        requireAuthSession();
+
+        // Form submission
+        document.getElementById('formVisitante').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const data = {
+                nome: formData.get('nome'),
+                email: formData.get('email') || null,
+                telefone: formData.get('telefone') || null,
+                cidade: formData.get('cidade') || null,
+                sexo: formData.get('genero') || null,
+                congregacao: formData.get('evento') || null,
+                observacao: formData.get('observacoes') || null,
+                data: `${y}-${m}-${d}`
+            };
+
+            try {
+                const response = await fetch('/visitantes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao registrar visitante');
+                }
+
+                // Show success message
+                const successMsg = document.getElementById('successMessage');
+                successMsg.style.display = 'block';
+                setTimeout(() => { successMsg.style.display = 'none'; }, 3000);
+
+                // Reset form
+                e.target.reset();
+
+                // Reload recent visitors
+                loadRecentVisitors();
+            } catch (error) {
+                const errorMsg = document.getElementById('errorMessage');
+                errorMsg.textContent = `<i class="fa-solid fa-triangle-exclamation"></i> ${error.message}`;
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        // Load recent visitors
+        async function loadRecentVisitors() {
+            try {
+                const response = await fetch('/visitantes');
+
+                if (!response.ok) throw new Error('Erro ao carregar visitantes');
+
+                const data = await response.json();
+                const visitors = Array.isArray(data) ? data : (data.items || []);
+
+                const container = document.getElementById('recentVisitors');
+                if (!visitors.length) {
+                    container.innerHTML = '<p style="color: #94a3b8; font-size: 13px; text-align: center; padding: 20px;">Nenhum visitante registrado hoje.</p>';
+                    return;
+                }
+
+                container.innerHTML = visitors.slice(0, 5).map(v => `
+                    <div class="visitor-item">
+                        <div>
+                            <div class="visitor-name">${v.nome || v.full_name || 'Sem nome'}</div>
+                            <div class="visitor-time"><i class="fa-solid fa-clock"></i> Há ${getTimeAgo(v.created_at)}</div>
+                        </div>
+                        <div class="visitor-status">Registrado</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        }
+
+        function getTimeAgo(dateString) {
+            const now = new Date();
+            const then = new Date(dateString);
+            const mins = Math.floor((now - then) / 60000);
+            if (mins < 1) return 'Agora';
+            if (mins < 60) return `${mins}m`;
+            const hours = Math.floor(mins / 60);
+            return `${hours}h`;
+        }
+
+        // Load complete visitor list
+        async function loadCompleteVisitorList() {
+            try {
+                const response = await fetch('/visitantes');
+
+                if (!response.ok) throw new Error('Erro ao carregar visitantes');
+
+                const data = await response.json();
+                const visitors = Array.isArray(data) ? data : (data.items || []);
+
+                const container = document.getElementById('completeVisitorList');
+                if (!visitors.length) {
+                    container.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">Nenhum visitante registrado.</p>';
+                    return;
+                }
+
+                container.innerHTML = visitors.map(v => `
+                    <div class="visitor-item">
+                        <div>
+                            <div class="visitor-name">${v.nome || v.full_name || 'Sem nome'}</div>
+                            <div class="visitor-time">${v.email || '-'} | ${v.cidade || v.city || '-'}</div>
+                        </div>
+                        <div style="font-size: 12px; color: #94a3b8;">${new Date(v.created_at).toLocaleDateString('pt-BR')}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        }
+
+        function abrirListaCompleta() {
+            document.getElementById('visitorListModal').style.display = 'flex';
+            loadCompleteVisitorList();
+        }
+
+        window.abrirListaCompleta = abrirListaCompleta;
+
+        // Load on page load
+        loadRecentVisitors();
+    </script>
+</body>
+</html>

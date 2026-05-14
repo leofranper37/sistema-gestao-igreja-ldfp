@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editar Cliente — LDFP Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--dark:#0f172a;--panel:#1e293b;--blue:#2563eb;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--bg:#f8fafc;--white:#fff;--text:#334155;--muted:#64748b;--border:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--dark);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}
+.logo-icon{background:linear-gradient(135deg,var(--blue),#60a5fa);width:32px;height:32px;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:800;font-size:14px}
+.sidebar-header h2{font-size:17px;font-weight:800}.sidebar-header span{font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.menu{padding:16px 0;flex:1;overflow-y:auto}
+.menu-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:0 18px;margin:12px 0 6px;font-weight:600}
+.menu-item{padding:11px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.2s;border-left:3px solid transparent}
+.menu-item:hover{background:var(--panel);color:#fff}.menu-item.active{background:var(--panel);border-left-color:var(--blue);color:#fff;font-weight:600}
+.menu-item i{width:18px;text-align:center;font-size:15px}
+.main-content{flex:1;display:flex;flex-direction:column;overflow-y:auto}
+.topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.topbar-left a{color:var(--muted);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid var(--border)}
+.topbar-left a:hover{background:var(--bg)}
+.topbar h1{font-size:18px;font-weight:800;color:var(--dark)}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:var(--bg)}
+.btn-danger{background:var(--red);color:#fff}
+.workspace{padding:28px;max-width:960px}
+.status-banner{padding:14px 20px;border-radius:10px;margin-bottom:24px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600}
+.sb-ativa{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.sb-trial{background:#fef9c3;color:#854d0e;border:1px solid #fde047}
+.sb-suspensa{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.sb-cancelada,.sb-inativa{background:#f1f5f9;color:#475569;border:1px solid var(--border)}
+.trial-panel{margin-top:14px;padding:14px 16px;border-radius:10px;border:1px dashed #f59e0b;background:#fffbeb;color:#854d0e}
+.trial-panel strong{display:block;font-size:13px;color:#78350f;margin-bottom:4px}
+.trial-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn-chip{padding:7px 12px;border-radius:999px;border:1px solid #fcd34d;background:#fff7ed;color:#92400e;font-size:12px;font-weight:700;cursor:pointer}
+.btn-chip:hover{background:#fef3c7}
+/* FORM SECTIONS */
+.section{background:var(--white);border:1px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden}
+.section-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.section-header h2{font-size:15px;font-weight:700;color:var(--dark)}
+.section-header i{color:var(--blue);font-size:16px}
+.section-body{padding:22px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.form-row label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.form-row input,.form-row select{width:100%;padding:10px 13px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:var(--bg);transition:.2s;font-family:inherit}
+.form-row input:focus,.form-row select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.modules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:4px}
+.module-toggle{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:.2s;background:var(--bg)}
+.module-toggle:hover{border-color:var(--blue);background:#eff6ff}
+.module-toggle input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue);flex-shrink:0}
+.module-toggle span{font-size:13px;font-weight:500}
+.footer-bar{position:sticky;bottom:0;background:var(--white);border-top:1px solid var(--border);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;gap:12px;z-index:10}
+.save-hint{font-size:12px;color:var(--muted)}
+.toast{position:fixed;bottom:24px;right:24px;padding:14px 22px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;z-index:2000;opacity:0;transform:translateY(16px);transition:.3s}
+.toast.show{opacity:1;transform:translateY(0)}.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+.loading-overlay{position:fixed;inset:0;background:rgba(248,250,252,.85);display:flex;align-items:center;justify-content:center;z-index:500;font-size:16px;font-weight:600;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">L</div>
+    <div><h2>LDFP Master</h2><span>Painel SaaS</span></div>
+  </div>
+  <div class="menu">
+    <div class="menu-label">Negócio</div>
+    <a href="super-admin.htm" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="admin-igrejas.html" class="menu-item active"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+    <a href="admin-assinaturas.html" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Assinaturas & Faturas</a>
+    <div class="menu-label">Configurações SaaS</div>
+    <a href="admin-planos.html" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+    <a href="admin-modulos.html" class="menu-item"><i class="fa-solid fa-puzzle-piece"></i> Catálogo de Módulos</a>
+    <a href="#" class="menu-item"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
+    <div class="menu-label">Sessão</div>
+    <a href="login.html" class="menu-item"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="admin-igrejas.html"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+      <h1 id="pageTitle">Editar Cliente</h1>
+    </div>
+    <span id="igrejaId" style="font-size:12px;color:var(--muted);font-family:monospace"></span>
+  </header>
+
+  <div id="loadingOverlay" class="loading-overlay"><i class="fa-solid fa-spinner fa-spin" style="margin-right:10px"></i> Carregando...</div>
+
+  <div class="workspace" id="formArea" style="display:none">
+    <div class="status-banner" id="statusBanner"></div>
+
+    <!-- IDENTIFICAÇÃO -->
+    <div class="section">
+      <div class="section-header"><i class="fa-solid fa-id-card"></i><h2>Identificação</h2></div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-row"><label>Nome da Igreja</label><input type="text" id="f-nome"></div>
+          <div class="form-row"><label>CNPJ</label><input type="text" id="f-cnpj" placeholder="00.000.000/0000-00"></div>
+          <div class="form-row"><label>Responsável</label><input type="text" id="f-responsavel"></div>
+          <div class="form-row"><label>E-mail do Admin</label><input type="email" id="f-email_admin"></div>
+          <div class="form-row"><label>Telefone</label><input type="text" id="f-telefone"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLANO & ASSINATURA -->
+    <div class="section">
+      <div class="section-header"><i class="fa-solid fa-file-contract"></i><h2>Plano & Assinatura</h2></div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-row"><label>Plano</label>
+            <select id="f-plano">
+              <option value="eden">Éden — Gratuito</option>
+              <option value="hebrom">Hebrom — R$ 50/mês</option>
+              <option value="betel">Betel — R$ 80/mês</option>
+              <option value="siao">Sião — R$ 100/mês</option>
+              <option value="personalizado">Personalizado</option>
+            </select>
+          </div>
+          <div class="form-row"><label>Status da Assinatura</label>
+            <select id="f-status_assinatura">
+              <option value="ativa">✅ Ativa</option>
+              <option value="trial">⏳ Trial</option>
+              <option value="suspensa">🚫 Suspensa</option>
+              <option value="cancelada">❌ Cancelada</option>
+              <option value="inativa">⬜ Inativa</option>
+            </select>
+          </div>
+          <div class="form-row"><label>Mensalidade (R$)</label><input type="number" min="0" step="0.01" id="f-mensalidade_valor"></div>
+          <div class="form-row"><label>Próximo Vencimento</label><input type="date" id="f-proximo_vencimento"></div>
+          <div class="form-row"><label>Início do Trial</label><input type="date" id="f-trial_starts_at"></div>
+          <div class="form-row"><label>Fim do Trial</label><input type="date" id="f-trial_ends_at"></div>
+        </div>
+        <div class="trial-panel" id="trialPanel">
+          <strong>Controle do período de teste</strong>
+          <span id="trialSummary">Defina as datas do trial para acompanhar quanto tempo o cliente ainda tem de acesso.</span>
+          <div class="trial-actions">
+            <button type="button" class="btn-chip" onclick="extendTrial(3)">+3 dias</button>
+            <button type="button" class="btn-chip" onclick="extendTrial(7)">+7 dias</button>
+            <button type="button" class="btn-chip" onclick="extendTrial(15)">+15 dias</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIMITES -->
+    <div class="section">
+      <div class="section-header"><i class="fa-solid fa-sliders"></i><h2>Limites do Plano</h2></div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-row"><label>Máx. Cadastros de Membros</label><input type="number" min="0" id="f-max_cadastros"></div>
+          <div class="form-row"><label>Máx. Congregações</label><input type="number" min="0" id="f-max_congregacoes"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULOS -->
+    <div class="section">
+      <div class="section-header"><i class="fa-solid fa-puzzle-piece"></i><h2>Módulos Ativos</h2></div>
+      <div class="section-body">
+        <div style="padding:16px;border:1px dashed var(--border);border-radius:12px;background:#f8fafc">
+          <p style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:14px">A gestão do catálogo de módulos foi centralizada no super-admin para não ficar exposta no painel do cliente.</p>
+          <a class="btn btn-outline" href="admin-modulos.html"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Catálogo de Módulos</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bar" id="footerBar" style="display:none">
+    <span class="save-hint"><i class="fa-solid fa-circle-info"></i> Alterações só têm efeito após salvar.</span>
+    <div style="display:flex;gap:10px">
+      <a href="admin-igrejas.html" class="btn btn-outline">Cancelar</a>
+      <button class="btn btn-primary" onclick="saveContrato()"><i class="fa-solid fa-floppy-disk"></i> Salvar Alterações</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="session.js?v=20260501"></script>
+<script>
+const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
+const hdrs = () => ({ 'Content-Type':'application/json', Authorization: 'Bearer ' + token() });
+
+const params = new URLSearchParams(location.search);
+const igrejaId = parseInt(params.get('id'));
+
+const STATUS_LABELS = {ativa:'✅ Ativa',trial:'⏳ Em período de teste',suspensa:'🚫 Suspensa — acesso bloqueado',cancelada:'❌ Cancelada',inativa:'⬜ Inativa'};
+const STATUS_CLASS  = {ativa:'sb-ativa',trial:'sb-trial',suspensa:'sb-suspensa',cancelada:'sb-cancelada',inativa:'sb-inativa'};
+
+function formatDateInput(value) {
+  if (!value) return '';
+  const dt = new Date(value);
+  return Number.isNaN(dt.getTime()) ? '' : dt.toISOString().slice(0,10);
+}
+
+function formatDateTimeLabel(value) {
+  if (!value) return 'não definido';
+  const dt = new Date(value);
+  return Number.isNaN(dt.getTime()) ? 'não definido' : dt.toLocaleDateString('pt-BR');
+}
+
+function getTrialSummaryText() {
+  const startValue = document.getElementById('f-trial_starts_at')?.value;
+  const endValue = document.getElementById('f-trial_ends_at')?.value;
+  if (!endValue) {
+    return 'Cliente sem data final de trial definida. Você pode informar manualmente ou usar os atalhos de extensão.';
+  }
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const trialEnd = new Date(endValue + 'T00:00:00');
+  const diffDays = Math.ceil((trialEnd.getTime() - now.getTime()) / 86400000);
+
+  if (diffDays < 0) {
+    return `Trial encerrado em ${formatDateTimeLabel(endValue)}.`;
+  }
+
+  const baseText = `Trial ${startValue ? 'iniciado em ' + formatDateTimeLabel(startValue) + ' e ' : ''}termina em ${formatDateTimeLabel(endValue)}.`;
+  return `${baseText} Restam ${diffDays} dia(s).`;
+}
+
+function refreshTrialPanel() {
+  const panel = document.getElementById('trialPanel');
+  const status = document.getElementById('f-status_assinatura')?.value;
+  panel.style.display = status === 'trial' ? 'block' : 'none';
+  document.getElementById('trialSummary').textContent = getTrialSummaryText();
+}
+
+async function loadContrato() {
+  if (!igrejaId) { location.href = 'admin-igrejas.html'; return; }
+  try {
+    const r = await fetch('/api/saas/igrejas/' + igrejaId, { headers: hdrs() });
+    if (r.status === 401) { location.href = 'login.html'; return; }
+    if (!r.ok) throw new Error('Igreja não encontrada.');
+    const d = await r.json();
+    fillForm(d);
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('formArea').style.display = 'block';
+    document.getElementById('footerBar').style.display = 'flex';
+  } catch (e) {
+    document.getElementById('loadingOverlay').textContent = '⚠ Erro: ' + e.message;
+  }
+}
+
+function fillForm(d) {
+  document.getElementById('pageTitle').textContent = d.nome || 'Editar Cliente';
+  document.getElementById('igrejaId').textContent = '#' + d.id;
+
+  const st = d.status_assinatura || 'inativa';
+  const banner = document.getElementById('statusBanner');
+  banner.textContent = STATUS_LABELS[st] || st;
+  banner.className = 'status-banner ' + (STATUS_CLASS[st] || 'sb-inativa');
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+  set('f-nome', d.nome);
+  set('f-cnpj', d.cnpj);
+  set('f-responsavel', d.responsavel);
+  set('f-email_admin', d.email_admin);
+  set('f-telefone', d.telefone);
+  set('f-plano', d.plano || 'eden');
+  set('f-status_assinatura', st);
+  set('f-mensalidade_valor', d.mensalidade_valor || 0);
+  set('f-max_cadastros', d.max_cadastros || 30);
+  set('f-max_congregacoes', d.max_congregacoes || 1);
+  set('f-trial_starts_at', formatDateInput(d.trial_starts_at));
+  set('f-trial_ends_at', formatDateInput(d.trial_ends_at));
+
+  if (d.proximo_vencimento) {
+    const dt = new Date(d.proximo_vencimento);
+    if (!isNaN(dt)) set('f-proximo_vencimento', dt.toISOString().slice(0,10));
+  }
+
+  refreshTrialPanel();
+}
+
+function extendTrial(days) {
+  const endField = document.getElementById('f-trial_ends_at');
+  const startField = document.getElementById('f-trial_starts_at');
+  const base = endField.value ? new Date(endField.value + 'T00:00:00') : new Date();
+  if (Number.isNaN(base.getTime())) return;
+  base.setDate(base.getDate() + Number(days || 0));
+  endField.value = base.toISOString().slice(0,10);
+  if (!startField.value) {
+    startField.value = new Date().toISOString().slice(0,10);
+  }
+  document.getElementById('f-status_assinatura').value = 'trial';
+  refreshTrialPanel();
+}
+
+async function saveContrato() {
+  const v = id => document.getElementById(id)?.value ?? '';
+  const body = {
+    nome: v('f-nome'),
+    cnpj: v('f-cnpj'),
+    responsavel: v('f-responsavel'),
+    email_admin: v('f-email_admin'),
+    telefone: v('f-telefone'),
+    plano: v('f-plano'),
+    status_assinatura: v('f-status_assinatura'),
+    mensalidade_valor: parseFloat(v('f-mensalidade_valor')) || 0,
+    proximo_vencimento: v('f-proximo_vencimento') || null,
+    trial_starts_at: v('f-trial_starts_at') || null,
+    trial_ends_at: v('f-trial_ends_at') || null,
+    max_cadastros: parseInt(v('f-max_cadastros')) || 30,
+    max_congregacoes: parseInt(v('f-max_congregacoes')) || 1
+  };
+
+  try {
+    const r = await fetch('/api/saas/igrejas/' + igrejaId + '/contrato', {
+      method: 'PATCH', headers: hdrs(), body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const updated = await r.json();
+    fillForm(updated);
+    toast('Contrato salvo com sucesso!', 'success');
+  } catch (e) { toast('Erro ao salvar: ' + e.message, 'error'); }
+}
+
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast ' + type + ' show';
+  setTimeout(() => { el.className = 'toast ' + type; }, 3500);
+}
+
+(function() {
+  const t = token();
+  if (!t) { location.href = 'login.html'; return; }
+  try { const p = JSON.parse(atob(t.split('.')[1])); if (!['super-admin','admin'].includes(p.role)) location.href = 'login.html'; } catch(_){}
+})();
+
+document.getElementById('f-status_assinatura').addEventListener('change', refreshTrialPanel);
+document.getElementById('f-trial_starts_at').addEventListener('change', refreshTrialPanel);
+document.getElementById('f-trial_ends_at').addEventListener('change', refreshTrialPanel);
+
+loadContrato();
+</script>
+</body>
+</html>

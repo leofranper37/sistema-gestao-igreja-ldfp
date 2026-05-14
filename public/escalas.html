@@ -1,0 +1,629 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Gestao de Escalas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .escalas-wrap { padding: 20px 30px; max-width: 1400px; margin: 0 auto; }
+        .tabs { display: flex; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+        .tabs button { padding: 10px 20px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; border-radius: 6px; font-weight: 600; color: #555; }
+        .tabs button:hover { background: #f9fafb; }
+        .tabs button.active { background: #fcd34d; border-color: #f59e0b; color: #78350f; }
+        .tab-panel { display: none; }
+        .tab-panel.ativo { display: block; }
+        .card-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .card-stats .card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center; }
+        .card-stats .card h3 { margin: 0; font-size: 28px; color: #111; }
+        .card-stats .card p { margin: 4px 0 0; font-size: 12px; color: #6b7280; text-transform: uppercase; }
+        .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .btn-primary { background: #f59e0b; color: #111; }
+        .btn-primary:hover { background: #d97706; }
+        .btn-ghost { background: #f3f4f6; color: #374151; }
+        .btn-danger { background: #dc2626; color: #fff; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8fafc; font-weight: 600; color: #475569; font-size: 12px; text-transform: uppercase; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: #fff; border-radius: 12px; padding: 24px; width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+        .modal h3 { margin: 0 0 16px; font-size: 18px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; box-sizing: border-box; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .matriz-table { font-size: 12px; }
+        .matriz-table th, .matriz-table td { padding: 8px; vertical-align: top; }
+        .matriz-table .cell-assign { min-width: 120px; min-height: 44px; background: #f8fafc; border-radius: 4px; padding: 6px; }
+        .matriz-table .cell-assign .nome { font-weight: 600; color: #111; }
+        .matriz-table .cell-assign .btn-add { margin-top: 4px; color: #f59e0b; cursor: pointer; font-size: 11px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; background: #fef3c7; color: #92400e; }
+        .badge.cancel { background: #fee2e2; color: #991b1b; }
+        .empty-msg { color: #94a3b8; font-style: italic; padding: 24px; text-align: center; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .passo-a-passo { background: #fff8e1; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #78350f; }
+        .passo-a-passo strong { display: block; margin-bottom: 4px; }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: #b45309; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: 600; z-index: 200; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .filters input, .filters select { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Gestão de Escalas" data-shell-breadcrumb="LDFP / Secretaria / Escalas" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="escalas-wrap">
+            <div class="tabs">
+                <button type="button" class="tab-btn active" data-tab="dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+                <button type="button" class="tab-btn" data-tab="eventos"><i class="fa-regular fa-calendar"></i> Eventos</button>
+                <button type="button" class="tab-btn" data-tab="grupos"><i class="fa-solid fa-users-gear"></i> Grupos e Funcoes</button>
+                <button type="button" class="tab-btn" data-tab="matriz"><i class="fa-solid fa-table"></i> Matriz de Escalas</button>
+                <button type="button" class="tab-btn" data-tab="conflitos"><i class="fa-solid fa-triangle-exclamation"></i> Conflitos</button>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="panel-dashboard" class="tab-panel ativo">
+                <div class="passo-a-passo"><strong>Resumo</strong> Aqui você vê totais de eventos, ocorrências e atribuições, e os membros que mais participam das escalas.</div>
+                <div class="card-stats" id="dashboard-cards">
+                    <div class="card"><h3 id="stat-eventos">0</h3><p>Eventos</p></div>
+                    <div class="card"><h3 id="stat-ocorrencias">0</h3><p>Ocorrências</p></div>
+                    <div class="card"><h3 id="stat-atribuicoes">0</h3><p>Atribuições</p></div>
+                </div>
+                <h4 style="margin-bottom:12px;">Participação por membro (top 10)</h4>
+                <table><thead><tr><th>Membro</th><th>Total de escalas</th></tr></thead><tbody id="dashboard-participacao"></tbody></table>
+            </div>
+
+            <!-- Eventos -->
+            <div id="panel-eventos" class="tab-panel">
+                <div class="passo-a-passo"><strong>Eventos</strong> Crie eventos únicos ou com recorrência (semanal, quinzenal, mensal). Depois vincule funções e use a Matriz para escalar membros.</div>
+                <div class="page-header">
+                    <h2 style="margin:0;">Eventos</h2>
+                    <button type="button" class="btn btn-primary" id="btnNovoEvento"><i class="fa-solid fa-plus"></i> Novo evento</button>
+                </div>
+                <table><thead><tr><th>Título</th><th>Início</th><th>Recorrência</th><th>Ações</th></tr></thead><tbody id="lista-eventos"></tbody></table>
+                <p id="eventos-empty" class="empty-msg" style="display:none;">Nenhum evento. Clique em <strong>Novo evento</strong> para criar (semanal, quinzenal ou mensal).</p>
+            </div>
+
+            <!-- Grupos e Funcoes -->
+            <div id="panel-grupos" class="tab-panel">
+                <div class="passo-a-passo"><strong>Grupos e Funcoes</strong> 1) Crie <strong>grupos</strong> (ex: Recepcao, Louvor). 2) Em cada grupo, crie <strong>funcoes</strong> (ex: Porteiro, Recepcao). 3) Use essas funcoes na criacao de eventos.</div>
+                <div class="page-header">
+                    <h2 style="margin:0;">Grupos e Funcoes</h2>
+                    <div>
+                        <button type="button" class="btn btn-ghost" id="btnNovoGrupo"><i class="fa-solid fa-folder-plus"></i> Novo grupo</button>
+                        <button type="button" class="btn btn-primary" id="btnNovaFuncao"><i class="fa-solid fa-plus"></i> Nova funcao</button>
+                    </div>
+                </div>
+                <div id="grupos-list"></div>
+                <p id="grupos-empty" class="empty-msg" style="display:none;">Nenhum grupo. Clique em <strong>Novo grupo</strong> para criar o primeiro.</p>
+                <div id="funcoes-list" style="margin-top:24px;"></div>
+            </div>
+
+            <!-- Matriz -->
+            <div id="panel-matriz" class="tab-panel">
+                <div class="passo-a-passo"><strong>Matriz de escalas</strong> Escolha o período e o evento (ou todos). Na tabela, clique em <strong>Atribuir</strong> para colocar um membro em cada data/função. Use o × para remover.</div>
+                <div class="page-header">
+                    <h2 style="margin:0;">Matriz de escalas</h2>
+                    <div class="filters">
+                        <input type="date" id="matriz-from">
+                        <input type="date" id="matriz-to">
+                        <select id="matriz-evento"><option value="">Todos os eventos</option></select>
+                        <button type="button" class="btn btn-primary" id="btnCarregarMatriz">Atualizar</button>
+                    </div>
+                </div>
+                <p id="matriz-empty" class="empty-msg" style="display:none;">Nenhuma ocorrência no período. Crie eventos (com recorrência) e ajuste as datas acima.</p>
+                <div style="overflow-x:auto;">
+                    <table class="matriz-table" id="tabela-matriz"><thead id="matriz-thead"></thead><tbody id="matriz-tbody"></tbody></table>
+                </div>
+            </div>
+
+            <!-- Conflitos -->
+            <div id="panel-conflitos" class="tab-panel">
+                <div class="passo-a-passo"><strong>Conflitos</strong> Aqui aparecem membros escalados em mais de um evento no mesmo dia. Ajuste as atribuições na Matriz para evitar conflitos.</div>
+                <h2 style="margin-bottom:16px;">Conflitos de horário</h2>
+                <p class="empty-msg" id="conflitos-empty" style="display:none;">Nenhum conflito. Um membro não pode estar em dois eventos no mesmo dia.</p>
+                <table><thead><tr><th>Membro</th><th>Data</th><th>Eventos no mesmo dia</th></tr></thead><tbody id="lista-conflitos"></tbody></table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Novo/Editar Evento -->
+    <div class="modal-overlay" id="modalEvento">
+        <div class="modal">
+            <h3 id="modalEventoTitulo">Novo evento</h3>
+            <form id="formEvento">
+                <input type="hidden" id="evento-id">
+                <div class="form-group">
+                    <label>Titulo</label>
+                    <input type="text" id="evento-titulo" required placeholder="Ex: Culto Domingo">
+                </div>
+                <div class="form-group">
+                    <label>Data inicial</label>
+                    <input type="date" id="evento-start_date" required>
+                </div>
+                <div class="form-group">
+                    <label>Recorrencia</label>
+                    <select id="evento-recurrence_type">
+                        <option value="none">Nenhuma (unico)</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="biweekly">Quinzenal</option>
+                        <option value="monthly">Mensal</option>
+                    </select>
+                </div>
+                <div class="form-group" id="wrap-recurrence-end">
+                    <label>Data fim da recorrencia</label>
+                    <input type="date" id="evento-recurrence_end_date">
+                </div>
+                <div class="form-group">
+                    <label>Funcoes deste evento (selecione os grupos/funcoes)</label>
+                    <div id="evento-funcoes-checklist"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-ghost" onclick="fecharModalEvento()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Novo Grupo -->
+    <div class="modal-overlay" id="modalGrupo">
+        <div class="modal">
+            <h3 id="modalGrupoTitulo">Novo grupo</h3>
+            <form id="formGrupo">
+                <input type="hidden" id="grupo-id">
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input type="text" id="grupo-nome" required placeholder="Ex: Recepcao">
+                </div>
+                <div class="form-group">
+                    <label>Grupo pai (area)</label>
+                    <select id="grupo-parent_id"><option value="">Nenhum</option></select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-ghost" onclick="fecharModalGrupo()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Nova Funcao -->
+    <div class="modal-overlay" id="modalFuncao">
+        <div class="modal">
+            <h3 id="modalFuncaoTitulo">Nova funcao</h3>
+            <form id="formFuncao">
+                <input type="hidden" id="funcao-id">
+                <div class="form-group">
+                    <label>Grupo</label>
+                    <select id="funcao-group_id" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Nome da funcao</label>
+                    <input type="text" id="funcao-nome" required placeholder="Ex: Porteiro">
+                </div>
+                <div class="form-group">
+                    <label>Quantidade maxima (alerta)</label>
+                    <input type="number" id="funcao-max_quantity" min="1" placeholder="Opcional">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-ghost" onclick="fecharModalFuncao()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Atribuir membro -->
+    <div class="modal-overlay" id="modalAtribuir">
+        <div class="modal">
+            <h3>Atribuir membro</h3>
+            <p id="modalAtribuirContexto" style="font-size:13px;color:#666;"></p>
+            <div class="form-group">
+                <label>Membro</label>
+                <select id="atribuir-member_id"></select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost" onclick="fecharModalAtribuir()">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarAtribuir">Atribuir</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const API = ''; // same origin
+        function churchId() {
+            try { return (JSON.parse(localStorage.getItem('ldfpUser') || '{}').churchId) || 1; } catch(e) { return 1; }
+        }
+        function qs(s) { return document.querySelector(s); }
+        function qsa(s) { return document.querySelectorAll(s); }
+
+        // Tabs
+        qsa('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                qsa('.tab-btn').forEach(b => b.classList.remove('active'));
+                qsa('.tab-panel').forEach(p => p.classList.remove('ativo'));
+                btn.classList.add('active');
+                const id = 'panel-' + btn.dataset.tab;
+                qs('#' + id).classList.add('ativo');
+                if (btn.dataset.tab === 'dashboard') carregarDashboard();
+                if (btn.dataset.tab === 'eventos') carregarEventos();
+                if (btn.dataset.tab === 'grupos') carregarGruposEFuncoes();
+                if (btn.dataset.tab === 'matriz') carregarMatriz();
+                if (btn.dataset.tab === 'conflitos') carregarConflitos();
+            });
+        });
+
+        async function carregarDashboard() {
+            const r = await fetch(API + '/api/escalas/dashboard?churchId=' + churchId());
+            const d = await r.json();
+            qs('#stat-eventos').textContent = d.total_eventos || 0;
+            qs('#stat-ocorrencias').textContent = d.total_ocorrencias || 0;
+            qs('#stat-atribuicoes').textContent = d.total_atribuicoes || 0;
+            const tbody = qs('#dashboard-participacao');
+            tbody.innerHTML = '';
+            (d.participacao_membros || []).forEach(m => {
+                tbody.innerHTML += `<tr><td>${m.full_name}</td><td>${m.total_escalas || 0}</td></tr>`;
+            });
+        }
+
+        async function carregarEventos() {
+            const r = await fetch(API + '/api/escalas/eventos?churchId=' + churchId());
+            const list = await r.json();
+            const tbody = qs('#lista-eventos');
+            tbody.innerHTML = '';
+            if (!list.length) { qs('#eventos-empty').style.display = 'block'; return; }
+            qs('#eventos-empty').style.display = 'none';
+            list.forEach(ev => {
+                const rec = ev.recurrence_type === 'none' ? 'Unico' : (ev.recurrence_type === 'weekly' ? 'Semanal' : (ev.recurrence_type === 'biweekly' ? 'Quinzenal' : 'Mensal'));
+                tbody.innerHTML += `<tr>
+                    <td><strong>${ev.title}</strong></td>
+                    <td>${ev.start_date}</td>
+                    <td><span class="badge">${rec}</span></td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-ghost" onclick="editarEvento(${ev.id})">Editar</button>
+                        <button type="button" class="btn btn-sm btn-ghost" onclick="verInstancias(${ev.id})">Instancias</button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="excluirEvento(${ev.id})">Excluir</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        async function verInstancias(eventId) {
+            const r = await fetch(API + '/api/escalas/eventos/' + eventId + '/instancias');
+            const instancias = await r.json();
+            const evR = await fetch(API + '/api/escalas/eventos/' + eventId);
+            const ev = (await evR.json()).event;
+            const rows = instancias.length === 0 ? '<tr><td colspan="2" class="empty-msg">Nenhuma ocorrencia.</td></tr>' : instancias.map(i =>
+                '<tr><td>' + i.instance_date + (i.is_cancelled ? ' <span class="badge cancel">Cancelada</span>' : '') + '</td><td>' +
+                (i.is_cancelled ? '' : '<button type="button" class="btn btn-sm btn-ghost" onclick="cancelarInstancia(' + i.id + ',' + eventId + ')">Excluir esta</button>') + '</td></tr>'
+            ).join('');
+            const div = document.createElement('div');
+            div.className = 'modal';
+            div.innerHTML = '<h3>' + (ev.title || 'Evento') + ' - Ocorrencias</h3><p style="font-size:13px;color:#666;">Exclusao seletiva: cancele apenas as datas que nao deseja.</p><table><thead><tr><th>Data</th><th>Acao</th></tr></thead><tbody>' + rows + '</tbody></table><div class="modal-actions" style="margin-top:16px;"><button type="button" class="btn btn-primary" onclick="this.closest(\'.modal-overlay\').remove()">Fechar</button></div>';
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay show';
+            overlay.appendChild(div);
+            overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+            document.body.appendChild(overlay);
+        }
+        async function cancelarInstancia(instanceId, eventId) {
+            if (!confirm('Cancelar apenas esta ocorrencia?')) return;
+            await fetch(API + '/api/escalas/instancias/' + instanceId, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_cancelled: 1 }) });
+            document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
+            carregarEventos();
+            carregarDashboard();
+            verInstancias(eventId);
+        }
+
+        async function excluirEvento(id) {
+            if (!confirm('Excluir este evento e todas as ocorrencias e atribuicoes?')) return;
+            await fetch(API + '/api/escalas/eventos/' + id, { method: 'DELETE' });
+            carregarEventos();
+            carregarDashboard();
+        }
+
+        async function abrirModalEvento(editId) {
+            qs('#modalEventoTitulo').textContent = editId ? 'Editar evento' : 'Novo evento';
+            qs('#evento-id').value = editId || '';
+            qs('#formEvento').reset();
+            if (editId) {
+                const r = await fetch(API + '/api/escalas/eventos/' + editId);
+                const d = await r.json();
+                qs('#evento-titulo').value = d.event.title;
+                qs('#evento-start_date').value = d.event.start_date;
+                qs('#evento-recurrence_type').value = d.event.recurrence_type || 'none';
+                qs('#evento-recurrence_end_date').value = d.event.recurrence_end_date || '';
+                setTimeout(() => {
+                    (d.functions || []).forEach(f => {
+                        const cb = qs('#evento-funcoes-checklist input[value="' + f.function_id + '"]');
+                        if (cb) cb.checked = true;
+                    });
+                }, 0);
+            } else {
+                qs('#evento-start_date').value = new Date().toISOString().slice(0, 10);
+            }
+            const rFunc = await fetch(API + '/api/escalas/funcoes?churchId=' + churchId());
+            const funcoes = await rFunc.json();
+            const wrap = qs('#evento-funcoes-checklist');
+            if (!funcoes.length) wrap.innerHTML = '<p class="empty-msg" style="margin:0;">Nenhuma funcao cadastrada. Crie grupos e funcoes na aba <strong>Grupos e Funcoes</strong>.</p>';
+            else wrap.innerHTML = funcoes.map(f => `<label style="display:block;margin:4px 0;"><input type="checkbox" name="function_ids" value="${f.id}"> ${f.group_name} - ${f.name}</label>`).join('');
+            qs('#modalEvento').classList.add('show');
+        }
+        function fecharModalEvento() { qs('#modalEvento').classList.remove('show'); }
+        qs('#btnNovoEvento').addEventListener('click', () => abrirModalEvento(null));
+        qs('#formEvento').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = qs('#evento-id').value;
+            const payload = {
+                churchId: churchId(),
+                title: qs('#evento-titulo').value.trim(),
+                start_date: qs('#evento-start_date').value,
+                recurrence_type: qs('#evento-recurrence_type').value,
+                recurrence_end_date: qs('#evento-recurrence_end_date').value || null
+            };
+            const checked = qsa('#evento-funcoes-checklist input:checked');
+            payload.function_ids = Array.from(checked).map(c => c.value);
+            const url = id ? API + '/api/escalas/eventos/' + id : API + '/api/escalas/eventos';
+            const method = id ? 'PUT' : 'POST';
+            const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) { alert(data.error || 'Erro ao salvar evento'); return; }
+            fecharModalEvento();
+            toast(id ? 'Evento atualizado!' : 'Evento criado!');
+            carregarEventos();
+            carregarDashboard();
+        });
+
+        async function editarEvento(id) {
+            abrirModalEvento(id);
+        }
+
+        function toast(msg) {
+            const el = document.createElement('div');
+            el.className = 'toast';
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 2500);
+        }
+        async function carregarGruposEFuncoes() {
+            const [rGrupos, rFunc] = await Promise.all([
+                fetch(API + '/api/escalas/grupos?churchId=' + churchId()),
+                fetch(API + '/api/escalas/funcoes?churchId=' + churchId())
+            ]);
+            const grupos = await rGrupos.json();
+            const funcoes = await rFunc.json();
+            const gList = qs('#grupos-list');
+            const gruposEmpty = qs('#grupos-empty');
+            if (!grupos.length) {
+                gList.innerHTML = '';
+                if (gruposEmpty) gruposEmpty.style.display = 'block';
+            } else {
+                if (gruposEmpty) gruposEmpty.style.display = 'none';
+                gList.innerHTML = '<table><thead><tr><th>Grupo</th><th>Pai</th><th>Acoes</th></tr></thead><tbody></tbody></table>';
+                const gTbody = gList.querySelector('tbody');
+                grupos.forEach(g => {
+                    const pai = grupos.find(x => x.id === g.parent_id);
+                    gTbody.innerHTML += `<tr>
+                        <td><strong>${g.name}</strong></td>
+                        <td>${pai ? pai.name : '-'}</td>
+                        <td><button type="button" class="btn btn-sm btn-ghost" onclick="abrirModalGrupo(${g.id})">Editar</button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="excluirGrupo(${g.id})">Excluir</button></td>
+                    </tr>`;
+                });
+            }
+            const fList = qs('#funcoes-list');
+            fList.innerHTML = '<h4>Funcoes por grupo</h4><table><thead><tr><th>Funcao</th><th>Grupo</th><th>Max.</th><th>Acoes</th></tr></thead><tbody></tbody></table>';
+            const fTbody = fList.querySelector('tbody');
+            funcoes.forEach(f => {
+                fTbody.innerHTML += `<tr>
+                    <td>${f.name}</td>
+                    <td>${f.group_name || '-'}</td>
+                    <td>${f.max_quantity || '-'}</td>
+                    <td><button type="button" class="btn btn-sm btn-ghost" onclick="abrirModalFuncao(${f.id})">Editar</button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="excluirFuncao(${f.id})">Excluir</button></td>
+                </tr>`;
+            });
+            if (!funcoes.length) fTbody.innerHTML = '<tr><td colspan="4" class="empty-msg">Nenhuma funcao. Crie primeiro um grupo e depois clique em Nova funcao.</td></tr>';
+        }
+
+        async function abrirModalGrupo(editId) {
+            qs('#modalGrupoTitulo').textContent = editId ? 'Editar grupo' : 'Novo grupo';
+            qs('#grupo-id').value = editId || '';
+            qs('#formGrupo').reset();
+            const r = await fetch(API + '/api/escalas/grupos?churchId=' + churchId());
+            const grupos = await r.json();
+            const sel = qs('#grupo-parent_id');
+            sel.innerHTML = '<option value="">Nenhum</option>' + grupos.filter(g => g.id !== editId).map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+            if (editId) {
+                const g = grupos.find(x => x.id == editId);
+                if (g) { qs('#grupo-nome').value = g.name; sel.value = g.parent_id || ''; }
+            }
+            qs('#modalGrupo').classList.add('show');
+        }
+        function fecharModalGrupo() { qs('#modalGrupo').classList.remove('show'); }
+        qs('#btnNovoGrupo').addEventListener('click', () => abrirModalGrupo(null));
+        qs('#formGrupo').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = qs('#grupo-id').value;
+            const payload = { churchId: churchId(), name: qs('#grupo-nome').value.trim(), parent_id: qs('#grupo-parent_id').value || null };
+            const url = id ? API + '/api/escalas/grupos/' + id : API + '/api/escalas/grupos';
+            const r = await fetch(url, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) { alert(data.error || 'Erro ao salvar grupo'); return; }
+            fecharModalGrupo();
+            toast(id ? 'Grupo atualizado!' : 'Grupo criado!');
+            carregarGruposEFuncoes();
+        });
+        async function excluirGrupo(id) {
+            if (!confirm('Excluir grupo e todas as funcoes?')) return;
+            await fetch(API + '/api/escalas/grupos/' + id, { method: 'DELETE' });
+            carregarGruposEFuncoes();
+        }
+
+        async function abrirModalFuncao(editId) {
+            const rGrupos = await fetch(API + '/api/escalas/grupos?churchId=' + churchId());
+            const grupos = await rGrupos.json();
+            if (!editId && !grupos.length) {
+                alert('Crie primeiro um grupo (aba Grupos e Funcoes, botao Novo grupo).');
+                return;
+            }
+            qs('#modalFuncaoTitulo').textContent = editId ? 'Editar funcao' : 'Nova funcao';
+            qs('#funcao-id').value = editId || '';
+            qs('#formFuncao').reset();
+            const rFunc = await fetch(API + '/api/escalas/funcoes?churchId=' + churchId());
+            const funcoes = await rFunc.json();
+            const sel = qs('#funcao-group_id');
+            sel.innerHTML = grupos.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+            if (editId) {
+                const f = funcoes.find(x => x.id == editId);
+                if (f) {
+                    qs('#funcao-nome').value = f.name;
+                    qs('#funcao-max_quantity').value = f.max_quantity || '';
+                    sel.value = f.group_id;
+                }
+            }
+            qs('#modalFuncao').classList.add('show');
+        }
+        function fecharModalFuncao() { qs('#modalFuncao').classList.remove('show'); }
+        qs('#btnNovaFuncao').addEventListener('click', () => abrirModalFuncao(null));
+        qs('#formFuncao').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = qs('#funcao-id').value;
+            const payload = {
+                group_id: qs('#funcao-group_id').value,
+                name: qs('#funcao-nome').value.trim(),
+                max_quantity: qs('#funcao-max_quantity').value || null
+            };
+            if (!payload.group_id) { alert('Selecione um grupo.'); return; }
+            const url = id ? API + '/api/escalas/funcoes/' + id : API + '/api/escalas/funcoes';
+            const r = await fetch(url, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) { alert(data.error || 'Erro ao salvar funcao'); return; }
+            fecharModalFuncao();
+            toast(id ? 'Funcao atualizada!' : 'Funcao criada!');
+            carregarGruposEFuncoes();
+        });
+        async function excluirFuncao(id) {
+            if (!confirm('Excluir esta funcao?')) return;
+            await fetch(API + '/api/escalas/funcoes/' + id, { method: 'DELETE' });
+            carregarGruposEFuncoes();
+        }
+
+        let matrizData = { instances: [], functions: [], assignments: [] };
+        async function carregarMatriz() {
+            const from = qs('#matriz-from').value || new Date().toISOString().slice(0, 10);
+            const to = qs('#matriz-to').value || new Date(Date.now() + 60*24*60*60*1000).toISOString().slice(0, 10);
+            qs('#matriz-from').value = from;
+            qs('#matriz-to').value = to;
+            const eventId = qs('#matriz-evento').value || '';
+            const url = API + '/api/escalas/matriz?churchId=' + churchId() + '&from=' + from + '&to=' + to + (eventId ? '&eventId=' + eventId : '');
+            const r = await fetch(url);
+            matrizData = await r.json();
+            const evR = await fetch(API + '/api/escalas/eventos?churchId=' + churchId());
+            const eventos = await evR.json();
+            const sel = qs('#matriz-evento');
+            const oldVal = sel.value;
+            sel.innerHTML = '<option value="">Todos os eventos</option>' + eventos.map(e => `<option value="${e.id}">${e.title}</option>`).join('');
+            sel.value = oldVal || (new URLSearchParams(location.search).get('eventId') || '');
+            renderMatriz();
+        }
+        function renderMatriz() {
+            const thead = qs('#matriz-thead');
+            const tbody = qs('#matriz-tbody');
+            const inst = matrizData.instances || [];
+            const funcs = matrizData.functions || [];
+            const assign = matrizData.assignments || [];
+            const matrizEmpty = qs('#matriz-empty');
+            if (matrizEmpty) matrizEmpty.style.display = inst.length ? 'none' : 'block';
+            thead.innerHTML = '<tr><th>Data / Evento</th>' + funcs.map(f => `<th>${f.name}</th>`).join('') + '</tr>';
+            tbody.innerHTML = '';
+            inst.forEach(i => {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td><strong>' + i.instance_date + '</strong><br><small>' + (i.title || '') + '</small></td>';
+                funcs.forEach(f => {
+                    const cellAssigns = assign.filter(a => a.instance_id === i.instance_id && a.function_id === f.id);
+                    const namesHtml = cellAssigns.length ? cellAssigns.map(a =>
+                        '<span style="display:inline-block;margin:2px 0;">' + a.full_name + ' <button type="button" class="btn btn-sm" style="padding:0 6px;font-size:10px;color:#dc2626;" onclick="removerAtribuicao(' + a.id + ')">x</button></span>'
+                    ).join('') : '-';
+                    const addBtn = '<div class="btn-add" data-iid="' + i.instance_id + '" data-fid="' + f.id + '"><i class="fa-solid fa-plus"></i> Atribuir</div>';
+                    row.innerHTML += '<td class="cell-assign"><div class="nome">' + namesHtml + '</div>' + addBtn + '</td>';
+                });
+                tbody.appendChild(row);
+            });
+            tbody.querySelectorAll('.btn-add').forEach(btn => {
+                btn.addEventListener('click', () => abrirModalAtribuir(btn.dataset.iid, btn.dataset.fid));
+            });
+        }
+        qs('#btnCarregarMatriz').addEventListener('click', carregarMatriz);
+
+        let atribuirInstanceId = null, atribuirFunctionId = null;
+        async function abrirModalAtribuir(instanceId, functionId) {
+            atribuirInstanceId = instanceId;
+            atribuirFunctionId = functionId;
+            const inst = (matrizData.instances || []).find(i => i.instance_id == instanceId);
+            const func = (matrizData.functions || []).find(f => f.id == functionId);
+            qs('#modalAtribuirContexto').textContent = (inst ? inst.instance_date + ' - ' + inst.title : '') + ' / ' + (func ? func.name : '');
+            const r = await fetch(API + '/membros?churchId=' + churchId());
+            const membros = await r.json();
+            const sel = qs('#atribuir-member_id');
+            sel.innerHTML = '<option value="">Selecione</option>' + membros.map(m => `<option value="${m.id}">${m.full_name}</option>`).join('');
+            qs('#modalAtribuir').classList.add('show');
+        }
+        function fecharModalAtribuir() { qs('#modalAtribuir').classList.remove('show'); }
+        qs('#btnConfirmarAtribuir').addEventListener('click', async () => {
+            const memberId = qs('#atribuir-member_id').value;
+            if (!memberId) return;
+            const r = await fetch(API + '/api/escalas/atribuicoes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ instance_id: atribuirInstanceId, function_id: atribuirFunctionId, member_id: memberId })
+            });
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) { alert(data.error || 'Erro ao atribuir'); return; }
+            fecharModalAtribuir();
+            carregarMatriz();
+            carregarDashboard();
+        });
+
+        async function removerAtribuicao(assignmentId) {
+            if (!confirm('Remover esta atribuicao?')) return;
+            await fetch(API + '/api/escalas/atribuicoes/' + assignmentId, { method: 'DELETE' });
+            carregarMatriz();
+            carregarDashboard();
+        }
+
+        async function carregarConflitos() {
+            const r = await fetch(API + '/api/escalas/conflitos?churchId=' + churchId());
+            const list = await r.json();
+            const tbody = qs('#lista-conflitos');
+            tbody.innerHTML = '';
+            if (!list.length) { qs('#conflitos-empty').style.display = 'block'; return; }
+            qs('#conflitos-empty').style.display = 'none';
+            list.forEach(c => {
+                tbody.innerHTML += `<tr><td>${c.full_name}</td><td>${c.instance_date}</td><td>${c.events_same_day}</td></tr>`;
+            });
+        }
+
+        // Inicializacao
+        carregarDashboard();
+        const tab = new URLSearchParams(location.search).get('tab');
+        if (tab) {
+            const btn = qs('.tab-btn[data-tab="' + tab + '"]');
+            if (btn) btn.click();
+        }
+        const eventId = new URLSearchParams(location.search).get('eventId');
+        if (eventId) {
+            setTimeout(() => { qs('.tab-btn[data-tab="matriz"]').click(); qs('#matriz-evento').value = eventId; carregarMatriz(); }, 300);
+        }
+    </script>
+    <script src="speed-insights.js" defer></script>
+</body>
+</html>
+

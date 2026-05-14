@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Encerramento do Exercicio</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; box-shadow:0 8px 24px rgba(15,23,42,.08); margin-bottom:16px; }
+        .checklist { display:grid; gap:10px; margin:12px 0; }
+        .item { display:flex; gap:10px; align-items:center; padding:10px; border:1px solid #e5e7eb; border-radius:8px; }
+        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
+        .btn-danger { background:#b91c1c; }
+        .status { margin-top:12px; color:#0f172a; font-weight:700; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="encerramento_exercicio.html" data-shell-title="Encerramento do Exercicio" data-shell-breadcrumb="LDFP / Contabilidade / Encerramento do Exercicio" data-shell-chip="Contabilidade" data-shell-role="Financeiro">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Encerramento do Exercicio</h2>
+                <p>Valide os itens de fechamento para concluir o periodo contabil com seguranca.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-flag-checkered"></i> Fechamento</div>
+        </div>
+
+        <section class="card">
+            <h3>Checklist de fechamento</h3>
+            <div class="checklist">
+                <label class="item"><input type="checkbox" class="chk"> Conciliacao bancaria concluida</label>
+                <label class="item"><input type="checkbox" class="chk"> Livro diario validado</label>
+                <label class="item"><input type="checkbox" class="chk"> Balancete de abertura revisado</label>
+                <label class="item"><input type="checkbox" class="chk"> Relatorios emitidos para diretoria</label>
+            </div>
+            <button id="btnEncerrar" class="btn btn-danger" type="button">Encerrar exercicio</button>
+            <p id="status" class="status"></p>
+        </section>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+requireAuthSession();
+
+const KEY = 'ldfp_ultimo_encerramento_v1';
+
+function loadStatus() {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return;
+    document.getElementById('status').textContent = 'Ultimo encerramento: ' + new Date(raw).toLocaleString('pt-BR');
+}
+
+document.getElementById('btnEncerrar').addEventListener('click', () => {
+    const checks = Array.from(document.querySelectorAll('.chk'));
+    const ok = checks.every((c) => c.checked);
+    const status = document.getElementById('status');
+    if (!ok) {
+        status.textContent = 'Marque todos os itens do checklist antes de encerrar.';
+        return;
+    }
+
+    const now = new Date().toISOString();
+    localStorage.setItem(KEY, now);
+    status.textContent = 'Exercicio encerrado com sucesso em ' + new Date(now).toLocaleString('pt-BR') + '.';
+});
+
+loadStatus();
+</script>
+</body>
+</html>

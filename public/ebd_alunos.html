@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Alunos EBD</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap { padding: 24px 30px 30px; }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            border: none;
+            border-radius: 8px;
+            padding: 9px 14px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%);
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            border: 1px solid #dbe3ef;
+            padding: 8px 12px;
+            border-radius: 8px;
+            min-width: 260px;
+        }
+        .search-box input { border: none; outline: none; font-size: 14px; width: 100%; }
+        .table-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 13px;
+            color: #334155;
+        }
+        th {
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .actions-col { width: 110px; text-align: right; white-space: nowrap; }
+        .icon-btn {
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #64748b;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-left: 6px;
+        }
+        .icon-btn:hover {
+            background: #fff8e1;
+            color: #92400e;
+            border-color: #fcd34d;
+        }
+        .muted { color: #94a3b8; }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Alunos" data-shell-breadcrumb="LDFP / Secretaria / EBD / Alunos" data-shell-active="ebd_alunos.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <div class="page-header">
+                <button class="btn-primary" type="button" id="btnNovoAluno"><i class="fa-solid fa-plus"></i> Novo Aluno</button>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Pesquisar aluno...">
+                </div>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Estágio</th>
+                            <th>Nome da Turma</th>
+                            <th class="actions-col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const STORAGE_KEY = 'ldfpEbdStudents';
+        const studentsBody = document.getElementById('studentsBody');
+        const searchInput = document.getElementById('searchInput');
+
+        document.getElementById('btnNovoAluno').addEventListener('click', () => {
+            window.location.href = 'ebd_aluno_novo.html';
+        });
+
+        function readStudents() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        }
+
+        function writeStudents(list) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        }
+
+        function renderRows() {
+            const students = readStudents();
+            if (!students.length) {
+                studentsBody.innerHTML = '<tr><td colspan="4" class="muted">Nenhum resultado foi encontrado.</td></tr>';
+                return;
+            }
+
+            studentsBody.innerHTML = students.map((item) => `
+                <tr data-search="${(item.nome || '').toLowerCase()} ${(item.estagio || '').toLowerCase()} ${(item.turma || '').toLowerCase()}">
+                    <td>${item.nome || '-'}</td>
+                    <td>${item.estagio || '-'}</td>
+                    <td>${item.turma || '-'}</td>
+                    <td class="actions-col">
+                        <button class="icon-btn" type="button" title="Editar" data-edit="${item.id}"><i class="fa-regular fa-pen-to-square"></i></button>
+                        <button class="icon-btn" type="button" title="Excluir" data-delete="${item.id}"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function handleTableAction(event) {
+            const editId = event.target.closest('[data-edit]')?.getAttribute('data-edit');
+            if (editId) {
+                window.location.href = `ebd_aluno_novo.html?edit=${encodeURIComponent(editId)}`;
+                return;
+            }
+
+            const deleteId = event.target.closest('[data-delete]')?.getAttribute('data-delete');
+            if (!deleteId) return;
+
+            const next = readStudents().filter((item) => String(item.id) !== String(deleteId));
+            writeStudents(next);
+            renderRows();
+            applyFilter();
+        }
+
+        function applyFilter() {
+            const term = searchInput.value.trim().toLowerCase();
+            const rows = Array.from(studentsBody.querySelectorAll('tr'));
+            rows.forEach((row) => {
+                const text = row.getAttribute('data-search') || row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        }
+
+        studentsBody.addEventListener('click', handleTableAction);
+        searchInput.addEventListener('input', applyFilter);
+
+        window.addEventListener('storage', () => {
+            renderRows();
+            applyFilter();
+        });
+
+        renderRows();
+    </script>
+</body>
+</html>

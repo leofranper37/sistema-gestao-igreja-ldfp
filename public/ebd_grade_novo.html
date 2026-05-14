@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Novo Apontamento EBD</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap { padding: 24px 30px 30px; }
+        .form-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+            max-width: 980px;
+        }
+        .form-head {
+            padding: 12px 14px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .form-body { padding: 16px; display: grid; gap: 12px; }
+        .section {
+            background: #ffffff;
+            border: 1px solid #e9edf4;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .section-title {
+            margin: 0 0 10px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #92400e;
+            border-bottom: 1px solid #fcd34d;
+            padding-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .field input, .field select {
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            background: #fff;
+        }
+        .students-box {
+            border: 1px dashed #dbe3ef;
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 120px;
+        }
+        .student-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .student-row:last-child { border-bottom: none; }
+        .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .btn-primary {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%);
+        }
+        .btn-ghost {
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: #fff;
+        }
+        .status { font-size: 12px; font-weight: 600; color: #92400e; }
+        .status.error { color: #b91c1c; }
+        .muted { color: #94a3b8; font-style: italic; }
+        @media (max-width: 900px) {
+            .grid-4 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Novo Apontamento" data-shell-breadcrumb="LDFP / Secretaria / EBD / Grades EBD / Novo Apontamento" data-shell-active="ebd_grades.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <div class="form-card">
+                <div class="form-head" id="formHead">Novo Apontamento</div>
+                <form id="gradeForm" class="form-body">
+                    <div class="section">
+                        <h3 class="section-title">Dados do Apontamento</h3>
+                        <div class="grid-4">
+                            <div class="field">
+                                <label for="turmaGrade">Turma</label>
+                                <select id="turmaGrade" required></select>
+                            </div>
+                            <div class="field">
+                                <label for="dataGrade">Data</label>
+                                <input type="date" id="dataGrade" required>
+                            </div>
+                            <div class="field">
+                                <label for="ofertaGrade">Oferta</label>
+                                <input type="number" id="ofertaGrade" min="0" step="0.01" value="0">
+                            </div>
+                            <div class="field">
+                                <label for="visitantesGrade">Visitas</label>
+                                <input type="number" id="visitantesGrade" min="0" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="section-title">Alunos</h3>
+                        <div class="students-box" id="studentsBox">
+                            <p class="muted">Selecione a turma para carregar os alunos.</p>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn-primary" type="submit" id="btnSalvar">Salvar</button>
+                        <button class="btn-ghost" type="button" id="btnVoltar">Voltar</button>
+                        <span class="status" id="statusMsg"></span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const STORAGE_GRADES = 'ldfpEbdGrades';
+        const STORAGE_CLASSES = 'ldfpEbdClasses';
+        const STORAGE_STUDENTS = 'ldfpEbdStudents';
+
+        const form = document.getElementById('gradeForm');
+        const statusMsg = document.getElementById('statusMsg');
+        const formHead = document.getElementById('formHead');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const turmaSelect = document.getElementById('turmaGrade');
+        const studentsBox = document.getElementById('studentsBox');
+
+        const params = new URLSearchParams(window.location.search);
+        const editingId = params.get('edit');
+
+        let selectedStudents = [];
+
+        function readStorage(key) {
+            return JSON.parse(localStorage.getItem(key) || '[]');
+        }
+
+        function writeGrades(list) {
+            localStorage.setItem(STORAGE_GRADES, JSON.stringify(list));
+        }
+
+        function makeId() {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                return window.crypto.randomUUID();
+            }
+            return String(Date.now());
+        }
+
+        function fillClassOptions() {
+            const classes = readStorage(STORAGE_CLASSES);
+            turmaSelect.innerHTML = '<option value="">Selecione...</option>' + classes.map((item) => {
+                return `<option value="${item.nomeTurma}">${item.nomeTurma}</option>`;
+            }).join('');
+        }
+
+        function loadStudentsByClass(className) {
+            const students = readStorage(STORAGE_STUDENTS).filter((item) => (item.turma || '') === className);
+            if (!students.length) {
+                studentsBox.innerHTML = '<p class="muted">Nenhum aluno encontrado para esta turma.</p>';
+                selectedStudents = [];
+                return;
+            }
+
+            selectedStudents = students.map((item) => ({
+                nome: item.nome,
+                presente: true
+            }));
+
+            renderStudentRows();
+        }
+
+        function renderStudentRows() {
+            if (!selectedStudents.length) {
+                studentsBox.innerHTML = '<p class="muted">Nenhum aluno encontrado para esta turma.</p>';
+                return;
+            }
+
+            studentsBox.innerHTML = selectedStudents.map((item, index) => {
+                const checked = item.presente ? 'checked' : '';
+                return `
+                    <div class="student-row">
+                        <span>${item.nome || '-'}</span>
+                        <label><input type="checkbox" data-index="${index}" ${checked}> Presente</label>
+                    </div>
+                `;
+            }).join('');
+
+            studentsBox.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+                checkbox.addEventListener('change', () => {
+                    const idx = Number(checkbox.getAttribute('data-index'));
+                    if (Number.isFinite(idx) && selectedStudents[idx]) {
+                        selectedStudents[idx].presente = checkbox.checked;
+                    }
+                });
+            });
+        }
+
+        function loadEditData() {
+            if (!editingId) return;
+
+            const item = readStorage(STORAGE_GRADES).find((entry) => String(entry.id) === String(editingId));
+            if (!item) {
+                statusMsg.textContent = 'Apontamento nao encontrado para edicao.';
+                statusMsg.classList.add('error');
+                return;
+            }
+
+            document.getElementById('dataGrade').value = item.data || '';
+            document.getElementById('ofertaGrade').value = item.oferta || 0;
+            document.getElementById('visitantesGrade').value = item.visitantes || 0;
+            turmaSelect.value = item.turma || '';
+
+            selectedStudents = Array.isArray(item.alunos) ? item.alunos : [];
+            renderStudentRows();
+
+            formHead.textContent = 'Editar Apontamento';
+            btnSalvar.textContent = 'Atualizar';
+        }
+
+        turmaSelect.addEventListener('change', () => {
+            const className = turmaSelect.value;
+            if (!className) {
+                studentsBox.innerHTML = '<p class="muted">Selecione a turma para carregar os alunos.</p>';
+                selectedStudents = [];
+                return;
+            }
+
+            if (!editingId) {
+                loadStudentsByClass(className);
+            }
+        });
+
+        document.getElementById('btnVoltar').addEventListener('click', () => {
+            window.location.href = 'ebd_grades.html';
+        });
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const turma = turmaSelect.value.trim();
+            const data = document.getElementById('dataGrade').value;
+            const oferta = document.getElementById('ofertaGrade').value;
+            const visitantes = document.getElementById('visitantesGrade').value;
+
+            if (!turma || !data) {
+                statusMsg.textContent = 'Informe Turma e Data.';
+                statusMsg.classList.add('error');
+                return;
+            }
+
+            const grades = readStorage(STORAGE_GRADES);
+
+            if (editingId) {
+                const index = grades.findIndex((entry) => String(entry.id) === String(editingId));
+                if (index >= 0) {
+                    grades[index] = {
+                        ...grades[index],
+                        turma,
+                        data,
+                        oferta,
+                        visitantes,
+                        alunos: selectedStudents,
+                        updatedAt: new Date().toISOString()
+                    };
+                }
+                statusMsg.textContent = 'Apontamento atualizado com sucesso!';
+            } else {
+                grades.push({
+                    id: makeId(),
+                    turma,
+                    data,
+                    oferta,
+                    visitantes,
+                    alunos: selectedStudents,
+                    createdAt: new Date().toISOString()
+                });
+                statusMsg.textContent = 'Apontamento salvo com sucesso!';
+                form.reset();
+                studentsBox.innerHTML = '<p class="muted">Selecione a turma para carregar os alunos.</p>';
+                selectedStudents = [];
+            }
+
+            statusMsg.classList.remove('error');
+            writeGrades(grades);
+        });
+
+        fillClassOptions();
+        document.getElementById('dataGrade').value = new Date().toISOString().slice(0, 10);
+        loadEditData();
+    </script>
+</body>
+</html>

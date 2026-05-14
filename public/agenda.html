@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Agenda</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .agenda-wrap {
+            padding: 22px 28px 28px;
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+            gap: 18px;
+        }
+
+        .agenda-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+        }
+
+        .agenda-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(120deg, #f8fafc 0%, #eef6ff 100%);
+        }
+
+        .agenda-title {
+            margin: 0;
+            font-size: 1rem;
+            color: #0f172a;
+        }
+
+        .agenda-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-clean {
+            border: 1px solid #dbe3ee;
+            background: #fff;
+            color: #334155;
+            border-radius: 8px;
+            padding: 8px 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            border: 0;
+            background: #0f766e;
+            color: #fff;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .month-label {
+            min-width: 160px;
+            text-align: center;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            border-top: 1px solid #e5e7eb;
+            border-left: 1px solid #e5e7eb;
+        }
+
+        .calendar-weekday,
+        .calendar-cell {
+            border-right: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .calendar-weekday {
+            background: #f8fafc;
+            text-align: center;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #64748b;
+            padding: 8px 4px;
+            font-weight: 700;
+        }
+
+        .calendar-cell {
+            min-height: 96px;
+            padding: 6px;
+            cursor: pointer;
+            background: #fff;
+            transition: background-color 0.2s ease;
+        }
+
+        .calendar-cell:hover {
+            background: #f8fbff;
+        }
+
+        .calendar-cell.outside {
+            background: #f8fafc;
+            color: #94a3b8;
+        }
+
+        .calendar-cell.selected {
+            outline: 2px solid #0f766e;
+            outline-offset: -2px;
+            background: #ecfeff;
+        }
+
+        .calendar-day {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .calendar-event {
+            display: block;
+            font-size: 0.7rem;
+            border-radius: 6px;
+            padding: 3px 5px;
+            margin-bottom: 4px;
+            color: #134e4a;
+            background: #ccfbf1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .event-list {
+            padding: 12px 14px 14px;
+        }
+
+        .event-list-title {
+            margin: 0 0 10px;
+            font-size: 0.95rem;
+            color: #1e293b;
+        }
+
+        .event-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #ffffff;
+        }
+
+        .event-item h4 {
+            margin: 0 0 4px;
+            font-size: 0.9rem;
+            color: #0f172a;
+        }
+
+        .event-item p {
+            margin: 0;
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+
+        .event-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .event-actions button {
+            border: 1px solid #dbe3ee;
+            border-radius: 6px;
+            background: #fff;
+            padding: 5px 8px;
+            font-size: 0.72rem;
+            cursor: pointer;
+        }
+
+        .event-actions .danger {
+            color: #b91c1c;
+            border-color: #fecaca;
+            background: #fef2f2;
+        }
+
+        .empty-state {
+            font-size: 0.82rem;
+            color: #94a3b8;
+            text-align: center;
+            padding: 20px 8px;
+            border: 1px dashed #dbe3ee;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 120;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            width: min(480px, 92vw);
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+            padding: 16px;
+        }
+
+        .modal h3 {
+            margin: 0 0 12px;
+            color: #0f172a;
+        }
+
+        .form-field {
+            margin-bottom: 10px;
+        }
+
+        .form-field label {
+            display: block;
+            font-size: 0.76rem;
+            margin-bottom: 4px;
+            color: #475569;
+            font-weight: 700;
+        }
+
+        .form-field input,
+        .form-field textarea {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #dbe3ee;
+            border-radius: 8px;
+            padding: 9px 10px;
+            font-size: 0.86rem;
+            font-family: inherit;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .message {
+            margin-top: 8px;
+            font-size: 0.78rem;
+            color: #b91c1c;
+        }
+
+        @media (max-width: 1100px) {
+            .agenda-wrap {
+                grid-template-columns: 1fr;
+                padding: 14px;
+            }
+
+            .calendar-cell {
+                min-height: 84px;
+            }
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Agenda" data-shell-breadcrumb="LDFP / Secretaria / Agenda" data-shell-active="agenda.html" data-shell-chip="Agenda ativa" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <section class="agenda-wrap">
+            <article class="agenda-card">
+                <header class="agenda-card-header">
+                    <h2 class="agenda-title">Calendario mensal</h2>
+                    <div class="agenda-controls">
+                        <button type="button" class="btn-clean" id="btnPrev"><i class="fa-solid fa-chevron-left"></i></button>
+                        <div class="month-label" id="monthLabel"></div>
+                        <button type="button" class="btn-clean" id="btnNext"><i class="fa-solid fa-chevron-right"></i></button>
+                        <button type="button" class="btn-primary" id="btnNovoEvento"><i class="fa-solid fa-plus"></i> Novo evento</button>
+                    </div>
+                </header>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </article>
+
+            <aside class="agenda-card">
+                <header class="agenda-card-header">
+                    <h3 class="agenda-title" id="selectedDateLabel">Eventos do dia</h3>
+                </header>
+                <div class="event-list" id="eventList"></div>
+            </aside>
+        </section>
+    </main>
+
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal">
+            <h3 id="modalTitle">Novo evento</h3>
+            <form id="eventForm">
+                <input type="hidden" id="eventId">
+                <div class="form-field">
+                    <label for="titulo">Titulo</label>
+                    <input type="text" id="titulo" maxlength="255" required>
+                </div>
+                <div class="form-field">
+                    <label for="descricao">Descricao</label>
+                    <textarea id="descricao" rows="3" maxlength="4000"></textarea>
+                </div>
+                <div class="form-field">
+                    <label for="inicio">Inicio</label>
+                    <input type="datetime-local" id="inicio" required>
+                </div>
+                <div class="form-field">
+                    <label for="fim">Fim</label>
+                    <input type="datetime-local" id="fim" required>
+                </div>
+                <div class="message" id="formMessage"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-clean" id="btnCancelar">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const monthNames = ['janeiro', 'fevereiro', 'marco', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+        const weekNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+
+        let currentMonth = new Date();
+        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        let selectedDate = new Date();
+        let monthEvents = [];
+
+        const calendarGrid = document.getElementById('calendarGrid');
+        const monthLabel = document.getElementById('monthLabel');
+        const selectedDateLabel = document.getElementById('selectedDateLabel');
+        const eventList = document.getElementById('eventList');
+        const eventModal = document.getElementById('eventModal');
+        const eventForm = document.getElementById('eventForm');
+
+        function formatDateKey(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function toInputDateTime(value) {
+            if (!value) return '';
+            const normalized = String(value).replace(' ', 'T').slice(0, 16);
+            return normalized;
+        }
+
+        function parseDateTime(value) {
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        }
+
+        function toApiDateTime(value) {
+            const date = parseDateTime(value);
+            return date ? date.toISOString() : '';
+        }
+
+        function toDateLabel(date) {
+            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+        }
+
+        function eventMatchesDay(event, date) {
+            const start = parseDateTime(String(event.inicio).replace(' ', 'T'));
+            const end = parseDateTime(String(event.fim).replace(' ', 'T'));
+            if (!start || !end) return false;
+
+            const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+            const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1, 0, 0, 0, 0);
+
+            return start < dayEnd && end > dayStart;
+        }
+
+        function renderCalendar() {
+            monthLabel.textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
+            calendarGrid.innerHTML = '';
+
+            weekNames.forEach((name) => {
+                const header = document.createElement('div');
+                header.className = 'calendar-weekday';
+                header.textContent = name;
+                calendarGrid.appendChild(header);
+            });
+
+            const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+            const gridStart = new Date(monthStart);
+            gridStart.setDate(monthStart.getDate() - monthStart.getDay());
+
+            for (let i = 0; i < 42; i += 1) {
+                const cellDate = new Date(gridStart);
+                cellDate.setDate(gridStart.getDate() + i);
+
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+                if (cellDate.getMonth() !== currentMonth.getMonth()) {
+                    cell.classList.add('outside');
+                }
+                if (formatDateKey(cellDate) === formatDateKey(selectedDate)) {
+                    cell.classList.add('selected');
+                }
+
+                const day = document.createElement('div');
+                day.className = 'calendar-day';
+                day.textContent = String(cellDate.getDate());
+                cell.appendChild(day);
+
+                const events = monthEvents.filter((event) => eventMatchesDay(event, cellDate)).slice(0, 2);
+                events.forEach((event) => {
+                    const tag = document.createElement('span');
+                    tag.className = 'calendar-event';
+                    tag.title = event.titulo;
+                    tag.textContent = event.titulo;
+                    cell.appendChild(tag);
+                });
+
+                cell.addEventListener('click', () => {
+                    selectedDate = cellDate;
+                    renderCalendar();
+                    renderDayEvents();
+                });
+
+                calendarGrid.appendChild(cell);
+            }
+        }
+
+        function renderDayEvents() {
+            selectedDateLabel.textContent = `Eventos de ${toDateLabel(selectedDate)}`;
+            const events = monthEvents.filter((event) => eventMatchesDay(event, selectedDate));
+
+            if (!events.length) {
+                eventList.innerHTML = '<div class="empty-state">Nenhum evento neste dia.</div>';
+                return;
+            }
+
+            eventList.innerHTML = events.map((event) => {
+                const inicio = toInputDateTime(event.inicio);
+                const fim = toInputDateTime(event.fim);
+                return `
+                    <article class="event-item">
+                        <h4>${event.titulo}</h4>
+                        <p>${inicio.replace('T', ' ')} ate ${fim.replace('T', ' ')}</p>
+                        <p>${event.descricao || 'Sem descricao.'}</p>
+                        <div class="event-actions">
+                            <button type="button" data-action="edit" data-id="${event.id}">Editar</button>
+                            <button type="button" class="danger" data-action="delete" data-id="${event.id}">Excluir</button>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            eventList.querySelectorAll('button[data-action="edit"]').forEach((button) => {
+                button.addEventListener('click', () => openModal(Number(button.dataset.id)));
+            });
+
+            eventList.querySelectorAll('button[data-action="delete"]').forEach((button) => {
+                button.addEventListener('click', () => removeEvent(Number(button.dataset.id)));
+            });
+        }
+
+        async function fetchMonthEvents() {
+            const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1, 0, 0, 0, 0);
+            const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1, 0, 0, 0, 0);
+            const query = new URLSearchParams({
+                start: start.toISOString(),
+                end: end.toISOString()
+            });
+
+            const response = await fetch(`/agenda/eventos?${query.toString()}`);
+            if (!response.ok) {
+                throw new Error('Falha ao carregar agenda.');
+            }
+
+            monthEvents = await response.json();
+        }
+
+        function resetFormMessage(text = '') {
+            const node = document.getElementById('formMessage');
+            node.textContent = text;
+        }
+
+        function openModal(id = null) {
+            const modalTitle = document.getElementById('modalTitle');
+            const idNode = document.getElementById('eventId');
+            const titulo = document.getElementById('titulo');
+            const descricao = document.getElementById('descricao');
+            const inicio = document.getElementById('inicio');
+            const fim = document.getElementById('fim');
+
+            resetFormMessage();
+            idNode.value = '';
+
+            if (id) {
+                const event = monthEvents.find((item) => Number(item.id) === Number(id));
+                if (!event) return;
+                modalTitle.textContent = 'Editar evento';
+                idNode.value = String(event.id);
+                titulo.value = event.titulo || '';
+                descricao.value = event.descricao || '';
+                inicio.value = toInputDateTime(event.inicio);
+                fim.value = toInputDateTime(event.fim);
+            } else {
+                modalTitle.textContent = 'Novo evento';
+                const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 19, 0, 0, 0);
+                const end = new Date(start.getTime() + (2 * 60 * 60 * 1000));
+                titulo.value = '';
+                descricao.value = '';
+                inicio.value = toInputDateTime(start.toISOString());
+                fim.value = toInputDateTime(end.toISOString());
+            }
+
+            eventModal.classList.add('show');
+        }
+
+        function closeModal() {
+            eventModal.classList.remove('show');
+        }
+
+        async function submitEvent(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('eventId').value;
+            const payload = {
+                titulo: document.getElementById('titulo').value.trim(),
+                descricao: document.getElementById('descricao').value.trim(),
+                inicio: toApiDateTime(document.getElementById('inicio').value),
+                fim: toApiDateTime(document.getElementById('fim').value)
+            };
+
+            if (!payload.titulo || !payload.inicio || !payload.fim) {
+                resetFormMessage('Preencha título, início e fim.');
+                return;
+            }
+
+            const url = id ? `/agenda/eventos/${id}` : '/agenda/eventos';
+            const method = id ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                resetFormMessage(data.error || 'Nao foi possivel salvar o evento.');
+                return;
+            }
+
+            closeModal();
+            await refreshAgenda();
+        }
+
+        async function removeEvent(id) {
+            if (!confirm('Deseja excluir este evento?')) {
+                return;
+            }
+
+            const response = await fetch(`/agenda/eventos/${id}`, { method: 'DELETE' });
+            if (!response.ok) {
+                alert('Nao foi possivel excluir o evento.');
+                return;
+            }
+
+            await refreshAgenda();
+        }
+
+        async function refreshAgenda() {
+            try {
+                await fetchMonthEvents();
+                renderCalendar();
+                renderDayEvents();
+            } catch (_error) {
+                eventList.innerHTML = '<div class="empty-state">Falha ao carregar agenda agora.</div>';
+            }
+        }
+
+        document.getElementById('btnPrev').addEventListener('click', async () => {
+            currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+            selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+            await refreshAgenda();
+        });
+
+        document.getElementById('btnNext').addEventListener('click', async () => {
+            currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+            selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+            await refreshAgenda();
+        });
+
+        document.getElementById('btnNovoEvento').addEventListener('click', () => openModal());
+        document.getElementById('btnCancelar').addEventListener('click', closeModal);
+        eventModal.addEventListener('click', (event) => {
+            if (event.target === eventModal) {
+                closeModal();
+            }
+        });
+
+        eventForm.addEventListener('submit', submitEvent);
+
+        refreshAgenda();
+    </script>
+</body>
+</html>

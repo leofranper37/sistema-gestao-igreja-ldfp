@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - LDFP</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: #e5e7eb; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        
+        /* LOGO */
+        .logo img { height: 80px; margin-bottom: 20px; }
+
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; color: #555; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        .form-group input:focus { border-color: #f59e0b; outline: none; }
+        
+        .options { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 20px; }
+        .options a { color: #f59e0b; text-decoration: none; }
+        
+        .btn-login { 
+            background-color: #f59e0b; color: #111; width: 100%; padding: 12px; 
+            border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; 
+        }
+        .btn-login:hover { background-color: #d97706; }
+        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
+        
+        .footer-links { margin-top: 20px; font-size: 13px; color: #666; }
+        .footer-links a { color: #f59e0b; font-weight: bold; text-decoration: none; }
+    </style>
+</head>
+<body class="theme-petroleo">
+
+    <div class="login-card">
+        <div class="logo">
+            <img src="logo.png" alt="LDFP">
+        </div>
+
+        <h2 style="margin-bottom: 20px; font-size: 20px;">Acessar Painel</h2>
+
+        <form onsubmit="return false;"> 
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" placeholder="seu@email.com" id="email">
+            </div>
+            
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" placeholder="********" id="senha">
+            </div>
+
+            <div class="options">
+                <label><input type="checkbox"> Lembrar-me</label>
+                <a href="esqueci_senha.html">Esqueceu a senha?</a>
+            </div>
+
+            <button type="button" class="btn-login" id="btnLogin" onclick="fazerLogin()">Login</button>
+        </form>
+
+        <div id="status" style="margin-top:12px; font-size:13px; text-align:left;"></div>
+
+        <div class="footer-links">
+            <a href="index.html" style="color:#555; font-size:11px;">Voltar ao inicio</a>
+        </div>
+    </div>
+
+    <script src="session.js?v=20260501"></script>
+    <script>
+        function isMasterWorkspaceUser(user) {
+            const role = String(user?.role || user?.perfil || '').trim().toLowerCase();
+            const igreja = String(user?.igreja || '').trim().toLowerCase();
+            const superRoles = new Set(['super-admin', 'super_admin', 'superadmin', 'master', 'owner', 'root', 'super admin']);
+            return superRoles.has(role) || (role === 'admin' && igreja === 'ldfp master');
+        }
+
+        function extractErrorMessage(data, fallbackMessage) {
+            if (!data) {
+                return fallbackMessage;
+            }
+
+            return data.error || data.message || fallbackMessage;
+        }
+
+        async function fazerLogin() {
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+            const status = document.getElementById('status');
+            const btn = document.getElementById('btnLogin');
+
+            status.textContent = '';
+            status.style.color = '#b91c1c';
+
+            if (!email || !senha) {
+                status.textContent = 'Informe e-mail e senha para continuar.';
+                return;
+            }
+
+            if (!/^\S+@\S+\.\S+$/.test(email)) {
+                status.textContent = 'Digite um e-mail valido.';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Entrando...';
+
+            try {
+                const resp = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, senha })
+                });
+
+                const data = await resp.json().catch(() => ({}));
+
+                if (!resp.ok) {
+                    throw new Error(extractErrorMessage(data, 'Nao foi possivel entrar agora.'));
+                }
+
+                saveAuthSession(data);
+                localStorage.setItem('ldfpUser', JSON.stringify(data.user));
+                status.style.color = '#15803d';
+                status.textContent = 'Login realizado com sucesso!';
+                setTimeout(() => {
+                    if (isMasterWorkspaceUser(data.user)) {
+                        window.location.href = 'super-admin.htm';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                }, 600);
+            } catch (err) {
+                status.textContent = err.message || 'Erro inesperado ao tentar entrar.';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login';
+            }
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                fazerLogin();
+            }
+        });
+    </script>
+    <script src="speed-insights.js" defer></script>
+</body>
+</html>

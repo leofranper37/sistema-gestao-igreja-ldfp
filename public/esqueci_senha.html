@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Esqueci a senha - LDFP</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: #e5e7eb; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .logo img { height: 80px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 18px; text-align: left; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; color: #555; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        .form-group input:focus { border-color: #f59e0b; outline: none; }
+        .btn { background-color: #f59e0b; color: #111; width: 100%; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        .btn:hover { background-color: #d97706; }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .msg { margin-top: 14px; font-size: 13px; text-align: left; padding: 10px 12px; border-radius: 4px; display: none; }
+        .msg.erro { background: #fee2e2; color: #b91c1c; display: block; }
+        .msg.ok { background: #dcfce7; color: #15803d; display: block; }
+        .back-link { margin-top: 22px; font-size: 13px; }
+        .back-link a { color: #f59e0b; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">
+            <img src="logo.png" alt="LDFP" onerror="this.style.display='none'">
+        </div>
+
+        <h2 style="margin-bottom: 6px; font-size: 20px;">Esqueceu sua senha?</h2>
+        <p style="color:#666; font-size:13px; margin-bottom:24px;">Informe seu e-mail e enviaremos um link para redefinir sua senha.</p>
+
+        <form onsubmit="return false;">
+            <div class="form-group">
+                <label>E-mail</label>
+                <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
+            </div>
+            <button type="button" class="btn" id="btnEnviar" onclick="enviar()">Enviar link de recuperação</button>
+        </form>
+
+        <div id="msg" class="msg"></div>
+
+        <div class="back-link">
+            <a href="login.html">← Voltar ao login</a>
+        </div>
+    </div>
+
+    <script>
+        async function enviar() {
+            const email = document.getElementById('email').value.trim();
+            const msgEl = document.getElementById('msg');
+            const btn = document.getElementById('btnEnviar');
+
+            msgEl.className = 'msg';
+            msgEl.textContent = '';
+
+            if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+                msgEl.className = 'msg erro';
+                msgEl.textContent = 'Informe um e-mail válido.';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+
+            try {
+                const resp = await fetch('/esqueci-senha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await resp.json().catch(() => ({}));
+
+                if (!resp.ok) {
+                    msgEl.className = 'msg erro';
+                    msgEl.textContent = data.error || 'Erro ao processar a solicitação.';
+                    return;
+                }
+
+                msgEl.className = 'msg ok';
+                msgEl.textContent = data.message || 'Se este e-mail estiver cadastrado, você receberá o link em instantes.';
+                document.getElementById('email').value = '';
+            } catch (err) {
+                msgEl.className = 'msg erro';
+                msgEl.textContent = 'Erro de conexão. Tente novamente.';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Enviar link de recuperação';
+            }
+        }
+
+        document.addEventListener('keydown', (e) => { if (e.key === 'Enter') enviar(); });
+    </script>
+    <script src="speed-insights.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+
+Sim, ainda está em transição no Registro.br.
+
+O que essa tela quer dizer:
+
+A zona DNS ainda não foi liberada para edição.
+Enquanto essa mensagem aparecer, você não vai conseguir cadastrar os registros A e CNAME.
+Por isso o domínio ainda não responde no nslookup.
+O que fazer agora:
+
+Esperar a transição terminar.
+Atualizar essa página depois de um tempo.
+Quando a mensagem sumir, aí sim entrar em Configurar zona DNS e criar os registros.
+Assim que liberar, você vai cadastrar exatamente isto:
+
+Registro da raiz
+Nome: @
+Tipo: A
+Valor: 216.24.57.1
+
+Registro do www
+Nome: www
+Tipo: CNAME
+Valor: ldfp-app.onrender.com
+
+Depois:
+
+Salvar alterações no Registro.br.
+Confirmar no Render que os domínios ldfp.com.br e www.ldfp.com.br estão adicionados em Custom Domains.
+Esperar a propagação e o SSL ficar ativo.
+Resumo objetivo:
+
+Seu domínio está certo.
+O problema agora não é erro seu.
+O Registro.br ainda não terminou a transição.
+O próximo passo só acontece quando essa mensagem desaparecer.
+Quando quiser, me chama com:
+
+um print dessa tela depois que a mensagem sumir, ou
+a palavra liberou

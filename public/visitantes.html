@@ -1,0 +1,556 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Visitantes</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .visitantes-wrap { padding: 0; max-width: 1280px; margin: 0 auto; }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-novo {
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            flex: 1;
+            min-width: 220px;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 9px 10px;
+        }
+
+        .btn-buscar {
+            border: 1px solid #dbe3ef;
+            background: #fff;
+            border-radius: 8px;
+            padding: 9px 12px;
+            cursor: pointer;
+        }
+
+        .table-wrap {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow-x: auto;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #eef2f7;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .badge-data {
+            background: #e0f2fe;
+            color: #075985;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.65);
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 22px 14px;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 26px;
+            border-radius: 12px;
+            width: min(96vw, 1080px);
+            max-height: calc(100vh - 44px);
+            overflow-y: auto;
+            box-shadow: 0 12px 28px rgba(2, 6, 23, 0.24);
+            margin: 0 auto;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .modal-grid .full {
+            grid-column: span 4;
+        }
+
+        .modal-grid .col-2 {
+            grid-column: span 2;
+        }
+
+        .modal-grid .col-3 {
+            grid-column: span 3;
+        }
+
+        .field-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field-wrap label {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .field-wrap select {
+            width: 100%;
+            padding: 10px;
+            margin: 0;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .row-actions button {
+            border: 1px solid #dbe3ef;
+            background: #fff;
+            border-radius: 6px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .row-actions .delete {
+            border-color: #fecaca;
+            color: #b91c1c;
+            background: #fef2f2;
+        }
+
+        .modal input,
+        .modal textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 0;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        .modal input:focus,
+        .modal textarea:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .status-msg {
+            margin: 10px 0 14px;
+            font-size: 13px;
+            color: #0f766e;
+        }
+
+        .status-msg.error {
+            color: #b91c1c;
+        }
+
+        .status-msg:empty {
+            display: none;
+        }
+
+        .btn-save-visitante:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 780px) {
+            .visitantes-wrap {
+                padding: 0;
+            }
+
+            th,
+            td {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .modal { padding: 18px; }
+            .modal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+            .modal-grid .full,
+            .modal-grid .col-2,
+            .modal-grid .col-3 {
+                grid-column: span 2;
+            }
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Visitantes" data-shell-breadcrumb="LDFP / Secretaria / Visitantes" data-shell-active="visitantes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
+        <div class="visitantes-wrap">
+            <div class="enterprise-page-hero" style="margin-bottom:16px;">
+                <div>
+                    <h2>Visitantes</h2>
+                    <p>Cadastro estruturado de visitantes com historico, dados de contato e acompanhamento pastoral.</p>
+                </div>
+                <div class="enterprise-page-badge"><i class="fa-solid fa-user-group"></i> Secretaria</div>
+            </div>
+            <div class="page-header">
+                <h2 style="margin:0;color:#1f2937;">Lista de Visitantes</h2>
+                <button class="btn-novo" onclick="abrirModal()"><i class="fa-solid fa-plus"></i> Novo Visitante</button>
+            </div>
+            <div class="search-bar">
+                <input type="search" id="searchVisitante" placeholder="Buscar por nome, telefone, cidade ou congregação...">
+                <button type="button" class="btn-buscar" onclick="carregarLista()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+            </div>
+            <div id="pageStatus" class="status-msg"></div>
+
+            <div class="table-wrap">
+                <table id="tabelaVisitantes">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Data Visita</th>
+                            <th>Telefone</th>
+                            <th>Cidade</th>
+                            <th>Congregação</th>
+                            <th>Observação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalCadastro">
+        <div class="modal">
+            <h3 id="modalTitulo">Registrar Visitante</h3>
+            <input type="hidden" id="visitanteId">
+            <div class="modal-grid">
+                <div class="field-wrap col-2"><label>Nome</label><input type="text" id="nome" placeholder="Nome Completo"></div>
+                <div class="field-wrap"><label>Nascimento</label><input type="date" id="nascimento"></div>
+                <div class="field-wrap"><label>Sexo</label><select id="sexo"><option value="">Selecione</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select></div>
+                <div class="field-wrap"><label>Estado civil</label><input type="text" id="estadoCivil" placeholder="Estado civil"></div>
+                <div class="field-wrap"><label>Data visita</label><input type="date" id="data"></div>
+                <div class="field-wrap col-2"><label>Endereço</label><input type="text" id="endereco" placeholder="Endereço"></div>
+                <div class="field-wrap"><label>Número</label><input type="text" id="numero" placeholder="Número"></div>
+                <div class="field-wrap"><label>Bairro</label><input type="text" id="bairro" placeholder="Bairro"></div>
+                <div class="field-wrap"><label>Cidade</label><input type="text" id="cidade" placeholder="Cidade"></div>
+                <div class="field-wrap"><label>Estado</label><input type="text" id="estado" placeholder="Estado"></div>
+                <div class="field-wrap"><label>CEP</label><input type="text" id="cep" placeholder="CEP"></div>
+                <div class="field-wrap"><label>Telefone</label><input type="text" id="telefone" placeholder="Telefone"></div>
+                <div class="field-wrap"><label>Celular</label><input type="text" id="celular" placeholder="Celular"></div>
+                <div class="field-wrap col-2"><label>E-mail</label><input type="text" id="email" placeholder="E-mail"></div>
+                <div class="field-wrap"><label>Congregação</label><input type="text" id="congregacao" placeholder="Congregação"></div>
+                <div class="field-wrap"><label>Aceitou Jesus em</label><input type="text" id="aceitouJesusEm" placeholder="Local/ocasião"></div>
+                <div class="field-wrap"><label>Retorno em</label><input type="text" id="retornoEm" placeholder="Data/local de retorno"></div>
+                <div class="field-wrap full"><label>Observação</label><textarea id="obs" rows="3" placeholder="Observações"></textarea></div>
+            </div>
+            <div id="modalStatus" class="status-msg"></div>
+            <div class="modal-buttons">
+                <button onclick="fecharModal()" style="padding: 8px 15px; border: 1px solid #ccc; background: white; cursor: pointer;">Cancelar</button>
+                <button id="btnSalvarVisitante" class="btn-save-visitante" onclick="salvarVisitante()" style="padding: 8px 15px; background: #0f172a; color: white; border: none; cursor: pointer;">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        let visitantesCache = [];
+
+        function mapField(id) {
+            return document.getElementById(id);
+        }
+
+        function sanitizeText(value) {
+            return String(value || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function abrirModal() {
+            mapField('modalTitulo').textContent = 'Registrar Visitante';
+            mapField('visitanteId').value = '';
+            limparFormulario();
+            document.getElementById('modalCadastro').style.display = 'flex';
+        }
+
+        function editarVisitante(id) {
+            const visitante = visitantesCache.find((item) => Number(item.id) === Number(id));
+            if (!visitante) return;
+
+            mapField('modalTitulo').textContent = 'Editar Visitante';
+            mapField('visitanteId').value = String(visitante.id);
+            mapField('nome').value = visitante.full_name || '';
+            mapField('telefone').value = visitante.phone || '';
+            mapField('data').value = visitante.visit_date || '';
+            mapField('obs').value = visitante.observation || '';
+            mapField('nascimento').value = visitante.birth_date || '';
+            mapField('sexo').value = visitante.gender || '';
+            mapField('estadoCivil').value = visitante.civil_status || '';
+            mapField('endereco').value = visitante.address || '';
+            mapField('numero').value = visitante.number || '';
+            mapField('bairro').value = visitante.neighborhood || '';
+            mapField('cidade').value = visitante.city || '';
+            mapField('estado').value = visitante.state || '';
+            mapField('cep').value = visitante.zip_code || '';
+            mapField('celular').value = visitante.mobile_phone || '';
+            mapField('email').value = visitante.email || '';
+            mapField('congregacao').value = visitante.congregation || '';
+            mapField('aceitouJesusEm').value = visitante.accepted_jesus_at || '';
+            mapField('retornoEm').value = visitante.return_at || '';
+
+            mapField('modalCadastro').style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('modalCadastro').style.display = 'none';
+            setStatus('modalStatus', '', false);
+        }
+
+        function limparFormulario() {
+            mapField('nome').value = '';
+            mapField('telefone').value = '';
+            mapField('data').value = '';
+            mapField('obs').value = '';
+            mapField('nascimento').value = '';
+            mapField('sexo').value = '';
+            mapField('estadoCivil').value = '';
+            mapField('endereco').value = '';
+            mapField('numero').value = '';
+            mapField('bairro').value = '';
+            mapField('cidade').value = '';
+            mapField('estado').value = '';
+            mapField('cep').value = '';
+            mapField('celular').value = '';
+            mapField('email').value = '';
+            mapField('congregacao').value = '';
+            mapField('aceitouJesusEm').value = '';
+            mapField('retornoEm').value = '';
+        }
+
+        function setStatus(id, text, isError = false) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = text;
+            el.classList.toggle('error', isError);
+        }
+
+        function extractErrorMessage(data, fallbackMessage) {
+            if (!data) return fallbackMessage;
+            return data.error || data.message || fallbackMessage;
+        }
+
+        async function carregarLista() {
+            const tbody = document.querySelector('#tabelaVisitantes tbody');
+            tbody.innerHTML = '<tr><td colspan="7" style="color:#64748b;">Carregando visitantes...</td></tr>';
+
+            try {
+                const query = new URLSearchParams();
+                const search = mapField('searchVisitante').value.trim();
+                if (search) query.set('search', search);
+
+                const res = await fetch(`/visitantes?${query.toString()}`);
+                const lista = await res.json().catch(() => []);
+
+                if (!res.ok) {
+                    throw new Error(extractErrorMessage(lista, 'Não foi possível carregar visitantes.'));
+                }
+
+                if (!Array.isArray(lista) || !lista.length) {
+                    visitantesCache = [];
+                    tbody.innerHTML = '<tr><td colspan="7" style="color:#64748b;">Nenhum visitante registrado.</td></tr>';
+                    return;
+                }
+
+                visitantesCache = lista;
+
+                tbody.innerHTML = '';
+                lista.forEach((v) => {
+                    const visitDate = v.visit_date ? new Date(v.visit_date) : null;
+                    const dataFormatada = visitDate && !Number.isNaN(visitDate.getTime())
+                        ? visitDate.toLocaleDateString('pt-BR')
+                        : '-';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-weight:bold; color:#1f2937;">${sanitizeText(v.full_name || '-')}</td>
+                            <td><span class="badge-data">${dataFormatada}</span></td>
+                            <td>${sanitizeText(v.phone || '-')}</td>
+                            <td>${sanitizeText(v.city || '-')}</td>
+                            <td>${sanitizeText(v.congregation || '-')}</td>
+                            <td style="color:#64748b;">${sanitizeText(v.observation || '-')}</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button type="button" onclick="editarVisitante(${Number(v.id)})">Editar</button>
+                                    <button type="button" class="delete" onclick="excluirVisitante(${Number(v.id)})">Excluir</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="color:#b91c1c;">${err.message || 'Erro ao carregar visitantes.'}</td></tr>`;
+                setStatus('pageStatus', 'Não foi possível carregar visitantes agora.', true);
+            }
+        }
+
+        async function salvarVisitante() {
+            const nome = mapField('nome').value.trim();
+            const telefone = mapField('telefone').value.trim();
+            const data = mapField('data').value || new Date().toISOString().split('T')[0];
+            const observacao = mapField('obs').value.trim();
+            const id = mapField('visitanteId').value;
+            const btn = mapField('btnSalvarVisitante');
+
+            setStatus('modalStatus', '', false);
+            setStatus('pageStatus', '', false);
+
+            if (!nome) {
+                setStatus('modalStatus', 'Informe o nome do visitante.', true);
+                return;
+            }
+
+            const dados = {
+                nome,
+                telefone,
+                data,
+                observacao,
+                nascimento: mapField('nascimento').value || null,
+                sexo: mapField('sexo').value || null,
+                estadoCivil: mapField('estadoCivil').value.trim() || null,
+                endereco: mapField('endereco').value.trim() || null,
+                numero: mapField('numero').value.trim() || null,
+                bairro: mapField('bairro').value.trim() || null,
+                cidade: mapField('cidade').value.trim() || null,
+                estado: mapField('estado').value.trim() || null,
+                cep: mapField('cep').value.trim() || null,
+                celular: mapField('celular').value.trim() || null,
+                email: mapField('email').value.trim() || null,
+                congregacao: mapField('congregacao').value.trim() || null,
+                aceitouJesusEm: mapField('aceitouJesusEm').value.trim() || null,
+                retornoEm: mapField('retornoEm').value.trim() || null
+            };
+
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+
+            try {
+                const resp = await fetch(id ? `/visitantes/${id}` : '/visitantes', {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const payload = await resp.json().catch(() => ({}));
+
+                if (!resp.ok) {
+                    throw new Error(extractErrorMessage(payload, 'Não foi possível salvar visitante.'));
+                }
+
+                setStatus('pageStatus', id ? 'Visitante atualizado com sucesso!' : 'Visitante salvo com sucesso!');
+                fecharModal();
+                limparFormulario();
+                carregarLista();
+            } catch (err) {
+                setStatus('modalStatus', err.message || 'Erro ao salvar visitante.', true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Salvar';
+            }
+        }
+
+        async function excluirVisitante(id) {
+            if (!confirm('Deseja excluir este visitante?')) {
+                return;
+            }
+
+            setStatus('pageStatus', '', false);
+            try {
+                const resp = await fetch(`/visitantes/${id}`, { method: 'DELETE' });
+                const payload = await resp.json().catch(() => ({}));
+
+                if (!resp.ok) {
+                    throw new Error(extractErrorMessage(payload, 'Não foi possível excluir visitante.'));
+                }
+
+                setStatus('pageStatus', 'Visitante removido com sucesso!');
+                carregarLista();
+            } catch (err) {
+                setStatus('pageStatus', err.message || 'Erro ao excluir visitante.', true);
+            }
+        }
+
+        mapField('searchVisitante').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                carregarLista();
+            }
+        });
+
+        carregarLista();
+    </script>
+</body>
+</html>

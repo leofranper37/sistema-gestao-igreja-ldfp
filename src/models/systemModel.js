@@ -3,6 +3,23 @@ const { ensureTable } = require('./tableEnsure');
 
 let systemTablesReadyPromise = null;
 
+async function ensureMembrosPermissionColumns() {
+    const statements = [
+        'ALTER TABLE membros ADD COLUMN cargo VARCHAR(255)',
+        'ALTER TABLE membros ADD COLUMN foto_url TEXT',
+        'ALTER TABLE membros ADD COLUMN acesso_app_midia INTEGER NOT NULL DEFAULT 0',
+        'ALTER TABLE membros ADD COLUMN gerenciar_midias INTEGER NOT NULL DEFAULT 0'
+    ];
+
+    for (const sql of statements) {
+        try {
+            await pool.query(sql);
+        } catch (_error) {
+            // Coluna já existe ou dialeto não suporta exatamente o mesmo ALTER.
+        }
+    }
+}
+
 async function ensureSystemTables() {
     if (!systemTablesReadyPromise) {
         systemTablesReadyPromise = (async () => {
@@ -275,6 +292,7 @@ async function ensureSystemTables() {
     }
 
     await systemTablesReadyPromise;
+    await ensureMembrosPermissionColumns();
 }
 
 async function listMembros(filters) {
@@ -311,9 +329,13 @@ async function listMembros(filters) {
             email,
             telefone,
             telefone AS phone,
+            cargo,
+            foto_url,
             celular AS mobile_phone,
             cidade,
             cidade AS city,
+            acesso_app_midia,
+            gerenciar_midias,
             created_at
          FROM membros
          WHERE ${where.join(' AND ')}
@@ -381,9 +403,13 @@ async function listMembrosWithFilters(filters) {
             email,
             telefone,
             telefone AS phone,
+            cargo,
+            foto_url,
             celular AS mobile_phone,
             cidade,
             cidade AS city,
+            acesso_app_midia,
+            gerenciar_midias,
             created_at
          FROM membros
          WHERE ${where.join(' AND ')}
@@ -409,14 +435,16 @@ async function createMembro(payload) {
     await pool.query(
         `INSERT INTO membros (
             igreja_id,
-            nome, email, telefone, apelido, nascimento, sexo, estado_civil, profissao,
-            cep, endereco, numero, bairro, cidade, estado, celular, cpf, rg, nacionalidade, naturalidade
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            nome, email, telefone, cargo, apelido, nascimento, sexo, estado_civil, profissao,
+            cep, endereco, numero, bairro, cidade, estado, celular, cpf, rg, nacionalidade, naturalidade,
+            foto_url, acesso_app_midia, gerenciar_midias
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
             payload.igrejaId,
             payload.nome,
             payload.email,
             payload.telefone,
+            payload.cargo,
             payload.apelido,
             payload.nascimento,
             payload.sexo,
@@ -432,7 +460,10 @@ async function createMembro(payload) {
             payload.cpf,
             payload.rg,
             payload.nacionalidade,
-            payload.naturalidade
+            payload.naturalidade,
+            payload.fotoUrl,
+            payload.acesso_app_midia ? 1 : 0,
+            payload.gerenciar_midias ? 1 : 0
         ]
     );
 }
@@ -893,12 +924,20 @@ async function countVisitantes(igrejaId) {
     return row?.total || 0;
 }
 
+async function countMembros(igrejaId) {
+    await ensureSystemTables();
+
+    const [[row]] = await pool.query('SELECT COUNT(*) AS total FROM membros WHERE igreja_id = ?', [igrejaId]);
+    return row?.total || 0;
+}
+
 async function pingDatabase() {
     const [[row]] = await pool.query('SELECT 1 AS ok');
     return Number(row?.ok) === 1;
 }
 
 module.exports = {
+    countMembros,
     countVisitantes,
     createCrianca,
     createCongregado,

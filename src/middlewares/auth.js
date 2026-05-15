@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-
 const config = require('../config');
 const { pool } = require('../config/db');
 const moduleAccessService = require('../services/moduleAccessService');
@@ -19,9 +18,11 @@ async function requireAuth(req, res, next) {
 
     try {
         const payload = jwt.verify(token, config.security.jwtSecret);
+
         const [rows] = await pool.query(
             `SELECT u.id, u.nome, u.email, u.igreja, u.igreja_id, u.role,
-                    i.plano, i.status_assinatura, i.trial_starts_at, i.trial_ends_at, i.max_cadastros, i.max_congregacoes
+                    i.plano, i.status_assinatura, i.trial_starts_at, i.trial_ends_at,
+                    i.max_cadastros, i.max_congregacoes
              FROM usuarios u
              LEFT JOIN igrejas i ON i.id = u.igreja_id
              WHERE u.id = ?
@@ -43,8 +44,8 @@ async function requireAuth(req, res, next) {
             igreja: user.igreja,
             igrejaId: user.igreja_id,
             role: user.role,
-            plano: user.plano || 'teste-7-dias',
-            statusAssinatura: user.status_assinatura || 'trial',
+            plano: user.plano || 'hebrom',
+            statusAssinatura: user.status_assinatura || 'ativa',
             trialStartsAt: user.trial_starts_at || null,
             trialEndsAt: user.trial_ends_at || null,
             maxCadastros: user.max_cadastros || 40,
@@ -53,10 +54,12 @@ async function requireAuth(req, res, next) {
         };
 
         try {
-            const access = await moduleAccessService.getEffectiveAccessForChurch(user.igreja_id, user.plano || 'eden');
+            const access = await moduleAccessService.getEffectiveAccessForChurch(
+                user.igreja_id,
+                user.plano || 'hebrom'
+            );
             req.auth.moduleFeatures = access.featureKeys || [];
         } catch (_) {
-            // Mantém autenticação funcionando mesmo se o catálogo ainda estiver em migração.
             req.auth.moduleFeatures = [];
         }
 
@@ -86,7 +89,4 @@ function authorize(allowedRoles = []) {
     };
 }
 
-module.exports = {
-    authorize,
-    requireAuth
-};
+module.exports = { authorize, requireAuth };

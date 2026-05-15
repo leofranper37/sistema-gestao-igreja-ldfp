@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111827">
+  <title>LDFP - App do Membro</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-main: #101826;
+      --bg-card: #141d2b;
+      --bg-card-soft: #1b2433;
+      --accent: #f97316;    /* laranja */
+      --accent-soft: #fed7aa;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2933;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-soft: 0 8px 20px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-main);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: radial-gradient(circle at top, #111827 0, #020617 55%, #000 100%);
+    }
+
+    /* HEADER */
+
+    .app-header {
+      padding: 12px 18px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .app-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 20%, #fef9c3 0, #f97316 55%, #7c2d12 100%);
+      box-shadow: 0 0 18px rgba(248,250,252,0.3);
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-title span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .header-title strong {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .app-header-right a {
+      font-size: 12px;
+      color: var(--accent-soft);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* CONTENT / PANELS */
+
+    .app-main {
+      flex: 1;
+      padding: 6px 14px 12px;
+      overflow-y: auto;
+    }
+
+    .panel {
+      display: none;
+      padding-bottom: 60px; /* espaço pro bottom nav */
+    }
+    .panel.active { display: block; }
+
+    /* COMMON COMPONENTS */
+
+    .panel-title {
+      text-align: center;
+      margin: 8px 0 14px;
+    }
+    .panel-title h1 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .panel-title p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      border: 1px solid rgba(15,23,42,0.7);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .card-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 12px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #111827;
+    }
+    .btn-ghost {
+      background: #111827;
+      color: var(--text);
+      border: 1px solid #374151;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin: 18px 0 8px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15,118,110,0.08);
+      border: 1px solid rgba(148,163,184,0.3);
+      color: var(--muted);
+    }
+
+    /* INPUTS */
+
+    .input {
+      width: 100%;
+      background: #020617;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+    }
+    .input::placeholder { color: #6b7280; }
+
+    .input-rounded {
+      border-radius: 999px;
+    }
+
+    .input-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #020617;
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid #1f2937;
+      margin: 10px 0 16px;
+    }
+    .input-search input {
+      border: none;
+      background: transparent;
+      flex: 1;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .input-search i { color: #6b7280; }
+
+    /* HOME / MURAL */
+
+    .mural-subtitle {
+      font-size: 14px;
+      text-align: center;
+      margin-top: 4px;
+      margin-bottom: 10px;
+    }
+
+    .welcome-text {
+      font-size: 13px;
+      text-align: center;
+      margin: 16px 0 10px;
+    }
+
+    .contrib-card {
+      margin-top: 16px;
+    }
+
+    .digital-id-card {
+      margin: 8px 0 14px;
+      background: linear-gradient(145deg, #1f2937 0%, #0f172a 100%);
+      border: 1px solid rgba(249, 115, 22, 0.35);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+    }
+
+    .digital-id-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 11px;
+      color: #cbd5e1;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .digital-id-body {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .digital-id-photo {
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: #111827;
+    }
+
+    .digital-id-name {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #f8fafc;
+      margin-bottom: 3px;
+    }
+
+    .digital-id-meta {
+      font-size: 12px;
+      color: #cbd5e1;
+      margin-bottom: 2px;
+    }
+
+    .digital-id-meta strong {
+      color: #f59e0b;
+      font-weight: 600;
+    }
+
+    .contrib-card p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ENCONTRE-NOS */
+
+    .social-row {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0 14px;
+    }
+
+    .social-btn {
+      flex: 1;
+      border-radius: var(--radius-md);
+      border: none;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      color: #fff;
+    }
+    .social-whatsapp { background: #22c55e; }
+    .social-facebook { background: #2563eb; }
+    .social-instagram {
+      background: radial-gradient(circle at 30% 30%, #facc15 0, #ec4899 40%, #4f46e5 80%);
+    }
+
+    .congreg-card {
+      background: var(--bg-card-soft);
+      border-radius: var(--radius-md);
+      padding: 10px 11px;
+      border: 1px solid #111827;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+
+    .congreg-header {
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .congreg-footer {
+      margin-top: 8px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .congreg-footer button {
+      background: #020617;
+      border: none;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    /* VÍDEOS */
+
+    .videos-empty {
+      text-align: center;
+      padding: 40px 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .videos-empty i {
+      font-size: 38px;
+      margin-bottom: 10px;
+      opacity: 0.6;
+    }
+
+    .videos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .video-card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+      color: #e5e7eb;
+      cursor: pointer;
+    }
+
+    .video-thumb {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #020617;
+      min-height: 96px;
+    }
+
+    .video-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: 0.88;
+    }
+
+    .video-thumb .play-icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 30px;
+      text-shadow: 0 3px 10px rgba(0,0,0,0.35);
+    }
+
+    .video-title {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .video-date {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .photos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .photo-card {
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #111827;
+      text-align: left;
+      color: #e5e7eb;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .photo-card img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-meta {
+      padding: 8px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .photo-title {
+      font-weight: 600;
+      color: #f3f4f6;
+      margin-bottom: 2px;
+    }
+
+    .photo-desc {
+      color: #9ca3af;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* EVENTOS */
+
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin: 10px 0 16px;
+      font-size: 13px;
+    }
+
+    .month-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      color: #111827;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .event-empty {
+      text-align: center;
+      padding: 40px 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .event-empty i {
+      font-size: 40px;
+      margin-bottom: 10px;
+      opacity: 0.7;
+    }
+
+    /* MODAL CONEXÃO */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    .modal-box {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      padding: 20px 20px 32px;
+      width: 100%;
+      max-width: 480px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-header h2 { font-size: 16px; font-weight: 600; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
+    .modal-field { margin-bottom: 12px; }
+    .modal-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .modal-field input, .modal-field textarea {
+      width: 100%;
+      background: #020617;
+      border: 1px solid #1f2937;
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+    }
+    .modal-field textarea { resize: none; }
+
+    /* BOTTOM NAV */
+
+    .bottom-nav {
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15,23,42,0.98);
+      border-top: 1px solid #020617;
+      display: flex;
+      padding: 6px 8px 8px;
+      z-index: 10;
+    }
+
+    .bottom-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      color: #9ca3af;
+      cursor: pointer;
+    }
+
+    .bottom-item i { font-size: 17px; }
+
+    .bottom-item.active {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="app-header-left">
+      <img id="churchLogoHeader" src="" alt="Igreja"
+           class="avatar-circle"
+           onerror="this.style.display='none'">
+      <div class="header-title">
+        <span>Mural da Igreja</span>
+        <strong id="memberGreeting">Bem-vindo(a)!</strong>
+      </div>
+    </div>
+    <div class="app-header-right">
+      <a href="#" id="btnLogout">
+        <i class="fa-solid fa-right-from-bracket"></i> Sair
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="app-main">
+    <!-- INÍCIO -->
+    <section id="panel-home" class="panel active">
+      <div class="panel-title">
+        <h1>Mural da Igreja</h1>
+        <p>Conteúdo e conexões para membros e visitantes.</p>
+      </div>
+
+      <article class="digital-id-card" aria-label="Credencial digital do membro">
+        <div class="digital-id-top">
+          <span>Credencial Digital</span>
+          <i class="fa-solid fa-id-card"></i>
+        </div>
+        <div class="digital-id-body">
+          <img id="credentialPhoto" class="digital-id-photo" src="https://via.placeholder.com/72x72?text=MEMBRO" alt="Foto do membro">
+          <div>
+            <div id="credentialNome" class="digital-id-name">Membro</div>
+            <div class="digital-id-meta"><strong>Igreja:</strong> <span id="credentialIgreja">-</span></div>
+            <div class="digital-id-meta"><strong>Cargo:</strong> <span id="credentialCargo">Membro</span></div>
+          </div>
+        </div>
+      </article>
+
+      <div class="input-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" placeholder="Buscar no mural...">
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Vídeos</div>
+              <div class="card-sub">Assista às mensagens e cultos</div>
+            </div>
+            <i class="fa-solid fa-play" style="color:var(--accent);"></i>
+          </div>
+          <button class="btn btn-primary" data-nav="video">
+            <i class="fa-solid fa-play"></i> Ver vídeos
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Fotos</div>
+              <div class="card-sub">Momentos especiais da igreja</div>
+            </div>
+            <i class="fa-solid fa-image" style="color:var(--accent);"></i>
+          </div>
+          <button class="btn btn-ghost" data-nav="fotos">
+            <i class="fa-solid fa-image"></i> Ver fotos
+          </button>
+        </div>
+      </div>
+
+      <p class="welcome-text">Visitante, seja muito bem-vindo!</p>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-title" style="color:var(--accent-soft);">Quero me conectar</div>
+          <div class="card-sub">Adoraríamos conhecê-lo melhor.</div>
+          <button class="btn btn-ghost" data-tipo="conexao" style="margin-top:10px;">
+            Conecte-se
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color:var(--accent-soft);">Podemos orar por você?</div>
+          <div class="card-sub">Envie um pedido de oração.</div>
+          <button class="btn btn-ghost" data-tipo="oracao" style="margin-top:10px;">
+            Envie um pedido
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color:var(--accent-soft);">Precisa de ajuda ou apoio?</div>
+          <div class="card-sub">Estamos aqui para caminhar com você.</div>
+          <button class="btn btn-ghost" data-tipo="ajuda" style="margin-top:10px;">
+            Falar com alguém
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color:var(--accent-soft);">Decidi caminhar com Jesus</div>
+          <div class="card-sub">Queremos celebrar essa decisão!</div>
+          <button class="btn btn-ghost" data-tipo="decisao" style="margin-top:10px;">
+            Iniciar caminhada
+          </button>
+        </div>
+      </div>
+
+      <div class="card contrib-card">
+        <div class="card-title" style="text-align:center;color:var(--accent-soft);">
+          Contribuições
+        </div>
+        <p id="contribVerse">"Trazei todos os dízimos e ofertas à casa do tesouro." (Ml 3:10)</p>
+        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-primary" style="flex:1;">
+            <i class="fa-solid fa-coins"></i> Dízimos e Ofertas
+          </button>
+          <button class="btn btn-ghost" style="flex:1;">
+            <i class="fa-solid fa-hand-holding-dollar"></i> Contribuições
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ENCONTRE-NOS -->
+    <section id="panel-local" class="panel">
+      <div class="panel-title">
+        <h1>Onde estamos</h1>
+        <p>Encontre nossas congregações e redes sociais.</p>
+      </div>
+
+      <div class="section-title">Redes sociais</div>
+      <div class="social-row">
+        <button class="social-btn social-whatsapp">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        </button>
+        <button class="social-btn social-facebook">
+          <i class="fa-brands fa-facebook-f"></i>
+        </button>
+        <button class="social-btn social-instagram">
+          <i class="fa-brands fa-instagram"></i>
+        </button>
+      </div>
+
+      <div class="input-search">
+        <input id="buscaCongregacao" type="search" placeholder="Buscar igreja por endereço ou nome">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </div>
+
+      <div id="listaCongregacoes"></div>
+    </section>
+
+    <!-- VÍDEO -->
+    <section id="panel-video" class="panel">
+      <div class="panel-title">
+        <h1>Galeria de Vídeos</h1>
+        <p>Acompanhe os últimos cultos e mensagens.</p>
+      </div>
+
+      <div id="areaVideos">
+        <div class="videos-empty">
+          <i class="fa-regular fa-clone"></i>
+          <p>Nenhum vídeo encontrado.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOTOS -->
+    <section id="panel-fotos" class="panel">
+      <div class="panel-title">
+        <h1>Galeria de Fotos</h1>
+        <p>Veja os momentos especiais da igreja.</p>
+      </div>
+
+      <div id="areaFotos">
+        <div class="videos-empty">
+          <i class="fa-regular fa-image"></i>
+          <p>Nenhuma foto encontrada.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- EVENTOS -->
+    <section id="panel-eventos" class="panel">
+      <div class="panel-title">
+        <h1>Eventos</h1>
+        <p>Fique por dentro da agenda da igreja.</p>
+      </div>
+
+      <div class="month-nav">
+        <button class="month-btn" id="mesAnterior"><i class="fa-solid fa-chevron-left"></i></button>
+        <div id="labelMes"></div>
+        <button class="month-btn" id="mesProximo"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+
+      <div id="listaEventos">
+        <div class="event-empty">
+          <i class="fa-regular fa-clipboard"></i>
+          <p>Nenhum registro encontrado.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="bottom-item active" data-target="panel-home">
+      <i class="fa-solid fa-house"></i>
+      <span>Início</span>
+    </div>
+    <div class="bottom-item" data-target="panel-local">
+      <i class="fa-solid fa-location-dot"></i>
+      <span>Encontre-nos</span>
+    </div>
+    <div class="bottom-item" data-target="panel-video">
+      <i class="fa-solid fa-photo-film"></i>
+      <span>Vídeo</span>
+    </div>
+    <div class="bottom-item" data-target="panel-fotos">
+      <i class="fa-solid fa-image"></i>
+      <span>Fotos</span>
+    </div>
+    <div class="bottom-item" data-target="panel-eventos">
+      <i class="fa-solid fa-calendar-check"></i>
+      <span>Eventos</span>
+    </div>
+  </nav>
+</div>
+
+  <!-- MODAL CONEXÃO -->
+  <div id="conexaoModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modalTitle">Conectar</h2>
+        <button class="modal-close" id="modalClose"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="modalForm">
+        <div class="modal-field">
+          <label>Nome</label>
+          <input id="modalNome" type="text" placeholder="Seu nome" required>
+        </div>
+        <div class="modal-field">
+          <label>Celular</label>
+          <input id="modalCelular" type="tel" placeholder="(00) 00000-0000">
+        </div>
+        <div class="modal-field">
+          <label>Mensagem <span style="color:var(--muted);">(opcional)</span></label>
+          <textarea id="modalMensagem" rows="3" placeholder="Escreva algo..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:4px;">Enviar</button>
+      </form>
+    </div>
+  </div>
+
+<script>
+  // --- Auth guard ---
+  (function checkLogin() {
+    const token = localStorage.getItem('app_member_token');
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('app_member_user')); } catch(_e) {}
+    if (!token || !user) { window.location.replace('app_login.html'); }
+  })();
+
+  // --- DOM refs ---
+  const greetingEl     = document.getElementById('memberGreeting');
+  const logoEl         = document.getElementById('churchLogoHeader');
+  const contribVerse   = document.getElementById('contribVerse');
+  const listaCongEl    = document.getElementById('listaCongregacoes');
+  const buscaInput     = document.getElementById('buscaCongregacao');
+  const socialWhatsapp = document.querySelector('.social-whatsapp');
+  const socialFacebook = document.querySelector('.social-facebook');
+  const socialInstagram = document.querySelector('.social-instagram');
+  const areaVideosEl   = document.getElementById('areaVideos');
+  const areaFotosEl    = document.getElementById('areaFotos');
+  const listaEventosEl = document.getElementById('listaEventos');
+  const labelMes       = document.getElementById('labelMes');
+  const btnLogout      = document.getElementById('btnLogout');
+  const credentialNomeEl = document.getElementById('credentialNome');
+  const credentialIgrejaEl = document.getElementById('credentialIgreja');
+  const credentialCargoEl = document.getElementById('credentialCargo');
+  const credentialPhotoEl = document.getElementById('credentialPhoto');
+  const modal          = document.getElementById('conexaoModal');
+  const modalTitle     = document.getElementById('modalTitle');
+  const modalForm      = document.getElementById('modalForm');
+  const modalClose     = document.getElementById('modalClose');
+  let _modalTipo = '';
+
+  function getCurrentMemberUser() {
+    try {
+      const raw = localStorage.getItem('app_member_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function getIgrejaIdForApp() {
+    const user = getCurrentMemberUser();
+    const fromUser = Number(user?.igrejaId || user?.igreja_id || user?.churchId || 0);
+    if (fromUser > 0) return fromUser;
+
+    try {
+      const authRaw = localStorage.getItem('ldfpAuth');
+      const authUser = authRaw ? JSON.parse(authRaw)?.user : null;
+      const fromAuth = Number(authUser?.igrejaId || authUser?.igreja_id || authUser?.churchId || 0);
+      if (fromAuth > 0) return fromAuth;
+    } catch (_error) {
+      // segue para os próximos fallbacks
+    }
+
+    try {
+      const legacyRaw = localStorage.getItem('ldfp_user_data');
+      const legacyUser = legacyRaw ? JSON.parse(legacyRaw) : null;
+      const fromLegacyUser = Number(legacyUser?.igrejaId || legacyUser?.igreja_id || legacyUser?.churchId || 0);
+      if (fromLegacyUser > 0) return fromLegacyUser;
+    } catch (_error) {
+      // segue para os próximos fallbacks
+    }
+
+    const fromLegacy = Number(localStorage.getItem('church_id') || 0);
+    return fromLegacy > 0 ? fromLegacy : 1;
+  }
+
+  function normalizeMediaBucket(payload) {
+    return {
+      videos: Array.isArray(payload?.videos) ? payload.videos : [],
+      audios: Array.isArray(payload?.audios) ? payload.audios : [],
+      images: Array.isArray(payload?.images) ? payload.images : [],
+      documents: Array.isArray(payload?.documents) ? payload.documents : []
+    };
+  }
+
+  function getLocalMediaByChurch(igrejaId) {
+    try {
+      const root = localStorage.getItem('ldfp_igreja_midias');
+      if (root) {
+        const parsed = JSON.parse(root);
+        const bucket = parsed?.[String(igrejaId)] || parsed?.[Number(igrejaId)] || null;
+        if (bucket) return normalizeMediaBucket(bucket);
+      }
+    } catch (_error) {
+      // fallback para outros formatos de chave
+    }
+
+    try {
+      const legacy = localStorage.getItem('ldfp_midias_igreja_' + igrejaId);
+      if (legacy) {
+        return normalizeMediaBucket(JSON.parse(legacy));
+      }
+    } catch (_error) {
+      // sem fallback disponível
+    }
+
+    return normalizeMediaBucket({});
+  }
+
+  function getYoutubeThumb(url) {
+    const raw = String(url || '').trim();
+    if (!raw) return '';
+    let id = '';
+    if (raw.includes('watch?v=')) {
+      id = raw.split('watch?v=')[1].split('&')[0];
+    } else if (raw.includes('youtu.be/')) {
+      id = raw.split('youtu.be/')[1].split('?')[0];
+    } else if (raw.includes('/embed/')) {
+      id = raw.split('/embed/')[1].split('?')[0];
+    }
+    return id ? ('https://img.youtube.com/vi/' + id + '/hqdefault.jpg') : '';
+  }
+
+  function applySocialLink(button, url) {
+    if (!button) return;
+    const safeUrl = String(url || '').trim();
+    if (!safeUrl) {
+      button.style.display = 'none';
+      return;
+    }
+
+    button.style.display = 'inline-flex';
+    button.onclick = () => window.open(safeUrl, '_blank');
+  }
+
+  // --- Init ---
+  function initApp() {
+    const user = getCurrentMemberUser();
+    if (user) {
+      greetingEl.textContent = 'Olá, ' + (user.nome || 'Membro') + '!';
+      renderDigitalCredential(user);
+      hydrateMemberProfile();
+    }
+    const logoUrl = localStorage.getItem('church_logo_url');
+    if (logoUrl) logoEl.src = logoUrl;
+    loadConfig();
+    loadEventos();
+  }
+
+  function renderDigitalCredential(member) {
+    const nome = String(member?.nome || 'Membro');
+    const igreja = String(member?.nome_igreja || member?.igrejaNome || member?.igreja || '-');
+    const cargo = String(member?.cargo || 'Membro');
+    const foto = String(member?.foto_url || member?.fotoUrl || '').trim();
+
+    credentialNomeEl.textContent = nome;
+    credentialIgrejaEl.textContent = igreja;
+    credentialCargoEl.textContent = cargo;
+    credentialPhotoEl.src = foto || 'https://via.placeholder.com/72x72?text=MEMBRO';
+  }
+
+  async function hydrateMemberProfile() {
+    const token = localStorage.getItem('app_member_token');
+    const user = getCurrentMemberUser();
+    if (!token || !user) return;
+
+    try {
+      const response = await fetch('/app-membro/meu-perfil', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if (!response.ok) return;
+
+      const profile = await response.json();
+      const nextUser = {
+        ...user,
+        nome: profile?.nome || user.nome,
+        email: profile?.email || user.email,
+        cargo: profile?.cargo || user.cargo || '',
+        foto_url: profile?.foto_url || user.foto_url || '',
+        nome_igreja: profile?.nome_igreja || user.nome_igreja || user.igrejaNome || ''
+      };
+
+      localStorage.setItem('app_member_user', JSON.stringify(nextUser));
+      greetingEl.textContent = 'Olá, ' + (nextUser.nome || 'Membro') + '!';
+      renderDigitalCredential(nextUser);
+    } catch (_error) {
+      // Mantém dados locais caso a API de perfil esteja indisponível
+    }
+  }
+
+  // --- Config ---
+  async function loadConfig() {
+    try {
+      const igrejaId = getIgrejaIdForApp();
+      const res = await fetch('/api/app/config?igrejaId=' + encodeURIComponent(igrejaId));
+      if (!res.ok) return;
+      const cfg = await res.json();
+      if (cfg.versiculoContribuicoes) contribVerse.textContent = cfg.versiculoContribuicoes;
+      if (cfg.logoUrl) logoEl.src = cfg.logoUrl;
+      applySocialLink(socialWhatsapp, cfg.whatsapp);
+      applySocialLink(socialFacebook, cfg.facebook);
+      applySocialLink(socialInstagram, cfg.instagram);
+    } catch(_e) {}
+  }
+
+  // --- Congregações ---
+  let _congregacoes = [];
+
+  async function loadCongregacoes() {
+    try {
+      const igrejaId = getIgrejaIdForApp();
+      const res = await fetch('/api/app/congregacoes?igrejaId=' + encodeURIComponent(igrejaId));
+      if (!res.ok) return;
+      const data = await res.json();
+      _congregacoes = Array.isArray(data) ? data : (data.data || []);
+      renderCongregacoes(buscaInput.value);
+    } catch(_e) {}
+  }
+
+  function renderCongregacoes(filtro) {
+    const termo = (filtro || '').toLowerCase();
+    const filtradas = _congregacoes.filter(c =>
+      (c.nome || '').toLowerCase().includes(termo) ||
+      (c.endereco || '').toLowerCase().includes(termo)
+    );
+    if (!filtradas.length) {
+      listaCongEl.innerHTML = '<div style="font-size:12px;color:#9ca3af;margin-top:16px;text-align:center;">Nenhuma congregação encontrada.</div>';
+      return;
+    }
+    listaCongEl.innerHTML = filtradas.map(c => {
+      const lat = c.latitude  || '';
+      const lng = c.longitude || '';
+      const wazeUrl = lat ? `https://waze.com/ul?ll=${lat},${lng}&navigate=yes` : '#';
+      const mapsUrl = lat ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}` : '#';
+      return `
+        <div class="congreg-card">
+          <div class="congreg-header">${c.nome || ''}</div>
+          <div>Pastor: ${c.pastor || '-'}</div>
+          <div>Dirigente: ${c.dirigente || '-'}</div>
+          <div>Telefone: ${c.telefone || '-'}</div>
+          <div>Endereço: ${c.endereco || '-'}</div>
+          <div class="congreg-footer">
+            <button onclick="window.open('${wazeUrl}','_blank')"><i class="fa-brands fa-waze"></i> Waze</button>
+            <button onclick="window.open('${mapsUrl}','_blank')"><i class="fa-brands fa-google"></i> Maps</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  buscaInput.addEventListener('input', () => renderCongregacoes(buscaInput.value));
+
+  // --- Vídeos ---
+  async function loadVideos() {
+    areaVideosEl.innerHTML = '<div style="text-align:center;padding:30px;color:#9ca3af;font-size:13px;"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</div>';
+
+    try {
+      const igrejaId = getIgrejaIdForApp();
+      let videos = [];
+
+      // 1) Fonte principal atual (CRUD completo no painel de mídias)
+      try {
+        const resMidias = await fetch('/api/app/midias?igrejaId=' + encodeURIComponent(igrejaId));
+        if (resMidias.ok) {
+          const payload = await resMidias.json().catch(() => ({}));
+          videos = (payload.videos || []).map((item) => ({
+            id: item.id,
+            titulo: item.title || item.titulo || 'Vídeo',
+            url: item.url || '',
+            data: item.createdAt || item.data || null
+          }));
+        }
+      } catch (_error) {
+        videos = [];
+      }
+
+      // 2) Compatibilidade com endpoint legado
+      if (!videos.length) {
+        const resVideos = await fetch('/api/app/videos?igrejaId=' + encodeURIComponent(igrejaId));
+        if (resVideos.ok) {
+          const data = await resVideos.json().catch(() => ([]));
+          videos = Array.isArray(data) ? data : (data.data || []);
+        }
+      }
+
+      // 3) Fallback localStorage para modo simples/offline
+      if (!videos.length) {
+        const localBucket = getLocalMediaByChurch(igrejaId);
+        videos = (localBucket.videos || []).map((item) => ({
+          id: item.id,
+          titulo: item.title || item.titulo || 'Vídeo',
+          url: item.url || '',
+          data: item.data || item.createdAt || null
+        }));
+      }
+
+      if (!videos.length) throw new Error('vazio');
+
+      areaVideosEl.innerHTML = '<div class="videos-grid">' + videos.map((v) => {
+        const thumb = getYoutubeThumb(v.url) || 'https://via.placeholder.com/320x180?text=VIDEO';
+        const dateLabel = v.data ? new Date(v.data).toLocaleDateString('pt-BR') : '';
+        const safeTitle = String(v.titulo || 'Vídeo');
+        const safeUrl = encodeURIComponent(String(v.url || ''));
+
+        return ''
+          + '<button class="video-card" type="button" data-url="' + safeUrl + '">'
+          +   '<div class="video-thumb">'
+          +     '<img src="' + thumb + '" alt="thumb vídeo">'
+          +     '<div class="play-icon"><i class="fa-solid fa-play-circle"></i></div>'
+          +   '</div>'
+          +   '<div class="video-title">' + safeTitle + '</div>'
+          +   (dateLabel ? '<div class="video-date">' + dateLabel + '</div>' : '')
+          + '</button>';
+      }).join('') + '</div>';
+
+      areaVideosEl.querySelectorAll('.video-card').forEach((button) => {
+        button.addEventListener('click', () => {
+          const targetUrl = decodeURIComponent(button.dataset.url || '');
+          if (targetUrl) {
+            window.open(targetUrl, '_blank');
+          }
+        });
+      });
+    } catch(_e) {
+      areaVideosEl.innerHTML = '<div class="videos-empty"><i class="fa-regular fa-clone"></i><p>Nenhum vídeo encontrado.</p></div>';
+    }
+  }
+
+  async function loadFotos() {
+    areaFotosEl.innerHTML = '<div style="text-align:center;padding:30px;color:#9ca3af;font-size:13px;"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</div>';
+
+    try {
+      const igrejaId = getIgrejaIdForApp();
+      let images = [];
+
+      try {
+        const resMidias = await fetch('/api/app/midias?igrejaId=' + encodeURIComponent(igrejaId));
+        if (resMidias.ok) {
+          const payload = await resMidias.json().catch(() => ({}));
+          images = (payload.images || []).map((item) => ({
+            id: item.id,
+            title: item.title || item.titulo || 'Foto',
+            description: item.description || item.descricao || '',
+            url: item.url || ''
+          }));
+        }
+      } catch (_error) {
+        images = [];
+      }
+
+      if (!images.length) {
+        const localBucket = getLocalMediaByChurch(igrejaId);
+        images = (localBucket.images || []).map((item) => ({
+          id: item.id,
+          title: item.title || item.titulo || 'Foto',
+          description: item.description || item.descricao || '',
+          url: item.url || ''
+        }));
+      }
+
+      if (!images.length) {
+        throw new Error('vazio');
+      }
+
+      areaFotosEl.innerHTML = '<div class="photos-grid">' + images.map((image) => {
+        const safeUrl = encodeURIComponent(String(image.url || ''));
+        const safeTitle = String(image.title || 'Foto');
+        const safeDesc = String(image.description || '');
+
+        return ''
+          + '<button type="button" class="photo-card" data-url="' + safeUrl + '">'
+          +   '<img src="' + String(image.url || '') + '" alt="foto">'
+          +   '<div class="photo-meta">'
+          +     '<div class="photo-title">' + safeTitle + '</div>'
+          +     '<div class="photo-desc">' + (safeDesc || 'Toque para ampliar') + '</div>'
+          +   '</div>'
+          + '</button>';
+      }).join('') + '</div>';
+
+      areaFotosEl.querySelectorAll('.photo-card').forEach((button) => {
+        button.addEventListener('click', () => {
+          const targetUrl = decodeURIComponent(button.dataset.url || '');
+          if (targetUrl) {
+            window.open(targetUrl, '_blank');
+          }
+        });
+      });
+    } catch (_error) {
+      areaFotosEl.innerHTML = '<div class="videos-empty"><i class="fa-regular fa-image"></i><p>Nenhuma foto encontrada.</p></div>';
+    }
+  }
+
+  // --- Eventos ---
+  let dataAtual = new Date();
+
+  function getMesParam() {
+    const y = dataAtual.getFullYear();
+    const m = String(dataAtual.getMonth() + 1).padStart(2, '0');
+    return `${y}-${m}`;
+  }
+
+  async function loadEventos() {
+    labelMes.textContent = dataAtual.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    listaEventosEl.innerHTML = '<div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;"><i class="fa-solid fa-spinner fa-spin"></i></div>';
+    try {
+      const igrejaId = getIgrejaIdForApp();
+      const res = await fetch(`/api/app/eventos?igrejaId=${encodeURIComponent(igrejaId)}&mes=${getMesParam()}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const eventos = Array.isArray(data) ? data : (data.data || []);
+      if (!eventos.length) throw new Error('vazio');
+      listaEventosEl.innerHTML = eventos.map(e => `
+        <div class="congreg-card">
+          <div class="congreg-header">${e.titulo || e.descricao || 'Evento'}</div>
+          <div>${e.data ? new Date(e.data).toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit', month:'short', year:'numeric'}) : ''}</div>
+          ${e.local ? `<div><i class="fa-solid fa-location-dot" style="color:var(--accent);"></i> ${e.local}</div>` : ''}
+        </div>`).join('');
+    } catch(_e) {
+      listaEventosEl.innerHTML = '<div class="event-empty"><i class="fa-regular fa-clipboard"></i><p>Nenhum registro encontrado.</p></div>';
+    }
+  }
+
+  document.getElementById('mesAnterior').addEventListener('click', () => {
+    dataAtual.setMonth(dataAtual.getMonth() - 1);
+    loadEventos();
+  });
+  document.getElementById('mesProximo').addEventListener('click', () => {
+    dataAtual.setMonth(dataAtual.getMonth() + 1);
+    loadEventos();
+  });
+
+  // --- Conexões / Pedidos ---
+  const TIPOS_LABEL = {
+    conexao: 'Quero me conectar',
+    oracao:  'Pedido de Oração',
+    ajuda:   'Precisa de Ajuda',
+    decisao: 'Decidi caminhar com Jesus'
+  };
+
+  function abrirModal(tipo) {
+    _modalTipo = tipo;
+    modalTitle.textContent = TIPOS_LABEL[tipo] || 'Conexão';
+    modalForm.reset();
+    modal.style.display = 'flex';
+  }
+
+  modalClose.addEventListener('click', () => { modal.style.display = 'none'; });
+  modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+
+  modalForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const nome     = document.getElementById('modalNome').value.trim();
+    const celular  = document.getElementById('modalCelular').value.trim();
+    const mensagem = document.getElementById('modalMensagem').value.trim();
+    const submitBtn = modalForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+    try {
+      const res = await fetch('/api/app/conexoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: _modalTipo, nome, celular, mensagem, igrejaId: getIgrejaIdForApp() })
+      });
+      if (!res.ok) throw new Error();
+      modal.style.display = 'none';
+      alert('Pedido enviado! Em breve entraremos em contato.');
+    } catch(_e) {
+      alert('Erro ao enviar. Tente novamente.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar';
+    }
+  });
+
+  // --- Logout ---
+  btnLogout.addEventListener('click', e => {
+    e.preventDefault();
+    localStorage.removeItem('app_member_token');
+    localStorage.removeItem('app_member_user');
+    window.location.href = 'app_login.html';
+  });
+
+  // --- Navegação inferior ---
+  const panels = document.querySelectorAll('.panel');
+  const bottomItems = document.querySelectorAll('.bottom-item');
+
+  function openPanel(id) {
+    panels.forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    bottomItems.forEach(i => i.classList.remove('active'));
+    document.querySelector(`.bottom-item[data-target="${id}"]`).classList.add('active');
+    // Lazy load ao abrir a aba
+    if (id === 'panel-local'   && _congregacoes.length === 0) loadCongregacoes();
+    if (id === 'panel-video')   loadVideos();
+    if (id === 'panel-fotos')   loadFotos();
+    if (id === 'panel-eventos') loadEventos();
+  }
+
+  bottomItems.forEach(item => {
+    item.addEventListener('click', () => openPanel(item.dataset.target));
+  });
+
+  // Botões internos ("Ver vídeos")
+  document.querySelectorAll('[data-nav]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.nav === 'video') openPanel('panel-video');
+      if (btn.dataset.nav === 'fotos') openPanel('panel-fotos');
+    });
+  });
+
+  // Botões de conexão
+  document.querySelectorAll('[data-tipo]').forEach(btn => {
+    btn.addEventListener('click', () => abrirModal(btn.dataset.tipo));
+  });
+
+  // --- Start ---
+  initApp();
+</script>
+</body>
+</html>

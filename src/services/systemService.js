@@ -92,6 +92,10 @@ async function getTotalVisitantes(igrejaId) {
     return systemModel.countVisitantes(igrejaId);
 }
 
+async function getTotalMembros(igrejaId) {
+    return systemModel.countMembros(igrejaId);
+}
+
 async function getHealthStatus() {
     const databaseOk = await systemModel.pingDatabase();
 
@@ -114,6 +118,7 @@ module.exports = {
     deleteVisitante,
     getOracaoById,
     getHealthStatus,
+    getTotalMembros,
     getTotalVisitantes,
     listOracoesMural,
     listOracoesMy,

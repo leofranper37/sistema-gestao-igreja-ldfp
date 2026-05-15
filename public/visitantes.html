@@ -7,550 +7,1059 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .visitantes-wrap { padding: 0; max-width: 1280px; margin: 0 auto; }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            gap: 10px;
-            flex-wrap: wrap;
+        :root {
+            --teal:    #0ea5e9;
+            --green:   #10b981;
+            --red:     #dc2626;
+            --yellow:  #f59e0b;
+            --purple:  #8b5cf6;
+            --surface: #ffffff;
+            --bg:      #f1f5f9;
+            --border:  #e2e8f0;
+            --text:    #0f172a;
+            --muted:   #64748b;
+            --radius:  14px;
+            --shadow:  0 4px 16px rgba(15,23,42,.08);
+            --shadow-lg: 0 12px 32px rgba(15,23,42,.14);
         }
 
-        .btn-novo {
-            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
-            color: #fff;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            font-size: 13px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .search-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-
-        .search-bar input {
-            flex: 1;
-            min-width: 220px;
-            border: 1px solid #dbe3ef;
-            border-radius: 8px;
-            padding: 9px 10px;
-        }
-
-        .btn-buscar {
-            border: 1px solid #dbe3ef;
-            background: #fff;
-            border-radius: 8px;
-            padding: 9px 12px;
-            cursor: pointer;
-        }
-
-        .table-wrap {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            overflow-x: auto;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 900px;
-        }
-
-        th,
-        td {
-            padding: 14px;
-            border-bottom: 1px solid #eef2f7;
-            text-align: left;
-            font-size: 13px;
-        }
-
-        th {
-            background: #f8fafc;
-            color: #475569;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-
-        .badge-data {
-            background: #e0f2fe;
-            color: #075985;
-            padding: 3px 8px;
-            border-radius: 999px;
-            font-size: 12px;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(2, 6, 23, 0.65);
-            display: none;
-            align-items: flex-start;
-            justify-content: center;
-            overflow-y: auto;
-            padding: 22px 14px;
-            z-index: 1000;
-        }
-
-        .modal {
-            background: white;
-            padding: 26px;
-            border-radius: 12px;
-            width: min(96vw, 1080px);
-            max-height: calc(100vh - 44px);
-            overflow-y: auto;
-            box-shadow: 0 12px 28px rgba(2, 6, 23, 0.24);
-            margin: 0 auto;
-        }
-
-        .modal-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 8px;
-        }
-
-        .modal-grid .full {
-            grid-column: span 4;
-        }
-
-        .modal-grid .col-2 {
-            grid-column: span 2;
-        }
-
-        .modal-grid .col-3 {
-            grid-column: span 3;
-        }
-
-        .field-wrap {
+        .page-wrap {
+            padding: 24px 28px 48px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 20px;
         }
 
-        .field-wrap label {
-            font-size: 11px;
-            color: #64748b;
-            font-weight: 700;
-            text-transform: uppercase;
+        /* Cabeçalho */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        .field-wrap select {
-            width: 100%;
-            padding: 10px;
-            margin: 0;
-            border: 1px solid #dbe3ef;
+        .page-header-left h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-header-left h2 i { color: var(--teal); }
+        .page-header-left p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 15px;
             border-radius: 8px;
-            font-family: inherit;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-primary { background: linear-gradient(90deg, var(--teal), var(--green)); color: #fff; }
+        .btn-primary:hover { opacity: .9; }
+        .btn-ghost { background: var(--bg); color: var(--muted); border: 1.5px solid var(--border); }
+        .btn-ghost:hover { background: var(--border); }
+        .btn-danger { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+        .btn-danger:hover { background: var(--red); color: #fff; }
+        .btn-purple { background: var(--purple); color: #fff; }
+        .btn-purple:hover { background: #6d28d9; }
+        .btn-sm { padding: 7px 11px; font-size: 12px; border-radius: 7px; }
+
+        /* Layout dois painéis */
+        .two-col {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        .row-actions {
+        .panel-header {
+            padding: 13px 15px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-count {
+            font-size: 11px;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .search-box { position: relative; }
+        .search-box i {
+            position: absolute;
+            left: 10px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: .8rem;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 9px 11px 9px 30px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
+        }
+        .search-box input:focus { outline: none; border-color: var(--teal); background: #fff; }
+
+        /* Filtros */
+        .filtros {
             display: flex;
             gap: 6px;
         }
-
-        .row-actions button {
-            border: 1px solid #dbe3ef;
-            background: #fff;
-            border-radius: 6px;
-            padding: 4px 8px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .row-actions .delete {
-            border-color: #fecaca;
-            color: #b91c1c;
-            background: #fef2f2;
-        }
-
-        .modal input,
-        .modal textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 0;
-            border: 1px solid #dbe3ef;
+        .filtros select {
+            flex: 1;
+            padding: 8px 10px;
             border-radius: 8px;
-            font-family: inherit;
+            border: 1.5px solid var(--border);
+            font-size: 12px;
+            background: var(--bg);
+            color: var(--text);
+        }
+        .filtros select:focus { outline: none; border-color: var(--teal); }
+
+        /* Lista */
+        .vis-list {
+            overflow-y: auto;
+            max-height: calc(100vh - 320px);
         }
 
-        .modal input:focus,
-        .modal textarea:focus {
-            outline: none;
-            border-color: #0ea5e9;
-            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
-        }
-
-        .modal-buttons {
+        .vis-item {
             display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 10px;
+            align-items: center;
+            gap: 11px;
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .vis-item:last-child { border-bottom: none; }
+        .vis-item:hover { background: #fafafa; }
+        .vis-item.is-active {
+            background: #e0f2fe;
+            box-shadow: inset 4px 0 0 var(--teal);
+        }
+
+        .vis-avatar {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--teal), var(--green));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .vis-info { flex: 1; min-width: 0; }
+        .vis-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .vis-sub { font-size: 11px; color: var(--muted); }
+
+        .vis-badge {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .badge-novo      { background: #d1fae5; color: #065f46; }
+        .badge-membro    { background: #dbeafe; color: #1e40af; }
+        .badge-recorrente{ background: #fef9c3; color: #854d0e; }
+        .badge-inativo   { background: #fee2e2; color: #991b1b; }
+
+        .empty-list {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .empty-list i { font-size: 1.8rem; margin-bottom: 10px; color: #cbd5e1; display: block; }
+
+        /* Painel direito */
+        .right-panel { display: flex; flex-direction: column; gap: 16px; }
+
+        /* Hero */
+        .vis-hero {
+            border-radius: var(--radius);
+            padding: 22px 26px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, #0ea5e9, #10b981);
+            transition: background .4s;
+        }
+        .vis-hero::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.08);
+        }
+
+        .hero-avatar {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,.4);
+            background: rgba(255,255,255,.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .hero-body { flex: 1; min-width: 160px; }
+        .hero-name { font-size: 19px; font-weight: 800; color: #fff; }
+        .hero-name.ph {
+            color: rgba(255,255,255,.55);
+            font-style: italic;
+            font-weight: 400;
+            font-size: 15px;
+        }
+        .hero-sub { font-size: 12px; color: rgba(255,255,255,.8); margin-top: 4px; }
+
+        .hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .hero-btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1.5px solid rgba(255,255,255,.4);
+            background: rgba(255,255,255,.15);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background .2s;
+        }
+        .hero-btn:hover { background: rgba(255,255,255,.28); }
+        .hero-btn.danger { border-color: #fca5a5; color: #fca5a5; }
+        .hero-btn.danger:hover { background: rgba(220,38,38,.25); }
+
+        /* Abas */
+        .tabs-bar {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            background: #f8fafc;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 7px 14px;
+            border-radius: 7px;
+            border: none;
+            background: transparent;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all .15s;
+        }
+        .tab-btn:hover { background: var(--border); color: var(--text); }
+        .tab-btn.active { background: #fff; color: var(--teal); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+        .tab-panel { display: none; padding: 18px; }
+        .tab-panel.active { display: block; }
+
+        /* Formulário */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .form-grid.g2 { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 700px) { .form-grid, .form-grid.g2 { grid-template-columns: 1fr; } }
+
+        .col-2 { grid-column: span 2; }
+        .col-3 { grid-column: span 3; }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .field label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+        .field input,
+        .field select,
+        .field textarea {
+            padding: 9px 11px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            color: var(--text);
+            background: var(--bg);
+            font-family: inherit;
+            transition: border .2s;
+        }
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #fff;
+        }
+        .field textarea { min-height: 80px; resize: vertical; }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--teal);
+            border-bottom: 1.5px solid #e0f2fe;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            margin-top: 4px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            margin-top: 14px;
         }
 
         .status-msg {
-            margin: 10px 0 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--green);
+            min-height: 18px;
+        }
+        .status-msg.error { color: var(--red); }
+
+        /* Tabela */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .data-table th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text);
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+        .empty-table {
+            text-align: center;
+            color: var(--muted);
+            padding: 30px;
             font-size: 13px;
-            color: #0f766e;
         }
 
-        .status-msg.error {
-            color: #b91c1c;
+        /* Telão badge */
+        .telao-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-weight: 700;
         }
-
-        .status-msg:empty {
-            display: none;
-        }
-
-        .btn-save-visitante:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        @media (max-width: 780px) {
-            .visitantes-wrap {
-                padding: 0;
-            }
-
-            th,
-            td {
-                padding: 10px;
-                font-size: 12px;
-            }
-
-            .modal { padding: 18px; }
-            .modal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-            .modal-grid .full,
-            .modal-grid .col-2,
-            .modal-grid .col-3 {
-                grid-column: span 2;
-            }
-        }
+        .telao-sim { background: #d1fae5; color: #065f46; }
+        .telao-nao { background: #f1f5f9; color: var(--muted); }
     </style>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-title="Visitantes" data-shell-breadcrumb="LDFP / Secretaria / Visitantes" data-shell-active="visitantes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
-    <main class="main-content enterprise-main">
-        <div class="enterprise-page-shell">
-        <div class="visitantes-wrap">
-            <div class="enterprise-page-hero" style="margin-bottom:16px;">
-                <div>
-                    <h2>Visitantes</h2>
-                    <p>Cadastro estruturado de visitantes com historico, dados de contato e acompanhamento pastoral.</p>
-                </div>
-                <div class="enterprise-page-badge"><i class="fa-solid fa-user-group"></i> Secretaria</div>
-            </div>
-            <div class="page-header">
-                <h2 style="margin:0;color:#1f2937;">Lista de Visitantes</h2>
-                <button class="btn-novo" onclick="abrirModal()"><i class="fa-solid fa-plus"></i> Novo Visitante</button>
-            </div>
-            <div class="search-bar">
-                <input type="search" id="searchVisitante" placeholder="Buscar por nome, telefone, cidade ou congregação...">
-                <button type="button" class="btn-buscar" onclick="carregarLista()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
-            </div>
-            <div id="pageStatus" class="status-msg"></div>
+<body class="theme-petroleo enterprise-shell-page"
+      data-shell-title="Visitantes"
+      data-shell-breadcrumb="LDFP / Secretaria / Visitantes"
+      data-shell-active="visitantes.html"
+      data-shell-chip="Ambiente autenticado"
+      data-shell-role="Administrador">
 
-            <div class="table-wrap">
-                <table id="tabelaVisitantes">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Data Visita</th>
-                            <th>Telefone</th>
-                            <th>Cidade</th>
-                            <th>Congregação</th>
-                            <th>Observação</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-        </div>
-    </main>
+<main class="main-content enterprise-main">
+<div class="page-wrap">
 
-    <div class="modal-overlay" id="modalCadastro">
-        <div class="modal">
-            <h3 id="modalTitulo">Registrar Visitante</h3>
-            <input type="hidden" id="visitanteId">
-            <div class="modal-grid">
-                <div class="field-wrap col-2"><label>Nome</label><input type="text" id="nome" placeholder="Nome Completo"></div>
-                <div class="field-wrap"><label>Nascimento</label><input type="date" id="nascimento"></div>
-                <div class="field-wrap"><label>Sexo</label><select id="sexo"><option value="">Selecione</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select></div>
-                <div class="field-wrap"><label>Estado civil</label><input type="text" id="estadoCivil" placeholder="Estado civil"></div>
-                <div class="field-wrap"><label>Data visita</label><input type="date" id="data"></div>
-                <div class="field-wrap col-2"><label>Endereço</label><input type="text" id="endereco" placeholder="Endereço"></div>
-                <div class="field-wrap"><label>Número</label><input type="text" id="numero" placeholder="Número"></div>
-                <div class="field-wrap"><label>Bairro</label><input type="text" id="bairro" placeholder="Bairro"></div>
-                <div class="field-wrap"><label>Cidade</label><input type="text" id="cidade" placeholder="Cidade"></div>
-                <div class="field-wrap"><label>Estado</label><input type="text" id="estado" placeholder="Estado"></div>
-                <div class="field-wrap"><label>CEP</label><input type="text" id="cep" placeholder="CEP"></div>
-                <div class="field-wrap"><label>Telefone</label><input type="text" id="telefone" placeholder="Telefone"></div>
-                <div class="field-wrap"><label>Celular</label><input type="text" id="celular" placeholder="Celular"></div>
-                <div class="field-wrap col-2"><label>E-mail</label><input type="text" id="email" placeholder="E-mail"></div>
-                <div class="field-wrap"><label>Congregação</label><input type="text" id="congregacao" placeholder="Congregação"></div>
-                <div class="field-wrap"><label>Aceitou Jesus em</label><input type="text" id="aceitouJesusEm" placeholder="Local/ocasião"></div>
-                <div class="field-wrap"><label>Retorno em</label><input type="text" id="retornoEm" placeholder="Data/local de retorno"></div>
-                <div class="field-wrap full"><label>Observação</label><textarea id="obs" rows="3" placeholder="Observações"></textarea></div>
-            </div>
-            <div id="modalStatus" class="status-msg"></div>
-            <div class="modal-buttons">
-                <button onclick="fecharModal()" style="padding: 8px 15px; border: 1px solid #ccc; background: white; cursor: pointer;">Cancelar</button>
-                <button id="btnSalvarVisitante" class="btn-save-visitante" onclick="salvarVisitante()" style="padding: 8px 15px; background: #0f172a; color: white; border: none; cursor: pointer;">Salvar</button>
-            </div>
+    <!-- Cabeçalho -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h2><i class="fa-solid fa-user-group"></i> Visitantes</h2>
+            <p>Cadastro, acompanhamento pastoral e controle de telão.</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" id="btnTelao">
+                <i class="fa-solid fa-tv"></i> Telão
+            </button>
+            <button class="btn btn-ghost btn-sm" id="btnQr">
+                <i class="fa-solid fa-qrcode"></i> QR Público
+            </button>
+            <button class="btn btn-ghost btn-sm" id="btnRecarregar">
+                <i class="fa-solid fa-rotate"></i>
+            </button>
+            <button class="btn btn-primary" id="btnNovoVisitante">
+                <i class="fa-solid fa-plus"></i> Novo Visitante
+            </button>
         </div>
     </div>
 
-    <script src="session.js?v=20260501"></script>
-    <script src="enterprise-shell.js?v=20260501"></script>
-    <script>
-        requireAuthSession();
+    <!-- Dois painéis -->
+    <div class="two-col">
 
-        let visitantesCache = [];
+        <!-- Lista -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span><i class="fa-solid fa-list" style="color:var(--teal);margin-right:6px;"></i> Lista</span>
+                    <span class="panel-count" id="totalCount">0</span>
+                </div>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar visitante...">
+                </div>
+                <div class="filtros">
+                    <select id="filterSituacao">
+                        <option value="">Todas situações</option>
+                        <option value="Novo">Novo</option>
+                        <option value="Recorrente">Recorrente</option>
+                        <option value="Virou Membro">Virou Membro</option>
+                        <option value="Inativo">Inativo</option>
+                    </select>
+                    <select id="filterEvento">
+                        <option value="">Todos eventos</option>
+                    </select>
+                </div>
+            </div>
+            <div class="vis-list" id="visList"></div>
+        </div>
 
-        function mapField(id) {
-            return document.getElementById(id);
+        <!-- Painel direito -->
+        <div class="right-panel">
+
+            <!-- Hero -->
+            <div class="vis-hero" id="visHero">
+                <div class="hero-avatar" id="heroAvatar">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <div class="hero-body">
+                    <div class="hero-name ph" id="heroNome">Selecione ou cadastre um visitante</div>
+                    <div class="hero-sub" id="heroSub"></div>
+                </div>
+                <div class="hero-actions">
+                    <button class="hero-btn" id="btnSalvarHero">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar
+                    </button>
+                    <button class="hero-btn danger" id="btnExcluirHero">
+                        <i class="fa-solid fa-trash-can"></i> Excluir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Abas -->
+            <div class="panel">
+                <div class="tabs-bar">
+                    <button class="tab-btn active" data-tab="tabDados">
+                        <i class="fa-solid fa-address-card"></i> Dados
+                    </button>
+                    <button class="tab-btn" data-tab="tabContato">
+                        <i class="fa-solid fa-phone"></i> Contato
+                    </button>
+                    <button class="tab-btn" data-tab="tabPastoral">
+                        <i class="fa-solid fa-hands-praying"></i> Pastoral
+                    </button>
+                    <button class="tab-btn" data-tab="tabVisitas">
+                        <i class="fa-solid fa-calendar-check"></i> Visitas
+                    </button>
+                </div>
+
+                <!-- Aba Dados -->
+                <div class="tab-panel active" id="tabDados">
+                    <form name="visForm" onsubmit="return false">
+                        <div class="section-label">Identificação</div>
+                        <div class="form-grid">
+                            <div class="field col-2">
+                                <label>Nome completo *</label>
+                                <input name="nome" placeholder="Nome do visitante">
+                            </div>
+                            <div class="field">
+                                <label>Situação</label>
+                                <select name="situacao">
+                                    <option>Novo</option>
+                                    <option>Recorrente</option>
+                                    <option>Virou Membro</option>
+                                    <option>Inativo</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Data da visita</label>
+                                <input name="dataVisita" type="date">
+                            </div>
+                            <div class="field">
+                                <label>Evento</label>
+                                <input name="evento" placeholder="Ex.: Culto domingo">
+                            </div>
+                            <div class="field">
+                                <label>Congregação de origem</label>
+                                <input name="congregacao" placeholder="Igreja de origem">
+                            </div>
+                            <div class="field">
+                                <label>Como conheceu</label>
+                                <select name="comoConheceu">
+                                    <option value="">Selecione</option>
+                                    <option>Indicação de membro</option>
+                                    <option>Redes sociais</option>
+                                    <option>Passando na rua</option>
+                                    <option>Evento especial</option>
+                                    <option>QR Code</option>
+                                    <option>Outro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="section-label" style="margin-top:16px;">Endereço</div>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label>CEP</label>
+                                <input name="cep" placeholder="00000-000" id="visCep">
+                            </div>
+                            <div class="field col-2">
+                                <label>Endereço</label>
+                                <input name="endereco" placeholder="Rua, número">
+                            </div>
+                            <div class="field">
+                                <label>Bairro</label>
+                                <input name="bairro">
+                            </div>
+                            <div class="field">
+                                <label>Cidade</label>
+                                <input name="cidade">
+                            </div>
+                            <div class="field">
+                                <label>Estado</label>
+                                <input name="estado" maxlength="2" placeholder="SP">
+                            </div>
+                        </div>
+
+                        <div class="section-label" style="margin-top:16px;">Telão</div>
+                        <div class="form-grid g2">
+                            <div class="field">
+                                <label>Exibir no telão?</label>
+                                <select name="autorizaTelao">
+                                    <option value="sim">Sim — autorizado</option>
+                                    <option value="nao">Não</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Status no telão</label>
+                                <select name="statusTelao">
+                                    <option value="pendente">Pendente</option>
+                                    <option value="exibindo">Exibindo</option>
+                                    <option value="finalizado">Finalizado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="btnSalvar">
+                                <i class="fa-solid fa-floppy-disk"></i> Salvar Visitante
+                            </button>
+                            <button class="btn btn-danger" id="btnExcluir">
+                                <i class="fa-solid fa-trash-can"></i> Excluir
+                            </button>
+                            <button class="btn btn-ghost" id="btnLimpar">
+                                <i class="fa-solid fa-eraser"></i> Limpar
+                            </button>
+                            <span class="status-msg" id="statusMsg"></span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Aba Contato -->
+                <div class="tab-panel" id="tabContato">
+                    <div class="section-label">Dados de contato</div>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Telefone</label>
+                            <input name="telefone" form="visForm" placeholder="(11) 99999-9999">
+                        </div>
+                        <div class="field">
+                            <label>Celular / WhatsApp</label>
+                            <input name="celular" form="visForm" placeholder="(11) 99999-9999">
+                        </div>
+                        <div class="field">
+                            <label>E-mail</label>
+                            <input name="email" form="visForm" type="email" placeholder="email@exemplo.com">
+                        </div>
+                        <div class="field">
+                            <label>Instagram</label>
+                            <input name="instagram" form="visForm" placeholder="@usuario">
+                        </div>
+                        <div class="field">
+                            <label>Sexo</label>
+                            <select name="sexo" form="visForm">
+                                <option value="">Selecione</option>
+                                <option>Masculino</option>
+                                <option>Feminino</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Data de nascimento</label>
+                            <input name="nascimento" form="visForm" type="date">
+                        </div>
+                        <div class="field">
+                            <label>Estado civil</label>
+                            <select name="estadoCivil" form="visForm">
+                                <option value="">Selecione</option>
+                                <option>Solteiro(a)</option>
+                                <option>Casado(a)</option>
+                                <option>Divorciado(a)</option>
+                                <option>Viúvo(a)</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Profissão</label>
+                            <input name="profissao" form="visForm" placeholder="Profissão">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aba Pastoral -->
+                <div class="tab-panel" id="tabPastoral">
+                    <div class="section-label">Acompanhamento pastoral</div>
+                    <div class="form-grid">
+                        <div class="field col-3">
+                            <label>Pedido de oração</label>
+                            <textarea name="pedidoOracao" form="visForm" placeholder="Pedido de oração deixado pelo visitante..."></textarea>
+                        </div>
+                        <div class="field col-3">
+                            <label>Observações pastorais</label>
+                            <textarea name="obsPastoral" form="visForm" placeholder="Anotações internas do pastor ou líder..."></textarea>
+                        </div>
+                        <div class="field">
+                            <label>Responsável pelo acompanhamento</label>
+                            <input name="responsavelPastoral" form="visForm" placeholder="Nome do líder">
+                        </div>
+                        <div class="field">
+                            <label>Data do acompanhamento</label>
+                            <input name="dataAcompanhamento" form="visForm" type="date">
+                        </div>
+                        <div class="field">
+                            <label>Encaminhado para grupo?</label>
+                            <select name="encaminhadoGrupo" form="visForm">
+                                <option value="">Não</option>
+                                <option value="sim">Sim</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aba Visitas -->
+                <div class="tab-panel" id="tabVisitas">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <div class="section-label" style="margin:0;">Histórico de visitas</div>
+                        <button class="btn btn-primary btn-sm" id="btnAddVisita">
+                            <i class="fa-solid fa-plus"></i> Registrar visita
+                        </button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Evento</th>
+                                <th>Telão</th>
+                                <th>Obs</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitasBody">
+                            <tr>
+                                <td colspan="4" class="empty-table">Selecione um visitante para ver o histórico.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+    requireAuthSession();
+
+    /* ── Helpers ── */
+    const $ = id => document.getElementById(id);
+    const makeId = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+    const STORAGE_KEY = 'ldfpVisitantes';
+
+    const readVisitantes = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const writeVisitantes = list => localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+
+    let visitantes  = readVisitantes();
+    let selecionado = null;
+    let filtroTexto = '';
+    let filtroSit   = '';
+    let filtroEvento = '';
+
+    /* ── Iniciais para avatar ── */
+    const iniciais = nome => {
+        if (!nome) return '?';
+        const parts = nome.trim().split(' ').filter(Boolean);
+        return parts.length >= 2
+            ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+            : parts[0].slice(0, 2).toUpperCase();
+    };
+
+    /* ── Badge situação ── */
+    const badgeClass = sit => ({
+        'Novo':         'badge-novo',
+        'Recorrente':   'badge-recorrente',
+        'Virou Membro': 'badge-membro',
+        'Inativo':      'badge-inativo',
+    }[sit] || 'badge-novo');
+
+    /* ── Preencher filtro de eventos ── */
+    const preencherFiltroEvento = () => {
+        const sel = $('filterEvento');
+        const eventos = [...new Set(visitantes.map(v => v.evento).filter(Boolean))];
+        sel.innerHTML = `<option value="">Todos eventos</option>` +
+            eventos.map(e => `<option value="${e}">${e}</option>`).join('');
+    };
+
+    /* ── Renderizar lista ── */
+    const renderLista = () => {
+        const list = visitantes.filter(v => {
+            const txt = `${v.nome} ${v.telefone || ''} ${v.cidade || ''} ${v.evento || ''}`.toLowerCase();
+            const okTxt = !filtroTexto || txt.includes(filtroTexto);
+            const okSit = !filtroSit   || v.situacao === filtroSit;
+            const okEvt = !filtroEvento || v.evento === filtroEvento;
+            return okTxt && okSit && okEvt;
+        }).sort((a, b) => (b.dataVisita || '').localeCompare(a.dataVisita || ''));
+
+        $('totalCount').textContent = list.length;
+
+        if (!list.length) {
+            $('visList').innerHTML = `
+                <div class="empty-list">
+                    <i class="fa-solid fa-user-group"></i>
+                    Nenhum visitante encontrado.
+                </div>`;
+            return;
         }
 
-        function sanitizeText(value) {
-            return String(value || '')
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#39;');
-        }
+        $('visList').innerHTML = list.map(v => `
+            <div class="vis-item ${v.id === selecionado ? 'is-active' : ''}" data-id="${v.id}">
+                <div class="vis-avatar">${iniciais(v.nome)}</div>
+                <div class="vis-info">
+                    <div class="vis-name">${v.nome || '-'}</div>
+                    <div class="vis-sub">${v.evento || ''} ${v.dataVisita ? '· ' + new Date(v.dataVisita + 'T12:00').toLocaleDateString('pt-BR') : ''}</div>
+                </div>
+                <span class="vis-badge ${badgeClass(v.situacao)}">${v.situacao || 'Novo'}</span>
+            </div>
+        `).join('');
 
-        function abrirModal() {
-            mapField('modalTitulo').textContent = 'Registrar Visitante';
-            mapField('visitanteId').value = '';
-            limparFormulario();
-            document.getElementById('modalCadastro').style.display = 'flex';
-        }
-
-        function editarVisitante(id) {
-            const visitante = visitantesCache.find((item) => Number(item.id) === Number(id));
-            if (!visitante) return;
-
-            mapField('modalTitulo').textContent = 'Editar Visitante';
-            mapField('visitanteId').value = String(visitante.id);
-            mapField('nome').value = visitante.full_name || '';
-            mapField('telefone').value = visitante.phone || '';
-            mapField('data').value = visitante.visit_date || '';
-            mapField('obs').value = visitante.observation || '';
-            mapField('nascimento').value = visitante.birth_date || '';
-            mapField('sexo').value = visitante.gender || '';
-            mapField('estadoCivil').value = visitante.civil_status || '';
-            mapField('endereco').value = visitante.address || '';
-            mapField('numero').value = visitante.number || '';
-            mapField('bairro').value = visitante.neighborhood || '';
-            mapField('cidade').value = visitante.city || '';
-            mapField('estado').value = visitante.state || '';
-            mapField('cep').value = visitante.zip_code || '';
-            mapField('celular').value = visitante.mobile_phone || '';
-            mapField('email').value = visitante.email || '';
-            mapField('congregacao').value = visitante.congregation || '';
-            mapField('aceitouJesusEm').value = visitante.accepted_jesus_at || '';
-            mapField('retornoEm').value = visitante.return_at || '';
-
-            mapField('modalCadastro').style.display = 'flex';
-        }
-
-        function fecharModal() {
-            document.getElementById('modalCadastro').style.display = 'none';
-            setStatus('modalStatus', '', false);
-        }
-
-        function limparFormulario() {
-            mapField('nome').value = '';
-            mapField('telefone').value = '';
-            mapField('data').value = '';
-            mapField('obs').value = '';
-            mapField('nascimento').value = '';
-            mapField('sexo').value = '';
-            mapField('estadoCivil').value = '';
-            mapField('endereco').value = '';
-            mapField('numero').value = '';
-            mapField('bairro').value = '';
-            mapField('cidade').value = '';
-            mapField('estado').value = '';
-            mapField('cep').value = '';
-            mapField('celular').value = '';
-            mapField('email').value = '';
-            mapField('congregacao').value = '';
-            mapField('aceitouJesusEm').value = '';
-            mapField('retornoEm').value = '';
-        }
-
-        function setStatus(id, text, isError = false) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.textContent = text;
-            el.classList.toggle('error', isError);
-        }
-
-        function extractErrorMessage(data, fallbackMessage) {
-            if (!data) return fallbackMessage;
-            return data.error || data.message || fallbackMessage;
-        }
-
-        async function carregarLista() {
-            const tbody = document.querySelector('#tabelaVisitantes tbody');
-            tbody.innerHTML = '<tr><td colspan="7" style="color:#64748b;">Carregando visitantes...</td></tr>';
-
-            try {
-                const query = new URLSearchParams();
-                const search = mapField('searchVisitante').value.trim();
-                if (search) query.set('search', search);
-
-                const res = await fetch(`/visitantes?${query.toString()}`);
-                const lista = await res.json().catch(() => []);
-
-                if (!res.ok) {
-                    throw new Error(extractErrorMessage(lista, 'Não foi possível carregar visitantes.'));
-                }
-
-                if (!Array.isArray(lista) || !lista.length) {
-                    visitantesCache = [];
-                    tbody.innerHTML = '<tr><td colspan="7" style="color:#64748b;">Nenhum visitante registrado.</td></tr>';
-                    return;
-                }
-
-                visitantesCache = lista;
-
-                tbody.innerHTML = '';
-                lista.forEach((v) => {
-                    const visitDate = v.visit_date ? new Date(v.visit_date) : null;
-                    const dataFormatada = visitDate && !Number.isNaN(visitDate.getTime())
-                        ? visitDate.toLocaleDateString('pt-BR')
-                        : '-';
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td style="font-weight:bold; color:#1f2937;">${sanitizeText(v.full_name || '-')}</td>
-                            <td><span class="badge-data">${dataFormatada}</span></td>
-                            <td>${sanitizeText(v.phone || '-')}</td>
-                            <td>${sanitizeText(v.city || '-')}</td>
-                            <td>${sanitizeText(v.congregation || '-')}</td>
-                            <td style="color:#64748b;">${sanitizeText(v.observation || '-')}</td>
-                            <td>
-                                <div class="row-actions">
-                                    <button type="button" onclick="editarVisitante(${Number(v.id)})">Editar</button>
-                                    <button type="button" class="delete" onclick="excluirVisitante(${Number(v.id)})">Excluir</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="7" style="color:#b91c1c;">${err.message || 'Erro ao carregar visitantes.'}</td></tr>`;
-                setStatus('pageStatus', 'Não foi possível carregar visitantes agora.', true);
-            }
-        }
-
-        async function salvarVisitante() {
-            const nome = mapField('nome').value.trim();
-            const telefone = mapField('telefone').value.trim();
-            const data = mapField('data').value || new Date().toISOString().split('T')[0];
-            const observacao = mapField('obs').value.trim();
-            const id = mapField('visitanteId').value;
-            const btn = mapField('btnSalvarVisitante');
-
-            setStatus('modalStatus', '', false);
-            setStatus('pageStatus', '', false);
-
-            if (!nome) {
-                setStatus('modalStatus', 'Informe o nome do visitante.', true);
-                return;
-            }
-
-            const dados = {
-                nome,
-                telefone,
-                data,
-                observacao,
-                nascimento: mapField('nascimento').value || null,
-                sexo: mapField('sexo').value || null,
-                estadoCivil: mapField('estadoCivil').value.trim() || null,
-                endereco: mapField('endereco').value.trim() || null,
-                numero: mapField('numero').value.trim() || null,
-                bairro: mapField('bairro').value.trim() || null,
-                cidade: mapField('cidade').value.trim() || null,
-                estado: mapField('estado').value.trim() || null,
-                cep: mapField('cep').value.trim() || null,
-                celular: mapField('celular').value.trim() || null,
-                email: mapField('email').value.trim() || null,
-                congregacao: mapField('congregacao').value.trim() || null,
-                aceitouJesusEm: mapField('aceitouJesusEm').value.trim() || null,
-                retornoEm: mapField('retornoEm').value.trim() || null
-            };
-
-            btn.disabled = true;
-            btn.textContent = 'Salvando...';
-
-            try {
-                const resp = await fetch(id ? `/visitantes/${id}` : '/visitantes', {
-                    method: id ? 'PUT' : 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dados)
-                });
-
-                const payload = await resp.json().catch(() => ({}));
-
-                if (!resp.ok) {
-                    throw new Error(extractErrorMessage(payload, 'Não foi possível salvar visitante.'));
-                }
-
-                setStatus('pageStatus', id ? 'Visitante atualizado com sucesso!' : 'Visitante salvo com sucesso!');
-                fecharModal();
-                limparFormulario();
-                carregarLista();
-            } catch (err) {
-                setStatus('modalStatus', err.message || 'Erro ao salvar visitante.', true);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Salvar';
-            }
-        }
-
-        async function excluirVisitante(id) {
-            if (!confirm('Deseja excluir este visitante?')) {
-                return;
-            }
-
-            setStatus('pageStatus', '', false);
-            try {
-                const resp = await fetch(`/visitantes/${id}`, { method: 'DELETE' });
-                const payload = await resp.json().catch(() => ({}));
-
-                if (!resp.ok) {
-                    throw new Error(extractErrorMessage(payload, 'Não foi possível excluir visitante.'));
-                }
-
-                setStatus('pageStatus', 'Visitante removido com sucesso!');
-                carregarLista();
-            } catch (err) {
-                setStatus('pageStatus', err.message || 'Erro ao excluir visitante.', true);
-            }
-        }
-
-        mapField('searchVisitante').addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                carregarLista();
-            }
+        $('visList').querySelectorAll('.vis-item').forEach(el => {
+            el.addEventListener('click', () => selecionarVisitante(el.dataset.id));
         });
+    };
 
-        carregarLista();
-    </script>
+    /* ── Hero ── */
+    const updateHero = v => {
+        const colors = {
+            'Novo':         'linear-gradient(135deg,#0ea5e9,#10b981)',
+            'Recorrente':   'linear-gradient(135deg,#f59e0b,#f97316)',
+            'Virou Membro': 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+            'Inativo':      'linear-gradient(135deg,#64748b,#94a3b8)',
+        };
+        const hero = $('visHero');
+        if (!v) {
+            hero.style.background = 'linear-gradient(135deg,#0ea5e9,#10b981)';
+            $('heroAvatar').innerHTML = '<i class="fa-solid fa-user-plus"></i>';
+            $('heroNome').className = 'hero-name ph';
+            $('heroNome').textContent = 'Selecione ou cadastre um visitante';
+            $('heroSub').textContent = '';
+            return;
+        }
+        hero.style.background = colors[v.situacao] || colors['Novo'];
+        $('heroAvatar').textContent = iniciais(v.nome);
+        $('heroNome').className = 'hero-name';
+        $('heroNome').textContent = v.nome || '-';
+        $('heroSub').textContent = [v.evento, v.cidade, v.situacao].filter(Boolean).join(' · ');
+    };
+
+    /* ── Preencher form ── */
+    const preencherForm = v => {
+        const form = document.forms.visForm;
+        const campos = ['nome','situacao','dataVisita','evento','congregacao','comoConheceu',
+                        'cep','endereco','bairro','cidade','estado','autorizaTelao','statusTelao',
+                        'telefone','celular','email','instagram','sexo','nascimento','estadoCivil',
+                        'profissao','pedidoOracao','obsPastoral','responsavelPastoral',
+                        'dataAcompanhamento','encaminhadoGrupo'];
+        campos.forEach(c => {
+            if (form[c]) form[c].value = v ? (v[c] || '') : '';
+        });
+        if (!v && form.situacao) form.situacao.value = 'Novo';
+        renderVisitas(v);
+    };
+
+    /* ── Selecionar ── */
+    const selecionarVisitante = id => {
+        selecionado = id;
+        const v = visitantes.find(x => x.id === id);
+        updateHero(v);
+        preencherForm(v);
+        setStatus('');
+        renderLista();
+    };
+
+    /* ── Status ── */
+    const setStatus = (msg, err) => {
+        const el = $('statusMsg');
+        el.textContent = msg || '';
+        el.className = 'status-msg' + (err ? ' error' : '');
+    };
+
+    /* ── Coletar form ── */
+    const getPayload = () => {
+        const form = document.forms.visForm;
+        const get = name => form[name] ? form[name].value.trim() : '';
+        return {
+            nome:                  get('nome'),
+            situacao:              get('situacao') || 'Novo',
+            dataVisita:            get('dataVisita'),
+            evento:                get('evento'),
+            congregacao:           get('congregacao'),
+            comoConheceu:          get('comoConheceu'),
+            cep:                   get('cep'),
+            endereco:              get('endereco'),
+            bairro:                get('bairro'),
+            cidade:                get('cidade'),
+            estado:                get('estado'),
+            autorizaTelao:         get('autorizaTelao'),
+            statusTelao:           get('statusTelao'),
+            telefone:              get('telefone'),
+            celular:               get('celular'),
+            email:                 get('email'),
+            instagram:             get('instagram'),
+            sexo:                  get('sexo'),
+            nascimento:            get('nascimento'),
+            estadoCivil:           get('estadoCivil'),
+            profissao:             get('profissao'),
+            pedidoOracao:          get('pedidoOracao'),
+            obsPastoral:           get('obsPastoral'),
+            responsavelPastoral:   get('responsavelPastoral'),
+            dataAcompanhamento:    get('dataAcompanhamento'),
+            encaminhadoGrupo:      get('encaminhadoGrupo'),
+        };
+    };
+
+    /* ── Salvar ── */
+    const salvar = () => {
+        setStatus('');
+        const payload = getPayload();
+        if (!payload.nome) { setStatus('Informe o nome do visitante.', true); return; }
+
+        if (selecionado) {
+            const idx = visitantes.findIndex(v => v.id === selecionado);
+            if (idx >= 0) {
+                visitantes[idx] = { ...visitantes[idx], ...payload };
+            }
+        } else {
+            const novo = { id: makeId(), ...payload, visitas: [] };
+            visitantes.push(novo);
+            selecionado = novo.id;
+        }
+        writeVisitantes(visitantes);
+        setStatus('Visitante salvo com sucesso!');
+        const v = visitantes.find(x => x.id === selecionado);
+        updateHero(v);
+        preencherFiltroEvento();
+        renderLista();
+    };
+
+    /* ── Excluir ── */
+    const excluir = () => {
+        if (!selecionado) { setStatus('Selecione um visitante para excluir.', true); return; }
+        const v = visitantes.find(x => x.id === selecionado);
+        if (!confirm(`Excluir o visitante "${v?.nome}"? Esta ação não pode ser desfeita.`)) return;
+        visitantes = visitantes.filter(x => x.id !== selecionado);
+        writeVisitantes(visitantes);
+        selecionado = null;
+        limpar();
+        setStatus('Visitante excluído.');
+        preencherFiltroEvento();
+        renderLista();
+    };
+
+    /* ── Limpar ── */
+    const limpar = () => {
+        selecionado = null;
+        preencherForm(null);
+        updateHero(null);
+        setStatus('');
+        renderLista();
+    };
+
+    /* ── Visitas ── */
+    const renderVisitas = v => {
+        const tbody = $('visitasBody');
+        if (!v || !Array.isArray(v.visitas) || !v.visitas.length) {
+            tbody.innerHTML = `<tr><td colspan="4" class="empty-table">Nenhuma visita registrada ainda.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = v.visitas.map(vi => `
+            <tr>
+                <td>${vi.data ? new Date(vi.data + 'T12:00').toLocaleDateString('pt-BR') : '-'}</td>
+                <td>${vi.evento || '-'}</td>
+                <td>
+                    <span class="telao-badge ${vi.telao ? 'telao-sim' : 'telao-nao'}">
+                        <i class="fa-solid fa-${vi.telao ? 'tv' : 'eye-slash'}"></i>
+                        ${vi.telao ? 'Sim' : 'Não'}
+                    </span>
+                </td>
+                <td>${vi.obs || '-'}</td>
+            </tr>
+        `).join('');
+    };
+
+    const addVisita = () => {
+        if (!selecionado) { setStatus('Selecione um visitante primeiro.', true); return; }
+        const v = visitantes.find(x => x.id === selecionado);
+        if (!v) return;
+        const form = document.forms.visForm;
+        v.visitas = v.visitas || [];
+        v.visitas.push({
+            data:   form.dataVisita?.value || new Date().toISOString().slice(0,10),
+            evento: form.evento?.value.trim() || 'Culto',
+            telao:  form.autorizaTelao?.value === 'sim',
+            obs:    ''
+        });
+        writeVisitantes(visitantes);
+        renderVisitas(v);
+        setStatus('Visita registrada!');
+    };
+
+    /* ── Eventos ── */
+    $('btnNovoVisitante').addEventListener('click', limpar);
+    $('btnLimpar').addEventListener('click', limpar);
+    $('btnSalvar').addEventListener('click', salvar);
+    $('btnSalvarHero').addEventListener('click', salvar);
+    $('btnExcluir').addEventListener('click', excluir);
+    $('btnExcluirHero').addEventListener('click', excluir);
+    $('btnRecarregar').addEventListener('click', () => { visitantes = readVisitantes(); preencherFiltroEvento(); renderLista(); });
+    $('btnAddVisita').addEventListener('click', addVisita);
+
+    $('btnTelao').addEventListener('click', () => window.open('visitantes_telao.html', '_blank'));
+    $('btnQr').addEventListener('click', () => window.open('visitante_qr.html', '_blank'));
+
+    $('searchInput').addEventListener('input', e => {
+        filtroTexto = e.target.value.toLowerCase().trim();
+        renderLista();
+    });
+    $('filterSituacao').addEventListener('change', e => {
+        filtroSit = e.target.value;
+        renderLista();
+    });
+    $('filterEvento').addEventListener('change', e => {
+        filtroEvento = e.target.value;
+        renderLista();
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            $(btn.dataset.tab)?.classList.add('active');
+        });
+    });
+
+    /* ── CEP auto-fill ── */
+    $('visCep')?.addEventListener('blur', async () => {
+        const cep = $('visCep').value.replace(/\D/g, '');
+        if (cep.length !== 8) return;
+        try {
+            const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const d = await r.json();
+            if (d.erro) return;
+            const f = document.forms.visForm;
+            if (f.endereco) f.endereco.value = `${d.logradouro || ''}`;
+            if (f.bairro)   f.bairro.value   = d.bairro || '';
+            if (f.cidade)   f.cidade.value   = d.localidade || '';
+            if (f.estado)   f.estado.value   = d.uf || '';
+        } catch {}
+    });
+
+    /* ── Init ── */
+    preencherFiltroEvento();
+    renderLista();
+    updateHero(null);
+</script>
 </body>
 </html>

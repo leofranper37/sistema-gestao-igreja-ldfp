@@ -1,0 +1,293 @@
+<div class="page-header" style="margin-bottom:20px;">
+    <div>
+        <h1>Editar Igreja</h1>
+        <p>Atualize contrato, status e limites da igreja cliente.</p>
+    </div>
+    <button class="btn-outline" id="backToDashboardBtn">
+        <i class="fa-solid fa-arrow-left"></i> Voltar para Igrejas
+    </button>
+</div>
+
+<div class="panel-card" style="padding:20px;">
+    <form id="igrejaEditForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
+        <input id="igrejaId" type="hidden" value="">
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Nome da Igreja</label>
+            <input id="igrejaNome" type="text" class="btn-outline" style="width:100%;padding:10px;" required>
+        </div>
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Plano</label>
+            <input id="igrejaPlano" type="text" class="btn-outline" style="width:100%;padding:10px;" required>
+        </div>
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Status</label>
+            <select id="igrejaStatus" class="btn-outline" style="width:100%;padding:10px;">
+                <option value="ativa">Ativa</option>
+                <option value="trial">Trial</option>
+                <option value="inativa">Inativa</option>
+                <option value="suspensa">Suspensa</option>
+                <option value="cancelada">Cancelada</option>
+            </select>
+        </div>
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Mensalidade (R$)</label>
+            <input id="igrejaMensalidade" type="number" min="0" step="0.01" class="btn-outline" style="width:100%;padding:10px;">
+        </div>
+
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Responsável</label>
+            <input id="igrejaResponsavel" type="text" class="btn-outline" style="width:100%;padding:10px;">
+        </div>
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">E-mail Admin</label>
+            <input id="igrejaEmailAdmin" type="email" class="btn-outline" style="width:100%;padding:10px;">
+        </div>
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Telefone</label>
+            <input id="igrejaTelefone" type="text" class="btn-outline" style="width:100%;padding:10px;">
+        </div>
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">CNPJ</label>
+            <input id="igrejaCnpj" type="text" class="btn-outline" style="width:100%;padding:10px;">
+        </div>
+
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Máx. Cadastros</label>
+            <input id="igrejaMaxCadastros" type="number" min="1" step="1" class="btn-outline" style="width:100%;padding:10px;">
+        </div>
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Máx. Congregações</label>
+            <input id="igrejaMaxCongregacoes" type="number" min="1" step="1" class="btn-outline" style="width:100%;padding:10px;">
+        </div>
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Trial inicia em</label>
+            <input id="igrejaTrialStartsAt" type="date" class="btn-outline" style="width:100%;padding:10px;">
+        </div>
+        <div>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Trial termina em</label>
+            <input id="igrejaTrialEndsAt" type="date" class="btn-outline" style="width:100%;padding:10px;">
+        </div>
+
+        <div style="grid-column:1 / -1; border:1px solid var(--border-light,#e5e7eb); border-radius:10px; padding:14px; background:var(--panel-soft,#f8fafc);">
+            <h3 style="margin:0 0 6px 0; font-size:16px; color:var(--text-primary,#111827); display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-tower-broadcast"></i> Configurações do App de Mídia
+            </h3>
+            <p style="margin:0 0 10px 0; font-size:13px; color:var(--text-muted,#6b7280);">
+                Configure transmissão ao vivo e links sociais exibidos no App de Mídia.
+            </p>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">
+                <div>
+                    <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">URL da Transmissão ao Vivo</label>
+                    <input id="liveStreamUrl" type="url" class="btn-outline" style="width:100%;padding:10px;" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+                <div>
+                    <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">YouTube</label>
+                    <input id="youtubeUrl" type="url" class="btn-outline" style="width:100%;padding:10px;" placeholder="https://youtube.com/...">
+                </div>
+                <div>
+                    <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Facebook</label>
+                    <input id="facebookUrl" type="url" class="btn-outline" style="width:100%;padding:10px;" placeholder="https://facebook.com/...">
+                </div>
+                <div>
+                    <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Instagram</label>
+                    <input id="instagramUrl" type="url" class="btn-outline" style="width:100%;padding:10px;" placeholder="https://instagram.com/...">
+                </div>
+                <div>
+                    <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">WhatsApp</label>
+                    <input id="whatsappUrl" type="text" class="btn-outline" style="width:100%;padding:10px;" placeholder="+55 11 99999-9999 ou https://wa.me/...">
+                </div>
+            </div>
+        </div>
+
+        <div style="grid-column:1 / -1; border:1px solid var(--border-light,#e5e7eb); border-radius:10px; padding:14px; background:var(--panel-soft,#f8fafc);">
+            <h3 style="margin:0 0 6px 0; font-size:16px; color:var(--text-primary,#111827); display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-photo-video"></i> Conteúdo de Mídia do App
+            </h3>
+            <p style="margin:0 0 10px 0; font-size:13px; color:var(--text-muted,#6b7280);">
+                Gerencie os vídeos, áudios, imagens e documentos que aparecerão no App de Mídia desta igreja.
+            </p>
+            <button type="button" id="gerenciarMidiasBtn" class="btn-outline" style="display:inline-flex;align-items:center;gap:8px;">
+                <i class="fa-solid fa-folder-open"></i> Gerenciar Mídias
+            </button>
+        </div>
+
+        <div style="grid-column:1 / -1; display:flex; gap:10px; justify-content:flex-end; margin-top:4px;">
+            <button type="button" id="igrejaReloadBtn" class="btn-outline">Recarregar</button>
+            <button type="submit" id="igrejaSaveBtn" class="btn-outline" style="background:var(--master-dark);color:var(--white);border:none;">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
+            </button>
+        </div>
+    </form>
+
+    <div id="igrejaEditStatus" style="margin-top:12px;font-size:13px;color:var(--text-muted);"></div>
+</div>
+
+<script>
+(function () {
+    const $ = (id) => document.getElementById(id);
+
+    function getIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return Number(params.get('id') || 0);
+    }
+
+    function fmtDateInput(v) {
+        if (!v) return '';
+        const d = new Date(v);
+        if (Number.isNaN(d.getTime())) return '';
+        return d.toISOString().slice(0, 10);
+    }
+
+    const igrejaId = getIdFromUrl();
+    const statusEl = $('igrejaEditStatus');
+
+    if (!igrejaId) {
+        statusEl.textContent = 'ID da igreja não informado.';
+        statusEl.style.color = 'var(--danger-red)';
+        return;
+    }
+
+    async function loadIgreja() {
+        statusEl.textContent = 'Carregando dados da igreja...';
+        statusEl.style.color = 'var(--text-muted)';
+
+        try {
+            const resp = await fetch('/api/saas/igrejas/' + igrejaId);
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) {
+                throw new Error(data.error || 'Erro ao carregar igreja.');
+            }
+
+            $('igrejaNome').value = data.nome || '';
+            $('igrejaId').value = String(igrejaId);
+            $('igrejaPlano').value = data.plano || '';
+            $('igrejaStatus').value = data.status_assinatura || 'trial';
+            $('igrejaMensalidade').value = Number(data.mensalidade_valor || 0);
+            $('igrejaResponsavel').value = data.responsavel || '';
+            $('igrejaEmailAdmin').value = data.email_admin || '';
+            $('igrejaTelefone').value = data.telefone || '';
+            $('igrejaCnpj').value = data.cnpj || '';
+            $('igrejaMaxCadastros').value = Number(data.max_cadastros || 0) || '';
+            $('igrejaMaxCongregacoes').value = Number(data.max_congregacoes || 0) || '';
+            $('igrejaTrialStartsAt').value = fmtDateInput(data.trial_starts_at);
+            $('igrejaTrialEndsAt').value = fmtDateInput(data.trial_ends_at);
+
+            try {
+                const cfgResp = await fetch('/api/app/config?igrejaId=' + igrejaId);
+                const cfg = await cfgResp.json().catch(() => ({}));
+                if (cfgResp.ok) {
+                    $('liveStreamUrl').value = cfg.liveStreamUrl || '';
+                    $('youtubeUrl').value = cfg.youtube || '';
+                    $('facebookUrl').value = cfg.facebook || '';
+                    $('instagramUrl').value = cfg.instagram || '';
+                    $('whatsappUrl').value = cfg.whatsapp || '';
+                }
+            } catch (_e) {
+                // Mantém a edição da igreja funcional mesmo se a configuração do app falhar.
+            }
+
+            statusEl.textContent = 'Dados carregados.';
+            statusEl.style.color = 'var(--action-green)';
+        } catch (error) {
+            statusEl.textContent = error.message || 'Falha ao carregar dados.';
+            statusEl.style.color = 'var(--danger-red)';
+        }
+    }
+
+    $('backToDashboardBtn').addEventListener('click', function () {
+        if (window.loadContentPage) {
+            window.loadContentPage('__dashboard__');
+            return;
+        }
+        window.location.href = 'super-admin.html';
+    });
+
+    $('igrejaReloadBtn').addEventListener('click', loadIgreja);
+
+    $('gerenciarMidiasBtn').addEventListener('click', function () {
+        const id = Number(($('igrejaId') && $('igrejaId').value) || igrejaId || 0);
+        if (!id) {
+            statusEl.textContent = 'ID da igreja não encontrado para abrir o gerenciador de mídias.';
+            statusEl.style.color = 'var(--danger-red)';
+            return;
+        }
+
+        if (window.loadContentPage) {
+            window.loadContentPage('igreja_midias.html', { id: String(id) });
+            return;
+        }
+
+        window.location.href = 'igreja_midias.html?id=' + id;
+    });
+
+    $('igrejaEditForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const saveBtn = $('igrejaSaveBtn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+        statusEl.textContent = 'Salvando alterações...';
+        statusEl.style.color = 'var(--text-muted)';
+
+        const payload = {
+            nome: $('igrejaNome').value.trim(),
+            plano: $('igrejaPlano').value.trim().toLowerCase(),
+            status_assinatura: $('igrejaStatus').value,
+            mensalidade_valor: Number($('igrejaMensalidade').value || 0),
+            responsavel: $('igrejaResponsavel').value.trim(),
+            email_admin: $('igrejaEmailAdmin').value.trim(),
+            telefone: $('igrejaTelefone').value.trim(),
+            cnpj: $('igrejaCnpj').value.trim(),
+            max_cadastros: Number($('igrejaMaxCadastros').value || 0),
+            max_congregacoes: Number($('igrejaMaxCongregacoes').value || 0),
+            trial_starts_at: $('igrejaTrialStartsAt').value || null,
+            trial_ends_at: $('igrejaTrialEndsAt').value || null
+        };
+
+        try {
+            const resp = await fetch('/api/saas/igrejas/' + igrejaId + '/contrato', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await resp.json().catch(() => ({}));
+            if (!resp.ok) {
+                throw new Error(result.error || 'Não foi possível salvar.');
+            }
+
+            const appConfigPayload = {
+                igrejaId,
+                liveStreamUrl: $('liveStreamUrl').value.trim(),
+                youtube: $('youtubeUrl').value.trim(),
+                facebook: $('facebookUrl').value.trim(),
+                instagram: $('instagramUrl').value.trim(),
+                whatsapp: $('whatsappUrl').value.trim()
+            };
+
+            const cfgResp = await fetch('/api/app/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(appConfigPayload)
+            });
+
+            if (!cfgResp.ok) {
+                const cfgError = await cfgResp.json().catch(() => ({}));
+                throw new Error(cfgError.error || 'Igreja salva, mas falhou ao salvar configuração do App de Mídia.');
+            }
+
+            statusEl.textContent = 'Igreja atualizada com sucesso.';
+            statusEl.style.color = 'var(--action-green)';
+        } catch (error) {
+            statusEl.textContent = error.message || 'Erro ao salvar.';
+            statusEl.style.color = 'var(--danger-red)';
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Alterações';
+        }
+    });
+
+    loadIgreja();
+})();
+</script>

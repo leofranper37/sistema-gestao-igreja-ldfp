@@ -35,7 +35,7 @@ async function listarPlanos(req, res) {
             `SELECT slug, nome, subtitulo, preco_mensal, preco_anual,
                     max_cadastros, max_congregacoes, modulo_app_membro, features_json
              FROM saas_planos
-             WHERE ativo = 1 AND LOWER(slug) <> 'eden'
+               WHERE ativo = 1 AND LOWER(slug) NOT IN ('eden', 'edon')
              ORDER BY preco_mensal ASC`
         );
         res.json(rows || []);

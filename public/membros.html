@@ -3,494 +3,820 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Ficha Cadastral</title>
+    <title>LDFP - Membros</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* =====================================================
-           MEMBROS.HTML — Layout Enterprise 4 Colunas
-        ===================================================== */
+        :root {
+            --brand:      #0f766e;
+            --blue:       #0284c7;
+            --blue-light: #e0f2fe;
+            --green:      #10b981;
+            --red:        #dc2626;
+            --yellow:     #f59e0b;
+            --purple:     #8b5cf6;
+            --surface:    #ffffff;
+            --bg:         #f1f5f9;
+            --border:     #e2e8f0;
+            --text:       #0f172a;
+            --muted:      #64748b;
+            --radius:     14px;
+            --shadow:     0 4px 16px rgba(15,23,42,.08);
+            --shadow-lg:  0 12px 32px rgba(15,23,42,.14);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* =============================================
+           LAYOUT PRINCIPAL
+        ============================================= */
         .page-wrap {
-            padding: 24px 30px 36px;
-        }
-
-        .page-top {
+            padding: 24px 28px 48px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Cabeçalho da página */
+        .page-header {
+            display: flex;
             align-items: center;
+            justify-content: space-between;
             flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-header-left h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
             gap: 10px;
-            margin-bottom: 18px;
         }
 
-        .page-top h2 {
-            margin: 0;
-            color: #0f172a;
-            font-size: 22px;
+        .page-header-left h2 i { color: var(--brand); }
+
+        .page-header-left p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
         }
 
-        .page-top p {
-            margin: 4px 0 0;
-            color: #64748b;
+        /* =============================================
+           DOIS PAINÉIS LADO A LADO
+        ============================================= */
+        .two-col {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 960px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        /* =============================================
+           PAINEL ESQUERDO — LISTA
+        ============================================= */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-count {
+            font-size: 11px;
+            background: var(--blue-light);
+            color: var(--blue);
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: .8rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 9px 12px 9px 32px;
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
+            transition: border-color .15s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--blue);
+            background: #fff;
+        }
+
+        /* Lista de membros */
+        .member-list {
+            overflow-y: auto;
+            max-height: calc(100vh - 280px);
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 18px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .member-item:last-child { border-bottom: none; }
+        .member-item:hover { background: #f8fafc; }
+
+        .member-item.is-active {
+            background: var(--blue-light);
+            box-shadow: inset 4px 0 0 var(--blue);
+        }
+
+        .m-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .m-info { flex: 1; min-width: 0; }
+
+        .m-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .m-sub {
+            font-size: 11px;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .m-badge {
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .badge-ativo    { background: #d1fae5; color: #065f46; }
+        .badge-inativo  { background: #fee2e2; color: #991b1b; }
+        .badge-afastado { background: #fef3c7; color: #92400e; }
+        .badge-outro    { background: #f1f5f9; color: #475569; }
+
+        .empty-list {
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--muted);
             font-size: 13px;
         }
 
-        .page-top-actions {
+        .empty-list i { font-size: 2rem; margin-bottom: 12px; display: block; color: #cbd5e1; }
+
+        /* =============================================
+           PAINEL DIREITO — HERO + FORMULÁRIO
+        ============================================= */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Hero do membro */
+        .member-hero {
+            background: linear-gradient(135deg, #0f766e 0%, #0284c7 100%);
+            border-radius: var(--radius);
+            padding: 24px 28px;
             display: flex;
             align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .member-hero::before {
+            content: '';
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.06);
+        }
+
+        .hero-ava {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,.35);
+            background: rgba(255,255,255,.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #fff;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .hero-ava img { width: 100%; height: 100%; object-fit: cover; }
+
+        .hero-body { flex: 1; min-width: 160px; }
+
+        .hero-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .hero-name.ph { color: rgba(255,255,255,.5); font-style: italic; font-weight: 400; font-size: 16px; }
+
+        .hero-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,.7);
+            margin-top: 3px;
+        }
+
+        .hero-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .hero-tag {
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(255,255,255,.18);
+            color: #fff;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .hero-btns {
+            display: flex;
             gap: 8px;
             flex-wrap: wrap;
         }
 
-        /* ---- Form Card ---- */
-        .member-form-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
-            overflow: hidden;
-            margin-bottom: 20px;
+        /* =============================================
+           TOGGLE MODO: RÁPIDO / COMPLETO
+        ============================================= */
+        .mode-toggle {
+            display: flex;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 4px;
+            gap: 4px;
+            width: fit-content;
         }
 
-        /* ---- Tabs ---- */
-        .form-tabs {
+        .mode-btn {
+            padding: 8px 18px;
+            border-radius: 7px;
+            border: none;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--muted);
+            background: transparent;
+            transition: all .2s;
             display: flex;
-            background: linear-gradient(90deg, #ecfeff 0%, #f0fdf4 100%);
-            border-bottom: 1px solid #e2e8f0;
-            overflow-x: auto;
+            align-items: center;
+            gap: 6px;
         }
+
+        .mode-btn.active {
+            background: #fff;
+            color: var(--blue);
+            box-shadow: 0 2px 8px rgba(15,23,42,.1);
+        }
+
+        /* =============================================
+           FORMULÁRIO
+        ============================================= */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        /* Abas (modo completo) */
+        .tabs-nav {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            padding: 8px 16px 0;
+            gap: 4px;
+            scrollbar-width: none;
+        }
+
+        .tabs-nav::-webkit-scrollbar { display: none; }
 
         .tab-btn {
-            padding: 14px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 18px 11px;
             background: none;
             border: none;
             border-bottom: 3px solid transparent;
-            font-size: 13px;
+            border-radius: 10px 10px 0 0;
+            font-size: 10px;
             font-weight: 700;
-            color: #64748b;
+            color: var(--muted);
             cursor: pointer;
             white-space: nowrap;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
-            transition: 0.2s;
+            letter-spacing: .05em;
+            transition: all .2s;
         }
 
-        .tab-btn:hover {
-            color: #0f172a;
-        }
+        .tab-btn i { font-size: 1rem; }
+        .tab-btn:hover { color: var(--text); background: #fff; }
+        .tab-btn.active { color: var(--blue); background: #fff; border-bottom-color: var(--blue); }
 
-        .tab-btn.active {
-            color: #0284c7;
-            background: #fff;
-            border-bottom-color: #0ea5e9;
-        }
+        .tab-panel { display: none; padding: 22px; animation: fadeUp .2s ease; }
+        .tab-panel.active { display: block; }
 
-        /* ---- Tab Panels ---- */
-        .tab-panel {
-            display: none;
-            padding: 22px 22px 16px;
-            animation: fadeIn 0.25s ease;
-        }
-
-        .tab-panel.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(6px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ---- Grid 4 Colunas ---- */
+        /* Seção rápida */
+        .quick-form { padding: 24px; }
+
+        /* Grid de campos */
         .fg {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
             gap: 14px 16px;
         }
 
-        .fg .g-full  { grid-column: span 4; }
-        .fg .g-3     { grid-column: span 3; }
-        .fg .g-2     { grid-column: span 2; }
-        .fg .g-1     { grid-column: span 1; }
+        .fg-4 { grid-template-columns: repeat(4, 1fr); }
+        .fg-2 { grid-template-columns: repeat(2, 1fr); }
+        .fg-1 { grid-template-columns: 1fr; }
 
-        @media (max-width: 1024px) {
-            .fg { grid-template-columns: repeat(2, 1fr); }
-            .fg .g-full { grid-column: span 2; }
-            .fg .g-3    { grid-column: span 2; }
-            .fg .g-2    { grid-column: span 2; }
+        .g-4 { grid-column: span 4; }
+        .g-3 { grid-column: span 3; }
+        .g-2 { grid-column: span 2; }
+        .g-1 { grid-column: span 1; }
+
+        @media (max-width: 800px) {
+            .fg-4 { grid-template-columns: repeat(2, 1fr); }
+            .g-4, .g-3 { grid-column: span 2; }
         }
 
-        @media (max-width: 640px) {
-            .fg { grid-template-columns: 1fr; }
-            .fg .g-full, .fg .g-3, .fg .g-2 { grid-column: span 1; }
+        @media (max-width: 500px) {
+            .fg-4 { grid-template-columns: 1fr; }
+            .g-4, .g-3, .g-2, .g-1 { grid-column: span 1; }
         }
 
-        /* ---- Campos ---- */
-        .f {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
+        /* Campo */
+        .f { display: flex; flex-direction: column; gap: 5px; }
 
         .f label {
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            color: #64748b;
-            letter-spacing: 0.03em;
+            color: var(--muted);
+            letter-spacing: .04em;
         }
 
         .f input,
         .f select,
         .f textarea {
-            border: 1px solid #dbe3ef;
-            border-radius: 7px;
-            padding: 9px 10px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
             font-size: 13px;
-            color: #0f172a;
+            color: var(--text);
             background: #fafbfc;
-            transition: border-color 0.15s;
+            transition: border-color .15s, box-shadow .15s;
+            font-family: inherit;
+            width: 100%;
         }
 
         .f input:focus,
         .f select:focus,
         .f textarea:focus {
             outline: none;
-            border-color: #0ea5e9;
+            border-color: var(--blue);
             background: #fff;
+            box-shadow: 0 0 0 3px rgba(2,132,199,.1);
         }
 
-        .f textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
+        .f textarea { resize: vertical; min-height: 80px; }
 
-        /* ---- Seção título dentro de painel ---- */
-        .section-label {
+        .section-sep {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 11px;
             font-weight: 800;
             text-transform: uppercase;
-            color: #0284c7;
-            letter-spacing: 0.06em;
-            margin: 14px 0 8px;
-            padding-bottom: 4px;
-            border-bottom: 1px dashed #bae6fd;
+            color: var(--blue);
+            letter-spacing: .06em;
+            margin: 18px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1.5px dashed #bae6fd;
         }
 
-        .section-label:first-child {
-            margin-top: 0;
-        }
+        .section-sep:first-child { margin-top: 0; }
+        .section-sep i { font-size: .8rem; }
 
-        /* ---- Form Actions ---- */
-        .form-actions {
-            padding: 14px 22px 18px;
-            border-top: 1px solid #e2e8f0;
+        /* Ações do formulário */
+        .form-foot {
+            padding: 14px 22px;
+            border-top: 1px solid var(--border);
             display: flex;
-            gap: 10px;
             align-items: center;
+            gap: 10px;
             flex-wrap: wrap;
-        }
-
-        .btn-save {
-            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .btn-save:disabled {
-            opacity: 0.6;
-        }
-
-        .btn-ghost {
-            background: #f1f5f9;
-            color: #475569;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background: #0284c7;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .btn-danger {
-            background: #fff;
-            color: #dc2626;
-            border: 1px solid #dc2626;
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-            color: #fff;
+            background: #fafbfc;
         }
 
         .form-status {
-            font-size: 13px;
-            color: #047857;
+            margin-left: auto;
+            font-size: 12px;
             font-weight: 600;
+            color: #047857;
         }
 
-        .form-status.error {
-            color: #b91c1c;
+        .form-status.err { color: var(--red); }
+
+        /* =============================================
+           BOTÕES
+        ============================================= */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 16px;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all .18s;
+            white-space: nowrap;
+            font-family: inherit;
         }
 
-        /* ---- Foto ---- */
-        .photo-panel {
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+        .btn-white  { background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.3); }
+        .btn-white:hover { background: rgba(255,255,255,.3); }
+
+        .btn-solid  { background: #fff; color: var(--brand); font-weight: 800; }
+        .btn-solid:hover { background: #f0fdf4; }
+
+        .btn-primary { background: var(--blue); color: #fff; }
+        .btn-primary:hover { background: #0369a1; }
+
+        .btn-success { background: var(--green); color: #fff; }
+        .btn-success:hover { background: #059669; }
+
+        .btn-danger  { background: transparent; color: var(--red); border: 1.5px solid #fca5a5; }
+        .btn-danger:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+        .btn-ghost   { background: var(--bg); color: var(--muted); }
+        .btn-ghost:hover { background: var(--border); color: var(--text); }
+
+        /* =============================================
+           FOTO
+        ============================================= */
+        .photo-wrap {
             display: flex;
             gap: 24px;
             flex-wrap: wrap;
+            align-items: flex-start;
         }
 
-        .photo-preview-box {
+        .photo-box {
             width: 140px;
             height: 140px;
             border: 2px dashed #bae6fd;
-            border-radius: 12px;
+            border-radius: var(--radius);
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #f8fafc;
+            background: #f0f9ff;
+            color: #94a3b8;
+            font-size: 2rem;
+            flex-shrink: 0;
         }
 
-        .photo-preview-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
 
         .zoom-row {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
-        .zoom-row input[type="range"] {
-            flex: 1;
-        }
+        .zoom-row input[type="range"] { flex: 1; accent-color: var(--blue); }
 
-        .btn-sm {
-            border: 1px solid #dbe3ef;
-            background: #f8fafc;
+        .btn-icon {
+            width: 28px; height: 28px;
             border-radius: 6px;
-            padding: 4px 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
             cursor: pointer;
-            color: #334155;
-        }
-
-        /* ---- Members table ---- */
-        .table-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-            overflow-x: auto;
-            overflow-y: hidden;
-        }
-
-        .table-card-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .table-card-header h3 {
-            margin: 0;
-            color: #0f172a;
-            font-size: 14px;
-        }
-
-        .btn-sm-primary {
-            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 7px 12px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .members-table {
-            width: 100%;
-            min-width: 680px;
-            border-collapse: collapse;
-        }
-
-        .members-table th,
-        .members-table td {
-            padding: 11px 12px;
-            border-bottom: 1px solid #eef2f7;
             font-size: 13px;
-            color: #334155;
-            text-align: left;
+            display: grid;
+            place-items: center;
         }
 
-        .members-table tbody tr {
-            cursor: pointer;
+        /* =============================================
+           NOVO MEMBRO VAZIO
+        ============================================= */
+        .new-member-hint {
+            padding: 40px 24px;
+            text-align: center;
+            color: var(--muted);
         }
 
-        .members-table tbody tr:hover {
-            background: #f8fafc;
+        .new-member-hint i {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+            display: block;
         }
 
-        .members-table tbody tr.is-selected {
-            background: #ecfeff;
-            box-shadow: inset 3px 0 0 #0284c7;
+        .new-member-hint p {
+            font-size: 14px;
+            margin-bottom: 20px;
         }
-
-        .members-table th {
-            background: #f8fafc;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #64748b;
-            font-weight: 700;
-        }
-
-        .muted { color: #94a3b8; }
     </style>
 </head>
-<body class="theme-petroleo" data-shell-title="Ficha Cadastral" data-shell-breadcrumb="LDFP / Secretaria / Ficha Cadastral" data-shell-active="membros.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+<body class="theme-petroleo"
+      data-shell-title="Membros"
+      data-shell-breadcrumb="LDFP / Secretaria / Membros"
+      data-shell-active="membros.html"
+      data-shell-chip="Ambiente autenticado"
+      data-shell-role="Administrador">
 
-    <main class="main-content enterprise-main">
-        <div class="page-wrap">
+<main class="main-content enterprise-main">
+<div class="page-wrap">
 
-            <div class="page-top">
-                <div>
-                    <h2>Ficha Cadastral de Membro</h2>
-                    <p>Preencha os dados pessoais, familiares, ministeriais e a foto do membro.</p>
+    <!-- CABEÇALHO -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h2><i class="fa-solid fa-users"></i> Membros</h2>
+            <p>Gerencie os membros cadastrados na igreja</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="modeRapido">
+                    <i class="fa-solid fa-bolt"></i> Cadastro Rápido
+                </button>
+                <button class="mode-btn" id="modeCompleto">
+                    <i class="fa-solid fa-file-lines"></i> Ficha Completa
+                </button>
+            </div>
+            <button class="btn btn-success" id="btnNovoMembro">
+                <i class="fa-solid fa-plus"></i> Novo Membro
+            </button>
+        </div>
+    </div>
+
+    <!-- DOIS PAINÉIS -->
+    <div class="two-col">
+
+        <!-- ============== ESQUERDO: LISTA ============== -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    Lista de Membros
+                    <span class="panel-count" id="listCount">0</span>
                 </div>
-                <div class="page-top-actions">
-                    <button class="btn-ghost" type="button" id="btnImprimirTopo">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="search" id="searchInput" placeholder="Buscar membro...">
+                </div>
+            </div>
+            <div class="member-list" id="memberList">
+                <div class="empty-list">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Carregando membros...
+                </div>
+            </div>
+        </div>
+
+        <!-- ============== DIREITO: HERO + FORM ============== -->
+        <div class="right-panel">
+
+            <!-- HERO -->
+            <div class="member-hero">
+                <div class="hero-ava" id="heroAva">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="hero-body">
+                    <div class="hero-name ph" id="heroName">Selecione um membro</div>
+                    <div class="hero-sub" id="heroSub">ou clique em "Novo Membro" para cadastrar</div>
+                    <div class="hero-tags" id="heroTags">
+                        <span class="hero-tag"><i class="fa-solid fa-church" style="margin-right:4px;"></i>LDFP</span>
+                    </div>
+                </div>
+                <div class="hero-btns">
+                    <button class="btn btn-white" id="btnImprimir">
                         <i class="fa-solid fa-print"></i> Imprimir
                     </button>
-                    <button class="btn-primary" type="button" id="btnEditarTopo">
-                        <i class="fa-solid fa-pen"></i> Editar
-                    </button>
-                    <button class="btn-danger" type="button" id="btnExcluirTopo">
+                    <button class="btn btn-white" id="btnExcluir">
                         <i class="fa-solid fa-trash"></i> Excluir
                     </button>
-                    <button class="btn-save" type="button" id="btnSalvarTopo">
-                        <i class="fa-solid fa-floppy-disk"></i> Salvar Cadastro
+                    <button class="btn btn-solid" id="btnSalvar">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar
                     </button>
                 </div>
             </div>
 
-            <div class="member-form-card">
-                <!-- Abas -->
-                <div class="form-tabs">
-                    <button class="tab-btn active" data-tab="pessoais">
-                        <i class="fa-solid fa-user"></i> Dados Pessoais
-                    </button>
-                    <button class="tab-btn" data-tab="contato">
-                        <i class="fa-solid fa-address-book"></i> Contato &amp; Endereço
-                    </button>
-                    <button class="tab-btn" data-tab="familiares">
-                        <i class="fa-solid fa-people-roof"></i> Dados Familiares
-                    </button>
-                    <button class="tab-btn" data-tab="ministeriais">
-                        <i class="fa-solid fa-church"></i> Dados Eclesiásticos
-                    </button>
-                    <button class="tab-btn" data-tab="foto">
-                        <i class="fa-solid fa-camera"></i> Foto
-                    </button>
-                </div>
+            <!-- FORMULÁRIO -->
+            <div class="form-card" id="formCard">
 
-                <form id="memberForm" autocomplete="off">
-
-                    <!-- ======================== ABA 1: DADOS PESSOAIS ======================== -->
-                    <div class="tab-panel active" id="tab-pessoais">
-                        <div class="section-label">Identificação Pessoal</div>
-                        <div class="fg">
-                            <div class="f g-3">
+                <!-- MODO RÁPIDO -->
+                <div id="quickMode">
+                    <div class="quick-form">
+                        <div class="fg fg-2" style="margin-bottom:14px;">
+                            <div class="f">
                                 <label>Nome Completo *</label>
-                                <input type="text" name="nome" placeholder="Nome completo do membro" required>
+                                <input type="text" name="nome" id="qNome" placeholder="Nome do membro">
                             </div>
-                            <div class="f g-1">
+                            <div class="f">
                                 <label>Apelido</label>
-                                <input type="text" name="apelido" placeholder="Apelido">
+                                <input type="text" name="apelido" id="qApelido" placeholder="Como é chamado">
                             </div>
-                            <div class="f g-1">
-                                <label>Ficha Nº</label>
-                                <input type="text" name="ficha" placeholder="0000">
+                        </div>
+                        <div class="fg fg-2" style="margin-bottom:14px;">
+                            <div class="f">
+                                <label>WhatsApp / Celular</label>
+                                <input type="text" name="celular" id="qCelular" placeholder="(00) 00000-0000">
                             </div>
-                            <div class="f g-1">
-                                <label>Data de Nascimento</label>
-                                <input type="date" name="nascimento">
+                            <div class="f">
+                                <label>E-mail</label>
+                                <input type="email" name="email" id="qEmail" placeholder="email@exemplo.com">
                             </div>
-                            <div class="f g-1">
-                                <label>Sexo</label>
-                                <select name="sexo">
-                                    <option value="">-- Selecione --</option>
-                                    <option>Masculino</option>
-                                    <option>Feminino</option>
+                        </div>
+                        <div class="fg fg-2" style="margin-bottom:14px;">
+                            <div class="f">
+                                <label>Situação</label>
+                                <select name="situacao" id="qSituacao">
+                                    <option value="Ativo">Ativo</option>
+                                    <option value="Inativo">Inativo</option>
+                                    <option value="Afastado">Afastado</option>
+                                    <option value="Transferido">Transferido</option>
+                                    <option value="Falecido">Falecido</option>
                                 </select>
                             </div>
-                            <div class="f g-1">
-                                <label>Estado Civil</label>
-                                <select name="estadoCivil">
-                                    <option value="">-- Selecione --</option>
-                                    <option>Solteiro(a)</option>
-                                    <option>Casado(a)</option>
-                                    <option>Divorciado(a)</option>
-                                    <option>Viúvo(a)</option>
-                                    <option>União Estável</option>
-                                </select>
+                            <div class="f">
+                                <label>Cargo / Função</label>
+                                <input type="text" name="cargo" id="qCargo" placeholder="Ex: Diácono, Pastor...">
+                            </div>
+                        </div>
+                        <div class="fg fg-1">
+                            <div class="f">
+                                <label>Observação rápida</label>
+                                <textarea name="obs" id="qObs" placeholder="Alguma observação sobre o membro..." style="min-height:64px;"></textarea>
                             </div>
                         </div>
 
-                        <div class="section-label">Documentação</div>
-                        <div class="fg">
-                            <div class="f g-1">
-                                <label>CPF</label>
-                                <input type="text" name="cpf" placeholder="000.000.000-00">
+                        <div class="section-sep" style="margin-top:16px;"><i class="fa-solid fa-photo-film"></i>Acesso ao App de Mídia</div>
+                        <div class="fg fg-2">
+                            <div class="f" style="gap:8px;">
+                                <label style="text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" id="acessoAppMidia" name="acesso_app_midia" style="width:auto;">
+                                    Permitir Acesso ao App de Mídia
+                                </label>
+                                <small style="color:var(--muted);font-size:12px;">Habilita login deste membro no App de Mídia.</small>
                             </div>
-                            <div class="f g-1">
-                                <label>RG</label>
-                                <input type="text" name="rg" placeholder="0000000">
+                            <div class="f" style="gap:8px;">
+                                <label style="text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" id="gerenciarMidias" name="gerenciar_midias" style="width:auto;">
+                                    Permitir Gerenciamento de Mídias (no App de Mídia)
+                                </label>
+                                <small style="color:var(--muted);font-size:12px;">Permite adicionar e editar mídias direto no aplicativo.</small>
                             </div>
-                            <div class="f g-1">
-                                <label>Órgão Emissor RG</label>
-                                <input type="text" name="emissorRg" placeholder="SSP/RJ">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODO COMPLETO -->
+                <div id="fullMode" style="display:none;">
+                    <div class="tabs-nav">
+                        <button class="tab-btn active" data-tab="pessoais">
+                            <i class="fa-solid fa-user"></i>Pessoais
+                        </button>
+                        <button class="tab-btn" data-tab="contato">
+                            <i class="fa-solid fa-address-book"></i>Contato
+                        </button>
+                        <button class="tab-btn" data-tab="familiares">
+                            <i class="fa-solid fa-people-roof"></i>Família
+                        </button>
+                        <button class="tab-btn" data-tab="eclesiasticos">
+                            <i class="fa-solid fa-church"></i>Eclesiástico
+                        </button>
+                        <button class="tab-btn" data-tab="foto">
+                            <i class="fa-solid fa-camera"></i>Foto
+                        </button>
+                    </div>
+
+                    <!-- ABA PESSOAIS -->
+                    <div class="tab-panel active" id="tab-pessoais">
+                        <div class="section-sep"><i class="fa-solid fa-id-card"></i>Identificação</div>
+                        <div class="fg fg-4">
+                            <div class="f g-3"><label>Nome Completo *</label><input type="text" name="nome" placeholder="Nome completo"></div>
+                            <div class="f g-1"><label>Apelido</label><input type="text" name="apelido" placeholder="Apelido"></div>
+                            <div class="f g-1"><label>Ficha Nº</label><input type="text" name="ficha" placeholder="0000"></div>
+                            <div class="f g-1"><label>Data de Nascimento</label><input type="date" name="nascimento"></div>
+                            <div class="f g-1"><label>Sexo</label>
+                                <select name="sexo"><option value="">--</option><option>Masculino</option><option>Feminino</option></select>
                             </div>
-                            <div class="f g-1">
-                                <label>Data de Emissão RG</label>
-                                <input type="date" name="dtEmissaoRg">
+                            <div class="f g-1"><label>Estado Civil</label>
+                                <select name="estadoCivil">
+                                    <option value="">--</option>
+                                    <option>Solteiro(a)</option><option>Casado(a)</option>
+                                    <option>Divorciado(a)</option><option>Viúvo(a)</option><option>União Estável</option>
+                                </select>
                             </div>
-                            <div class="f g-1">
-                                <label>Nacionalidade</label>
-                                <input type="text" name="nacionalidade" value="Brasileiro(a)">
+                        </div>
+                        <div class="section-sep"><i class="fa-solid fa-file-shield"></i>Documentação</div>
+                        <div class="fg fg-4">
+                            <div class="f g-1"><label>CPF</label><input type="text" name="cpf" placeholder="000.000.000-00"></div>
+                            <div class="f g-1"><label>RG</label><input type="text" name="rg" placeholder="0000000"></div>
+                            <div class="f g-1"><label>Órgão Emissor</label><input type="text" name="emissorRg" placeholder="SSP/RJ"></div>
+                            <div class="f g-1"><label>Tipo Sanguíneo</label>
+                                <select name="tipoSangue">
+                                    <option value="">--</option>
+                                    <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                                    <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                                </select>
                             </div>
-                            <div class="f g-1">
-                                <label>Natural de</label>
-                                <input type="text" name="naturalidade" placeholder="Cidade natal">
-                            </div>
-                            <div class="f g-1">
-                                <label>UF de Nascimento</label>
+                            <div class="f g-1"><label>Nacionalidade</label><input type="text" name="nacionalidade" value="Brasileiro(a)"></div>
+                            <div class="f g-1"><label>Natural de</label><input type="text" name="naturalidade" placeholder="Cidade natal"></div>
+                            <div class="f g-1"><label>UF</label>
                                 <select name="uf">
                                     <option value="">--</option>
                                     <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
@@ -502,600 +828,503 @@
                                     <option>SP</option><option>SE</option><option>TO</option>
                                 </select>
                             </div>
-                            <div class="f g-1">
-                                <label>Tipo Sanguíneo</label>
-                                <select name="tipoSangue">
-                                    <option value="">--</option>
-                                    <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
-                                    <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
-                                </select>
-                            </div>
+                            <div class="f g-1"><label>Profissão</label><input type="text" name="profissao" placeholder="Profissão"></div>
                         </div>
-
-                        <div class="section-label">Profissional</div>
-                        <div class="fg">
-                            <div class="f g-2">
-                                <label>Profissão / Ocupação</label>
-                                <input type="text" name="profissao" placeholder="Ex: Enfermeira, Pastor, Empresário">
-                            </div>
-                            <div class="f g-2">
-                                <label>Grau de Instrução</label>
-                                <select name="grauInstrucao">
-                                    <option value="">-- Selecione --</option>
-                                    <option>Sem instrução</option>
-                                    <option>Fundamental incompleto</option>
-                                    <option>Fundamental completo</option>
-                                    <option>Médio incompleto</option>
-                                    <option>Médio completo</option>
-                                    <option>Superior incompleto</option>
-                                    <option>Superior completo</option>
-                                    <option>Pós-graduação</option>
-                                    <option>Mestrado</option>
-                                    <option>Doutorado</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ======================== ABA 2: CONTATO & ENDEREÇO ======================== -->
-                    <div class="tab-panel" id="tab-contato">
-                        <div class="section-label">Contato</div>
-                        <div class="fg">
-                            <div class="f g-1">
-                                <label>Telefone Fixo</label>
-                                <input type="text" name="telefone" placeholder="(00) 0000-0000">
-                            </div>
-                            <div class="f g-1">
-                                <label>Celular / WhatsApp</label>
-                                <input type="text" name="celular" placeholder="(00) 00000-0000">
-                            </div>
-                            <div class="f g-2">
-                                <label>E-mail</label>
-                                <input type="email" name="email" placeholder="email@exemplo.com">
-                            </div>
-                        </div>
-
-                        <div class="section-label">Endereço</div>
-                        <div class="fg">
-                            <div class="f g-1">
-                                <label>CEP</label>
-                                <input type="text" name="cep" placeholder="00000-000">
-                            </div>
-                            <div class="f g-3">
-                                <label>Logradouro / Endereço</label>
-                                <input type="text" name="endereco" placeholder="Rua, Avenida, Travessa...">
-                            </div>
-                            <div class="f g-1">
-                                <label>Número</label>
-                                <input type="text" name="numero" placeholder="Nº">
-                            </div>
-                            <div class="f g-1">
-                                <label>Complemento</label>
-                                <input type="text" name="complemento" placeholder="Apto, Bloco...">
-                            </div>
-                            <div class="f g-2">
-                                <label>Bairro</label>
-                                <input type="text" name="bairro" placeholder="Bairro">
-                            </div>
-                            <div class="f g-2">
-                                <label>Cidade</label>
-                                <input type="text" name="cidade" placeholder="Cidade">
-                            </div>
-                            <div class="f g-1">
-                                <label>Estado</label>
-                                <select name="estado">
-                                    <option value="">--</option>
-                                    <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
-                                    <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
-                                    <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
-                                    <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
-                                    <option>PE</option><option>PI</option><option selected>RJ</option><option>RN</option>
-                                    <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
-                                    <option>SP</option><option>SE</option><option>TO</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ======================== ABA 3: FAMILIARES ======================== -->
-                    <div class="tab-panel" id="tab-familiares">
-                        <div class="section-label">Filiação</div>
-                        <div class="fg">
-                            <div class="f g-2">
-                                <label>Nome do Pai</label>
-                                <input type="text" name="pai" placeholder="Nome do pai">
-                            </div>
-                            <div class="f g-2">
-                                <label>Nome da Mãe</label>
-                                <input type="text" name="mae" placeholder="Nome da mãe">
-                            </div>
-                        </div>
-
-                        <div class="section-label">Cônjuge</div>
-                        <div class="fg">
-                            <div class="f g-2">
-                                <label>Nome do Cônjuge</label>
-                                <input type="text" name="conjuge" placeholder="Nome do cônjuge">
-                            </div>
-                            <div class="f g-1">
-                                <label>Data do Casamento</label>
-                                <input type="date" name="casamento">
-                            </div>
-                            <div class="f g-1">
-                                <label>Local do Casamento</label>
-                                <input type="text" name="localCasamento" placeholder="Igreja / Cartório">
-                            </div>
-                        </div>
-
-                        <div class="section-label">Filhos</div>
-                        <div class="fg">
-                            <div class="f g-full">
-                                <label>Observações sobre filhos</label>
-                                <textarea name="obsFilhos" placeholder="Ex: 3 filhos, João (10), Maria (7), Pedro (3)"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ======================== ABA 4: ECLESIÁSTICOS ======================== -->
-                    <div class="tab-panel" id="tab-ministeriais">
-                        <div class="section-label">Situação na Igreja</div>
-                        <div class="fg">
-                            <div class="f g-1">
-                                <label>Situação</label>
+                        <div class="section-sep"><i class="fa-solid fa-briefcase"></i>Situação na Igreja</div>
+                        <div class="fg fg-4">
+                            <div class="f g-1"><label>Situação</label>
                                 <select name="situacao">
-                                    <option value="">-- Selecione --</option>
-                                    <option>Ativo</option>
-                                    <option>Inativo</option>
-                                    <option>Afastado</option>
-                                    <option>Disciplinado</option>
-                                    <option>Desviado</option>
-                                    <option>Falecido</option>
-                                    <option>Mudou de Ministério</option>
-                                    <option>Removido LGPD</option>
+                                    <option>Ativo</option><option>Inativo</option>
+                                    <option>Afastado</option><option>Transferido</option><option>Falecido</option>
                                 </select>
                             </div>
-                            <div class="f g-1">
-                                <label>Cargo / Função</label>
-                                <input type="text" name="cargo" value="Membro" placeholder="Cargo na igreja">
-                            </div>
-                            <div class="f g-2">
-                                <label>Congregação</label>
-                                <input type="text" name="congregacao" placeholder="Nome da congregação">
-                            </div>
-                            <div class="f g-1">
-                                <label>Tipo de Admissão</label>
-                                <input type="text" name="tipoAdmissao" placeholder="Batismo, Aclamação...">
-                            </div>
-                            <div class="f g-1">
-                                <label>Data de Admissão</label>
-                                <input type="date" name="admissao">
-                            </div>
-                            <div class="f g-1">
-                                <label>Data de Saída</label>
-                                <input type="date" name="dataSaida">
-                            </div>
-                            <div class="f g-1">
-                                <label>Membro desde</label>
-                                <input type="text" name="membro" placeholder="Ex: Membro desde 2010">
-                            </div>
-                        </div>
-
-                        <div class="section-label">Batismo nas Águas</div>
-                        <div class="fg">
-                            <div class="f g-1">
-                                <label>Data do Batismo</label>
-                                <input type="date" name="batismoAguas">
-                            </div>
-                            <div class="f g-1">
-                                <label>Batismo</label>
-                                <input type="text" name="batismo" placeholder="Tipo de batismo">
-                            </div>
-                            <div class="f g-2">
-                                <label>Igreja e Local</label>
-                                <input type="text" name="igrejaLocal" placeholder="Igreja onde foi batizado(a)">
-                            </div>
-                            <div class="f g-2">
-                                <label>Igreja de Procedência</label>
-                                <input type="text" name="procedencia" placeholder="Igreja de origem">
-                            </div>
-                        </div>
-
-                        <div class="section-label">Batismo no Espírito Santo</div>
-                        <div class="fg">
-                            <div class="f g-1">
-                                <label>Batizado(a) no Espírito?</label>
-                                <select name="batismoEspirito">
-                                    <option value="">-- Selecione --</option>
-                                    <option>Sim</option>
-                                    <option>Não</option>
-                                </select>
-                            </div>
-                            <div class="f g-1">
-                                <label>Data (Espírito Santo)</label>
-                                <input type="date" name="dtBatismoEspirito">
-                            </div>
-                            <div class="f g-2">
-                                <label>Local (Espírito Santo)</label>
-                                <input type="text" name="localBatismoEspirito" placeholder="Local do batismo no Espírito">
-                            </div>
-                        </div>
-
-                        <div class="section-label">Carteira de Membro</div>
-                        <div class="fg">
-                            <div class="f g-1">
-                                <label>Emissão da Carteira</label>
-                                <input type="date" name="emissaoCarteira">
-                            </div>
-                            <div class="f g-1">
-                                <label>Vencimento da Carteira</label>
-                                <input type="date" name="venctoCarteira">
-                            </div>
-                            <div class="f g-full">
-                                <label>Observações</label>
-                                <textarea name="observacoes" placeholder="Informações adicionais sobre o membro..."></textarea>
-                            </div>
+                            <div class="f g-1"><label>Cargo / Função</label><input type="text" name="cargo" placeholder="Diácono, Pastor..."></div>
+                            <div class="f g-2"><label>Observações</label><input type="text" name="observacoes" placeholder="Observações gerais"></div>
                         </div>
                     </div>
 
-                    <!-- ======================== ABA 5: FOTO ======================== -->
+                    <!-- ABA CONTATO -->
+                    <div class="tab-panel" id="tab-contato">
+                        <div class="section-sep"><i class="fa-solid fa-phone"></i>Contato</div>
+                        <div class="fg fg-4">
+                            <div class="f g-1"><label>Telefone</label><input type="text" name="telefone" placeholder="(00) 0000-0000"></div>
+                            <div class="f g-1"><label>Celular / WhatsApp</label><input type="text" name="celular" placeholder="(00) 00000-0000"></div>
+                            <div class="f g-2"><label>E-mail</label><input type="email" name="email" placeholder="email@exemplo.com"></div>
+                        </div>
+                        <div class="section-sep"><i class="fa-solid fa-map-pin"></i>Endereço</div>
+                        <div class="fg fg-4">
+                            <div class="f g-1"><label>CEP</label><input type="text" name="cep" placeholder="00000-000"></div>
+                            <div class="f g-3"><label>Endereço</label><input type="text" name="endereco" placeholder="Rua, Avenida..."></div>
+                            <div class="f g-1"><label>Número</label><input type="text" name="numero" placeholder="Nº"></div>
+                            <div class="f g-1"><label>Complemento</label><input type="text" name="complemento" placeholder="Apto, Bloco..."></div>
+                            <div class="f g-2"><label>Bairro</label><input type="text" name="bairro" placeholder="Bairro"></div>
+                            <div class="f g-2"><label>Cidade</label><input type="text" name="cidade" placeholder="Cidade"></div>
+                            <div class="f g-1"><label>Estado</label><input type="text" name="estado" placeholder="UF"></div>
+                        </div>
+                    </div>
+
+                    <!-- ABA FAMÍLIA -->
+                    <div class="tab-panel" id="tab-familiares">
+                        <div class="section-sep"><i class="fa-solid fa-people-roof"></i>Dados Familiares</div>
+                        <div class="fg fg-4">
+                            <div class="f g-2"><label>Nome do Cônjuge</label><input type="text" name="conjuge" placeholder="Nome do cônjuge"></div>
+                            <div class="f g-1"><label>Data do Casamento</label><input type="date" name="dtCasamento"></div>
+                            <div class="f g-1"><label>Nº de Filhos</label><input type="number" name="qtdFilhos" min="0" placeholder="0"></div>
+                            <div class="f g-2"><label>Nome do Pai</label><input type="text" name="nomePai" placeholder="Nome do pai"></div>
+                            <div class="f g-2"><label>Nome da Mãe</label><input type="text" name="nomeMae" placeholder="Nome da mãe"></div>
+                        </div>
+                    </div>
+
+                    <!-- ABA ECLESIÁSTICO -->
+                    <div class="tab-panel" id="tab-eclesiasticos">
+                        <div class="section-sep"><i class="fa-solid fa-water"></i>Batismo nas Águas</div>
+                        <div class="fg fg-4">
+                            <div class="f g-1"><label>Data do Batismo</label><input type="date" name="batismoAguas"></div>
+                            <div class="f g-1"><label>Tipo</label><input type="text" name="batismo" placeholder="Imersão..."></div>
+                            <div class="f g-2"><label>Igreja / Local</label><input type="text" name="igrejaLocal" placeholder="Onde foi batizado(a)"></div>
+                            <div class="f g-2"><label>Igreja de Procedência</label><input type="text" name="procedencia" placeholder="Igreja de origem"></div>
+                        </div>
+                        <div class="section-sep"><i class="fa-solid fa-dove"></i>Batismo no Espírito Santo</div>
+                        <div class="fg fg-4">
+                            <div class="f g-1"><label>Recebeu?</label>
+                                <select name="batismoEspirito"><option value="">--</option><option>Sim</option><option>Não</option></select>
+                            </div>
+                            <div class="f g-1"><label>Data</label><input type="date" name="dtBatismoEspirito"></div>
+                            <div class="f g-2"><label>Local</label><input type="text" name="localBatismoEspirito" placeholder="Local do batismo"></div>
+                        </div>
+                        <div class="section-sep"><i class="fa-solid fa-id-badge"></i>Carteira de Membro</div>
+                        <div class="fg fg-4">
+                            <div class="f g-1"><label>Emissão</label><input type="date" name="emissaoCarteira"></div>
+                            <div class="f g-1"><label>Vencimento</label><input type="date" name="venctoCarteira"></div>
+                        </div>
+                    </div>
+
+                    <!-- ABA FOTO -->
                     <div class="tab-panel" id="tab-foto">
-                        <div class="photo-panel">
+                        <div class="photo-wrap">
                             <div>
-                                <div class="photo-preview-box">
-                                    <img id="fotoPreview" src="logo.png" alt="Prévia da foto" onerror="this.style.display='none'">
+                                <div class="photo-box">
+                                    <img id="fotoPreview" src="" alt="Foto" style="display:none;">
+                                    <i class="fa-solid fa-user" id="fotoIcon"></i>
                                 </div>
                                 <div class="zoom-row">
-                                    <button class="btn-sm" type="button" id="zoomOut">−</button>
+                                    <button class="btn-icon" type="button" id="zoomOut">−</button>
                                     <input type="range" id="zoomRange" min="1" max="2.5" step="0.1" value="1">
-                                    <button class="btn-sm" type="button" id="zoomIn">+</button>
+                                    <button class="btn-icon" type="button" id="zoomIn">+</button>
                                 </div>
                             </div>
                             <div class="f" style="flex:1;">
                                 <label>Selecionar Foto</label>
                                 <input type="file" id="fotoInput" accept="image/*">
-                                <small class="muted" style="margin-top:8px;">Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 5 MB.</small>
+                                <small style="color:var(--muted);margin-top:8px;font-size:12px;">
+                                    JPG, PNG ou WEBP. Máximo 5 MB.
+                                </small>
                             </div>
                         </div>
                     </div>
-
-                    <!-- ======================== AÇÕES ======================== -->
-                    <div class="form-actions">
-                        <button class="btn-ghost" type="button" id="btnImprimir">
-                            <i class="fa-solid fa-print"></i> Imprimir
-                        </button>
-                        <button class="btn-primary" type="button" id="btnEditar">
-                            <i class="fa-solid fa-pen"></i> Editar
-                        </button>
-                        <button class="btn-danger" type="button" id="btnExcluir">
-                            <i class="fa-solid fa-trash"></i> Excluir
-                        </button>
-                        <button class="btn-save" type="button" id="btnSalvar">
-                            <i class="fa-solid fa-floppy-disk"></i> Salvar Cadastro
-                        </button>
-                        <button class="btn-ghost" type="reset">
-                            <i class="fa-solid fa-eraser"></i> Limpar
-                        </button>
-                        <div id="memberStatus" class="form-status"></div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- ======================== LISTA DE MEMBROS ======================== -->
-            <div class="table-card">
-                <div class="table-card-header">
-                    <h3><i class="fa-solid fa-users"></i> Lista de Membros Cadastrados</h3>
-                    <button class="btn-sm-primary" type="button" id="btnRecarregar">
-                        <i class="fa-solid fa-rotate-right"></i> Recarregar
-                    </button>
                 </div>
-                <table class="members-table">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>E-mail</th>
-                            <th>Telefone</th>
-                            <th>Cidade</th>
-                        </tr>
-                    </thead>
-                    <tbody id="membersTableBody">
-                        <tr><td colspan="4" class="muted">Carregando...</td></tr>
-                    </tbody>
-                </table>
+
+                <!-- RODAPÉ DO FORMULÁRIO -->
+                <div class="form-foot">
+                    <button class="btn btn-ghost" type="button" id="btnLimpar">
+                        <i class="fa-solid fa-eraser"></i> Limpar
+                    </button>
+                    <button class="btn btn-danger" type="button" id="btnExcluirForm">
+                        <i class="fa-solid fa-trash"></i> Excluir
+                    </button>
+                    <button class="btn btn-success" type="button" id="btnSalvarForm">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar Cadastro
+                    </button>
+                    <div id="memberStatus" class="form-status"></div>
+                </div>
             </div>
 
         </div>
-    </main>
+        <!-- /right-panel -->
+    </div>
+    <!-- /two-col -->
 
-    <script src="session.js?v=20260501"></script>
-    <script src="enterprise-shell.js?v=20260501"></script>
-    <script>
-        requireAuthSession();
+</div>
+</main>
 
-        /* ---- Abas ---- */
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabPanels  = document.querySelectorAll('.tab-panel');
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+    requireAuthSession();
 
-        tabButtons.forEach((btn) => {
-            btn.addEventListener('click', () => {
-                tabButtons.forEach((b) => b.classList.remove('active'));
-                tabPanels.forEach((p)  => p.classList.remove('active'));
-                btn.classList.add('active');
-                const target = document.getElementById(`tab-${btn.dataset.tab}`);
-                if (target) target.classList.add('active');
+    /* ── Utilitários ── */
+    const $  = (id) => document.getElementById(id);
+    const statusEl = $('memberStatus');
+
+    const setStatus = (txt, isErr = false) => {
+        statusEl.textContent = txt;
+        statusEl.className = 'form-status' + (isErr ? ' err' : '');
+    };
+
+    const getUser = () => {
+        try { return JSON.parse(localStorage.getItem('ldfpAuth') || 'null')?.user || null; }
+        catch { return null; }
+    };
+
+    const extractError = (d, fb) => d?.error || d?.message || fb;
+
+    const COLORS = ['#0284c7','#10b981','#f59e0b','#8b5cf6','#ec4899','#0f766e','#dc2626','#06b6d4'];
+    const avatarColor = (n) => COLORS[(n || '').charCodeAt(0) % COLORS.length];
+    const initials    = (n) => (n || '?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+
+    const badgeClass = (s) => {
+        if (!s) return 'badge-outro';
+        const v = s.toLowerCase();
+        if (v === 'ativo')    return 'badge-ativo';
+        if (v === 'inativo')  return 'badge-inativo';
+        if (v === 'afastado') return 'badge-afastado';
+        return 'badge-outro';
+    };
+
+    /* ── Toggle Rápido / Completo ── */
+    let currentMode = 'rapido';
+
+    const applyMode = (mode) => {
+        currentMode = mode;
+        $('quickMode').style.display = mode === 'rapido' ? 'block' : 'none';
+        $('fullMode').style.display  = mode === 'completo' ? 'block' : 'none';
+        $('modeRapido').classList.toggle('active', mode === 'rapido');
+        $('modeCompleto').classList.toggle('active', mode === 'completo');
+    };
+
+    $('modeRapido').addEventListener('click', () => applyMode('rapido'));
+    $('modeCompleto').addEventListener('click', () => applyMode('completo'));
+
+    /* ── Abas (modo completo) ── */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            const p = $(`tab-${btn.dataset.tab}`);
+            if (p) p.classList.add('active');
+        });
+    });
+
+    /* ── Foto ── */
+    const fotoInput   = $('fotoInput');
+    const fotoPreview = $('fotoPreview');
+    const fotoIcon    = $('fotoIcon');
+    const zoomRange   = $('zoomRange');
+
+    const aplicarZoom = () => { fotoPreview.style.transform = `scale(${zoomRange.value})`; };
+    zoomRange.addEventListener('input', aplicarZoom);
+    $('zoomIn').addEventListener('click',  () => { zoomRange.value = Math.min(2.5, +zoomRange.value + .1); aplicarZoom(); });
+    $('zoomOut').addEventListener('click', () => { zoomRange.value = Math.max(1,   +zoomRange.value - .1); aplicarZoom(); });
+
+    fotoInput && fotoInput.addEventListener('change', evt => {
+        const file = evt.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            fotoPreview.src = reader.result;
+            fotoPreview.style.display = 'block';
+            fotoIcon.style.display = 'none';
+            $('heroAva').innerHTML = `<img src="${reader.result}" alt="foto">`;
+            zoomRange.value = 1; aplicarZoom();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    /* ── Hero ── */
+    const updateHero = (member) => {
+        const nome    = member?.full_name || member?.nome || '';
+        const cargo   = member?.cargo || 'Membro';
+        const situacao= member?.situacao || 'Ativo';
+        const cidade  = member?.city || member?.cidade || '';
+
+        const heroName = $('heroName');
+        heroName.textContent = nome || 'Selecione um membro';
+        heroName.classList.toggle('ph', !nome);
+
+        $('heroSub').textContent = nome
+            ? `${cargo}${cidade ? ' · ' + cidade : ''}`
+            : 'ou clique em "Novo Membro" para cadastrar';
+
+        const tagsEl = $('heroTags');
+        if (nome) {
+            const bc = badgeClass(situacao);
+            const tagColors = {
+                'badge-ativo':    ['#d1fae5','#065f46'],
+                'badge-inativo':  ['#fee2e2','#991b1b'],
+                'badge-afastado': ['#fef3c7','#92400e'],
+                'badge-outro':    ['#f1f5f9','#475569'],
+            };
+            const [bg, fg] = tagColors[bc] || tagColors['badge-outro'];
+            tagsEl.innerHTML = `
+                <span class="hero-tag"><i class="fa-solid fa-church" style="margin-right:4px;"></i>LDFP</span>
+                <span class="hero-tag" style="background:${bg};color:${fg};">${situacao}</span>
+                ${cargo && cargo !== 'Membro' ? `<span class="hero-tag">${cargo}</span>` : ''}
+            `;
+            const cor = avatarColor(nome);
+            const ini = initials(nome);
+            $('heroAva').innerHTML = `
+                <div style="width:72px;height:72px;border-radius:50%;background:${cor};
+                     display:flex;align-items:center;justify-content:center;
+                     font-size:1.4rem;font-weight:800;color:#fff;">${ini}</div>
+            `;
+        } else {
+            tagsEl.innerHTML = `<span class="hero-tag"><i class="fa-solid fa-church" style="margin-right:4px;"></i>LDFP</span>`;
+            $('heroAva').innerHTML = `<i class="fa-solid fa-user"></i>`;
+        }
+    };
+
+    updateHero(null);
+
+    /* ── Estado ── */
+    let loadedMembers   = [];
+    let filteredMembers = [];
+    let selectedId      = null;
+
+    const memberIdOf = (r) => Number(r?.id || r?.membro_id || r?.member_id || 0);
+
+    /* ── Preencher campos (modo rápido e completo) ── */
+    const fillFields = (row) => {
+        if (!row) return;
+        const set = (name, val) => {
+            document.querySelectorAll(`[name="${name}"]`).forEach(el => { el.value = val ?? ''; });
+        };
+        const setCheck = (name, val) => {
+            const enabled = val === 1 || val === true || String(val || '').toLowerCase() === '1' || String(val || '').toLowerCase() === 'true';
+            document.querySelectorAll(`[name="${name}"]`).forEach(el => {
+                if (el.type === 'checkbox') {
+                    el.checked = enabled;
+                }
             });
+        };
+        set('nome',        row.full_name || row.nome);
+        set('apelido',     row.nickname  || row.apelido);
+        set('email',       row.email);
+        set('telefone',    row.phone     || row.telefone);
+        set('celular',     row.mobile_phone || row.celular);
+        set('situacao',    row.situacao  || 'Ativo');
+        set('cargo',       row.cargo     || '');
+        set('obs',         row.observacoes || '');
+        set('nascimento',  row.birth_date || row.nascimento);
+        set('sexo',        row.gender    || row.sexo);
+        set('estadoCivil', row.marital_status || row.estadoCivil);
+        set('profissao',   row.profession || row.profissao);
+        set('cpf',         row.cpf);
+        set('rg',          row.rg);
+        set('cep',         row.zip_code  || row.cep);
+        set('endereco',    row.address   || row.endereco);
+        set('numero',      row.address_number || row.numero);
+        set('bairro',      row.neighborhood || row.bairro);
+        set('cidade',      row.city      || row.cidade);
+        set('estado',      row.state     || row.estado);
+        set('nacionalidade', row.nationality || row.nacionalidade);
+        set('naturalidade',  row.birth_place || row.naturalidade);
+        setCheck('acesso_app_midia', row.acesso_app_midia);
+        setCheck('gerenciar_midias', row.gerenciar_midias);
+        updateHero(row);
+        setStatus(`Editando: ${row.full_name || row.nome || 'Sem nome'}`);
+    };
+
+    /* ── Selecionar membro ── */
+    const selectMember = (id) => {
+        selectedId = Number(id) || null;
+        document.querySelectorAll('.member-item').forEach(el => {
+            el.classList.toggle('is-active', Number(el.dataset.mid) === selectedId);
+        });
+        const found = loadedMembers.find(r => memberIdOf(r) === selectedId);
+        if (found) fillFields(found);
+    };
+
+    /* ── Renderizar lista ── */
+    const renderList = (members) => {
+        const listEl = $('memberList');
+        $('listCount').textContent = members.length;
+
+        if (!members.length) {
+            listEl.innerHTML = `<div class="empty-list"><i class="fa-solid fa-users-slash"></i>Nenhum membro encontrado.</div>`;
+            return;
+        }
+
+        listEl.innerHTML = members.map(row => {
+            const id   = memberIdOf(row);
+            const nome = row.full_name || row.nome || 'Sem nome';
+            const sub  = row.email || row.city || row.cidade || '';
+            const sit  = row.situacao || 'Ativo';
+            const bc   = badgeClass(sit);
+            const cor  = avatarColor(nome);
+            const ini  = initials(nome);
+            const sel  = selectedId === id ? 'is-active' : '';
+            return `
+                <div class="member-item ${sel}" data-mid="${id}">
+                    <div class="m-avatar" style="background:${cor};">${ini}</div>
+                    <div class="m-info">
+                        <div class="m-name">${nome}</div>
+                        ${sub ? `<div class="m-sub">${sub}</div>` : ''}
+                    </div>
+                    <span class="m-badge ${bc}">${sit}</span>
+                </div>
+            `;
+        }).join('');
+
+        listEl.querySelectorAll('.member-item').forEach(el => {
+            el.addEventListener('click', () => selectMember(Number(el.dataset.mid)));
+        });
+    };
+
+    /* ── Busca ── */
+    $('searchInput').addEventListener('input', () => {
+        const q = $('searchInput').value.toLowerCase().trim();
+        filteredMembers = q
+            ? loadedMembers.filter(r =>
+                (r.full_name || r.nome || '').toLowerCase().includes(q) ||
+                (r.email || '').toLowerCase().includes(q) ||
+                (r.city  || r.cidade || '').toLowerCase().includes(q))
+            : [...loadedMembers];
+        renderList(filteredMembers);
+    });
+
+    /* ── Carregar membros ── */
+    const carregarMembros = async () => {
+        $('memberList').innerHTML = `<div class="empty-list"><i class="fa-solid fa-spinner fa-spin"></i>Carregando...</div>`;
+        const churchId = getUser()?.churchId || 1;
+        try {
+            const resp = await fetch(`/membros?churchId=${encodeURIComponent(churchId)}`);
+            const data = await resp.json().catch(() => []);
+            if (!resp.ok) throw new Error(extractError(data, 'Erro ao carregar membros.'));
+            loadedMembers   = data;
+            filteredMembers = [...data];
+            renderList(filteredMembers);
+        } catch (err) {
+            $('memberList').innerHTML = `<div class="empty-list"><i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i>${err.message}</div>`;
+        }
+    };
+
+    /* ── Payload ── */
+    const getPayload = () => {
+        const get = (name) => {
+            const el = document.querySelector(
+                currentMode === 'rapido'
+                    ? `#quickMode [name="${name}"]`
+                    : `#fullMode .tab-panel.active [name="${name}"], #fullMode [name="${name}"]`
+            );
+            return el ? el.value.trim() : '';
+        };
+
+        const all = {};
+        document.querySelectorAll('[name]').forEach(el => {
+            if (Object.prototype.hasOwnProperty.call(all, el.name)) return;
+            if (el.type === 'checkbox') {
+                all[el.name] = el.checked ? '1' : '0';
+                return;
+            }
+            all[el.name] = el.value.trim();
         });
 
-        /* ---- Foto ---- */
-        const fotoInput  = document.getElementById('fotoInput');
-        const fotoPreview = document.getElementById('fotoPreview');
-        const zoomRange  = document.getElementById('zoomRange');
-
-        const aplicarZoom = () => {
-            fotoPreview.style.transform = `scale(${zoomRange.value})`;
+        return {
+            churchId:    getUser()?.churchId || 1,
+            nome:        all.nome        || '',
+            email:       all.email       || '',
+            telefone:    all.telefone    || '',
+            celular:     all.celular     || '',
+            apelido:     all.apelido     || '',
+            nascimento:  all.nascimento  || null,
+            sexo:        all.sexo        || '',
+            estado_civil:all.estadoCivil || '',
+            profissao:   all.profissao   || '',
+            cep:         all.cep         || '',
+            endereco:    all.endereco    || '',
+            numero:      all.numero      || '',
+            bairro:      all.bairro      || '',
+            cidade:      all.cidade      || '',
+            estado:      all.estado      || '',
+            cpf:         all.cpf         || '',
+            rg:          all.rg          || '',
+            nacionalidade: all.nacionalidade || '',
+            naturalidade:  all.naturalidade  || '',
+            situacao:    all.situacao    || 'Ativo',
+            cargo:       all.cargo       || '',
+            observacoes: all.obs         || all.observacoes || '',
+            acesso_app_midia: all.acesso_app_midia === '1',
+            gerenciar_midias: all.gerenciar_midias === '1'
         };
+    };
 
-        zoomRange.addEventListener('input', aplicarZoom);
-        document.getElementById('zoomIn').addEventListener('click', () => {
-            zoomRange.value = Math.min(Number(zoomRange.max), Number(zoomRange.value) + 0.1);
-            aplicarZoom();
+    /* ── Salvar ── */
+    const salvar = async () => {
+        setStatus('');
+        const payload = getPayload();
+        if (!payload.nome) { setStatus('Informe o nome do membro.', true); return; }
+
+        const saveBtns = [$('btnSalvar'), $('btnSalvarForm')];
+        saveBtns.forEach(b => { if(b){ b.disabled = true; b.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...'; }});
+
+        try {
+            const url    = selectedId ? `/membros/${selectedId}` : '/membros';
+            const method = selectedId ? 'PUT' : 'POST';
+            const resp   = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+            const data   = await resp.json().catch(() => ({}));
+            if (!resp.ok) throw new Error(extractError(data, 'Não foi possível salvar.'));
+            setStatus(selectedId ? 'Membro atualizado!' : 'Membro cadastrado com sucesso!');
+            if (!selectedId) limpar();
+            await carregarMembros();
+        } catch(err) {
+            setStatus(err.message || 'Erro inesperado.', true);
+        } finally {
+            saveBtns.forEach(b => { if(b){ b.disabled = false; b.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar'; }});
+        }
+    };
+
+    /* ── Excluir ── */
+    const excluir = async () => {
+        if (!selectedId) { setStatus('Selecione um membro para excluir.', true); return; }
+        const found = loadedMembers.find(r => memberIdOf(r) === selectedId);
+        const nome  = found?.full_name || found?.nome || `ID ${selectedId}`;
+        if (!confirm(`Excluir "${nome}"? Esta ação não pode ser desfeita.`)) return;
+        try {
+            const resp = await fetch(`/membros/${selectedId}`, { method: 'DELETE' });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) throw new Error(extractError(data, 'Erro ao excluir.'));
+            selectedId = null;
+            limpar();
+            setStatus('Membro excluído com sucesso.');
+            await carregarMembros();
+        } catch(err) {
+            setStatus(err.message, true);
+        }
+    };
+
+    /* ── Limpar ── */
+    const limpar = () => {
+        document.querySelectorAll('[name]').forEach(el => {
+            if (el.type === 'checkbox') {
+                el.checked = false;
+                return;
+            }
+            el.value = '';
         });
-        document.getElementById('zoomOut').addEventListener('click', () => {
-            zoomRange.value = Math.max(Number(zoomRange.min), Number(zoomRange.value) - 0.1);
-            aplicarZoom();
-        });
+        selectedId = null;
+        updateHero(null);
+        setStatus('');
+        document.querySelectorAll('.member-item').forEach(el => el.classList.remove('is-active'));
+    };
 
-        fotoInput.addEventListener('change', (evt) => {
-            const file = evt.target.files?.[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = () => {
-                fotoPreview.src = reader.result;
-                fotoPreview.style.display = 'block';
-                zoomRange.value = 1;
-                aplicarZoom();
-            };
-            reader.readAsDataURL(file);
-        });
+    /* ── Novo membro ── */
+    $('btnNovoMembro').addEventListener('click', () => {
+        limpar();
+        applyMode('rapido');
+        document.querySelector('#quickMode [name="nome"]')?.focus();
+    });
 
-        /* ---- Helpers ---- */
-        const statusEl = document.getElementById('memberStatus');
+    /* ── Eventos ── */
+    $('btnSalvar').addEventListener('click', salvar);
+    $('btnSalvarForm').addEventListener('click', salvar);
+    $('btnExcluir').addEventListener('click', excluir);
+    $('btnExcluirForm').addEventListener('click', excluir);
+    $('btnImprimir').addEventListener('click', () => window.print());
+    $('btnLimpar').addEventListener('click', limpar);
 
-        const setStatus = (text, isError = false) => {
-            statusEl.textContent = text;
-            statusEl.classList.toggle('error', isError);
-        };
-
-        const getUser = () => {
-            try { return JSON.parse(localStorage.getItem('ldfpAuth') || 'null')?.user || null; }
-            catch { return null; }
-        };
-
-        const extractError = (data, fallback) => (data?.error || data?.message || fallback);
-        let loadedMembers = [];
-        let selectedMemberId = null;
-
-        const memberIdOf = (row) => Number(row?.id || row?.membro_id || row?.member_id || 0);
-
-        const fillMemberForm = (row) => {
-            const form = document.getElementById('memberForm');
-            if (!form || !row) {
-                return;
-            }
-
-            const setValue = (name, value) => {
-                const field = form.elements.namedItem(name);
-                if (!field) {
-                    return;
-                }
-                field.value = value ?? '';
-            };
-
-            setValue('nome', row.full_name || row.nome);
-            setValue('email', row.email);
-            setValue('telefone', row.phone || row.telefone);
-            setValue('celular', row.mobile_phone || row.celular);
-            setValue('apelido', row.nickname || row.apelido);
-            setValue('nascimento', row.birth_date || row.nascimento);
-            setValue('sexo', row.gender || row.sexo);
-            setValue('estadoCivil', row.marital_status || row.estado_civil || row.estadoCivil);
-            setValue('profissao', row.profession || row.profissao);
-            setValue('cep', row.zip_code || row.cep);
-            setValue('endereco', row.address || row.endereco);
-            setValue('numero', row.address_number || row.numero);
-            setValue('bairro', row.neighborhood || row.bairro);
-            setValue('cidade', row.city || row.cidade);
-            setValue('estado', row.state || row.estado);
-            setValue('cpf', row.cpf);
-            setValue('rg', row.rg);
-            setValue('nacionalidade', row.nationality || row.nacionalidade);
-            setValue('naturalidade', row.birth_place || row.naturalidade);
-
-            setStatus(`Membro selecionado para edição: ${row.full_name || row.nome || 'Sem nome'}`);
-        };
-
-        const selectMemberById = (id) => {
-            selectedMemberId = Number(id || 0) || null;
-            document.querySelectorAll('#membersTableBody tr[data-member-id]').forEach((row) => {
-                row.classList.toggle('is-selected', Number(row.dataset.memberId) === selectedMemberId);
-            });
-
-            const selected = loadedMembers.find((row) => memberIdOf(row) === selectedMemberId);
-            if (selected) {
-                fillMemberForm(selected);
-            }
-        };
-
-        /* ---- Montar payload ---- */
-        const getFormData = () => {
-            const d = Object.fromEntries(new FormData(document.getElementById('memberForm')).entries());
-            return {
-                churchId: getUser()?.churchId || 1,
-                nome:        d.nome || '',
-                email:       d.email || '',
-                telefone:    d.telefone || '',
-                celular:     d.celular || '',
-                apelido:     d.apelido || '',
-                nascimento:  d.nascimento || null,
-                sexo:        d.sexo || '',
-                estado_civil: d.estadoCivil || '',
-                profissao:   d.profissao || '',
-                cep:         d.cep || '',
-                endereco:    d.endereco || '',
-                numero:      d.numero || '',
-                bairro:      d.bairro || '',
-                cidade:      d.cidade || '',
-                estado:      d.estado || '',
-                cpf:         d.cpf || '',
-                rg:          d.rg || '',
-                nacionalidade: d.nacionalidade || '',
-                naturalidade:  d.naturalidade || '',
-            };
-        };
-
-        /* ---- Carregar lista ---- */
-        const carregarMembros = async () => {
-            const tbody = document.getElementById('membersTableBody');
-            tbody.innerHTML = '<tr><td colspan="4" class="muted">Carregando...</td></tr>';
-            const churchId = getUser()?.churchId || 1;
-
-            try {
-                const resp = await fetch(`/membros?churchId=${encodeURIComponent(churchId)}`);
-                const data = await resp.json().catch(() => []);
-
-                if (!resp.ok) throw new Error(extractError(data, 'Erro ao carregar membros.'));
-
-                if (!data.length) {
-                    loadedMembers = [];
-                    selectedMemberId = null;
-                    tbody.innerHTML = '<tr><td colspan="4" class="muted">Nenhum membro cadastrado.</td></tr>';
-                    return;
-                }
-
-                loadedMembers = data;
-
-                tbody.innerHTML = data.map((row) => {
-                    return `
-                    <tr>
-                        <td>${row.full_name || row.nome || ''}</td>
-                        <td>${row.email || '-'}</td>
-                        <td>${row.phone || row.mobile_phone || '-'}</td>
-                        <td>${row.city || row.cidade || '-'}</td>
-                    </tr>
-                `;
-                }).join('');
-
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-                rows.forEach((tr, idx) => {
-                    const id = Number(memberIdOf(data[idx]));
-                    tr.dataset.memberId = String(id || '');
-                    tr.addEventListener('click', () => selectMemberById(id));
-                    if (selectedMemberId && id === selectedMemberId) {
-                        tr.classList.add('is-selected');
-                    }
-                });
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="4" class="muted">${err.message}</td></tr>`;
-            }
-        };
-
-        const imprimirFicha = () => {
-            window.print();
-        };
-
-        const habilitarEdicao = () => {
-            const nome = document.querySelector('[name="nome"]');
-            if (nome) {
-                nome.focus();
-                nome.select();
-            }
-            if (selectedMemberId) {
-                setStatus('Modo de edição habilitado para o membro selecionado.');
-            } else {
-                setStatus('Modo de edição habilitado. Selecione um membro da lista para carregar os dados.');
-            }
-        };
-
-        const excluirMembroSelecionado = async () => {
-            if (!selectedMemberId) {
-                setStatus('Selecione um membro na lista para excluir.', true);
-                return;
-            }
-
-            const selected = loadedMembers.find((row) => memberIdOf(row) === selectedMemberId);
-            const nome = selected?.full_name || selected?.nome || `ID ${selectedMemberId}`;
-            const ok = window.confirm(`Tem certeza que deseja excluir o membro ${nome}? Esta ação não pode ser desfeita.`);
-            if (!ok) {
-                return;
-            }
-
-            try {
-                const resp = await fetch(`/membros/${selectedMemberId}`, { method: 'DELETE' });
-                const data = await resp.json().catch(() => ({}));
-                if (!resp.ok) {
-                    throw new Error(extractError(data, 'Não foi possível excluir o membro.'));
-                }
-
-                selectedMemberId = null;
-                setStatus('Membro excluído com sucesso.');
-                await carregarMembros();
-            } catch (err) {
-                setStatus(err.message || 'Erro ao excluir membro.', true);
-            }
-        };
-
-        /* ---- Salvar membro ---- */
-        const salvarMembro = async () => {
-            setStatus('');
-            const payload = getFormData();
-
-            if (!payload.nome) {
-                setStatus('Informe o nome do membro.', true);
-                return;
-            }
-
-            if (payload.email && !/^\S+@\S+\.\S+$/.test(payload.email)) {
-                setStatus('Informe um e-mail válido.', true);
-                return;
-            }
-
-            const btns = [document.getElementById('btnSalvar'), document.getElementById('btnSalvarTopo')];
-            btns.forEach((b) => { b.disabled = true; b.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...'; });
-
-            try {
-                const resp = await fetch('/membros', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await resp.json().catch(() => ({}));
-
-                if (!resp.ok) throw new Error(extractError(data, 'Não foi possível salvar o membro.'));
-
-                setStatus('Membro salvo com sucesso!');
-                document.getElementById('memberForm').reset();
-                await carregarMembros();
-            } catch (err) {
-                setStatus(err.message || 'Erro inesperado ao salvar.', true);
-            } finally {
-                btns.forEach((b) => {
-                    b.disabled = false;
-                    b.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Cadastro';
-                });
-            }
-        };
-
-        document.getElementById('btnSalvar').addEventListener('click', salvarMembro);
-        document.getElementById('btnSalvarTopo').addEventListener('click', salvarMembro);
-        document.getElementById('btnRecarregar').addEventListener('click', carregarMembros);
-        document.getElementById('btnImprimir').addEventListener('click', imprimirFicha);
-        document.getElementById('btnImprimirTopo').addEventListener('click', imprimirFicha);
-        document.getElementById('btnEditar').addEventListener('click', habilitarEdicao);
-        document.getElementById('btnEditarTopo').addEventListener('click', habilitarEdicao);
-        document.getElementById('btnExcluir').addEventListener('click', excluirMembroSelecionado);
-        document.getElementById('btnExcluirTopo').addEventListener('click', excluirMembroSelecionado);
-
-        carregarMembros();
-    </script>
-    <script src="speed-insights.js" defer></script>
+    carregarMembros();
+</script>
+<script src="speed-insights.js" defer></script>
 </body>
 </html>

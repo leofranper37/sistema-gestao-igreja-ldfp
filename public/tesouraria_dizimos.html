@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Dízimos & Ofertas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Seus estilos CSS personalizados */
+        :root {
+            --brand:   #0f766e;
+            --teal:    #0d9488;
+            --blue:    #0284c7;
+            --green:   #16a34a;
+            --red:     #dc2626;
+            --yellow:  #f59e0b;
+            --purple:  #7c3aed;
+            --surface: #ffffff;
+            --bg:      #f1f5f9;
+            --border:  #e2e8f0;
+            --text:    #0f172a;
+            --muted:   #64748b;
+            --radius:  14px;
+            --shadow:  0 4px 16px rgba(15,23,42,.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── KPIs ── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--kpi-color, var(--teal));
+        }
+
+        .kpi-card small {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 8px;
+        }
+
+        .kpi-card strong {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--kpi-color, var(--text));
+            line-height: 1;
+        }
+
+        .kpi-card .kpi-sub {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .kpi-total   { --kpi-color: #0f766e; }
+        .kpi-dizimo  { --kpi-color: #0284c7; }
+        .kpi-oferta  { --kpi-color: #16a34a; }
+        .kpi-missoes { --kpi-color: #2563eb; }
+        .kpi-outros  { --kpi-color: #64748b; }
+
+        /* ── Tabs internas ── */
+        .inner-tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 18px;
+        }
+
+        .inner-tab {
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--muted);
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            border-radius: 8px 8px 0 0;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .inner-tab:hover { color: var(--text); background: var(--bg); }
+        .inner-tab.active { color: var(--brand); border-bottom-color: var(--brand); background: #f0fdfa; }
+
+        .inner-panel { display: none; }
+        .inner-panel.active { display: block; }
+
+        /* ── Layout principal ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .card-header h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header h3 i { color: var(--teal); }
+
+        /* Filtros */
+        .filter-bar {
+            display: grid;
+            grid-template-columns: 160px 150px 1fr auto;
+            gap: 8px;
+            margin-bottom: 14px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-group label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
+            width: 100%;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #fff;
+        }
+
+        /* Botões */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary { background: var(--brand); color: #fff; }
+        .btn-primary:hover { background: #0c5f58; }
+
+        .btn-secondary { background: var(--bg); color: var(--text); border-color: var(--border); }
+        .btn-secondary:hover { background: var(--border); }
+
+        .btn-blue { background: var(--blue); color: #fff; }
+        .btn-blue:hover { background: #026ca0; }
+
+        .btn-red { background: var(--red); color: #fff; }
+        .btn-red:hover { background: #b91c1c; }
+
+        .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+        /* Tabela */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 14px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .table th, .table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .table th {
+            background: var(--bg);
+            color: var(--muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table tbody tr:hover { background: var(--bg); }
+
+        .table .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .table .badge-dizimo { background: #e0f2fe; color: #0284c7; }
+        .table .badge-oferta { background: #dcfce7; color: #16a34a; }
+        .table .badge-missoes { background: #e0e7ff; color: #4f46e5; }
+        .table .badge-outros { background: #f1f5f9; color: var(--muted); }
+
+        .table .empty-row td {
+            text-align: center;
+            color: var(--muted);
+            padding: 20px;
+        }
+
+        /* Paginação */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .pagination button {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all .2s;
+        }
+
+        .pagination button:hover:not(:disabled) { background: var(--border); }
+        .pagination button:disabled { opacity: .5; cursor: not-allowed; }
+        .pagination span { font-size: 12px; color: var(--muted); }
+
+        /* Formulários */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="month"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 14px;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--brand);
+            background: #fff;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* Preview */
+        .preview-card {
+            background: var(--bg);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .preview-card h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .preview-card p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .preview-card p strong {
+            color: var(--text);
+        }
+
+        /* Mensagens */
+        .msg {
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .msg.ok { background: #dcfce7; color: #15803d; border: 1px solid #a7f3d0; }
+        .msg.error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+
+        /* Badges de Tipo de Receita */
+        .tipo-natureza {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 7px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .natureza-e { background: #dcfce7; color: #15803d; } /* Verde para entrada */
+        .natureza-s { background: #fee2e2; color: #dc2626; } /* Vermelho para saída */
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page"
+      data-shell-title="Dízimos e Ofertas"
+      data-shell-breadcrumb="LDFP / Tesouraria / Dízimos"
+      data-shell-active="tesouraria_dizimos.html"
+      data-shell-chip="Tesouraria ativa"
+      data-shell-role="Admin financeiro">
+
+    <main class="enterprise-main">
+        <div class="container">
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-total">
+                    <small>Total Geral</small>
+                    <strong id="kpiTotal">R$ 0,00</strong>
+                    <span class="kpi-sub" id="kpiTotalSub"></span>
+                </div>
+                <div class="kpi-card kpi-dizimo">
+                    <small>Dízimos</small>
+                    <strong id="kpiDizimos">R$ 0,00</strong>
+                    <span class="kpi-sub" id="kpiDizimosSub"></span>
+                </div>
+                <div class="kpi-card kpi-oferta">
+                    <small>Ofertas</small>
+                    <strong id="kpiOfertas">R$ 0,00</strong>
+                    <span class="kpi-sub" id="kpiOfertasSub"></span>
+                </div>
+                <div class="kpi-card kpi-missoes">
+                    <small>Missões</small>
+                    <strong id="kpiMissoes">R$ 0,00</strong>
+                    <span class="kpi-sub" id="kpiMissoesSub"></span>
+                </div>
+                <div class="kpi-card kpi-outros">
+                    <small>Outros</small>
+                    <strong id="kpiOutros">R$ 0,00</strong>
+                    <span class="kpi-sub" id="kpiOutrosSub"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="inner-tabs">
+                    <button class="inner-tab active" data-tab="lancamentos">
+                        <i class="fa-solid fa-file-invoice"></i> Lançamentos
+                    </button>
+                    <button class="inner-tab" data-tab="tipos">
+                        <i class="fa-solid fa-tags"></i> Tipos de Receitas
+                    </button>
+                </div>
+
+                <div id="panel-lancamentos" class="inner-panel active">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-list"></i> Lançamentos Registrados</h3>
+                    </div>
+
+                    <div class="filter-bar">
+                        <div class="filter-group">
+                            <label for="filtroComp">Competência</label>
+                            <input type="month" id="filtroComp">
+                        </div>
+                        <div class="filter-group">
+                            <label for="filtroTipo">Tipo</label>
+                            <select id="filtroTipo">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filtroNome">Nome</label>
+                            <input type="text" id="filtroNome" placeholder="Buscar por nome...">
+                        </div>
+                        <button class="btn btn-primary" id="btnFiltrar"><i class="fa-solid fa-filter"></i> Filtrar</button>
+                    </div>
+
+                    <div id="msgLista" class="msg" style="display:none;"></div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Membro/Doador</th>
+                                    <th>Tipo</th>
+                                    <th>Valor</th>
+                                    <th>Observação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbDizimos">
+                                <!-- Dados carregados via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination">
+                        <button id="btnAnterior" disabled><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+                        <span id="pageInfo">Página 1 de 1</span>
+                        <button id="btnProximo" disabled>Próximo <i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <div id="panel-tipos" class="inner-panel">
+                    <div class="main-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 id="tipoFormTitle"><i class="fa-solid fa-plus"></i> Novo tipo</h3>
+                            </div>
+                            <div id="msgTiposForm" class="msg" style="display:none;"></div>
+                            <form id="formTipo">
+                                <input type="hidden" id="tipoEditId">
+                                <div class="form-group">
+                                    <label for="tipoNome">Nome do Tipo</label>
+                                    <input type="text" id="tipoNome" required placeholder="Ex: Dízimo, Oferta Missionária, etc.">
+                                </div>
+                                <div class="form-group">
+                                    <label for="tipoNatureza">Natureza</label>
+                                    <select id="tipoNatureza" required>
+                                        <option value="entrada">Entrada</option>
+                                        <option value="saida">Saída</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tipoCategoria">Categoria</label>
+                                    <select id="tipoCategoria" required>
+                                        <option value="dizimo">Dízimo</option>
+                                        <option value="oferta">Oferta</option>
+                                        <option value="missoes">Missões</option>
+                                        <option value="campanha">Campanha</option>
+                                        <option value="social">Social</option>
+                                        <option value="manutencao">Manutenção</option>
+                                        <option value="outros">Outros</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tipoDescricao">Descrição (opcional)</label>
+                                    <textarea id="tipoDescricao" placeholder="Detalhes sobre este tipo de receita/despesa"></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-secondary" id="btnCancelarTipo" style="display:none;">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary"><span id="tipoSubmitLabel">Criar tipo</span></button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-tags"></i> Tipos Cadastrados</h3>
+                            </div>
+                            <div id="msgTiposLista" class="msg" style="display:none;"></div>
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Natureza</th>
+                                            <th>Categoria</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbTipos">
+                                        <!-- Tipos carregados via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js"></script>
+    <script src="enterprise-shell.js"></script>
+    <script>
+    // Função auxiliar para pegar elementos por ID
+    const $ = id => document.getElementById(id);
+
+    // Função para exibir mensagens
+    function setMsg(id, text, type = 'ok') {
+        const el = $(id);
+        if (el) {
+            el.textContent = text;
+            el.className = `msg ${type}`;
+            el.style.display = text ? 'flex' : 'none';
+            if (text) {
+                setTimeout(() => el.style.display = 'none', 5000);
+            }
+        }
+    }
+
+    // Formatação de moeda
+    const formatCurrency = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+    // Converte YYYY-MM para YYYYMM
+    const monthToComp = month => month.replace('-', '');
+
+    // Converte YYYYMM para MM/YYYY
+    const compToMonth = comp => `${comp.substring(4, 6)}/${comp.substring(0, 4)}`;
+
+    /* ══════════════════════════════════════
+       ABAS
+    ══════════════════════════════════════ */
+    document.querySelectorAll('.inner-tab').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.inner-tab').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.inner-panel').forEach(panel => panel.classList.remove('active'));
+
+            button.classList.add('active');
+            $(`panel-${button.dataset.tab}`).classList.add('active');
+
+            // Atualiza a URL sem recarregar a página
+            const url = new URL(window.location);
+            url.searchParams.set('tab', button.dataset.tab);
+            window.history.pushState({}, '', url);
+
+            // Recarrega dados se for a aba de tipos
+            if (button.dataset.tab === 'tipos') {
+                loadTipos();
+            } else if (button.dataset.tab === 'lancamentos') {
+                refresh();
+            }
+        });
+    });
+
+    // Ativa a aba correta ao carregar a página (se houver 'tab' na URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab');
+    if (activeTab) {
+        const tabButton = document.querySelector(`.inner-tab[data-tab="${activeTab}"]`);
+        if (tabButton) {
+            tabButton.click(); // Simula o clique para ativar a aba
+        }
+    }
+
+    /* ══════════════════════════════════════
+       KPIs
+    ══════════════════════════════════════ */
+    async function loadKPIs() {
+        try {
+            const comp = monthToComp($('filtroComp').value);
+            const r = await fetch(`/dizimos/totais?competencia=${comp}`);
+            const data = await r.json().catch(() => ({}));
+
+            if (!r.ok) {
+                setMsg('msgLista', data.error || 'Erro ao carregar KPIs.', 'error');
+                return;
+            }
+
+            $('kpiTotal').textContent = formatCurrency(data.totalGeral || 0);
+            $('kpiDizimos').textContent = formatCurrency(data.totalDizimos || 0);
+            $('kpiOfertas').textContent = formatCurrency(data.totalOfertas || 0);
+            $('kpiMissoes').textContent = formatCurrency(data.totalMissoes || 0);
+            $('kpiOutros').textContent = formatCurrency(data.totalOutros || 0);
+
+            // Sub-textos dos KPIs (ex: "Mês atual")
+            const compFormatada = compToMonth(comp);
+            $('kpiTotalSub').textContent = `Mês: ${compFormatada}`;
+            $('kpiDizimosSub').textContent = `Mês: ${compFormatada}`;
+            $('kpiOfertasSub').textContent = `Mês: ${compFormatada}`;
+            $('kpiMissoesSub').textContent = `Mês: ${compFormatada}`;
+            $('kpiOutrosSub').textContent = `Mês: ${compFormatada}`;
+
+        } catch (e) {
+            setMsg('msgLista', 'Falha de conexão ao carregar KPIs.', 'error');
+            console.error('Erro ao carregar KPIs:', e);
+        }
+    }
+
+    /* ══════════════════════════════════════
+       LANÇAMENTOS
+    ══════════════════════════════════════ */
+    let currentPage = 1;
+    let totalPages = 1;
+    const limit = 50; // Itens por página
+
+    async function loadLista(page = 1) {
+        setMsg('msgLista', '');
+        $('tbDizimos').innerHTML = `<tr><td colspan="5" class="empty-row">Carregando...</td></tr>`;
+
+        const comp = monthToComp($('filtroComp').value);
+        const tipo = $('filtroTipo').value;
+        const nome = $('filtroNome').value.trim();
+
+        let url = `/dizimos?page=${page}&limit=${limit}&competencia=${comp}`;
+        if (tipo) url += `&tipo=${tipo}`;
+        if (nome) url += `&nome=${encodeURIComponent(nome)}`;
+
+        try {
+            const r = await fetch(url);
+            const data = await r.json().catch(() => ({}));
+
+            if (!r.ok) {
+                setMsg('msgLista', data.error || 'Erro ao carregar lançamentos.', 'error');
+                $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="5">Erro ao carregar.</td></tr>`;
+                return;
+            }
+
+            const { lancamentos, total } = data;
+            totalPages = Math.ceil(total / limit);
+            currentPage = page;
+
+            $('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
+            $('btnAnterior').disabled = currentPage === 1;
+            $('btnProximo').disabled = currentPage === totalPages;
+
+            if (!lancamentos || lancamentos.length === 0) {
+                $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="5">Nenhum lançamento encontrado.</td></tr>`;
+                return;
+            }
+
+            $('tbDizimos').innerHTML = lancamentos.map(l => {
+                const tipoBadgeClass = {
+                    dizimo: 'badge-dizimo',
+                    oferta: 'badge-oferta',
+                    missoes: 'badge-missoes'
+                }[l.tipo.toLowerCase()] || 'badge-outros';
+
+                return `
+                    <tr>
+                        <td>${new Date(l.data).toLocaleDateString('pt-BR')}</td>
+                        <td>${l.membroNome}</td>
+                        <td><span class="badge ${tipoBadgeClass}">${l.tipo}</span></td>
+                        <td>${formatCurrency(l.valor)}</td>
+                        <td>${l.observacao || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (e) {
+            setMsg('msgLista', 'Falha de conexão ao carregar lançamentos.', 'error');
+            $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="5">Falha de conexão.</td></tr>`;
+            console.error('Erro ao carregar lançamentos:', e);
+        }
+    }
+
+    async function loadTiposParaFiltro() {
+        try {
+            const r = await fetch('/tipos-receita'); // Rota corrigida aqui!
+            const tipos = await r.json().catch(() => []);
+
+            if (!r.ok) {
+                console.error('Erro ao carregar tipos para filtro:', tipos.error || 'Erro desconhecido');
+                return;
+            }
+
+            const filtroTipoSelect = $('filtroTipo');
+            filtroTipoSelect.innerHTML = '<option value="">Todos</option>'; // Resetar opções
+            tipos.forEach(t => {
+                if (t.natureza === 'entrada' && t.ativo !== false) { // Apenas tipos de entrada ativos
+                    const option = document.createElement('option');
+                    option.value = t.nome;
+                    option.textContent = t.nome;
+                    filtroTipoSelect.appendChild(option);
+                }
+            });
+        } catch (e) {
+            console.error('Falha de conexão ao carregar tipos para filtro:', e);
+        }
+    }
+
+    function refresh() {
+        loadKPIs();
+        loadLista(currentPage);
+        loadTiposParaFiltro(); // Carrega os tipos para o filtro
+    }
+
+    $('filtroComp').addEventListener('change', () => { currentPage = 1; refresh(); });
+    $('filtroTipo').addEventListener('change', () => { currentPage = 1; refresh(); });
+    $('btnFiltrar').addEventListener('click', () => { currentPage = 1; refresh(); });
+    $('filtroNome').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') { currentPage = 1; refresh(); }
+    });
+
+    $('btnAnterior').addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadLista(currentPage); } });
+    $('btnProximo').addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; loadLista(currentPage); } });
+
+    // Lógica do formulário de registro de dízimos
+    $('formDizimo').addEventListener('submit', async e => {
+        e.preventDefault();
+        setMsg('msgForm', '');
+
+        const valorRaw = parseFloat($('valor').value.trim().replace(',', '.'));
+        if (!valorRaw || valorRaw <= 0) { setMsg('msgForm', 'Informe um valor válido.', 'error'); return; }
+        if (!$('competencia').value) { setMsg('msgForm', 'Selecione a competência.', 'error'); return; }
+
+        const body = {
+            membroNome: $('membroNome').value.trim(),
+            valor: valorRaw,
+            competencia: monthToComp($('competencia').value),
+            tipo: $('tipo').value,
+            observacao: $('observacao').value.trim() || null
+        };
+
+        const r = await fetch('/dizimos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const d = await r.json().catch(() => ({}));
+
+        if (!r.ok) { setMsg('msgForm', d.error || 'Erro ao registrar.', 'error'); return; }
+
+        setMsg('msgForm', 'Lançamento registrado com sucesso!', 'ok');
+        $('formDizimo').reset();
+        updatePreview();
+        currentPage = 1;
+        refresh();
+    });
+
+    /* ══════════════════════════════════════
+       TIPOS DE RECEITAS (CRUD)
+    ══════════════════════════════════════ */
+    const natLabel = { entrada: 'Entrada', saida: 'Saída' };
+    const catLabel = { dizimo: 'Dízimo', oferta: 'Oferta', missoes: 'Missões', campanha: 'Campanha', social: 'Social', manutencao: 'Manutenção', outros: 'Outros' };
+
+    async function loadTipos() {
+        try {
+            const r = await fetch('/tipos-receita'); // Rota corrigida aqui!
+            const rows = await r.json().catch(() => []);
+
+            if (!r.ok) { setMsg('msgTiposLista', rows.error || 'Erro ao carregar tipos.', 'error'); return; }
+
+            if (!rows.length) {
+                $('tbTipos').innerHTML = `<tr class="empty-row"><td colspan="5">Nenhum tipo cadastrado.</td></tr>`;
+                return;
+            }
+
+            $('tbTipos').innerHTML = rows.map(t => `
+                <tr>
+                    <td><strong>${t.nome}</strong>${t.descricao ? `<br><small style="color:var(--muted)">${t.descricao}</small>` : ''}</td>
+                    <td>
+                        <span class="tipo-natureza ${t.natureza === 'entrada' ? 'natureza-e' : 'natureza-s'}">
+                            <i class="fa-solid ${t.natureza === 'entrada' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                            ${natLabel[t.natureza] || t.natureza}
+                        </span>
+                    </td>
+                    <td>${catLabel[t.categoria] || t.categoria || '-'}</td>
+                    <td>
+                        <span class="badge" style="background:${t.ativo !== false ? '#dcfce7' : '#f1f5f9'};color:${t.ativo !== false ? '#15803d' : '#64748b'}">
+                            ${t.ativo !== false ? 'Ativo' : 'Inativo'}
+                        </span>
+                    </td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn btn-blue btn-sm" onclick="editarTipo(${t.id})" title="Editar">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn btn-red btn-sm" onclick="excluirTipo(${t.id})" title="Excluir">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            window._tiposCache = rows;
+            setMsg('msgTiposLista', '');
+        } catch (e) {
+            setMsg('msgTiposLista', 'Falha de conexão ao carregar tipos.', 'error');
+            console.error('Erro ao carregar tipos:', e);
+        }
+    }
+
+    window.editarTipo = function(id) {
+        const t = (window._tiposCache || []).find(x => x.id === id);
+        if (!t) return;
+        $('tipoEditId').value = id;
+        $('tipoNome').value = t.nome;
+        $('tipoNatureza').value = t.natureza || 'entrada';
+        $('tipoCategoria').value = t.categoria || 'outros';
+        $('tipoDescricao').value = t.descricao || '';
+        $('tipoFormTitle').innerHTML = '<i class="fa-solid fa-pen"></i> Editar tipo';
+        $('tipoSubmitLabel').textContent = 'Salvar alterações';
+        $('btnCancelarTipo').style.display = '';
+    };
+
+    window.excluirTipo = async function(id) {
+        if (!confirm('Remover este tipo de receita?')) return;
+        const r = await fetch(`/tipos-receita/${id}`, { method: 'DELETE' }); // Rota corrigida aqui!
+        if (r.ok) { setMsg('msgTiposLista', 'Tipo removido.', 'ok'); loadTipos(); }
+        else { const d = await r.json().catch(() => ({})); setMsg('msgTiposLista', d.error || 'Erro ao remover.', 'error'); }
+    };
+
+    function cancelarTipo() {
+        $('formTipo').reset();
+        $('tipoEditId').value = '';
+        $('tipoFormTitle').innerHTML = '<i class="fa-solid fa-plus"></i> Novo tipo';
+        $('tipoSubmitLabel').textContent = 'Criar tipo';
+        $('btnCancelarTipo').style.display = 'none';
+        setMsg('msgTiposForm', '');
+    }
+
+    $('formTipo').addEventListener('submit', async e => {
+        e.preventDefault();
+        const editId = $('tipoEditId').value;
+        const body = {
+            nome: $('tipoNome').value.trim(),
+            natureza: $('tipoNatureza').value,
+            categoria: $('tipoCategoria').value,
+            descricao: $('tipoDescricao').value.trim() || null
+        };
+
+        const r = await fetch(editId ? `/tipos-receita/${editId}` : '/tipos-receita', { // Rota corrigida aqui!
+            method: editId ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const d = await r.json().catch(() => ({}));
+
+        if (!r.ok) { setMsg('msgTiposForm', d.error || 'Erro ao salvar.', 'error'); return; }
+
+        setMsg('msgTiposForm', editId ? 'Tipo atualizado!' : 'Tipo criado!', 'ok');
+        cancelarTipo();
+        loadTipos();
+    });
+
+    /* ══════════════════════════════════════
+       INIT
+    ══════════════════════════════════════ */
+    const hoje = new Date();
+    const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+    $('competencia').value = mesAtual;
+    $('filtroComp').value = mesAtual;
+
+    // Inicializa a preview do formulário
+    function updatePreview() {
+        const membroNome = $('membroNome').value.trim();
+        const valor = parseFloat($('valor').value.trim().replace(',', '.')) || 0;
+        const competencia = $('competencia').value;
+        const tipo = $('tipo').value;
+        const observacao = $('observacao').value.trim();
+
+        $('previewMembro').textContent = membroNome || 'N/A';
+        $('previewValor').textContent = formatCurrency(valor);
+        $('previewCompetencia').textContent = competencia ? compToMonth(monthToComp(competencia)) : 'N/A';
+        $('previewTipo').textContent = tipo || 'N/A';
+        $('previewObservacao').textContent = observacao || 'N/A';
+    }
+
+    $('membroNome').addEventListener('input', updatePreview);
+    $('valor').addEventListener('input', updatePreview);
+    $('competencia').addEventListener('change', updatePreview);
+    $('tipo').addEventListener('change', updatePreview);
+    $('observacao').addEventListener('input', updatePreview);
+
+    // Carrega os tipos para o dropdown do formulário de lançamento
+    async function loadTiposParaFormulario() {
+        try {
+            const r = await fetch('/tipos-receita'); // Rota corrigida aqui!
+            const tipos = await r.json().catch(() => []);
+
+            if (!r.ok) {
+                console.error('Erro ao carregar tipos para formulário:', tipos.error || 'Erro desconhecido');
+                return;
+            }
+
+            const tipoSelect = $('tipo');
+            tipoSelect.innerHTML = ''; // Limpa opções existentes
+            tipos.forEach(t => {
+                if (t.natureza === 'entrada' && t.ativo !== false) { // Apenas tipos de entrada ativos
+                    const option = document.createElement('option');
+                    option.value = t.nome;
+                    option.textContent = t.nome;
+                    tipoSelect.appendChild(option);
+                }
+            });
+            updatePreview(); // Atualiza a preview após carregar os tipos
+        } catch (e) {
+            console.error('Falha de conexão ao carregar tipos para formulário:', e);
+        }
+    }
+
+    // Chamadas iniciais
+    loadTiposParaFormulario(); // Carrega os tipos para o formulário de lançamento
+    refresh(); // Carrega KPIs, lista de lançamentos e tipos para filtro
+    </script>
+</body>
+</html>

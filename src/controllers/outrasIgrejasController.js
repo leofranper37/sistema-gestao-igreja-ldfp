@@ -1,5 +1,6 @@
 const outrasIgrejasService = require('../services/outrasIgrejasService');
 const { audit } = require('../services/auditService');
+const { createHttpError } = require('../utils/httpError');
 
 function getIgrejaId(req) {
     return Number(req.auth?.igrejaId || 1);
@@ -20,6 +21,17 @@ async function listOutrasIgrejas(req, res) {
 async function createOutrasIgreja(req, res) {
     const igrejaId = getIgrejaId(req);
     const payload = req.validatedBody;
+    const maxCongregacoes = Number(req.auth?.maxCongregacoes || 0);
+
+    if (maxCongregacoes > 0) {
+        const totalAtual = Number(await outrasIgrejasService.countOutrasIgrejas(igrejaId));
+        if (totalAtual >= maxCongregacoes) {
+            throw createHttpError(
+                403,
+                `Limite do plano atingido: seu plano permite até ${maxCongregacoes} congregação(ões). Faça upgrade para adicionar mais.`
+            );
+        }
+    }
 
     const created = await outrasIgrejasService.createOutrasIgreja({ igrejaId, payload });
     audit('outras-igrejas.create', req, { nome: created?.nome, cidade: created?.cidade || null });

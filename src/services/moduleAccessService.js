@@ -8,15 +8,6 @@ function normalizeSlug(value) {
     return String(value || '').trim().toLowerCase();
 }
 
-function normalizeIcon(value) {
-    return String(value || '')
-        .trim()
-        .replace(/^fa-solid\s+/i, '')
-        .replace(/^fa-brands\s+/i, '')
-        .replace(/^fa-regular\s+/i, '')
-        .replace(/^fa-/i, '') || 'puzzle-piece';
-}
-
 async function listCatalog(activeOnly = false) {
     const where = activeOnly ? 'WHERE ativo = 1' : '';
     const [rows] = await pool.query(
@@ -37,7 +28,7 @@ async function createModule(payload) {
     const nome = String(payload.nome || '').trim();
     const descricao = String(payload.descricao || '').trim();
     const featureKey = String(payload.feature_key || '').trim();
-    const icon = normalizeIcon(payload.icon);
+    const icon = String(payload.icon || '').trim() || 'fa-puzzle-piece';
     const routePath = String(payload.route_path || '').trim() || null;
 
     if (!slug || !nome || !featureKey) {
@@ -75,7 +66,7 @@ async function updateModule(slugInput, payload) {
         set('descricao', String(payload.descricao || '').trim() || null);
     }
     if (payload.icon !== undefined) {
-        set('icon', normalizeIcon(payload.icon));
+        set('icon', String(payload.icon || '').trim() || 'fa-puzzle-piece');
     }
     if (payload.feature_key !== undefined) {
         set('feature_key', String(payload.feature_key || '').trim());

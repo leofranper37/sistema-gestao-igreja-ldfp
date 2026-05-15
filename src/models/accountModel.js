@@ -13,9 +13,29 @@ async function findChurchByName(name) {
     return rows[0] || null;
 }
 
-async function createChurch(name) {
+async function createChurch(name, planoSlug) {
     const now = new Date();
     const trialEndsAt = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+
+    const normalizedSlug = String(planoSlug || 'hebrom').trim().toLowerCase();
+    let plan = null;
+
+    try {
+        const [planRows] = await pool.query(
+            `SELECT slug, max_cadastros, max_congregacoes
+             FROM saas_planos
+             WHERE LOWER(slug) = ? AND ativo = 1
+             LIMIT 1`,
+            [normalizedSlug]
+        );
+        plan = planRows[0] || null;
+    } catch (_error) {
+        plan = null;
+    }
+
+    const resolvedPlano = plan?.slug || normalizedSlug || 'hebrom';
+    const maxCadastros = Number(plan?.max_cadastros || 40);
+    const maxCongregacoes = Number(plan?.max_congregacoes || 1);
 
     const [result] = await pool.query(
         `INSERT INTO igrejas (
@@ -23,12 +43,12 @@ async function createChurch(name) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
             name,
-            'teste-7-dias',
+            resolvedPlano,
             'trial',
             now.toISOString(),
             trialEndsAt.toISOString(),
-            40,
-            1
+            maxCadastros,
+            maxCongregacoes
         ]
     );
     return result.insertId;

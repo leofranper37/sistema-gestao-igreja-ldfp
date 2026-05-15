@@ -1,0 +1,722 @@
+<style>
+    .media-manager-wrap {
+        background: var(--surface, #ffffff);
+        border: 1px solid var(--border-light, #e5e7eb);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: var(--shadow-soft, 0 8px 24px rgba(15, 23, 42, 0.08));
+    }
+
+    .media-top-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-light, #e5e7eb);
+    }
+
+    .media-top-header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--text-primary, #111827);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .media-back-btn {
+        border: 1px solid var(--border-light, #e5e7eb);
+        background: var(--panel-soft, #f8fafc);
+        color: var(--text-primary, #111827);
+        border-radius: 8px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .media-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .media-section {
+        border: 1px solid var(--border-light, #e5e7eb);
+        border-radius: 10px;
+        padding: 14px;
+        background: var(--panel-soft, #f8fafc);
+    }
+
+    .media-section h3 {
+        margin: 0 0 8px 0;
+        font-size: 1.1rem;
+        color: var(--text-primary, #111827);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .media-section-help {
+        margin: 0 0 12px 0;
+        font-size: 13px;
+        color: var(--text-muted, #6b7280);
+    }
+
+    .media-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .media-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .media-form-group label {
+        font-size: 12px;
+        color: var(--text-muted, #6b7280);
+        font-weight: 600;
+    }
+
+    .media-form-group input,
+    .media-form-group textarea {
+        border: 1px solid var(--border-light, #e5e7eb);
+        border-radius: 8px;
+        padding: 9px 10px;
+        background: #fff;
+        font-size: 13px;
+        color: var(--text-primary, #111827);
+    }
+
+    .media-form-group textarea {
+        min-height: 76px;
+        resize: vertical;
+    }
+
+    .media-form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .media-btn-primary,
+    .media-btn-danger,
+    .media-btn-icon {
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .media-btn-primary {
+        border: 1px solid var(--master-dark, #0f172a);
+        background: var(--master-dark, #0f172a);
+        color: #fff;
+        padding: 9px 14px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .media-btn-primary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .media-list {
+        margin-top: 10px;
+        display: grid;
+        gap: 8px;
+    }
+
+    .media-item {
+        background: #fff;
+        border: 1px solid var(--border-light, #e5e7eb);
+        border-radius: 8px;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .media-thumb {
+        width: 56px;
+        height: 44px;
+        border-radius: 6px;
+        background: #eef2f7;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .media-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .media-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .media-info h4 {
+        margin: 0 0 4px 0;
+        font-size: 14px;
+        color: var(--text-primary, #111827);
+    }
+
+    .media-info p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--text-muted, #6b7280);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .media-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .media-btn-icon {
+        border: 1px solid var(--border-light, #e5e7eb);
+        background: #fff;
+        color: var(--text-muted, #6b7280);
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .media-btn-danger {
+        border: 1px solid #dc2626;
+        background: #fff;
+        color: #dc2626;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .media-status {
+        margin-top: 8px;
+        min-height: 18px;
+        font-size: 12px;
+    }
+
+    .media-status.success {
+        color: #15803d;
+    }
+
+    .media-status.error {
+        color: #b91c1c;
+    }
+
+    .media-empty {
+        text-align: center;
+        color: var(--text-muted, #6b7280);
+        font-size: 13px;
+        padding: 12px;
+        border: 1px dashed var(--border-light, #e5e7eb);
+        border-radius: 8px;
+        background: #fff;
+    }
+</style>
+
+<div class="media-manager-wrap">
+    <div class="media-top-header">
+        <h1 id="churchNameTitle"><i class="fa-solid fa-photo-video"></i> Gerenciar Mídias</h1>
+        <button type="button" class="media-back-btn" id="backToEditBtn">
+            <i class="fa-solid fa-arrow-left"></i> Voltar para Edição da Igreja
+        </button>
+    </div>
+
+    <input type="hidden" id="igrejaId" value="">
+
+    <div class="media-grid">
+        <section class="media-section">
+            <h3><i class="fa-solid fa-video"></i> Vídeos</h3>
+            <p class="media-section-help">Adicione vídeos do YouTube ou Vimeo por URL.</p>
+            <form id="formAddVideo">
+                <div class="media-form-grid">
+                    <div class="media-form-group">
+                        <label for="videoTitle">Título do Vídeo</label>
+                        <input type="text" id="videoTitle" placeholder="Ex: Pregação de Domingo" required>
+                    </div>
+                    <div class="media-form-group">
+                        <label for="videoUrl">URL do Vídeo</label>
+                        <input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." required>
+                    </div>
+                    <div class="media-form-group full">
+                        <label for="videoDescription">Descrição</label>
+                        <textarea id="videoDescription" placeholder="Breve descrição do vídeo"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="media-btn-primary" id="btnAddVideo"><i class="fa-solid fa-plus-circle"></i> Adicionar Vídeo</button>
+                <p class="media-status" id="videoStatusMessage"></p>
+            </form>
+            <div class="media-list" id="videosList"></div>
+        </section>
+
+        <section class="media-section">
+            <h3><i class="fa-solid fa-headphones"></i> Áudios</h3>
+            <p class="media-section-help">Adicione áudio por upload local ou URL externa.</p>
+            <form id="formAddAudio">
+                <div class="media-form-grid">
+                    <div class="media-form-group">
+                        <label for="audioTitle">Título do Áudio</label>
+                        <input type="text" id="audioTitle" placeholder="Ex: Podcast LDFP #1" required>
+                    </div>
+                    <div class="media-form-group">
+                        <label for="audioFile">Arquivo de Áudio</label>
+                        <input type="file" id="audioFile" accept="audio/*">
+                    </div>
+                    <div class="media-form-group">
+                        <label for="audioUrl">URL do Áudio (opcional)</label>
+                        <input type="url" id="audioUrl" placeholder="https://...">
+                    </div>
+                    <div class="media-form-group full">
+                        <label for="audioDescription">Descrição</label>
+                        <textarea id="audioDescription" placeholder="Breve descrição do áudio"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="media-btn-primary" id="btnAddAudio"><i class="fa-solid fa-plus-circle"></i> Adicionar Áudio</button>
+                <p class="media-status" id="audioStatusMessage"></p>
+            </form>
+            <div class="media-list" id="audiosList"></div>
+        </section>
+
+        <section class="media-section">
+            <h3><i class="fa-solid fa-image"></i> Imagens</h3>
+            <p class="media-section-help">Adicione imagens para galeria do App de Mídia.</p>
+            <form id="formAddImage">
+                <div class="media-form-grid">
+                    <div class="media-form-group">
+                        <label for="imageTitle">Título da Imagem</label>
+                        <input type="text" id="imageTitle" placeholder="Ex: Culto de Páscoa" required>
+                    </div>
+                    <div class="media-form-group">
+                        <label for="imageFile">Arquivo de Imagem</label>
+                        <input type="file" id="imageFile" accept="image/*" required>
+                    </div>
+                    <div class="media-form-group full">
+                        <label for="imageDescription">Descrição</label>
+                        <textarea id="imageDescription" placeholder="Breve descrição da imagem"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="media-btn-primary" id="btnAddImage"><i class="fa-solid fa-plus-circle"></i> Adicionar Imagem</button>
+                <p class="media-status" id="imageStatusMessage"></p>
+            </form>
+            <div class="media-list" id="imagesList"></div>
+        </section>
+
+        <section class="media-section">
+            <h3><i class="fa-solid fa-file-alt"></i> Documentos</h3>
+            <p class="media-section-help">Adicione documentos (PDF) para leitura/download no app.</p>
+            <form id="formAddDocument">
+                <div class="media-form-grid">
+                    <div class="media-form-group">
+                        <label for="documentTitle">Título do Documento</label>
+                        <input type="text" id="documentTitle" placeholder="Ex: Estudo Bíblico - Gênesis" required>
+                    </div>
+                    <div class="media-form-group">
+                        <label for="documentFile">Arquivo de Documento</label>
+                        <input type="file" id="documentFile" accept="application/pdf" required>
+                    </div>
+                    <div class="media-form-group full">
+                        <label for="documentDescription">Descrição</label>
+                        <textarea id="documentDescription" placeholder="Breve descrição do documento"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="media-btn-primary" id="btnAddDocument"><i class="fa-solid fa-plus-circle"></i> Adicionar Documento</button>
+                <p class="media-status" id="documentStatusMessage"></p>
+            </form>
+            <div class="media-list" id="documentsList"></div>
+        </section>
+    </div>
+</div>
+
+<script>
+(function () {
+    const $ = (id) => document.getElementById(id);
+    let currentIgrejaId = 0;
+
+    function getIgrejaIdFromContext() {
+        const params = new URLSearchParams(window.location.search);
+        const fromUrl = Number(params.get('id') || 0);
+        if (fromUrl) return fromUrl;
+
+        try {
+            const raw = localStorage.getItem('ldfp_user_data_midia');
+            const user = raw ? JSON.parse(raw) : null;
+            return Number(user?.igrejaId || user?.igreja_id || 0);
+        } catch (_error) {
+            return 0;
+        }
+    }
+
+    function normalizeBucket(data) {
+        return {
+            videos: Array.isArray(data?.videos) ? data.videos : [],
+            audios: Array.isArray(data?.audios) ? data.audios : [],
+            images: Array.isArray(data?.images) ? data.images : [],
+            documents: Array.isArray(data?.documents) ? data.documents : []
+        };
+    }
+
+    function setStatus(id, text, type) {
+        const el = $(id);
+        if (!el) return;
+        el.textContent = text || '';
+        el.className = 'media-status' + (type ? ' ' + type : '');
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    function inferYouTubeThumb(url) {
+        const str = String(url || '');
+        let id = '';
+        if (str.includes('watch?v=')) {
+            id = str.split('watch?v=')[1].split('&')[0];
+        } else if (str.includes('youtu.be/')) {
+            id = str.split('youtu.be/')[1].split('?')[0];
+        } else if (str.includes('/embed/')) {
+            id = str.split('/embed/')[1].split('?')[0];
+        }
+        return id ? 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg' : '';
+    }
+
+    function getTypeIcon(type) {
+        if (type === 'audio') return 'fa-headphones';
+        if (type === 'document') return 'fa-file-alt';
+        return 'fa-photo-video';
+    }
+
+    function loadIgrejaMeta(igrejaId) {
+        if (!igrejaId || !$('churchNameTitle')) return;
+
+        let title = 'Gerenciar Mídias da Igreja #' + igrejaId;
+        try {
+            const raw = localStorage.getItem('ldfp_user_data_midia');
+            const user = raw ? JSON.parse(raw) : null;
+            const igrejaNome = String(user?.igrejaNome || user?.nome_igreja || '').trim();
+            if (igrejaNome) {
+                title = 'Gerenciar Mídias de ' + igrejaNome;
+            }
+        } catch (_error) {
+            // mantém título padrão por ID
+        }
+
+        $('churchNameTitle').innerHTML = '<i class="fa-solid fa-photo-video"></i> ' + title;
+    }
+
+    function renderMediaList(listId, mediaItems, type) {
+        const listElement = $(listId);
+        if (!listElement) return;
+
+        if (!mediaItems.length) {
+            listElement.innerHTML = '<div class="media-empty">Nenhum item cadastrado.</div>';
+            return;
+        }
+
+        listElement.innerHTML = mediaItems.map((item) => {
+            const desc = escapeHtml(item.description || item.fileName || '-');
+            const title = escapeHtml(item.title || '-');
+            let thumb = '<div class="media-thumb"><i class="fa-solid ' + getTypeIcon(type) + '"></i></div>';
+
+            if (type === 'video') {
+                const ytThumb = inferYouTubeThumb(item.url);
+                if (ytThumb) {
+                    thumb = '<div class="media-thumb"><img src="' + ytThumb + '" alt="thumb"></div>';
+                }
+            }
+
+            if (type === 'image' && item.url) {
+                thumb = '<div class="media-thumb"><img src="' + escapeHtml(item.url) + '" alt="img"></div>';
+            }
+
+            return '' +
+                '<div class="media-item">' +
+                    thumb +
+                    '<div class="media-info">' +
+                        '<h4>' + title + '</h4>' +
+                        '<p>' + desc + '</p>' +
+                    '</div>' +
+                    '<div class="media-actions">' +
+                        '<button type="button" class="media-btn-icon" title="Editar" onclick="window.editMedia(\'' + escapeHtml(item.id) + '\', \'' + type + '\')"><i class="fa-solid fa-pen"></i></button>' +
+                        '<button type="button" class="media-btn-danger" title="Excluir" onclick="window.deleteMedia(\'' + escapeHtml(item.id) + '\', \'' + type + '\')"><i class="fa-solid fa-trash"></i></button>' +
+                    '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    async function loadMediaForIgreja(igrejaId) {
+        let igrejaMedia = normalizeBucket({});
+
+        try {
+            const resp = await fetch('/api/app/midias?igrejaId=' + igrejaId);
+            const payload = await resp.json().catch(() => ({}));
+            if (!resp.ok) {
+                throw new Error(payload.error || 'Erro ao carregar mídias.');
+            }
+            igrejaMedia = normalizeBucket(payload);
+        } catch (error) {
+            setStatus('videoStatusMessage', error.message || 'Falha ao carregar mídias.', 'error');
+        }
+
+        renderMediaList('videosList', igrejaMedia.videos, 'video');
+        renderMediaList('audiosList', igrejaMedia.audios, 'audio');
+        renderMediaList('imagesList', igrejaMedia.images, 'image');
+        renderMediaList('documentsList', igrejaMedia.documents, 'document');
+    }
+
+    function toApiType(type) {
+        if (type === 'video') return 'videos';
+        if (type === 'audio') return 'audios';
+        if (type === 'image') return 'images';
+        if (type === 'document') return 'documents';
+        return '';
+    }
+
+    function readFileAsDataUrl(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(new Error('Não foi possível ler o arquivo local.'));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function addMedia(type, data, statusMessageId) {
+        if (!currentIgrejaId) {
+            setStatus(statusMessageId, 'ID da igreja não encontrado.', 'error');
+            return false;
+        }
+
+        try {
+            const apiType = toApiType(type);
+            const resp = await fetch('/api/app/midias/' + apiType, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    igrejaId: currentIgrejaId,
+                    title: String(data.title || '').trim(),
+                    url: String(data.url || '').trim(),
+                    description: String(data.description || '').trim(),
+                    fileName: data.fileName ? String(data.fileName) : ''
+                })
+            });
+            const payload = await resp.json().catch(() => ({}));
+            if (!resp.ok) {
+                throw new Error(payload.error || 'Erro ao salvar item.');
+            }
+
+            await loadMediaForIgreja(currentIgrejaId);
+            setStatus(statusMessageId, 'Item adicionado com sucesso.', 'success');
+            return true;
+        } catch (error) {
+            setStatus(statusMessageId, error.message || 'Erro ao adicionar item.', 'error');
+            return false;
+        }
+    }
+
+    window.editMedia = function (mediaId, type) {
+        alert('Edicao de ' + type + ' (ID ' + mediaId + ') sera implementada na proxima etapa.');
+    };
+
+    window.deleteMedia = async function (mediaId, type) {
+        if (!currentIgrejaId) return;
+        if (!confirm('Tem certeza que deseja excluir este item?')) return;
+
+        try {
+            const apiType = toApiType(type);
+            const resp = await fetch('/api/app/midias/' + apiType + '/' + mediaId + '?igrejaId=' + currentIgrejaId, {
+                method: 'DELETE'
+            });
+            const payload = await resp.json().catch(() => ({}));
+            if (!resp.ok) {
+                throw new Error(payload.error || 'Erro ao excluir item.');
+            }
+            await loadMediaForIgreja(currentIgrejaId);
+        } catch (error) {
+            alert(error.message || 'Falha ao excluir item.');
+        }
+    };
+
+    function wireVideoForm() {
+        $('formAddVideo').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = $('btnAddVideo');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adicionando...';
+
+            const data = {
+                title: $('videoTitle').value,
+                url: $('videoUrl').value,
+                description: $('videoDescription').value
+            };
+
+            const ok = await addMedia('video', data, 'videoStatusMessage');
+            if (ok) $('formAddVideo').reset();
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Adicionar Vídeo';
+        });
+    }
+
+    function wireAudioForm() {
+        $('formAddAudio').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = $('btnAddAudio');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adicionando...';
+
+            const audioFile = $('audioFile').files[0];
+            const audioUrl = $('audioUrl').value.trim();
+
+            if (!audioFile && !audioUrl) {
+                setStatus('audioStatusMessage', 'Selecione um arquivo de áudio ou informe uma URL.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Adicionar Áudio';
+                return;
+            }
+
+            const data = {
+                title: $('audioTitle').value,
+                url: audioUrl || await readFileAsDataUrl(audioFile),
+                description: $('audioDescription').value,
+                fileName: audioFile ? audioFile.name : ''
+            };
+
+            const ok = await addMedia('audio', data, 'audioStatusMessage');
+            if (ok) $('formAddAudio').reset();
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Adicionar Áudio';
+        });
+    }
+
+    function wireImageForm() {
+        $('formAddImage').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = $('btnAddImage');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adicionando...';
+
+            const imageFile = $('imageFile').files[0];
+            if (!imageFile) {
+                setStatus('imageStatusMessage', 'Selecione um arquivo de imagem.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Adicionar Imagem';
+                return;
+            }
+
+            const data = {
+                title: $('imageTitle').value,
+                url: await readFileAsDataUrl(imageFile),
+                description: $('imageDescription').value,
+                fileName: imageFile.name
+            };
+
+            const ok = await addMedia('image', data, 'imageStatusMessage');
+            if (ok) $('formAddImage').reset();
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Adicionar Imagem';
+        });
+    }
+
+    function wireDocumentForm() {
+        $('formAddDocument').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = $('btnAddDocument');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adicionando...';
+
+            const documentFile = $('documentFile').files[0];
+            if (!documentFile) {
+                setStatus('documentStatusMessage', 'Selecione um arquivo de documento.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Adicionar Documento';
+                return;
+            }
+
+            const data = {
+                title: $('documentTitle').value,
+                url: await readFileAsDataUrl(documentFile),
+                description: $('documentDescription').value,
+                fileName: documentFile.name
+            };
+
+            const ok = await addMedia('document', data, 'documentStatusMessage');
+            if (ok) $('formAddDocument').reset();
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Adicionar Documento';
+        });
+    }
+
+    $('backToEditBtn').addEventListener('click', function () {
+        if (window.parent && window.parent !== window && typeof window.parent.showMediaTabFromManager === 'function') {
+            window.parent.showMediaTabFromManager('videosTab');
+            return;
+        }
+
+        const id = Number(($('igrejaId') && $('igrejaId').value) || currentIgrejaId || 0);
+        if (window.loadContentPage) {
+            window.loadContentPage('igreja_editar.html', { id: String(id || 0) });
+            return;
+        }
+        window.location.href = 'igreja_editar.html?id=' + id;
+    });
+
+    function init() {
+        if (window.parent && window.parent !== window && typeof window.parent.showMediaTabFromManager === 'function' && $('backToEditBtn')) {
+            $('backToEditBtn').innerHTML = '<i class="fa-solid fa-arrow-left"></i> Voltar para Mídias';
+        }
+
+        currentIgrejaId = getIgrejaIdFromContext();
+        if (!currentIgrejaId) {
+            alert('ID da igreja não fornecido.');
+            if (window.loadContentPage) {
+                window.loadContentPage('__dashboard__');
+            } else {
+                window.location.href = 'super-admin.html';
+            }
+            return;
+        }
+
+        $('igrejaId').value = String(currentIgrejaId);
+        loadIgrejaMeta(currentIgrejaId);
+        loadMediaForIgreja(currentIgrejaId);
+
+        wireVideoForm();
+        wireAudioForm();
+        wireImageForm();
+        wireDocumentForm();
+    }
+
+    init();
+})();
+</script>

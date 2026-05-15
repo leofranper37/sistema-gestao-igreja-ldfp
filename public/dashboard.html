@@ -405,7 +405,6 @@
     </main>
 
     <script src="session.js?v=20260501"></script>
-    <script src="js/auth.js?v=20260514"></script>
     <script src="pwa.js"></script>
     <script src="enterprise-shell.js?v=20260501"></script>
     <script>
@@ -456,24 +455,7 @@
         }
 
         async function carregarDashboard() {
-            const painel = typeof window.getClientePainel === 'function'
-                ? await window.getClientePainel()
-                : null;
-
-            if (painel?.metricas) {
-                document.getElementById('totalMembros').textContent = String(painel.metricas.total_membros || 0);
-                document.getElementById('totalAniversariantes').textContent = String(painel.metricas.aniversariantes_hoje || 0);
-                document.getElementById('totalVisitantes').textContent = String(painel.metricas.total_visitantes || 0);
-                document.getElementById('totalCriancas').textContent = String((painel.metricas.total_criancas ?? 0));
-                document.getElementById('totalOracoes').textContent = String((painel.metricas.total_oracoes ?? 0));
-                document.getElementById('totalEventos').textContent = String(painel.metricas.total_eventos || 0);
-                document.getElementById('totalMissionarios').textContent = String(painel.metricas.total_missionarios || 0);
-                document.getElementById('totalOutrasIgrejas').textContent = String(painel.metricas.total_outras_igrejas || 0);
-                renderRecentMembers(Array.isArray(painel.membros_recentes) ? painel.membros_recentes : []);
-                return;
-            }
-
-            // Fallback quando a API agregada ainda não estiver disponível.
+            // Membros e Aniversariantes
             const membrosData = await fetchJson('/membros', []);
             const members = Array.isArray(membrosData) ? membrosData : (membrosData.items || []);
             const birthdayMembers = members.filter(isBirthdayThisMonth);
@@ -481,26 +463,32 @@
             document.getElementById('totalAniversariantes').textContent = String(birthdayMembers.length);
             renderRecentMembers(members);
 
+            // Visitantes
             const visitantesData = await fetchJson('/visitantes', []);
             const visitantes = Array.isArray(visitantesData) ? visitantesData : (visitantesData.items || []);
             document.getElementById('totalVisitantes').textContent = String(visitantes.length);
 
+            // Crianças
             const criancasData = await fetchJson('/criancas', []);
             const criancas = Array.isArray(criancasData) ? criancasData : (criancasData.items || []);
             document.getElementById('totalCriancas').textContent = String(criancas.length);
 
+            // Orações
             const oracoesData = await fetchJson('/oracoes/mural', []);
             const oracoes = Array.isArray(oracoesData) ? oracoesData : (oracoesData.items || []);
             document.getElementById('totalOracoes').textContent = String(oracoes.length);
 
+            // Agenda/Eventos
             const eventosData = await fetchJson('/agenda', []);
             const eventos = Array.isArray(eventosData) ? eventosData : (eventosData.items || []);
             document.getElementById('totalEventos').textContent = String(eventos.length);
 
+            // Missionários
             const missionariosData = await fetchJson('/missionarios', []);
             const missionarios = Array.isArray(missionariosData) ? missionariosData : (missionariosData.items || []);
             document.getElementById('totalMissionarios').textContent = String(missionarios.length);
 
+            // Outras Igrejas
             const outrasIgrejasData = await fetchJson('/outras-igrejas', []);
             const outrasIgrejas = Array.isArray(outrasIgrejasData) ? outrasIgrejasData : (outrasIgrejasData.items || []);
             document.getElementById('totalOutrasIgrejas').textContent = String(outrasIgrejas.length);

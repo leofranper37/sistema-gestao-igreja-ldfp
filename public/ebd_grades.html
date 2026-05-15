@@ -3,191 +3,1126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Grades EBD</title>
+    <title>LDFP - EBD · Apontamentos & Presença</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .page-wrap { padding: 24px 30px 30px; }
+        :root {
+            --purple:    #7c3aed;
+            --indigo:    #4f46e5;
+            --green:     #10b981;
+            --red:       #dc2626;
+            --yellow:    #f59e0b;
+            --surface:   #ffffff;
+            --bg:        #f1f5f9;
+            --border:    #e2e8f0;
+            --text:      #0f172a;
+            --muted:     #64748b;
+            --radius:    14px;
+            --shadow:    0 4px 16px rgba(15,23,42,.08);
+            --shadow-lg: 0 12px 32px rgba(15,23,42,.14);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .page-wrap {
+            padding: 24px 28px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Cabeçalho */
         .page-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
-            gap: 10px;
+            justify-content: space-between;
             flex-wrap: wrap;
+            gap: 12px;
         }
-        .btn-primary {
-            border: none;
+
+        .page-header-left h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-header-left h2 i { color: var(--indigo); }
+        .page-header-left p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 15px;
             border-radius: 8px;
-            padding: 9px 14px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-primary { background: var(--indigo); color: #fff; }
+        .btn-primary:hover { background: #3730a3; }
+        .btn-ghost { background: var(--bg); color: var(--muted); border: 1.5px solid var(--border); }
+        .btn-ghost:hover { background: var(--border); }
+        .btn-danger { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+        .btn-danger:hover { background: var(--red); color: #fff; }
+        .btn-green { background: var(--green); color: #fff; }
+        .btn-green:hover { background: #059669; }
+        .btn-sm { padding: 7px 11px; font-size: 12px; border-radius: 7px; }
+
+        /* Layout dois painéis */
+        .two-col {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 13px 15px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-count {
+            font-size: 11px;
+            background: #e0e7ff;
+            color: var(--indigo);
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .search-box { position: relative; }
+        .search-box i {
+            position: absolute;
+            left: 10px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: .8rem;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 9px 11px 9px 30px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--indigo);
+            background: #fff;
+        }
+
+        /* Lista de apontamentos */
+        .apt-list {
+            overflow-y: auto;
+            max-height: calc(100vh - 290px);
+        }
+
+        .apt-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .apt-item:last-child { border-bottom: none; }
+        .apt-item:hover { background: #fafafa; }
+        .apt-item.is-active {
+            background: #e0e7ff;
+            box-shadow: inset 4px 0 0 var(--indigo);
+        }
+
+        .apt-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--indigo), var(--purple));
             color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            flex-shrink: 0;
+        }
+
+        .apt-info { flex: 1; min-width: 0; }
+        .apt-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .apt-sub { font-size: 11px; color: var(--muted); }
+
+        .apt-badge {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-weight: 700;
+            white-space: nowrap;
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .empty-list {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .empty-list i {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #cbd5e1;
+            display: block;
+        }
+
+        /* Painel direito */
+        .right-panel { display: flex; flex-direction: column; gap: 16px; }
+
+        /* Hero */
+        .apt-hero {
+            border-radius: var(--radius);
+            padding: 22px 26px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            transition: background .4s;
+        }
+        .apt-hero::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.08);
+        }
+
+        .hero-icon {
+            width: 62px; height: 62px;
+            border-radius: 14px;
+            border: 3px solid rgba(255,255,255,.3);
+            background: rgba(255,255,255,.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .hero-body { flex: 1; min-width: 160px; }
+        .hero-name { font-size: 19px; font-weight: 800; color: #fff; }
+        .hero-name.ph {
+            color: rgba(255,255,255,.55);
+            font-style: italic;
+            font-weight: 400;
+            font-size: 15px;
+        }
+        .hero-sub { font-size: 12px; color: rgba(255,255,255,.8); margin-top: 4px; }
+
+        .hero-stats { display: flex; gap: 14px; flex-wrap: wrap; }
+        .hero-stat {
+            background: rgba(255,255,255,.15);
+            border-radius: 10px;
+            padding: 8px 14px;
+            text-align: center;
+            min-width: 70px;
+        }
+        .hero-stat-val { font-size: 18px; font-weight: 800; color: #fff; }
+        .hero-stat-lbl { font-size: 10px; color: rgba(255,255,255,.75); margin-top: 2px; }
+
+        .hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .hero-btn {
+            padding: 8px 13px;
+            border-radius: 8px;
+            border: none;
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
-            background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            transition: background .2s;
         }
-        .search-box {
+        .hero-btn:hover { background: rgba(255,255,255,.35); }
+
+        /* Abas */
+        .tabs-bar {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border);
+            padding: 0 4px;
+            background: var(--surface);
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
+        .tab-btn {
+            padding: 11px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: #fff;
-            border: 1px solid #dbe3ef;
-            padding: 8px 12px;
-            border-radius: 8px;
-            min-width: 260px;
+            gap: 6px;
+            transition: color .15s;
         }
-        .search-box input { border: none; outline: none; font-size: 14px; width: 100%; }
-        .table-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+        .tab-btn:hover { color: var(--indigo); }
+        .tab-btn.active { color: var(--indigo); border-bottom-color: var(--indigo); }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Form */
+        .form-wrap {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: var(--surface);
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        .form-section {
+            border: 1px solid var(--border);
             border-radius: 10px;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
             overflow: hidden;
         }
-        table { width: 100%; border-collapse: collapse; }
-        th, td {
-            padding: 12px 14px;
-            text-align: left;
-            border-bottom: 1px solid #eef2f7;
-            font-size: 13px;
-            color: #334155;
-        }
-        th {
+
+        .form-section-title {
+            padding: 10px 14px;
             background: #f8fafc;
-            color: #64748b;
-            font-weight: 700;
+            border-bottom: 1px solid var(--border);
             font-size: 11px;
+            font-weight: 800;
+            color: var(--indigo);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .form-grid {
+            padding: 14px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+        @media (max-width: 700px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        }
+
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
             text-transform: uppercase;
         }
-        .actions-col { width: 110px; text-align: right; white-space: nowrap; }
-        .icon-btn {
-            border: 1px solid #e2e8f0;
-            background: #fff;
-            color: #64748b;
-            width: 30px;
-            height: 30px;
+        .field input,
+        .field select,
+        .field textarea {
+            padding: 9px 11px;
+            border: 1.5px solid var(--border);
             border-radius: 8px;
+            font-size: 13px;
+            color: var(--text);
+            background: #fff;
+            transition: border-color .15s;
+        }
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--indigo);
+        }
+
+        /* Presença */
+        .presenca-toolbar {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+            background: #f8fafc;
+        }
+
+        .presenca-stats {
+            display: flex;
+            gap: 16px;
+        }
+
+        .pstat {
+            text-align: center;
+        }
+        .pstat-val {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--indigo);
+        }
+        .pstat-lbl {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .presenca-acoes {
+            display: flex;
+            gap: 6px;
+        }
+
+        .aluno-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background .15s;
+        }
+        .aluno-row:last-child { border-bottom: none; }
+        .aluno-row:hover { background: #fafafa; }
+
+        .aluno-avatar {
+            width: 34px; height: 34px;
+            border-radius: 999px;
+            background: var(--indigo);
+            color: #fff;
+            font-size: .75rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .aluno-nome {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .aluno-estagio {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .presenca-toggle {
+            display: flex;
+            gap: 6px;
+        }
+
+        .toggle-btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1.5px solid var(--border);
+            font-size: 11px;
+            font-weight: 700;
             cursor: pointer;
-            margin-left: 6px;
+            background: #fff;
+            color: var(--muted);
+            transition: all .15s;
         }
-        .icon-btn:hover {
-            background: #fff8e1;
-            color: #92400e;
-            border-color: #fcd34d;
+        .toggle-btn.presente {
+            background: #d1fae5;
+            color: #065f46;
+            border-color: #6ee7b7;
         }
-        .muted { color: #94a3b8; }
+        .toggle-btn.ausente {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+
+        /* Obs / oferta */
+        .extra-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 14px 16px;
+            border-top: 1px solid var(--border);
+            background: #f8fafc;
+        }
+
+        /* Status bar */
+        .status-bar {
+            padding: 10px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            display: none;
+        }
+        .status-bar.show { display: block; }
+        .status-bar.ok  { background: #d1fae5; color: #065f46; }
+        .status-bar.err { background: #fee2e2; color: #991b1b; }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 0 0 4px;
+        }
+
+        .empty-table {
+            text-align: center;
+            color: var(--muted);
+            padding: 28px;
+            font-size: 13px;
+        }
     </style>
 </head>
-<body class="theme-petroleo" data-shell-title="Grades EBD" data-shell-breadcrumb="LDFP / Secretaria / EBD / Grades EBD" data-shell-active="ebd_grades.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
-    <main class="main-content enterprise-main">
-        <div class="page-wrap">
-            <div class="page-header">
-                <button class="btn-primary" type="button" id="btnNovoApontamento"><i class="fa-solid fa-plus"></i> Novo Apontamento</button>
-                <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="searchInput" placeholder="Pesquisar...">
-                </div>
-            </div>
+<body class="theme-petroleo"
+      data-shell-title="Apontamentos EBD"
+      data-shell-breadcrumb="LDFP / Secretaria / EBD / Apontamentos"
+      data-shell-active="ebd_grades.html"
+      data-shell-chip="Ambiente autenticado"
+      data-shell-role="Administrador">
 
-            <div class="table-card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nome da Turma</th>
-                            <th>Data</th>
-                            <th>Presentes</th>
-                            <th>Visitantes</th>
-                            <th>Alunos</th>
-                            <th class="actions-col">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="gradesBody"></tbody>
-                </table>
+<main class="main-content enterprise-main">
+    <div class="page-wrap">
+
+        <!-- Cabeçalho -->
+        <div class="page-header">
+            <div class="page-header-left">
+                <h2><i class="fa-solid fa-clipboard-list"></i> Apontamentos & Presença</h2>
+                <p>Registre a presença semanal, oferta e visitantes por turma</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-ghost btn-sm" id="btnRecarregar">
+                    <i class="fa-solid fa-rotate-right"></i> Atualizar
+                </button>
+                <button class="btn btn-primary" id="btnNovoApontamento">
+                    <i class="fa-solid fa-plus"></i> Novo Apontamento
+                </button>
             </div>
         </div>
-    </main>
 
-    <script src="session.js?v=20260501"></script>
-    <script src="enterprise-shell.js?v=20260501"></script>
-    <script>
-        requireAuthSession();
+        <!-- Dois painéis -->
+        <div class="two-col">
 
-        const STORAGE_KEY = 'ldfpEbdGrades';
-        const gradesBody = document.getElementById('gradesBody');
-        const searchInput = document.getElementById('searchInput');
+            <!-- Painel esquerdo: lista -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span><i class="fa-solid fa-list" style="color:var(--indigo);margin-right:6px;"></i>Apontamentos</span>
+                        <span class="panel-count" id="aptCount">0</span>
+                    </div>
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar por turma ou data...">
+                    </div>
+                    <select id="filterTurma" style="border-radius:7px;border:1.5px solid var(--border);font-size:12px;padding:7px 9px;background:#f8fafc;color:var(--muted);">
+                        <option value="">Todas as turmas</option>
+                    </select>
+                </div>
+                <div class="apt-list" id="aptList"></div>
+            </div>
 
-        document.getElementById('btnNovoApontamento').addEventListener('click', () => {
-            window.location.href = 'ebd_grade_novo.html';
+            <!-- Painel direito -->
+            <div class="right-panel">
+
+                <!-- Hero -->
+                <div class="apt-hero" id="aptHero">
+                    <div class="hero-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                    <div class="hero-body">
+                        <div class="hero-name ph" id="heroNome">Selecione ou crie um apontamento</div>
+                        <div class="hero-sub" id="heroSub">EBD · Apontamentos & Presença</div>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <div class="hero-stat-val" id="heroPresentes">0</div>
+                            <div class="hero-stat-lbl">Presentes</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-val" id="heroAusentes">0</div>
+                            <div class="hero-stat-lbl">Ausentes</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-val" id="heroVisitantes">0</div>
+                            <div class="hero-stat-lbl">Visitantes</div>
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        <button class="hero-btn" id="btnSalvarHero">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar
+                        </button>
+                        <button class="hero-btn" id="btnExcluirHero">
+                            <i class="fa-solid fa-trash-can"></i> Excluir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Abas -->
+                <div class="panel">
+                    <div class="tabs-bar">
+                        <button class="tab-btn active" data-tab="tabDados">
+                            <i class="fa-solid fa-circle-info"></i> Dados
+                        </button>
+                        <button class="tab-btn" data-tab="tabPresenca">
+                            <i class="fa-solid fa-user-check"></i> Presença
+                        </button>
+                        <button class="tab-btn" data-tab="tabResumo">
+                            <i class="fa-solid fa-chart-pie"></i> Resumo
+                        </button>
+                    </div>
+
+                    <!-- Aba Dados -->
+                    <div class="tab-panel active" id="tabDados">
+                        <div class="form-wrap">
+                            <div id="statusBar" class="status-bar"></div>
+
+                            <div class="form-section">
+                                <div class="form-section-title">Identificação</div>
+                                <div class="form-grid grid-3">
+                                    <div class="field">
+                                        <label>Turma</label>
+                                        <select name="turma" id="selectTurma">
+                                            <option value="">Selecione...</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label>Data</label>
+                                        <input type="date" name="data">
+                                    </div>
+                                    <div class="field">
+                                        <label>Lição Nº</label>
+                                        <input type="number" name="licaoNumero" min="1" max="13" placeholder="Ex: 5">
+                                    </div>
+                                </div>
+                                <div class="form-grid grid-2" style="padding-top:0;">
+                                    <div class="field">
+                                        <label>Título da Lição</label>
+                                        <input type="text" name="licaoTitulo" placeholder="Título da lição do dia">
+                                    </div>
+                                    <div class="field">
+                                        <label>Professor presente</label>
+                                        <input type="text" name="professorPresente" placeholder="Nome do professor">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <div class="form-section-title">Números do Dia</div>
+                                <div class="form-grid grid-4">
+                                    <div class="field">
+                                        <label>Visitantes</label>
+                                        <input type="number" name="visitantes" min="0" value="0">
+                                    </div>
+                                    <div class="field">
+                                        <label>Oferta (R$)</label>
+                                        <input type="number" name="oferta" min="0" step="0.01" value="0">
+                                    </div>
+                                    <div class="field">
+                                        <label>Bíblias</label>
+                                        <input type="number" name="biblias" min="0" value="0">
+                                    </div>
+                                    <div class="field">
+                                        <label>Revistas</label>
+                                        <input type="number" name="revistas" min="0" value="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <div class="form-section-title">Observações</div>
+                                <div class="form-grid">
+                                    <div class="field">
+                                        <textarea name="obs" rows="3" placeholder="Anotações sobre o dia, avisos, pedidos de oração..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="btnSalvar">
+                                    <i class="fa-solid fa-floppy-disk"></i> Salvar Apontamento
+                                </button>
+                                <button class="btn btn-danger" id="btnExcluir">
+                                    <i class="fa-solid fa-trash-can"></i> Excluir
+                                </button>
+                                <button class="btn btn-ghost" id="btnLimpar">
+                                    <i class="fa-solid fa-eraser"></i> Limpar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba Presença -->
+                    <div class="tab-panel" id="tabPresenca">
+                        <div class="presenca-toolbar">
+                            <div class="presenca-stats">
+                                <div class="pstat">
+                                    <div class="pstat-val" id="pTotal">0</div>
+                                    <div class="pstat-lbl">Total</div>
+                                </div>
+                                <div class="pstat">
+                                    <div class="pstat-val" id="pPresentes" style="color:var(--green);">0</div>
+                                    <div class="pstat-lbl">Presentes</div>
+                                </div>
+                                <div class="pstat">
+                                    <div class="pstat-val" id="pAusentes" style="color:var(--red);">0</div>
+                                    <div class="pstat-lbl">Ausentes</div>
+                                </div>
+                            </div>
+                            <div class="presenca-acoes">
+                                <button class="btn btn-green btn-sm" id="btnTodosPresentes">
+                                    <i class="fa-solid fa-check-double"></i> Todos presentes
+                                </button>
+                                <button class="btn btn-ghost btn-sm" id="btnTodosAusentes">
+                                    <i class="fa-solid fa-xmark"></i> Todos ausentes
+                                </button>
+                            </div>
+                        </div>
+                        <div id="presencaList"></div>
+                    </div>
+
+                    <!-- Aba Resumo -->
+                    <div class="tab-panel" id="tabResumo">
+                        <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+                            <div id="resumoContent" style="color:var(--muted);font-size:13px;text-align:center;padding:30px;">
+                                Selecione um apontamento para ver o resumo.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+    requireAuthSession();
+
+    const STORAGE_GRADES   = 'ldfpEbdGrades';
+    const STORAGE_CLASSES  = 'ldfpEbdClasses';
+    const STORAGE_STUDENTS = 'ldfpEbdStudents';
+
+    const $ = id => document.getElementById(id);
+
+    /* ── Storage ── */
+    const readGrades   = () => JSON.parse(localStorage.getItem(STORAGE_GRADES)   || '[]');
+    const readClasses  = () => JSON.parse(localStorage.getItem(STORAGE_CLASSES)  || '[]');
+    const readStudents = () => JSON.parse(localStorage.getItem(STORAGE_STUDENTS) || '[]');
+    const writeGrades  = list => localStorage.setItem(STORAGE_GRADES, JSON.stringify(list));
+    const makeId       = () => crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+
+    let grades     = readGrades();
+    let selecionado = null;
+    let alunosApontamento = [];
+    let filtroTexto = '';
+    let filtroTurma = '';
+
+    /* ── Status ── */
+    const setStatus = (msg, err = false) => {
+        const bar = $('statusBar');
+        bar.textContent = msg;
+        bar.className = 'status-bar' + (msg ? ' show ' + (err ? 'err' : 'ok') : '');
+    };
+
+    /* ── Iniciais ── */
+    const initials = nome => (nome || '?').split(' ').slice(0,2).map(p => p[0]).join('').toUpperCase();
+
+    /* ── Preencher select de turmas ── */
+    const preencherSelectTurmas = () => {
+        const classes = readClasses();
+        const sel = $('selectTurma');
+        sel.innerHTML = '<option value="">Selecione...</option>' +
+            classes.map(c => `<option value="${c.nomeTurma}">${c.nomeTurma}</option>`).join('');
+
+        const filter = $('filterTurma');
+        filter.innerHTML = '<option value="">Todas as turmas</option>' +
+            classes.map(c => `<option value="${c.nomeTurma}">${c.nomeTurma}</option>`).join('');
+    };
+
+    /* ── Update hero ── */
+    const updateHero = apt => {
+        if (!apt) {
+            $('heroNome').textContent = 'Selecione ou crie um apontamento';
+            $('heroNome').className   = 'hero-name ph';
+            $('heroSub').textContent  = 'EBD · Apontamentos & Presença';
+            $('heroPresentes').textContent  = '0';
+            $('heroAusentes').textContent   = '0';
+            $('heroVisitantes').textContent = '0';
+            return;
+        }
+        const alunos    = Array.isArray(apt.alunos) ? apt.alunos : [];
+        const presentes = alunos.filter(a => a.presente).length;
+        const ausentes  = alunos.length - presentes;
+
+        $('heroNome').textContent = apt.turma || 'Turma';
+        $('heroNome').className   = 'hero-name';
+        $('heroSub').textContent  = `${apt.data || '-'} · Lição ${apt.licaoNumero || '-'}${apt.licaoTitulo ? ' · ' + apt.licaoTitulo : ''}`;
+        $('heroPresentes').textContent  = presentes;
+        $('heroAusentes').textContent   = ausentes;
+        $('heroVisitantes').textContent = apt.visitantes || 0;
+    };
+
+    /* ── Renderizar lista ── */
+    const renderLista = () => {
+        const list  = $('aptList');
+        const count = $('aptCount');
+
+        const filtrados = grades.filter(g => {
+            const txt = ((g.turma || '') + ' ' + (g.data || '')).toLowerCase();
+            const okTxt   = txt.includes(filtroTexto);
+            const okTurma = !filtroTurma || (g.turma || '') === filtroTurma;
+            return okTxt && okTurma;
+        }).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+
+        count.textContent = filtrados.length;
+
+        if (!filtrados.length) {
+            list.innerHTML = `<div class="empty-list">
+                <i class="fa-solid fa-clipboard-list"></i>
+                Nenhum apontamento encontrado.
+            </div>`;
+            return;
+        }
+
+        list.innerHTML = filtrados.map(g => {
+            const alunos    = Array.isArray(g.alunos) ? g.alunos : [];
+            const presentes = alunos.filter(a => a.presente).length;
+            const ativo     = selecionado === g.id ? 'is-active' : '';
+            const dataFmt   = g.data ? new Date(g.data + 'T12:00:00').toLocaleDateString('pt-BR') : '-';
+            return `
+                <div class="apt-item ${ativo}" data-id="${g.id}">
+                    <div class="apt-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                    <div class="apt-info">
+                        <div class="apt-name">${g.turma || '-'}</div>
+                        <div class="apt-sub">${dataFmt}${g.licaoNumero ? ' · Lição ' + g.licaoNumero : ''}</div>
+                    </div>
+                    <span class="apt-badge">${presentes} pres.</span>
+                </div>
+            `;
+        }).join('');
+
+        list.querySelectorAll('.apt-item').forEach(el => {
+            el.addEventListener('click', () => selecionarApt(el.dataset.id));
+        });
+    };
+
+    /* ── Preencher form ── */
+    const preencherForm = apt => {
+        const form = document.querySelector('form') || { reset: () => {} };
+        ['turma','data','licaoNumero','licaoTitulo','professorPresente',
+         'visitantes','oferta','biblias','revistas','obs'].forEach(name => {
+            const el = document.querySelector(`[name="${name}"]`);
+            if (!el) return;
+            el.value = apt ? (apt[name] ?? '') : (name === 'visitantes' || name === 'oferta' || name === 'biblias' || name === 'revistas' ? '0' : '');
+        });
+    };
+
+    /* ── Carregar presença ── */
+    const carregarPresenca = apt => {
+        const wrap = $('presencaList');
+        if (!apt) {
+            wrap.innerHTML = `<div style="padding:28px;text-align:center;color:var(--muted);font-size:13px;">
+                Selecione um apontamento para gerenciar a presença.
+            </div>`;
+            alunosApontamento = [];
+            atualizarStatsPresenca();
+            return;
+        }
+
+        /* Pegar alunos da turma ou os já gravados */
+        const alunosTurma = readStudents().filter(a =>
+            (a.turma || '').toLowerCase() === (apt.turma || '').toLowerCase()
+        );
+
+        /* Mesclar com dados salvos */
+        alunosApontamento = alunosTurma.map(a => {
+            const saved = Array.isArray(apt.alunos)
+                ? apt.alunos.find(x => x.nome === a.nome)
+                : null;
+            return { nome: a.nome, estagio: a.estagio || '', presente: saved ? saved.presente : true };
         });
 
-        function readGrades() {
-            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        }
-
-        function writeGrades(list) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-        }
-
-        function renderRows() {
-            const grades = readGrades();
-            if (!grades.length) {
-                gradesBody.innerHTML = '<tr><td colspan="6" class="muted">Nenhum resultado foi encontrado.</td></tr>';
-                return;
-            }
-
-            gradesBody.innerHTML = grades.map((item) => {
-                const alunosTotal = Array.isArray(item.alunos) ? item.alunos.length : 0;
-                const presentes = Array.isArray(item.alunos) ? item.alunos.filter((a) => a.presente).length : 0;
-                return `
-                    <tr data-search="${(item.turma || '').toLowerCase()} ${(item.data || '').toLowerCase()}">
-                        <td>${item.turma || '-'}</td>
-                        <td>${item.data || '-'}</td>
-                        <td>${presentes}</td>
-                        <td>${item.visitantes || 0}</td>
-                        <td>${alunosTotal}</td>
-                        <td class="actions-col">
-                            <button class="icon-btn" type="button" title="Editar" data-edit="${item.id}"><i class="fa-regular fa-pen-to-square"></i></button>
-                            <button class="icon-btn" type="button" title="Excluir" data-delete="${item.id}"><i class="fa-regular fa-trash-can"></i></button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function handleTableAction(event) {
-            const editId = event.target.closest('[data-edit]')?.getAttribute('data-edit');
-            if (editId) {
-                window.location.href = `ebd_grade_novo.html?edit=${encodeURIComponent(editId)}`;
-                return;
-            }
-
-            const deleteId = event.target.closest('[data-delete]')?.getAttribute('data-delete');
-            if (!deleteId) return;
-
-            const next = readGrades().filter((item) => String(item.id) !== String(deleteId));
-            writeGrades(next);
-            renderRows();
-            applyFilter();
-        }
-
-        function applyFilter() {
-            const term = searchInput.value.trim().toLowerCase();
-            const rows = Array.from(gradesBody.querySelectorAll('tr'));
-            rows.forEach((row) => {
-                const text = row.getAttribute('data-search') || row.textContent.toLowerCase();
-                row.style.display = text.includes(term) ? '' : 'none';
+        /* Adicionar alunos que estavam no apontamento mas não na turma mais */
+        if (Array.isArray(apt.alunos)) {
+            apt.alunos.forEach(x => {
+                if (!alunosApontamento.find(a => a.nome === x.nome)) {
+                    alunosApontamento.push({ ...x });
+                }
             });
         }
 
-        gradesBody.addEventListener('click', handleTableAction);
-        searchInput.addEventListener('input', applyFilter);
+        renderPresenca();
+    };
 
-        window.addEventListener('storage', () => {
-            renderRows();
-            applyFilter();
+    const renderPresenca = () => {
+        const wrap = $('presencaList');
+        if (!alunosApontamento.length) {
+            wrap.innerHTML = `<div style="padding:28px;text-align:center;color:var(--muted);font-size:13px;">
+                Nenhum aluno vinculado a esta turma.
+            </div>`;
+            atualizarStatsPresenca();
+            return;
+        }
+
+        wrap.innerHTML = alunosApontamento.map((a, i) => `
+            <div class="aluno-row" data-idx="${i}">
+                <div class="aluno-avatar">${initials(a.nome)}</div>
+                <div style="flex:1;min-width:0;">
+                    <div class="aluno-nome">${a.nome || '-'}</div>
+                    <div class="aluno-estagio">${a.estagio || ''}</div>
+                </div>
+                <div class="presenca-toggle">
+                    <button type="button" class="toggle-btn ${a.presente ? 'presente' : ''}" data-tipo="presente" data-idx="${i}">
+                        <i class="fa-solid fa-check"></i> Presente
+                    </button>
+                    <button type="button" class="toggle-btn ${!a.presente ? 'ausente' : ''}" data-tipo="ausente" data-idx="${i}">
+                        <i class="fa-solid fa-xmark"></i> Ausente
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        wrap.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx  = Number(btn.dataset.idx);
+                const tipo = btn.dataset.tipo;
+                alunosApontamento[idx].presente = tipo === 'presente';
+                renderPresenca();
+            });
         });
 
-        renderRows();
-    </script>
+        atualizarStatsPresenca();
+    };
+
+    const atualizarStatsPresenca = () => {
+        const total     = alunosApontamento.length;
+        const presentes = alunosApontamento.filter(a => a.presente).length;
+        const ausentes  = total - presentes;
+        $('pTotal').textContent     = total;
+        $('pPresentes').textContent = presentes;
+        $('pAusentes').textContent  = ausentes;
+    };
+
+    /* ── Resumo ── */
+    const renderResumo = apt => {
+        const wrap = $('resumoContent');
+        if (!apt) {
+            wrap.innerHTML = `<span style="color:var(--muted);font-size:13px;">Selecione um apontamento para ver o resumo.</span>`;
+            return;
+        }
+        const alunos    = Array.isArray(apt.alunos) ? apt.alunos : [];
+        const presentes = alunos.filter(a => a.presente).length;
+        const ausentes  = alunos.length - presentes;
+        const pct       = alunos.length ? Math.round(presentes / alunos.length * 100) : 0;
+        const dataFmt   = apt.data ? new Date(apt.data + 'T12:00:00').toLocaleDateString('pt-BR') : '-';
+
+        wrap.innerHTML = `
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+                <div style="background:#e0e7ff;border-radius:10px;padding:14px;text-align:center;">
+                    <div style="font-size:26px;font-weight:800;color:var(--indigo);">${presentes}</div>
+                    <div style="font-size:11px;color:var(--muted);">Presentes</div>
+                </div>
+                <div style="background:#fee2e2;border-radius:10px;padding:14px;text-align:center;">
+                    <div style="font-size:26px;font-weight:800;color:var(--red);">${ausentes}</div>
+                    <div style="font-size:11px;color:var(--muted);">Ausentes</div>
+                </div>
+                <div style="background:#d1fae5;border-radius:10px;padding:14px;text-align:center;">
+                    <div style="font-size:26px;font-weight:800;color:var(--green);">${apt.visitantes || 0}</div>
+                    <div style="font-size:11px;color:var(--muted);">Visitantes</div>
+                </div>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:14px;font-size:13px;color:var(--text);display:grid;gap:8px;">
+                <div><b>Turma:</b> ${apt.turma || '-'}</div>
+                <div><b>Data:</b> ${dataFmt}</div>
+                <div><b>Lição:</b> ${apt.licaoNumero ? 'Nº ' + apt.licaoNumero : '-'}${apt.licaoTitulo ? ' · ' + apt.licaoTitulo : ''}</div>
+                <div><b>Professor:</b> ${apt.professorPresente || '-'}</div>
+                <div><b>Oferta:</b> R$ ${parseFloat(apt.oferta || 0).toFixed(2)}</div>
+                <div><b>Bíblias:</b> ${apt.biblias || 0} &nbsp;|&nbsp; <b>Revistas:</b> ${apt.revistas || 0}</div>
+                <div><b>Freq. da turma:</b> ${pct}% de presença</div>
+                ${apt.obs ? `<div><b>Obs:</b> ${apt.obs}</div>` : ''}
+            </div>
+        `;
+    };
+
+    /* ── Selecionar apontamento ── */
+    const selecionarApt = id => {
+        selecionado = id;
+        const apt = grades.find(g => g.id === id);
+        updateHero(apt);
+        preencherForm(apt);
+        carregarPresenca(apt);
+        renderResumo(apt);
+        setStatus('');
+        renderLista();
+    };
+
+    /* ── Coletar form ── */
+    const getPayload = () => {
+        const get = name => {
+            const el = document.querySelector(`[name="${name}"]`);
+            return el ? el.value.trim() : '';
+        };
+        return {
+            turma:             get('turma'),
+            data:              get('data'),
+            licaoNumero:       get('licaoNumero'),
+            licaoTitulo:       get('licaoTitulo'),
+            professorPresente: get('professorPresente'),
+            visitantes:        Number(get('visitantes')) || 0,
+            oferta:            get('oferta'),
+            biblias:           Number(get('biblias')) || 0,
+            revistas:          Number(get('revistas')) || 0,
+            obs:               get('obs'),
+            alunos:            alunosApontamento,
+        };
+    };
+
+    /* ── Salvar ── */
+    const salvar = () => {
+        setStatus('');
+        const payload = getPayload();
+        if (!payload.turma || !payload.data) {
+            setStatus('Informe a turma e a data.', true);
+            return;
+        }
+
+        if (selecionado) {
+            const idx = grades.findIndex(g => g.id === selecionado);
+            if (idx >= 0) grades[idx] = { ...grades[idx], ...payload };
+        } else {
+            const novo = { id: makeId(), ...payload };
+            grades.push(novo);
+            selecionado = novo.id;
+        }
+        writeGrades(grades);
+        setStatus('Apontamento salvo com sucesso!');
+        const apt = grades.find(g => g.id === selecionado);
+        updateHero(apt);
+        renderResumo(apt);
+        renderLista();
+    };
+
+    /* ── Excluir ── */
+    const excluir = () => {
+        if (!selecionado) { setStatus('Selecione um apontamento para excluir.', true); return; }
+        const apt = grades.find(g => g.id === selecionado);
+        if (!confirm(`Excluir o apontamento de "${apt?.turma}" em ${apt?.data}?`)) return;
+        grades = grades.filter(g => g.id !== selecionado);
+        writeGrades(grades);
+        selecionado = null;
+        limpar();
+        setStatus('Apontamento excluído.');
+        renderLista();
+    };
+
+    /* ── Limpar ── */
+    const limpar = () => {
+        selecionado = null;
+        preencherForm(null);
+        updateHero(null);
+        carregarPresenca(null);
+        renderResumo(null);
+        setStatus('');
+        renderLista();
+    };
+
+    /* ── Eventos ── */
+    $('btnNovoApontamento').addEventListener('click', limpar);
+    $('btnLimpar').addEventListener('click', limpar);
+    $('btnSalvar').addEventListener('click', salvar);
+    $('btnSalvarHero').addEventListener('click', salvar);
+    $('btnExcluir').addEventListener('click', excluir);
+    $('btnExcluirHero').addEventListener('click', excluir);
+    $('btnRecarregar').addEventListener('click', () => { grades = readGrades(); renderLista(); });
+
+    $('btnTodosPresentes').addEventListener('click', () => {
+        alunosApontamento.forEach(a => a.presente = true);
+        renderPresenca();
+    });
+    $('btnTodosAusentes').addEventListener('click', () => {
+        alunosApontamento.forEach(a => a.presente = false);
+        renderPresenca();
+    });
+
+    $('searchInput').addEventListener('input', e => {
+        filtroTexto = e.target.value.toLowerCase().trim();
+        renderLista();
+    });
+    $('filterTurma').addEventListener('change', e => {
+        filtroTurma = e.target.value;
+        renderLista();
+    });
+
+    /* Turma selecionada no form carrega alunos automaticamente */
+    $('selectTurma').addEventListener('change', () => {
+        const turma = $('selectTurma').value;
+        if (!turma || selecionado) return;
+        const fakeApt = { turma, alunos: [] };
+        carregarPresenca(fakeApt);
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            $(btn.dataset.tab)?.classList.add('active');
+        });
+    });
+
+    /* ── Init ── */
+    preencherSelectTurmas();
+    renderLista();
+    updateHero(null);
+    carregarPresenca(null);
+    renderResumo(null);
+</script>
 </body>
 </html>

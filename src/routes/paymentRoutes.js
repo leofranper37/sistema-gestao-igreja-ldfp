@@ -12,6 +12,7 @@ const router = express.Router();
 
 // Planos públicos (landing/assinatura)
 router.get('/api/pagamentos/planos', listarPlanos);
+router.get('/api/planos', listarPlanos);
 
 // Pagamentos autenticados
 router.post('/api/pagamentos/pix', requireAuth, gerarPix);

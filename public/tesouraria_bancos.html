@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Bancos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Seus estilos CSS personalizados (copiados do seu arquivo original) */
+        :root {
+            --brand:   #0f766e;
+            --teal:    #0d9488;
+            --blue:    #0284c7;
+            --green:   #16a34a;
+            --red:     #dc2626;
+            --yellow:  #f59e0b;
+            --surface: #ffffff;
+            --bg:      #f1f5f9;
+            --border:  #e2e8f0;
+            --text:    #0f172a;
+            --muted:   #64748b;
+            --radius:  14px;
+            --shadow:  0 4px 16px rgba(15,23,42,.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* KPIs */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .kpi-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card::before {
+            content:'';
+            position:absolute;
+            top:0;left:0;right:0;height:4px;
+            background: var(--kpi-color, var(--teal));
+        }
+        .kpi-card small {
+            display:block;
+            font-size:11px;
+            font-weight:700;
+            color:var(--muted);
+            text-transform:uppercase;
+            letter-spacing:.05em;
+            margin-bottom:6px;
+        }
+        .kpi-card strong {
+            display:block;
+            font-size:1.5rem;
+            font-weight:800;
+            color:var(--kpi-color, var(--text));
+            line-height:1;
+        }
+        .kpi-card span {
+            display:block;
+            margin-top:4px;
+            font-size:11px;
+            color:var(--muted);
+        }
+        .kpi-saldo   { --kpi-color:#0f766e; }
+        .kpi-entradas{ --kpi-color:#16a34a; }
+        .kpi-saidas  { --kpi-color:#dc2626; }
+        .kpi-mes     { --kpi-color:#0284c7; }
+
+        /* Tabs internas */
+        .inner-tabs {
+            display:flex;
+            gap:4px;
+            border-bottom:2px solid var(--border);
+            margin-bottom:18px;
+        }
+        .inner-tab {
+            padding:9px 18px;
+            font-size:13px;
+            font-weight:700;
+            color:var(--muted);
+            border:none;
+            background:none;
+            cursor:pointer;
+            border-bottom:3px solid transparent;
+            margin-bottom:-2px;
+            border-radius:8px 8px 0 0;
+            display:flex;
+            align-items:center;
+            gap:7px;
+            transition:all .2s;
+        }
+        .inner-tab:hover { color:var(--text); background:var(--bg); }
+        .inner-tab.active {
+            color:var(--brand);
+            border-bottom-color:var(--brand);
+            background:#f0fdfa;
+        }
+        .inner-panel { display:none; }
+        .inner-panel.active { display:block; }
+
+        /* Layout principal */
+        .main-grid {
+            display:grid;
+            grid-template-columns:minmax(0,1.4fr) minmax(320px,1fr);
+            gap:16px;
+            align-items:start;
+        }
+        .card {
+            background:var(--surface);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            box-shadow:var(--shadow);
+            padding:18px;
+        }
+        .card-header {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:14px;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+        .card-header h3 {
+            font-size:15px;
+            font-weight:800;
+            color:var(--text);
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .card-header h3 i { color:var(--teal); }
+
+        /* Filtros */
+        .filter-bar {
+            display:grid;
+            grid-template-columns:1fr auto; /* Ajustado para busca e botão */
+            gap:8px;
+            margin-bottom:12px;
+            align-items:end;
+        }
+        .filter-group {
+            display:flex;
+            flex-direction:column;
+            gap:4px;
+        }
+        .filter-group label {
+            font-size:10px;
+            font-weight:700;
+            color:var(--muted);
+            text-transform:uppercase;
+        }
+        .filter-group input,
+        .filter-group select {
+            padding:8px 10px;
+            border-radius:8px;
+            border:1.5px solid var(--border);
+            font-size:13px;
+            background:var(--bg);
+            color:var(--text);
+        }
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline:none;
+            border-color:var(--teal);
+            background:#fff;
+        }
+
+        /* Botões */
+        .btn {
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            padding:9px 14px;
+            border-radius:8px;
+            border:none;
+            font-size:13px;
+            font-weight:700;
+            cursor:pointer;
+            color:#fff;
+            transition:all .2s;
+            white-space:nowrap;
+        }
+        .btn-primary { background:linear-gradient(90deg,var(--brand),var(--teal)); }
+        .btn-primary:hover { opacity:.9; }
+        .btn-blue { background:var(--blue); }
+        .btn-blue:hover { background:#0369a1; }
+        .btn-red { background:var(--red); }
+        .btn-red:hover { background:#b91c1c; }
+        .btn-slate { background:#64748b; }
+        .btn-slate:hover { background:#475569; }
+        .btn-sm { padding:5px 9px; font-size:11px; border-radius:6px; }
+        .btn-full { width:100%; justify-content:center; margin-top:6px; }
+
+        /* Tabela */
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; font-size:12.5px; }
+        th {
+            background:#f8fafc;
+            color:var(--muted);
+            font-size:10.5px;
+            font-weight:700;
+            text-transform:uppercase;
+            padding:9px 10px;
+            text-align:left;
+            border-bottom:2px solid var(--border);
+        }
+        td {
+            padding:9px 10px;
+            border-bottom:1px solid #e5e7eb;
+            color:var(--text);
+        }
+        tr:last-child td { border-bottom:none; }
+        .empty-row td {
+            text-align:center;
+            padding:40px;
+            color:var(--muted);
+        }
+
+        /* Resumo Item */
+        .resumo-item {
+            display:flex;
+            justify-content:space-between;
+            padding:8px 0;
+            border-bottom:1px dashed var(--border);
+            font-size:13px;
+            color:var(--text);
+        }
+        .resumo-item:last-child { border-bottom:none; }
+        .resumo-item span:first-child { font-weight:600; color:var(--muted); }
+        .saldo-valor { font-weight:700; }
+        .saldo-positivo { color:var(--green); }
+        .saldo-negativo { color:var(--red); }
+
+        /* Formulários */
+        .form-group { margin-bottom:12px; }
+        .form-group label {
+            display:block;
+            font-size:12px;
+            font-weight:700;
+            color:var(--muted);
+            margin-bottom:6px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width:100%;
+            padding:9px 12px;
+            border-radius:8px;
+            border:1.5px solid var(--border);
+            font-size:14px;
+            background:var(--surface);
+            color:var(--text);
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline:none;
+            border-color:var(--teal);
+            background:#fff;
+        }
+        .form-group textarea { resize:vertical; min-height:80px; }
+        .form-row-2 {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:12px;
+        }
+        .section-divider {
+            font-size:11px;
+            font-weight:700;
+            color:var(--muted);
+            text-transform:uppercase;
+            letter-spacing:.05em;
+            margin:20px 0 10px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+        .section-divider::before,
+        .section-divider::after {
+            content:'';
+            flex-grow:1;
+            height:1px;
+            background:var(--border);
+        }
+
+        /* Badges */
+        .badge {
+            display:inline-block;
+            padding:4px 8px;
+            border-radius:6px;
+            font-size:10px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:.05em;
+        }
+        .badge-entrada { background:#dcfce7; color:#15803d; }
+        .badge-saida   { background:#fee2e2; color:#b91c1c; }
+        .badge-info    { background:#e0f2fe; color:#0284c7; }
+        .badge-warning { background:#fffbeb; color:#f59e0b; }
+
+        /* Status Message */
+        .status-msg {
+            margin-top:12px;
+            padding:10px 14px;
+            border-radius:8px;
+            font-size:13px;
+            font-weight:600;
+            display:none; /* Escondido por padrão */
+        }
+        .status-msg.ok { background:#dcfce7; color:#15803d; display:block; }
+        .status-msg.error { background:#fee2e2; color:#b91c1c; display:block; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page"
+      data-shell-active="tesouraria_bancos.html"
+      data-shell-title="Bancos"
+      data-shell-breadcrumb="LDFP / Tesouraria / Bancos"
+      data-shell-chip="Módulo financeiro"
+      data-shell-role="Admin financeiro">
+
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
+            <div class="enterprise-page-hero">
+                <div>
+                    <h2>Bancos</h2>
+                    <p>Gerencie suas contas bancárias, saldos e movimentações.</p>
+                </div>
+                <div class="enterprise-page-badge"><i class="fa-solid fa-building-columns"></i> Bancos</div>
+            </div>
+
+            <!-- KPIs de Bancos (exemplo, pode ser ajustado) -->
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-saldo">
+                    <small>Saldo Total em Bancos</small>
+                    <strong id="kpiSaldoTotal">R$ 0,00</strong>
+                    <span>Atualizado agora</span>
+                </div>
+                <div class="kpi-card kpi-entradas">
+                    <small>Contas Ativas</small>
+                    <strong id="kpiContasAtivas">0</strong>
+                    <span>Contas cadastradas</span>
+                </div>
+                <div class="kpi-card kpi-mes">
+                    <small>Última Atualização</small>
+                    <strong id="kpiUltimaAtualizacao">--/--/----</strong>
+                    <span>Sincronização</span>
+                </div>
+            </div>
+
+            <div class="main-grid">
+                <!-- Painel de Lista de Bancos -->
+                <section class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-list"></i> Contas Bancárias</h3>
+                        <button class="btn btn-primary" id="btnNovaConta"><i class="fa-solid fa-plus"></i> Nova Conta</button>
+                    </div>
+
+                    <div class="filter-bar">
+                        <div class="filter-group">
+                            <label for="searchBanco">Buscar</label>
+                            <input type="text" id="searchBanco" placeholder="Nome do banco, agência, conta...">
+                        </div>
+                        <button class="btn btn-blue" id="btnPesquisarBanco"><i class="fa-solid fa-magnifying-glass"></i> Filtrar</button>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="color:#555;">BANCO</th>
+                                    <th style="color:#555;">TIPO</th>
+                                    <th style="color:#555;text-align:right;">SALDO ATUAL</th>
+                                    <th style="color:#555;"></th> <!-- Coluna para ações -->
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaBancos">
+                                <!-- Conteúdo carregado via JS -->
+                                <tr>
+                                    <td colspan="4" style="text-align:center;padding:40px;color:#999;">Carregando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Painel de Detalhes/Formulário de Conta (inicialmente escondido ou vazio) -->
+                <section class="card" id="formContaPanel" style="display:none;">
+                    <div class="card-header">
+                        <h3 id="formContaTitle"><i class="fa-solid fa-building-columns"></i> Nova Conta Bancária</h3>
+                        <button class="btn btn-red btn-sm" id="btnCancelarEdicao"><i class="fa-solid fa-xmark"></i> Cancelar</button>
+                    </div>
+                    <form id="formConta">
+                        <input type="hidden" id="contaId">
+                        <div class="form-group">
+                            <label for="nomeBanco">Nome do Banco *</label>
+                            <input type="text" id="nomeBanco" required placeholder="Ex: Banco do Brasil, Caixa Econômica">
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="agencia">Agência</label>
+                                <input type="text" id="agencia" placeholder="Ex: 1234">
+                            </div>
+                            <div class="form-group">
+                                <label for="conta">Conta *</label>
+                                <input type="text" id="conta" required placeholder="Ex: 56789-0">
+                            </div>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="tipoConta">Tipo de Conta *</label>
+                                <select id="tipoConta" required>
+                                    <option value="Corrente">Corrente</option>
+                                    <option value="Poupança">Poupança</option>
+                                    <option value="Investimento">Investimento</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="saldoInicial">Saldo Inicial *</label>
+                                <input type="number" step="0.01" id="saldoInicial" required value="0.00">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="observacoes">Observações</label>
+                            <textarea id="observacoes" placeholder="Informações adicionais sobre a conta"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full"><i class="fa-solid fa-save"></i> Salvar Conta</button>
+                        <div class="status-msg" id="msgFormConta"></div>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const $ = id => document.getElementById(id);
+        const formContaPanel = $('formContaPanel');
+        const formContaTitle = $('formContaTitle');
+        const btnNovaConta = $('btnNovaConta');
+        const btnCancelarEdicao = $('btnCancelarEdicao');
+        const formConta = $('formConta');
+        const msgFormConta = $('msgFormConta');
+
+        let contas = []; // Array para armazenar as contas (simulando DB)
+
+        function fmtVal(v) {
+            return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function setMsg(el, text, type = 'ok') {
+            el.className = text ? `status-msg ${type}` : 'status-msg';
+            el.textContent = text || '';
+            if (text) setTimeout(() => { el.className = 'status-msg'; el.textContent = ''; }, 4000);
+        }
+
+        // Função para carregar contas (simulando API ou localStorage)
+        async function carregarBancos(filter = '') {
+            const tbody = $('tabelaBancos');
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:#999;">Carregando...</td></tr>`;
+
+            // Simulação de carregamento de dados
+            // Em um ambiente real, você faria um fetch('/banco/contas') aqui
+            // Por enquanto, vamos usar um array local
+            const storedContas = JSON.parse(localStorage.getItem('ldfp_bancos')) || [];
+            contas = storedContas.filter(c =>
+                !filter ||
+                c.nomeBanco.toLowerCase().includes(filter.toLowerCase()) ||
+                c.agencia.toLowerCase().includes(filter.toLowerCase()) ||
+                c.conta.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            if (!contas.length) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:#999;">Nenhuma conta bancária cadastrada.</td></tr>`;
+                $('kpiSaldoTotal').textContent = fmtVal(0);
+                $('kpiContasAtivas').textContent = 0;
+                $('kpiUltimaAtualizacao').textContent = '--/--/----';
+                return;
+            }
+
+            let saldoTotal = 0;
+            tbody.innerHTML = contas.map(b => {
+                saldoTotal += parseFloat(b.saldoInicial || 0);
+                return `
+                    <tr>
+                        <td>${b.nomeBanco} <div style="color:var(--muted);font-size:12px">Ag ${b.agencia || '-'} • C ${b.conta || '-'}</div></td>
+                        <td><span class="badge badge-info">${b.tipoConta || 'Corrente'}</span></td>
+                        <td style="text-align:right;font-weight:700;">${fmtVal(b.saldoInicial)}</td>
+                        <td>
+                            <button class="btn btn-slate btn-sm" onclick="editarConta('${b.id}')" title="Editar">
+                                <i class="fa-solid fa-pencil"></i>
+                            </button>
+                            <button class="btn btn-red btn-sm" onclick="excluirConta('${b.id}')" title="Remover">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+            }).join('');
+
+            $('kpiSaldoTotal').textContent = fmtVal(saldoTotal);
+            $('kpiContasAtivas').textContent = contas.length;
+            $('kpiUltimaAtualizacao').textContent = new Date().toLocaleDateString('pt-BR');
+        }
+
+        // Função para abrir o formulário para nova conta
+        btnNovaConta.addEventListener('click', () => {
+            formConta.reset();
+            $('contaId').value = '';
+            formContaTitle.innerHTML = '<i class="fa-solid fa-building-columns"></i> Nova Conta Bancária';
+            formContaPanel.style.display = 'block';
+            msgFormConta.className = 'status-msg'; // Limpa mensagens
+        });
+
+        // Função para cancelar edição/criação
+        btnCancelarEdicao.addEventListener('click', () => {
+            formContaPanel.style.display = 'none';
+        });
+
+        // Função para editar conta
+        window.editarConta = (id) => {
+            const conta = contas.find(c => c.id === id);
+            if (conta) {
+                $('contaId').value = conta.id;
+                $('nomeBanco').value = conta.nomeBanco;
+                $('agencia').value = conta.agencia;
+                $('conta').value = conta.conta;
+                $('tipoConta').value = conta.tipoConta;
+                $('saldoInicial').value = conta.saldoInicial;
+                $('observacoes').value = conta.observacoes;
+                formContaTitle.innerHTML = '<i class="fa-solid fa-building-columns"></i> Editar Conta Bancária';
+                formContaPanel.style.display = 'block';
+                msgFormConta.className = 'status-msg'; // Limpa mensagens
+            }
+        };
+
+        // Função para excluir conta
+        window.excluirConta = (id) => {
+            if (!confirm('Tem certeza que deseja remover esta conta bancária?')) return;
+            let storedContas = JSON.parse(localStorage.getItem('ldfp_bancos')) || [];
+            storedContas = storedContas.filter(c => c.id !== id);
+            localStorage.setItem('ldfp_bancos', JSON.stringify(storedContas));
+            carregarBancos();
+            setMsg(msgFormConta, 'Conta removida com sucesso!', 'ok');
+        };
+
+        // Salvar formulário
+        formConta.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = $('contaId').value || `banco_${Date.now()}`;
+            const novaConta = {
+                id: id,
+                nomeBanco: $('nomeBanco').value,
+                agencia: $('agencia').value,
+                conta: $('conta').value,
+                tipoConta: $('tipoConta').value,
+                saldoInicial: parseFloat($('saldoInicial').value),
+                observacoes: $('observacoes').value
+            };
+
+            let storedContas = JSON.parse(localStorage.getItem('ldfp_bancos')) || [];
+            const index = storedContas.findIndex(c => c.id === id);
+
+            if (index > -1) {
+                storedContas[index] = novaConta; // Atualiza
+                setMsg(msgFormConta, 'Conta atualizada com sucesso!', 'ok');
+            } else {
+                storedContas.push(novaConta); // Adiciona
+                setMsg(msgFormConta, 'Conta adicionada com sucesso!', 'ok');
+            }
+
+            localStorage.setItem('ldfp_bancos', JSON.stringify(storedContas));
+            formContaPanel.style.display = 'none';
+            carregarBancos();
+        });
+
+        // Evento de pesquisa
+        $('btnPesquisarBanco').addEventListener('click', () => {
+            const q = $('searchBanco').value.trim();
+            carregarBancos(q);
+        });
+
+        // Carrega inicial
+        carregarBancos();
+    </script>
+</body>
+</html>

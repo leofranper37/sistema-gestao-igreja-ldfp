@@ -95,6 +95,19 @@
           "type": "image/png"
         }
       ]
+    },
+    {
+      "name": "App de Mídia",
+      "short_name": "Mídia",
+      "description": "Abrir o aplicativo de mídia da igreja",
+      "url": "/app_midia.html",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ],
   

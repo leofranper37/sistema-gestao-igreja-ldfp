@@ -144,7 +144,11 @@
         }
 
         function getMesSeguinte(competencia) {
-            const match = String(competencia || '').match(/^(\d{2})\/(\d{4})$/);
+            const match = String(competencia || '').match(/
+^
+(\d{2})\/(\d{4})
+$
+/);
             if (!match) {
                 const now = new Date();
                 const mm = String(now.getMonth() + 1).padStart(2, '0');

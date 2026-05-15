@@ -3,314 +3,824 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Dízimos e Ofertas</title>
+    <title>LDFP - Dízimos & Ofertas</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .wrap { max-width: 1280px; margin: 0 auto; padding: 0; }
-        .top-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 18px; }
-        .kpi { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 16px; box-shadow: 0 4px 14px rgba(15,23,42,.07); }
-        .kpi small { display: block; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-        .kpi strong { display: block; font-size: 1.6rem; font-weight: 800; color: #0f172a; }
-        .kpi.total strong { color: #0f766e; }
-        .kpi.dizimo strong { color: #0369a1; }
-        .kpi.oferta strong { color: #16a34a; }
-        .kpi.missoes strong { color: #2563eb; }
-        .kpi.outros strong { color: #0f766e; }
-        .main-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, 1fr); gap: 14px; }
-        .main-grid > * { min-width: 0; }
-        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 6px 20px rgba(15,23,42,.08); padding: 16px; }
-        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 8px; flex-wrap: wrap; }
-        .card-header h2 { margin: 0; font-size: 15px; color: #155e75; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-        .form-row .full { grid-column: 1 / -1; }
-        input, select, textarea { width: 100%; border: 1px solid #dbe3ef; border-radius: 8px; padding: 9px 12px; font-size: 13.5px; box-sizing: border-box; }
-        textarea { resize: vertical; min-height: 60px; }
-        .btn { border: 0; border-radius: 8px; padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; color: #fff; }
-        .btn-primary { background: #0f766e; width: 100%; margin-top: 4px; }
-        .btn-del { background: #dc2626; padding: 5px 8px; font-size: 11px; }
-        .filtros {
+        /* Seus estilos CSS personalizados */
+        :root {
+            --brand:   #0f766e;
+            --teal:    #0d9488;
+            --blue:    #0284c7;
+            --green:   #16a34a;
+            --red:     #dc2626;
+            --yellow:  #f59e0b;
+            --purple:  #7c3aed;
+            --surface: #ffffff;
+            --bg:      #f1f5f9;
+            --border:  #e2e8f0;
+            --text:    #0f172a;
+            --muted:   #64748b;
+            --radius:  14px;
+            --shadow:  0 4px 16px rgba(15,23,42,.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── KPIs ── */
+        .kpi-grid {
             display: grid;
-            grid-template-columns: minmax(140px, 170px) minmax(130px, 160px) minmax(160px, 1fr) auto;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--kpi-color, var(--teal));
+        }
+
+        .kpi-card small {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 8px;
+        }
+
+        .kpi-card strong {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--kpi-color, var(--text));
+            line-height: 1;
+        }
+
+        .kpi-card .kpi-sub {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .kpi-total   { --kpi-color: #0f766e; }
+        .kpi-dizimo  { --kpi-color: #0284c7; }
+        .kpi-oferta  { --kpi-color: #16a34a; }
+        .kpi-missoes { --kpi-color: #2563eb; }
+        .kpi-outros  { --kpi-color: #64748b; }
+
+        /* ── Tabs internas ── */
+        .inner-tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 18px;
+        }
+
+        .inner-tab {
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--muted);
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            border-radius: 8px 8px 0 0;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .inner-tab:hover { color: var(--text); background: var(--bg); }
+        .inner-tab.active { color: var(--brand); border-bottom-color: var(--brand); background: #f0fdfa; }
+
+        .inner-panel { display: none; }
+        .inner-panel.active { display: block; }
+
+        /* ── Layout principal ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .card-header h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
             gap: 8px;
-            margin-bottom: 12px;
+        }
+
+        .card-header h3 i { color: var(--teal); }
+
+        /* Filtros */
+        .filter-bar {
+            display: grid;
+            grid-template-columns: 160px 150px 1fr auto;
+            gap: 8px;
+            margin-bottom: 14px;
             align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-group label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
             width: 100%;
         }
-        .filtros input, .filtros select { margin: 0; max-width: 100%; }
-        table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-        th, td { border-bottom: 1px solid #f1f5f9; padding: 9px 8px; text-align: left; vertical-align: top; }
-        td { word-break: break-word; }
-        th { background: #f8fafc; color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 700; }
-        .badge-dizimo { background: #dbeafe; color: #1d4ed8; }
-        .badge-oferta { background: #dcfce7; color: #15803d; }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #fff;
+        }
+
+        /* Botões */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+            color: #fff;
+        }
+
+        .btn-primary { background: var(--brand); }
+        .btn-blue { background: var(--blue); }
+        .btn-red { background: var(--red); }
+        .btn-slate { background: #64748b; }
+        .btn-sm { padding: 5px 9px; font-size: 11px; border-radius: 6px; }
+        .btn-full { width: 100%; justify-content: center; margin-top: 6px; }
+        .btn-primary:hover { opacity: .9; }
+        .btn-blue:hover { background: #0369a1; }
+        .btn-red:hover { background: #b91c1c; }
+        .btn-slate:hover { background: #475569; }
+
+        /* Tabela */
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 9px 10px;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            color: var(--text);
+        }
+
+        tbody tr:hover { background: #f8fafc; }
+
+        .empty-row td {
+            text-align: center;
+            color: var(--muted);
+            padding: 32px;
+            font-size: 13px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 99px;
+            font-size: 10.5px;
+            font-weight: 700;
+        }
+
+        .badge-dizimo  { background: #dbeafe; color: #1d4ed8; }
+        .badge-oferta  { background: #dcfce7; color: #15803d; }
         .badge-missoes { background: #e0f2fe; color: #0369a1; }
-        .badge-outros { background: #ecfeff; color: #0f766e; }
-        .msg { font-size: 13px; margin-top: 8px; min-height: 18px; }
-        .msg.ok { color: #0f766e; } .msg.error { color: #b91c1c; }
-        .pag { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; align-items: center; }
-        .pag button { border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
-        .pag button:disabled { opacity: .45; cursor: not-allowed; }
-        .pag span { font-size: 12px; color: #64748b; }
-        @media (max-width: 1180px) { .main-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 900px) {
-            .filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .filtros #filtroNome { grid-column: 1 / -1; }
+        .badge-outros  { background: #f1f5f9; color: #475569; }
+
+        /* Paginação */
+        .pag {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
-        @media (max-width: 700px) {
-            .top-cards { grid-template-columns: 1fr; }
-            .form-row { grid-template-columns: 1fr; }
-            .filtros { grid-template-columns: 1fr; }
-            .filtros #filtroNome { grid-column: auto; }
+
+        .pag-info { font-size: 12px; color: var(--muted); }
+
+        .pag-btns { display: flex; gap: 6px; }
+
+        .pag-btn {
+            padding: 6px 12px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text);
+            transition: all .2s;
         }
+
+        .pag-btn:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); }
+        .pag-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+        /* Formulário */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13.5px;
+            color: var(--text);
+            background: var(--bg);
+            width: 100%;
+            transition: border-color .2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #fff;
+        }
+
+        .form-group textarea { resize: vertical; min-height: 60px; }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Status msg */
+        .status-msg {
+            font-size: 12.5px;
+            min-height: 18px;
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-msg.ok { background: #dcfce7; color: #15803d; }
+        .status-msg.error { background: #fee2e2; color: #dc2626; }
+
+        /* Preview */
+        .preview-box {
+            background: var(--bg);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--text);
+        }
+        .preview-box strong { color: var(--brand); }
+        .preview-box small { display: block; color: var(--muted); margin-top: 4px; }
+
+        /* Tipos de Receitas */
+        .tipo-natureza {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .natureza-e { background: #dcfce7; color: #15803d; }
+        .natureza-s { background: #fee2e2; color: #dc2626; }
     </style>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-title="Dízimos e Ofertas" data-shell-breadcrumb="LDFP / Tesouraria / Dízimos" data-shell-active="dizimos.html" data-shell-chip="Tesouraria ativa" data-shell-role="Admin financeiro">
-<main class="main-content enterprise-main">
-<div class="enterprise-page-shell">
-    <div class="enterprise-page-hero" style="margin-bottom: 16px;">
-        <div>
-            <h2>Dízimos e Ofertas</h2>
-            <p>Controle de entradas por competência com filtros, indicadores e histórico detalhado.</p>
+<body class="theme-petroleo enterprise-shell-page"
+    data-shell-title="Dízimos & Ofertas"
+    data-shell-breadcrumb="LDFP / Tesouraria / Dízimos"
+    data-shell-active="dizimos.html"
+    data-shell-chip="Tesouraria"
+    data-shell-role="Financeiro">
+
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
+            <div class="enterprise-container">
+
+                <!-- Hero Section -->
+                <div class="finance-hero">
+                    <div class="finance-hero-content">
+                        <h1 class="finance-hero-title">Dízimos & Ofertas</h1>
+                        <p class="finance-hero-description">Gerencie todas as entradas financeiras da igreja.</p>
+                    </div>
+                    <div class="finance-hero-badge">
+                        <span class="badge-outstanding">
+                            <i class="fa-solid fa-lock"></i>
+                            Ciclo Ativo: ABR/2026
+                        </span>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="kpi-grid">
+                    <div class="kpi-card kpi-total">
+                        <small>Total Geral</small>
+                        <strong id="kpiTotal">R$ 0,00</strong>
+                        <span id="kpiCount">0 lançamentos</span>
+                    </div>
+                    <div class="kpi-card kpi-dizimo">
+                        <small>Dízimos</small>
+                        <strong id="kpiDizimo">R$ 0,00</strong>
+                    </div>
+                    <div class="kpi-card kpi-oferta">
+                        <small>Ofertas</small>
+                        <strong id="kpiOferta">R$ 0,00</strong>
+                    </div>
+                    <div class="kpi-card kpi-missoes">
+                        <small>Missões</small>
+                        <strong id="kpiMissoes">R$ 0,00</strong>
+                    </div>
+                    <div class="kpi-card kpi-outros">
+                        <small>Outros</small>
+                        <strong id="kpiOutros">R$ 0,00</strong>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="inner-tabs">
+                    <button class="inner-tab active" data-tab="lancamentos">
+                        <i class="fa-solid fa-hand-holding-dollar"></i> Lançamentos
+                    </button>
+                    <button class="inner-tab" data-tab="tipos">
+                        <i class="fa-solid fa-tags"></i> Tipos de Receitas
+                    </button>
+                </div>
+
+                <!-- Lançamentos Panel -->
+                <div class="inner-panel active" id="panel-lancamentos">
+                    <div class="main-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-list"></i> Lançamentos Recentes</h3>
+                            </div>
+                            <div class="filter-bar">
+                                <div class="filter-group">
+                                    <label for="filtroComp">Competência</label>
+                                    <input type="month" id="filtroComp">
+                                </div>
+                                <div class="filter-group">
+                                    <label for="filtroTipo">Tipo</label>
+                                    <select id="filtroTipo">
+                                        <option value="">Todos</option>
+                                        <option value="dizimo">Dízimo</option>
+                                        <option value="oferta">Oferta</option>
+                                        <option value="missoes">Missões</option>
+                                        <option value="outros">Outros</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="filtroNome">Membro</label>
+                                    <input type="text" id="filtroNome" placeholder="Nome do membro">
+                                </div>
+                                <button class="btn btn-blue" id="btnFiltrar">
+                                    <i class="fa-solid fa-filter"></i> Filtrar
+                                </button>
+                            </div>
+
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Membro</th>
+                                            <th>Competência</th>
+                                            <th>Tipo</th>
+                                            <th>Valor</th>
+                                            <th>Observação</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbDizimos">
+                                        <!-- Dados carregados via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="pag">
+                                <span id="pagInfo" class="pag-info">Pág 1 de 1</span>
+                                <div class="pag-btns">
+                                    <button class="pag-btn" id="btnAnterior" disabled><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+                                    <button class="pag-btn" id="btnProximo" disabled>Próximo <i class="fa-solid fa-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            <div id="msgLista" class="status-msg"></div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-plus"></i> Novo Lançamento</h3>
+                            </div>
+                            <form id="formDizimo">
+                                <div class="form-group">
+                                    <label for="membroNome">Membro</label>
+                                    <input type="text" id="membroNome" placeholder="Nome do membro" required>
+                                </div>
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label for="valor">Valor</label>
+                                        <input type="number" id="valor" step="0.01" placeholder="0,00" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tipo">Tipo</label>
+                                        <select id="tipo" required>
+                                            <option value="dizimo">Dízimo</option>
+                                            <option value="oferta">Oferta</option>
+                                            <option value="missoes">Missões</option>
+                                            <option value="outros">Outros</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="competencia">Competência</label>
+                                    <input type="month" id="competencia" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="observacao">Observação (opcional)</label>
+                                    <textarea id="observacao" rows="2"></textarea>
+                                </div>
+                                <div class="preview-box">
+                                    Registrar: <strong id="previewValor">R$ 0,00</strong> (<span id="previewTipo">Dízimo</span>) de <strong id="previewMembro">Membro</strong> para <strong id="previewComp">Mês/Ano</strong>.
+                                    <small id="previewObs"></small>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-full">
+                                    <i class="fa-solid fa-circle-plus"></i> Registrar Lançamento
+                                </button>
+                                <div id="msgForm" class="status-msg"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tipos de Receitas Panel -->
+                <div class="inner-panel" id="panel-tipos">
+                    <div class="main-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-tags"></i> Tipos Cadastrados</h3>
+                            </div>
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Natureza</th>
+                                            <th>Categoria</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbTipos">
+                                        <!-- Dados carregados via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="msgTiposLista" class="status-msg"></div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 id="tipoFormTitle"><i class="fa-solid fa-plus"></i> Novo Tipo</h3>
+                            </div>
+                            <form id="formTipo">
+                                <input type="hidden" id="tipoEditId">
+                                <div class="form-group">
+                                    <label for="tipoNome">Nome do Tipo</label>
+                                    <input type="text" id="tipoNome" placeholder="Ex: Dízimo, Oferta de Missões" required>
+                                </div>
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label for="tipoNatureza">Natureza</label>
+                                        <select id="tipoNatureza" required>
+                                            <option value="entrada">Entrada</option>
+                                            <option value="saida">Saída</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tipoCategoria">Categoria</label>
+                                        <select id="tipoCategoria" required>
+                                            <option value="dizimo">Dízimo</option>
+                                            <option value="oferta">Oferta</option>
+                                            <option value="missoes">Missões</option>
+                                            <option value="campanha">Campanha</option>
+                                            <option value="social">Social</option>
+                                            <option value="manutencao">Manutenção</option>
+                                            <option value="outros">Outros</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tipoDescricao">Descrição (opcional)</label>
+                                    <textarea id="tipoDescricao" rows="2"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-full">
+                                    <i class="fa-solid fa-save"></i> <span id="tipoSubmitLabel">Criar Tipo</span>
+                                </button>
+                                <button type="button" class="btn btn-slate btn-full" id="btnCancelarTipo" style="display:none; margin-top: 8px;" onclick="cancelarTipo()">
+                                    <i class="fa-solid fa-xmark"></i> Cancelar
+                                </button>
+                                <div id="msgTiposForm" class="status-msg"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        <div class="enterprise-page-badge"><i class="fa-solid fa-hand-holding-dollar"></i> Tesouraria</div>
-    </div>
+    </main>
 
-<div class="wrap" style="padding: 0; max-width: 100%;">
+    <!-- Scripts do Shell (sempre no final do body) -->
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
 
-    <!-- KPIs -->
-    <div class="top-cards">
-        <div class="kpi total"><small>Total Geral</small><strong id="kpiTotal">R$ 0,00</strong></div>
-        <div class="kpi dizimo"><small>Dízimos</small><strong id="kpiDizimo">R$ 0,00</strong></div>
-        <div class="kpi oferta"><small>Ofertas</small><strong id="kpiOferta">R$ 0,00</strong></div>
-        <div class="kpi missoes"><small>Missões</small><strong id="kpiMissoes">R$ 0,00</strong></div>
-        <div class="kpi outros"><small>Outros / Lançamentos</small><strong id="kpiOutros">R$ 0,00 <span id="kpiCount" style="font-size:1rem;color:#94a3b8;font-weight:600;"></span></strong></div>
-    </div>
-
-    <div class="main-grid">
-
-        <!-- Lista -->
-        <section class="card">
-            <div class="card-header">
-                <h2><i class="fa-solid fa-hand-holding-dollar"></i> Lançamentos</h2>
-                <div class="filtros">
-                    <input type="month" id="filtroComp" title="Filtrar competência">
-                    <select id="filtroTipo" title="Filtrar tipo">
-                        <option value="">Todos os tipos</option>
-                        <option value="dizimo">Dízimo</option>
-                        <option value="oferta">Oferta</option>
-                        <option value="missoes">Missões</option>
-                        <option value="outros">Outros</option>
-                    </select>
-                    <input type="text" id="filtroNome" placeholder="Buscar por nome...">
-                    <button class="btn" style="background:#2563eb;" type="button" id="btnFiltrar">Filtrar</button>
-                </div>
-            </div>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Competência</th>
-                            <th>Tipo</th>
-                            <th>Valor</th>
-                            <th>Obs</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbDizimos"></tbody>
-                </table>
-            </div>
-            <div class="pag">
-                <button id="btnAnterior" type="button" disabled>&#8592; Anterior</button>
-                <span id="pagInfo">Pág 1</span>
-                <button id="btnProximo" type="button" disabled>Próxima &#8594;</button>
-            </div>
-            <p class="msg" id="msgLista"></p>
-        </section>
-
-        <!-- Formulário -->
-        <section class="card">
-            <div class="card-header">
-                <h2><i class="fa-solid fa-plus"></i> Novo lançamento</h2>
-            </div>
-            <form id="formDizimo">
-                <div class="form-row">
-                    <input class="full" type="text" id="membroNome" placeholder="Nome do membro *" required>
-                    <input type="text" id="valor" placeholder="Valor (Ex: 150,00) *" required>
-                    <select id="tipo">
-                        <option value="dizimo">Dízimo</option>
-                        <option value="oferta">Oferta</option>
-                        <option value="missoes">Missões</option>
-                        <option value="outros">Outros</option>
-                    </select>
-                    <input class="full" type="month" id="competencia" required>
-                    <textarea class="full" id="observacao" placeholder="Observação (opcional)"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Registrar</button>
-            </form>
-            <p class="msg" id="msgForm"></p>
-        </section>
-
-    </div>
-</div>
-</div>
-</main>
-
-<script src="session.js?v=20260501"></script>
-<script src="enterprise-shell.js?v=20260501"></script>
-<script>
+    <script>
     requireAuthSession();
 
-    const tbDizimos = document.getElementById('tbDizimos');
-    const msgLista = document.getElementById('msgLista');
-    const msgForm = document.getElementById('msgForm');
-    const btnAnterior = document.getElementById('btnAnterior');
-    const btnProximo = document.getElementById('btnProximo');
-    const pagInfo = document.getElementById('pagInfo');
+    // Funções auxiliares
+    const $ = id => document.getElementById(id);
+    const fmtVal = val => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+    const monthToComp = monthStr => monthStr ? monthStr.replace('-', '') : '';
+    const compToDisplay = compStr => {
+        if (!compStr || compStr.length !== 6) return compStr;
+        return `${compStr.substring(4, 6)}/${compStr.substring(0, 4)}`;
+    };
+
+    const badgeClass = {
+        dizimo: 'badge-dizimo',
+        oferta: 'badge-oferta',
+        missoes: 'badge-missoes',
+        outros: 'badge-outros'
+    };
+    const tipoLabels = {
+        dizimo: 'Dízimo',
+        oferta: 'Oferta',
+        missoes: 'Missões',
+        outros: 'Outros'
+    };
 
     let currentPage = 1;
     let totalPages = 1;
 
-    function setMsg(el, text, isError = false) {
-        el.className = isError ? 'msg error' : 'msg ok';
-        el.textContent = text || '';
-    }
-
-    function fmtVal(v) {
-        return 'R$ ' + Number(v).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    }
-
-    function competenciaParaExibicao(comp) {
-        if (!comp) return '-';
-        const [mes, ano] = comp.split('/');
-        const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-        return `${meses[parseInt(mes, 10) - 1]} ${ano}`;
-    }
-
-    function monthInputToComp(val) {
-        if (!val) return '';
-        const [ano, mes] = val.split('-');
-        return `${mes}/${ano}`;
-    }
-
-    function compToMonthInput(comp) {
-        if (!comp) return '';
-        const [mes, ano] = comp.split('/');
-        return `${ano}-${mes}`;
-    }
-
-    async function loadTotais(competencia) {
-        const params = competencia ? `?competencia=${encodeURIComponent(competencia)}` : '';
-        const r = await fetch(`/dizimos/totais${params}`);
-        const d = await r.json().catch(() => ({}));
-        if (r.ok) {
-            document.getElementById('kpiTotal').textContent = fmtVal(d.totalGeral);
-            document.getElementById('kpiDizimo').textContent = fmtVal(d.totalDizimos);
-            document.getElementById('kpiOferta').textContent = fmtVal(d.totalOfertas);
-            document.getElementById('kpiMissoes').textContent = fmtVal(d.totalMissoes);
-            document.getElementById('kpiOutros').textContent = fmtVal(d.totalOutros);
-            document.getElementById('kpiCount').textContent = `(${d.totalLancamentos})`;
+    // Mensagens de status
+    function setMsg(id, msg, type = '') {
+        const el = $(id);
+        if (el) {
+            el.textContent = msg;
+            el.className = `status-msg ${type}`;
+            if (msg) {
+                setTimeout(() => {
+                    el.textContent = '';
+                    el.className = 'status-msg';
+                }, 5000);
+            }
         }
+    }
+
+    // Lógica das abas
+    document.querySelectorAll('.inner-tab').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.inner-tab').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.inner-panel').forEach(panel => panel.classList.remove('active'));
+
+            button.classList.add('active');
+            $(`panel-${button.dataset.tab}`).classList.add('active');
+
+            // Atualiza a URL sem recarregar a página
+            const url = new URL(window.location);
+            url.searchParams.set('tab', button.dataset.tab);
+            window.history.pushState({}, '', url);
+        });
+    });
+
+    // Ativa a aba correta ao carregar a página (se houver 'tab' na URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab');
+    if (activeTab) {
+        const tabButton = document.querySelector(`.inner-tab[data-tab="${activeTab}"]`);
+        if (tabButton) {
+            tabButton.click(); // Simula o clique para ativar a aba
+        }
+    } else {
+        // Se não houver tab na URL, garante que a primeira aba esteja ativa
+        document.querySelector('.inner-tab[data-tab="lancamentos"]').click();
+    }
+
+
+    // Preview do formulário de lançamento
+    function updatePreview() {
+        const valor = parseFloat($('valor').value.trim().replace(',', '.')) || 0;
+        const tipo = $('tipo').value;
+        const membroNome = $('membroNome').value.trim() || 'Membro';
+        const competencia = $('competencia').value;
+        const observacao = $('observacao').value.trim();
+
+        $('previewValor').textContent = fmtVal(valor);
+        $('previewTipo').textContent = tipoLabels[tipo] || tipo;
+        $('previewMembro').textContent = membroNome;
+        $('previewComp').textContent = competencia ? compToDisplay(monthToComp(competencia)) : 'Mês/Ano';
+        $('previewObs').textContent = observacao ? `Obs: ${observacao}` : '';
+    }
+
+    $('valor').addEventListener('input', updatePreview);
+    $('tipo').addEventListener('change', updatePreview);
+    $('membroNome').addEventListener('input', updatePreview);
+    $('competencia').addEventListener('input', updatePreview);
+    $('observacao').addEventListener('input', updatePreview);
+
+    // Lógica de carregamento e CRUD de Dízimos
+    async function loadTotais() {
+        const comp = monthToComp($('filtroComp').value);
+        const params = comp ? `?competencia=${encodeURIComponent(comp)}` : '';
+        try {
+            const r = await fetch(`/dizimos/totais${params}`);
+            const d = await r.json();
+            if (r.ok) {
+                $('kpiTotal').textContent = fmtVal(d.totalGeral);
+                $('kpiDizimo').textContent = fmtVal(d.totalDizimos);
+                $('kpiOferta').textContent = fmtVal(d.totalOfertas);
+                $('kpiMissoes').textContent = fmtVal(d.totalMissoes);
+                $('kpiOutros').textContent = fmtVal(d.totalOutros);
+                $('kpiCount').textContent = `${d.totalLancamentos} lançamentos`;
+            }
+        } catch (e) { /* console.error("Erro ao carregar totais:", e); */ }
     }
 
     async function loadLista(page = 1) {
-        const competencia = monthInputToComp(document.getElementById('filtroComp').value);
-        const tipo = document.getElementById('filtroTipo').value;
-        const membroNome = document.getElementById('filtroNome').value.trim();
-
+        const comp = monthToComp($('filtroComp').value);
+        const tipo = $('filtroTipo').value;
+        const nome = $('filtroNome').value.trim();
         const params = new URLSearchParams({ page, limit: 50 });
-        if (competencia) params.set('competencia', competencia);
+        if (comp) params.set('competencia', comp);
         if (tipo) params.set('tipo', tipo);
-        if (membroNome) params.set('membroNome', membroNome);
+        if (nome) params.set('membroNome', nome);
 
-        const r = await fetch(`/dizimos?${params}`);
-        const d = await r.json().catch(() => ({ items: [], meta: { page: 1, totalPages: 1 } }));
+        try {
+            const r = await fetch(`/dizimos?${params}`);
+            const d = await r.json();
+            if (!r.ok) { setMsg('msgLista', d.error || 'Erro ao carregar.', 'error'); return; }
 
-        if (!r.ok) {
-            setMsg(msgLista, d.error || 'Erro ao carregar.', true);
-            return;
+            const items = d.items || [];
+            totalPages = d.meta?.totalPages || 1;
+            currentPage = d.meta?.page || 1;
+
+            $('pagInfo').textContent = `Pág ${currentPage} de ${totalPages}`;
+            $('btnAnterior').disabled = currentPage <= 1;
+            $('btnProximo').disabled = currentPage >= totalPages;
+
+            if (!items.length) {
+                $('tbDizimos').innerHTML = `
+                    <tr class="empty-row">
+                        <td colspan="6">
+                            <i class="fa-solid fa-inbox" style="font-size:20px;color:#cbd5e1;display:block;margin-bottom:6px;"></i>
+                            Nenhum lançamento encontrado.
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            $('tbDizimos').innerHTML = items.map(item => `
+                <tr>
+                    <td><strong>${item.membro_nome || '-'}</strong></td>
+                    <td style="color:var(--muted);">${compToDisplay(item.competencia)}</td>
+                    <td><span class="badge ${badgeClass[item.tipo] || 'badge-outros'}">${tipoLabels[item.tipo] || item.tipo}</span></td>
+                    <td class="val-green">${fmtVal(item.valor)}</td>
+                    <td style="color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.observacao || ''}">${item.observacao || '-'}</td>
+                    <td>
+                        <button class="btn btn-red btn-sm" onclick="excluir(${item.id})" title="Remover">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            setMsg('msgLista', '');
+        } catch (e) {
+            setMsg('msgLista', 'Falha de conexão ao carregar lançamentos.', 'error');
         }
-
-        const items = d.items || [];
-        totalPages = d.meta?.totalPages || 1;
-        currentPage = d.meta?.page || 1;
-
-        pagInfo.textContent = `Pág ${currentPage} de ${totalPages}`;
-        btnAnterior.disabled = currentPage <= 1;
-        btnProximo.disabled = currentPage >= totalPages;
-
-        if (!items.length) {
-            tbDizimos.innerHTML = '<tr><td colspan="6" style="color:#94a3b8;text-align:center;padding:20px;">Nenhum lançamento encontrado.</td></tr>';
-            return;
-        }
-
-        const badgeMap = { dizimo: 'badge-dizimo', oferta: 'badge-oferta', missoes: 'badge-missoes', outros: 'badge-outros' };
-        const labelMap = { dizimo: 'Dízimo', oferta: 'Oferta', missoes: 'Missões', outros: 'Outros' };
-
-        tbDizimos.innerHTML = items.map(item => `
-            <tr>
-                <td><strong>${item.membro_nome}</strong></td>
-                <td>${competenciaParaExibicao(item.competencia)}</td>
-                <td><span class="badge ${badgeMap[item.tipo] || 'badge-outros'}">${labelMap[item.tipo] || item.tipo}</span></td>
-                <td style="font-weight:700;color:#0f766e;">${fmtVal(item.valor)}</td>
-                <td style="color:#64748b;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.observacao || ''}">${item.observacao || '-'}</td>
-                <td><button class="btn btn-del" onclick="excluir(${item.id})" title="Remover">×</button></td>
-            </tr>
-        `).join('');
-
-        setMsg(msgLista, '');
     }
 
     async function refresh() {
-        const competencia = monthInputToComp(document.getElementById('filtroComp').value);
-        await Promise.all([loadLista(currentPage), loadTotais(competencia)]);
+        await Promise.all([loadLista(currentPage), loadTotais()]);
     }
 
     window.excluir = async function(id) {
-        if (!confirm('Remover este lançamento?')) return;
+        if (!confirm('Remover este lançamento? Esta ação não pode ser desfeita.')) return;
         const r = await fetch(`/dizimos/${id}`, { method: 'DELETE' });
-        if (r.ok) {
-            setMsg(msgLista, 'Removido com sucesso.');
-            refresh();
-        } else {
-            const d = await r.json().catch(() => ({}));
-            setMsg(msgLista, d.error || 'Erro ao remover.', true);
-        }
+        if (r.ok) { setMsg('msgLista', 'Lançamento removido.', 'ok'); refresh(); }
+        else { const d = await r.json().catch(() => ({})); setMsg('msgLista', d.error || 'Erro ao remover.', 'error'); }
     };
 
-    document.getElementById('btnFiltrar').addEventListener('click', () => {
-        currentPage = 1;
-        refresh();
-    });
+    $('btnFiltrar').addEventListener('click', () => { currentPage = 1; refresh(); });
+    $('btnAnterior').addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadLista(currentPage); } });
+    $('btnProximo').addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; loadLista(currentPage); } });
 
-    btnAnterior.addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadLista(currentPage); } });
-    btnProximo.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; loadLista(currentPage); } });
-
-    document.getElementById('formDizimo').addEventListener('submit', async (e) => {
+    $('formDizimo').addEventListener('submit', async e => {
         e.preventDefault();
-        setMsg(msgForm, '');
+        setMsg('msgForm', '');
 
-        const valorRaw = document.getElementById('valor').value.trim().replace(',', '.');
-        const valor = parseFloat(valorRaw);
-        if (!valor || valor <= 0) {
-            setMsg(msgForm, 'Informe um valor válido.', true);
-            return;
-        }
-
-        const competenciaRaw = document.getElementById('competencia').value;
-        if (!competenciaRaw) {
-            setMsg(msgForm, 'Selecione a competência.', true);
-            return;
-        }
+        const valorRaw = parseFloat($('valor').value.trim().replace(',', '.'));
+        if (!valorRaw || valorRaw <= 0) { setMsg('msgForm', 'Informe um valor válido.', 'error'); return; }
+        if (!$('competencia').value) { setMsg('msgForm', 'Selecione a competência.', 'error'); return; }
 
         const body = {
-            membroNome: document.getElementById('membroNome').value.trim(),
-            valor,
-            competencia: monthInputToComp(competenciaRaw),
-            tipo: document.getElementById('tipo').value,
-            observacao: document.getElementById('observacao').value.trim() || null
+            membroNome: $('membroNome').value.trim(),
+            valor: valorRaw,
+            competencia: monthToComp($('competencia').value),
+            tipo: $('tipo').value,
+            observacao: $('observacao').value.trim() || null
         };
 
         const r = await fetch('/dizimos', {
@@ -320,26 +830,124 @@
         });
         const d = await r.json().catch(() => ({}));
 
-        if (!r.ok) {
-            setMsg(msgForm, d.error || 'Erro ao registrar.', true);
-            return;
-        }
+        if (!r.ok) { setMsg('msgForm', d.error || 'Erro ao registrar.', 'error'); return; }
 
-        setMsg(msgForm, 'Lançamento registrado!');
-        document.getElementById('membroNome').value = '';
-        document.getElementById('valor').value = '';
-        document.getElementById('observacao').value = '';
+        setMsg('msgForm', 'Lançamento registrado com sucesso!', 'ok');
+        $('formDizimo').reset();
+        updatePreview();
         currentPage = 1;
         refresh();
     });
 
-    // Competência padrão = mês atual
+    /* Tipos de receitas */
+    const natLabel = { entrada: 'Entrada', saida: 'Saída' };
+    const catLabel = { dizimo: 'Dízimo', oferta: 'Oferta', missoes: 'Missões', campanha: 'Campanha', social: 'Social', manutencao: 'Manutenção', outros: 'Outros' };
+
+    async function loadTipos() {
+        try {
+            const r = await fetch('/tipos-receita');
+            const rows = await r.json().catch(() => []);
+
+            if (!r.ok) { setMsg('msgTiposLista', rows.error || 'Erro ao carregar tipos.', 'error'); return; }
+
+            if (!rows.length) {
+                $('tbTipos').innerHTML = `<tr class="empty-row"><td colspan="5">Nenhum tipo cadastrado.</td></tr>`;
+                return;
+            }
+
+            $('tbTipos').innerHTML = rows.map(t => `
+                <tr>
+                    <td><strong>${t.nome}</strong>${t.descricao ? `<br><small style="color:var(--muted)">${t.descricao}</small>` : ''}</td>
+                    <td>
+                        <span class="tipo-natureza ${t.natureza === 'entrada' ? 'natureza-e' : 'natureza-s'}">
+                            <i class="fa-solid ${t.natureza === 'entrada' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                            ${natLabel[t.natureza] || t.natureza}
+                        </span>
+                    </td>
+                    <td>${catLabel[t.categoria] || t.categoria || '-'}</td>
+                    <td>
+                        <span class="badge" style="background:${t.ativo !== false ? '#dcfce7' : '#f1f5f9'};color:${t.ativo !== false ? '#15803d' : '#64748b'}">
+                            ${t.ativo !== false ? 'Ativo' : 'Inativo'}
+                        </span>
+                    </td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn btn-blue btn-sm" onclick="editarTipo(${t.id})" title="Editar">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn btn-red btn-sm" onclick="excluirTipo(${t.id})" title="Excluir">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            window._tiposCache = rows;
+            setMsg('msgTiposLista', '');
+        } catch (e) {
+            setMsg('msgTiposLista', 'Falha de conexão ao carregar tipos.', 'error');
+        }
+    }
+
+    window.editarTipo = function(id) {
+        const t = (window._tiposCache || []).find(x => x.id === id);
+        if (!t) return;
+        $('tipoEditId').value = id;
+        $('tipoNome').value = t.nome;
+        $('tipoNatureza').value = t.natureza || 'entrada';
+        $('tipoCategoria').value = t.categoria || 'outros';
+        $('tipoDescricao').value = t.descricao || '';
+        $('tipoFormTitle').innerHTML = '<i class="fa-solid fa-pen"></i> Editar tipo';
+        $('tipoSubmitLabel').textContent = 'Salvar alterações';
+        $('btnCancelarTipo').style.display = '';
+    };
+
+    window.excluirTipo = async function(id) {
+        if (!confirm('Remover este tipo de receita?')) return;
+        const r = await fetch(`/tipos-receita/${id}`, { method: 'DELETE' });
+        if (r.ok) { setMsg('msgTiposLista', 'Tipo removido.', 'ok'); loadTipos(); }
+        else { const d = await r.json().catch(() => ({})); setMsg('msgTiposLista', d.error || 'Erro ao remover.', 'error'); }
+    };
+
+    function cancelarTipo() {
+        $('formTipo').reset();
+        $('tipoEditId').value = '';
+        $('tipoFormTitle').innerHTML = '<i class="fa-solid fa-plus"></i> Novo tipo';
+        $('tipoSubmitLabel').textContent = 'Criar tipo';
+        $('btnCancelarTipo').style.display = 'none';
+        setMsg('msgTiposForm', '');
+    }
+
+    $('formTipo').addEventListener('submit', async e => {
+        e.preventDefault();
+        const editId = $('tipoEditId').value;
+        const body = {
+            nome: $('tipoNome').value.trim(),
+            natureza: $('tipoNatureza').value,
+            categoria: $('tipoCategoria').value,
+            descricao: $('tipoDescricao').value.trim() || null
+        };
+
+        const r = await fetch(editId ? `/tipos-receita/${editId}` : '/tipos-receita', {
+            method: editId ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const d = await r.json().catch(() => ({}));
+
+        if (!r.ok) { setMsg('msgTiposForm', d.error || 'Erro ao salvar.', 'error'); return; }
+
+        setMsg('msgTiposForm', editId ? 'Tipo atualizado!' : 'Tipo criado!', 'ok');
+        cancelarTipo();
+        loadTipos();
+    });
+
+    /* INIT */
     const hoje = new Date();
     const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-    document.getElementById('competencia').value = mesAtual;
-    document.getElementById('filtroComp').value = mesAtual;
-
+    $('competencia').value = mesAtual;
+    $('filtroComp').value = mesAtual;
+    updatePreview();
     refresh();
-</script>
+    loadTipos();
+    </script>
 </body>
 </html>

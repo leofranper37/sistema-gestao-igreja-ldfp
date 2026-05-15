@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Cadastro da Igreja</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos base do seu tema LDFP */
+        :root {
+            --brand:   #0f766e;
+            --teal:    #0d9488;
+            --blue:    #0284c7;
+            --green:   #16a34a;
+            --red:     #dc2626;
+            --yellow:  #f59e0b;
+            --surface: #ffffff;
+            --bg:      #f1f5f9;
+            --border:  #e2e8f0;
+            --text:    #0f172a;
+            --muted:   #64748b;
+            --radius:  14px;
+            --shadow:  0 4px 16px rgba(15,23,42,.08);
+        }
+
+        /* Reset básico */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alinha ao topo para formulários longos */
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .register-card {
+            background: var(--surface);
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 700px; /* Mais largo para mais campos */
+            text-align: center;
+        }
+
+        .logo img {
+            height: 80px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--brand);
+        }
+
+        p.subtitle {
+            color: var(--muted);
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            text-align: left;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        .form-section:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .form-section h3 {
+            font-size: 1.3rem;
+            color: var(--text);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="tel"],
+        .form-group input[type="url"],
+        .form-group input[type="password"],
+        .form-group input[type="file"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text);
+            background-color: var(--bg);
+            transition: border-color 0.2s;
+        }
+        .form-group input[type="file"] {
+            padding: 8px 12px; /* Ajuste para input file */
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--brand);
+            background-color: #fff;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1; /* Ocupa todas as colunas */
+        }
+
+        .btn-register {
+            background-color: var(--brand);
+            color: white;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-register:hover {
+            background-color: #0d635c;
+        }
+        .btn-register:disabled {
+            background-color: var(--muted);
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            display: none; /* Escondido por padrão */
+            text-align: left;
+        }
+        .status-message.error {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+        .status-message.success {
+            background-color: #dcfce7;
+            color: #16a34a;
+            border: 1px solid #86efac;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <div class="logo">
+            <img src="logo.png" alt="LDFP">
+        </div>
+        <h2>Cadastro da Sua Igreja no LDFP</h2>
+        <p class="subtitle">Preencha os dados para configurar o sistema e o App do Membro.</p>
+
+        <form id="formCadastroIgreja">
+            <!-- Seção: Dados da Igreja -->
+            <div class="form-section">
+                <h3><i class="fa-solid fa-church"></i> Informações da Igreja</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nomeOficial">Nome Oficial da Igreja <span style="color:red;">*</span></label>
+                        <input id="nomeOficial" type="text" placeholder="Ex: Igreja Evangélica Assembleia de Deus" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nomeFantasia">Nome Fantasia (se diferente)</label>
+                        <input id="nomeFantasia" type="text" placeholder="Ex: AD Central">
+                    </div>
+                    <div class="form-group">
+                        <label for="cnpj">CNPJ <span style="color:red;">*</span></label>
+                        <input id="cnpj" type="text" placeholder="00.000.000/0000-00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefoneIgreja">Telefone Principal <span style="color:red;">*</span></label>
+                        <input id="telefoneIgreja" type="tel" placeholder="(XX) XXXXX-XXXX" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="emailIgreja">Email de Contato <span style="color:red;">*</span></label>
+                        <input id="emailIgreja" type="email" placeholder="contato@suaigreja.com.br" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="siteIgreja">Site Oficial</label>
+                        <input id="siteIgreja" type="url" placeholder="https://www.suaigreja.com.br">
+                    </div>
+                    <div class="form-group">
+                        <label for="planoSelecionado">Plano selecionado</label>
+                        <input id="planoSelecionado" type="text" readonly placeholder="Selecione um plano na página anterior">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="cepIgreja">CEP <span style="color:red;">*</span></label>
+                        <input id="cepIgreja" type="text" placeholder="XXXXX-XXX" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ruaIgreja">Rua <span style="color:red;">*</span></label>
+                        <input id="ruaIgreja" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="numeroIgreja">Número <span style="color:red;">*</span></label>
+                        <input id="numeroIgreja" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="complementoIgreja">Complemento</label>
+                        <input id="complementoIgreja" type="text">
+                    </div>
+                    <div class="form-group">
+                        <label for="bairroIgreja">Bairro <span style="color:red;">*</span></label>
+                        <input id="bairroIgreja" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cidadeIgreja">Cidade <span style="color:red;">*</span></label>
+                        <input id="cidadeIgreja" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="estadoIgreja">Estado <span style="color:red;">*</span></label>
+                        <input id="estadoIgreja" type="text" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="logoIgreja">Logo da Igreja (para o App do Membro) <span style="color:red;">*</span></label>
+                        <input id="logoIgreja" type="file" accept="image/*" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="msgBoasVindasApp">Mensagem de Boas-Vindas no App do Membro</label>
+                        <textarea id="msgBoasVindasApp" placeholder="Ex: 'Seja bem-vindo(a) ao nosso App! Aqui você encontra tudo sobre nossa igreja.'"></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="versiculoDizimos">Versículo de Dízimos e Ofertas (para o App)</label>
+                        <textarea id="versiculoDizimos" placeholder="Ex: 'Trazei todos os dízimos e ofertas à casa do tesouro.' (Ml 3:10)"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Redes Sociais -->
+            <div class="form-section">
+                <h3><i class="fa-solid fa-share-nodes"></i> Redes Sociais</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="facebookUrl">Facebook (URL)</label>
+                        <input id="facebookUrl" type="url" placeholder="https://facebook.com/suaigreja">
+                    </div>
+                    <div class="form-group">
+                        <label for="instagramUrl">Instagram (URL)</label>
+                        <input id="instagramUrl" type="url" placeholder="https://instagram.com/suaigreja">
+                    </div>
+                    <div class="form-group">
+                        <label for="youtubeUrl">YouTube (URL)</label>
+                        <input id="youtubeUrl" type="url" placeholder="https://youtube.com/suaigreja">
+                    </div>
+                    <div class="form-group">
+                        <label for="whatsappLink">Link WhatsApp (API ou Grupo)</label>
+                        <input id="whatsappLink" type="url" placeholder="https://wa.me/55XXYYYYYYYYY ou link de grupo">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Dados do Responsável (Administrador) -->
+            <div class="form-section">
+                <h3><i class="fa-solid fa-user-shield"></i> Dados do Administrador do Sistema</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nomeResponsavel">Nome Completo <span style="color:red;">*</span></label>
+                        <input id="nomeResponsavel" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cpfResponsavel">CPF <span style="color:red;">*</span></label>
+                        <input id="cpfResponsavel" type="text" placeholder="000.000.000-00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="emailResponsavel">Email (Login) <span style="color:red;">*</span></label>
+                        <input id="emailResponsavel" type="email" placeholder="admin@suaigreja.com.br" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefoneResponsavel">Telefone <span style="color:red;">*</span></label>
+                        <input id="telefoneResponsavel" type="tel" placeholder="(XX) XXXXX-XXXX" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="senhaResponsavel">Senha <span style="color:red;">*</span></label>
+                        <input id="senhaResponsavel" type="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmarSenha">Confirmar Senha <span style="color:red;">*</span></label>
+                        <input id="confirmarSenha" type="password" required>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-register" id="btnCadastrarIgreja">
+                <i class="fa-solid fa-check-circle"></i> Cadastrar Igreja e Acessar Painel
+            </button>
+            <div id="statusMessage" class="status-message"></div>
+        </form>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+
+        function getPlanoFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('plano');
+        }
+
+        const planoSlug = getPlanoFromUrl();
+        const nomesPlanos = {
+            bronze: 'Bronze - Igrejas nascendo',
+            hebrom: 'Hebrom - Igrejas em formação',
+            betel: 'Betel - Igrejas em crescimento',
+            siao: 'Sião - Operação avançada'
+        };
+
+        $('planoSelecionado').value = planoSlug
+            ? (nomesPlanos[planoSlug] || planoSlug)
+            : 'Nenhum plano selecionado (volte e escolha um plano)';
+
+        function applyMasks() {
+            $('cnpj').addEventListener('input', (e) => {
+                e.target.value = e.target.value
+                    .replace(/\D/g, '')
+                    .replace(/^(\d{2})(\d)/, '$1.$2')
+                    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+                    .replace(/\.(\d{3})(\d)/, '.$1/$2')
+                    .replace(/(\d{4})(\d)/, '$1-$2');
+            });
+
+            ['telefoneIgreja', 'telefoneResponsavel'].forEach((id) => {
+                $(id).addEventListener('input', (e) => {
+                    e.target.value = e.target.value
+                        .replace(/\D/g, '')
+                        .replace(/^(\d{2})(\d)/g, '($1) $2')
+                        .replace(/(\d)(\d{4})$/, '$1-$2');
+                });
+            });
+
+            $('cepIgreja').addEventListener('input', (e) => {
+                e.target.value = e.target.value
+                    .replace(/\D/g, '')
+                    .replace(/^(\d{5})(\d)/, '$1-$2');
+            });
+
+            $('cpfResponsavel').addEventListener('input', (e) => {
+                e.target.value = e.target.value
+                    .replace(/\D/g, '')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            });
+        }
+
+        applyMasks();
+
+        $('formCadastroIgreja').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = $('btnCadastrarIgreja');
+            const statusMessage = $('statusMessage');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cadastrando...';
+            statusMessage.style.display = 'none';
+
+            const senha = $('senhaResponsavel').value;
+            const confirmarSenha = $('confirmarSenha').value;
+
+            if (senha !== confirmarSenha) {
+                statusMessage.textContent = 'As senhas não coincidem.';
+                statusMessage.className = 'status-message error';
+                statusMessage.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Cadastrar Igreja e Acessar Painel';
+                return;
+            }
+
+            if (senha.length < 8) {
+                statusMessage.textContent = 'A senha deve ter no mínimo 8 caracteres.';
+                statusMessage.className = 'status-message error';
+                statusMessage.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Cadastrar Igreja e Acessar Painel';
+                return;
+            }
+
+            const formData = {
+                nomeOficial: $('nomeOficial').value,
+                nomeFantasia: $('nomeFantasia').value,
+                cnpj: $('cnpj').value,
+                telefoneIgreja: $('telefoneIgreja').value,
+                emailIgreja: $('emailIgreja').value,
+                siteIgreja: $('siteIgreja').value,
+                endereco: {
+                    cep: $('cepIgreja').value,
+                    rua: $('ruaIgreja').value,
+                    numero: $('numeroIgreja').value,
+                    complemento: $('complementoIgreja').value,
+                    bairro: $('bairroIgreja').value,
+                    cidade: $('cidadeIgreja').value,
+                    estado: $('estadoIgreja').value
+                },
+                msgBoasVindasApp: $('msgBoasVindasApp').value,
+                versiculoDizimos: $('versiculoDizimos').value,
+                redesSociais: {
+                    facebook: $('facebookUrl').value,
+                    instagram: $('instagramUrl').value,
+                    youtube: $('youtubeUrl').value,
+                    whatsapp: $('whatsappLink').value
+                },
+                responsavel: {
+                    nome: $('nomeResponsavel').value,
+                    cpf: $('cpfResponsavel').value,
+                    email: $('emailResponsavel').value,
+                    telefone: $('telefoneResponsavel').value,
+                    senha: senha
+                },
+                logoIgreja: $('logoIgreja').files[0] ? $('logoIgreja').files[0].name : null,
+                plano: nomesPlanos[planoSlug] ? planoSlug : 'hebrom'
+            };
+
+            try {
+                const payload = {
+                    igreja: formData.nomeOficial,
+                    nome: formData.responsavel.nome,
+                    email: formData.responsavel.email,
+                    senha: formData.responsavel.senha,
+                    plano: formData.plano
+                };
+
+                const resp = await fetch('/api/cadastro-igreja', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    throw new Error(result.error || 'Erro ao cadastrar igreja. Verifique os dados e tente novamente.');
+                }
+
+                if (window.saveAuthSession && result.token && result.user) {
+                    window.saveAuthSession(result);
+                }
+                if (result.user) {
+                    localStorage.setItem('ldfpUser', JSON.stringify(result.user));
+                }
+
+                statusMessage.textContent = 'Igreja cadastrada com sucesso! Redirecionando para o painel...';
+                statusMessage.className = 'status-message success';
+                statusMessage.style.display = 'block';
+
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1200);
+            } catch (error) {
+                statusMessage.textContent = error.message || 'Erro inesperado ao salvar.';
+                statusMessage.className = 'status-message error';
+                statusMessage.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Cadastrar Igreja e Acessar Painel';
+            }
+        });
+    </script>
+    <script src="session.js?v=20260501"></script>
+</body>
+</html>

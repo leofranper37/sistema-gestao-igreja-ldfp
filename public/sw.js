@@ -3,7 +3,7 @@
  * Handles caching, offline support, and background sync
  */
 
-const CACHE_NAME = 'ldfp-v4';
+const CACHE_NAME = 'ldfp-v7';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -16,6 +16,10 @@ const STATIC_ASSETS = [
     '/bancos_lancamentos.html',
     '/portaria.html',
     '/membros.html',
+    '/app_membro.html',
+    '/app_membro_v2.html',
+    '/app_midia.html',
+    '/dashboard_membro.html',
     '/style.css',
     '/app.css',
     '/app.js',

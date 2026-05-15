@@ -90,6 +90,20 @@
         .status-blocked { background-color: #fee2e2; color: #991b1b; }
 
         .plan-badge { font-weight: 700; color: var(--primary-blue); }
+
+        .action-button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+
+        .action-button:hover {
+            color: var(--primary-blue);
+        }
     </style>
 </head>
 <body>
@@ -105,14 +119,14 @@
         
         <div class="menu">
             <div class="menu-label">Negócio</div>
-            <a href="#" class="menu-item active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-            <a href="#" class="menu-item"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
-            <a href="#" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Assinaturas & Faturas</a>
+            <a href="#" class="menu-item active" data-page="__dashboard__"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="#" class="menu-item" data-page="__dashboard__"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+            <a href="#" class="menu-item" data-page="admin-assinaturas.html"><i class="fa-solid fa-file-invoice-dollar"></i> Assinaturas & Faturas</a>
             
             <div class="menu-label" style="margin-top: 20px;">Configurações SaaS</div>
-            <a href="#" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
-            <a href="admin-fabrica.html" class="menu-item"><i class="fa-solid fa-flask-vial"></i> Fábrica de Recursos</a>
-            <a href="#" class="menu-item"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
+            <a href="#" class="menu-item" data-page="admin-planos.html"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+            <a href="#" class="menu-item" data-page="admin-modulos.html"><i class="fa-solid fa-puzzle-piece"></i> Catálogo de Módulos</a>
+            <a href="#" class="menu-item" data-page="admin-sistema.html"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
         </div>
     </nav>
 
@@ -129,7 +143,7 @@
             </div>
         </header>
 
-        <div class="workspace">
+        <div class="workspace" id="mainContentArea">
             <div class="page-header">
                 <div>
                     <h1>Visão Geral do Negócio</h1>
@@ -216,6 +230,8 @@
             const superAdminRoles = new Set(['super-admin', 'super_admin', 'superadmin', 'master', 'owner', 'root', 'admin', 'administrador']);
             let allCustomers = [];
             let autoRefreshHandle = null;
+            const mainContentArea = document.getElementById('mainContentArea');
+            const dashboardTemplate = mainContentArea ? mainContentArea.innerHTML : '';
 
             function formatCurrencyBRL(value) {
                 const amount = Number(value || 0);
@@ -389,6 +405,7 @@
                     const badge = getStatusBadge(item.status_assinatura);
                     const responsibleName = item.responsavel_nome || 'Sem responsavel';
                     const responsibleEmail = item.responsavel_email || 'Sem email';
+                    const churchId = Number(item.id || 0);
 
                     return `
                         <tr>
@@ -405,10 +422,89 @@
                             <td>${memberCount} / ${maxMembers || '-'}</td>
                             <td><span class="status-badge ${badge.className}">${escapeHtml(badge.label)}</span></td>
                             <td>${escapeHtml(formatDate(item.trial_ends_at || item.created_at))}</td>
-                            <td><i class="fa-solid fa-ellipsis-vertical" style="cursor: pointer; padding: 5px;"></i></td>
+                            <td>
+                                <button class="action-button" onclick="window.loadContentPage('igreja_editar.html', { id: '${churchId}' })" title="Visualizar/Editar igreja">
+                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                </button>
+                            </td>
                         </tr>
                     `;
                 }).join('');
+            }
+
+            async function loadContentPage(pageName, params = {}) {
+                if (!mainContentArea) {
+                    return;
+                }
+
+                if (pageName === '__dashboard__') {
+                    mainContentArea.innerHTML = dashboardTemplate;
+                    setupTableFilters();
+                    setupActions();
+                    loadOverview().catch(() => {
+                        const tableBody = document.getElementById('customersTableBody');
+                        if (tableBody) {
+                            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger-red);">Erro ao carregar dados do painel.</td></tr>';
+                        }
+                    });
+                    return;
+                }
+
+                let url = String(pageName || '').trim();
+                const paramKeys = Object.keys(params || {});
+                if (paramKeys.length) {
+                    const queryString = new URLSearchParams(params).toString();
+                    url += `?${queryString}`;
+                }
+
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`Erro ${response.status} ao carregar ${url}`);
+                    }
+
+                    const html = await response.text();
+                    const parsed = new DOMParser().parseFromString(html, 'text/html');
+                    const extracted = parsed.querySelector('#mainContentArea')
+                        || parsed.querySelector('.workspace')
+                        || parsed.querySelector('main')
+                        || parsed.body;
+
+                    mainContentArea.innerHTML = extracted ? extracted.innerHTML : html;
+
+                    const scripts = Array.from(mainContentArea.querySelectorAll('script'));
+                    scripts.forEach((oldScript) => {
+                        const newScript = document.createElement('script');
+                        Array.from(oldScript.attributes).forEach((attr) => newScript.setAttribute(attr.name, attr.value));
+                        newScript.textContent = oldScript.textContent;
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                } catch (error) {
+                    mainContentArea.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--danger-red);"><i class="fa-solid fa-exclamation-triangle fa-2x"></i><p>Não foi possível carregar o conteúdo. ${escapeHtml(error.message)}</p></div>`;
+                }
+            }
+
+            window.loadContentPage = loadContentPage;
+
+            function setupSidebarNav() {
+                document.querySelectorAll('.menu-item[data-page]').forEach((link) => {
+                    if (link.dataset.bound === '1') {
+                        return;
+                    }
+
+                    link.dataset.bound = '1';
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const page = link.getAttribute('data-page');
+                        if (!page) {
+                            return;
+                        }
+
+                        document.querySelectorAll('.menu-item').forEach((item) => item.classList.remove('active'));
+                        link.classList.add('active');
+                        loadContentPage(page);
+                    });
+                });
             }
 
             function applyKpis(kpis) {
@@ -459,7 +555,7 @@
 
                 if (newChurchBtn) {
                     newChurchBtn.addEventListener('click', () => {
-                        window.location.href = 'criar_conta.html';
+                        loadContentPage('cadastro_igreja.html');
                     });
                 }
 
@@ -502,6 +598,7 @@
             setupSearch();
             setupTableFilters();
             setupActions();
+            setupSidebarNav();
             setupAutoRefresh();
 
             loadOverview().catch(() => {

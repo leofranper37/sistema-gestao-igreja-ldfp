@@ -1,13 +1,5 @@
 [
   {
-    "slug": "eden",
-    "nome": "Eden",
-    "subtitulo": "Comece sem custo",
-    "preco_mensal": 0,
-    "preco_anual": 0,
-    "features_json": "[\"App Web Instalavel (PWA)\",\"40 cadastros\",\"1 congregacao\",\"Recursos essenciais para iniciar\"]"
-  },
-  {
     "slug": "hebrom",
     "nome": "Hebrom",
     "subtitulo": "Igrejas em formacao",

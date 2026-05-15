@@ -3,183 +3,1080 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Alunos EBD</title>
+    <title>LDFP - EBD · Alunos</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        .page-wrap { padding: 24px 30px 30px; }
+        :root {
+            --brand:      #0f766e;
+            --blue:       #0284c7;
+            --blue-light: #e0f2fe;
+            --green:      #10b981;
+            --red:        #dc2626;
+            --yellow:     #f59e0b;
+            --purple:     #8b5cf6;
+            --surface:    #ffffff;
+            --bg:         #f1f5f9;
+            --border:     #e2e8f0;
+            --text:       #0f172a;
+            --muted:      #64748b;
+            --radius:     14px;
+            --shadow:     0 4px 16px rgba(15,23,42,.08);
+            --shadow-lg:  0 12px 32px rgba(15,23,42,.14);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .page-wrap {
+            padding: 24px 28px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Cabeçalho */
         .page-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
-            gap: 10px;
+            justify-content: space-between;
             flex-wrap: wrap;
+            gap: 12px;
         }
-        .btn-primary {
-            border: none;
-            border-radius: 8px;
-            padding: 9px 14px;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%);
-        }
-        .search-box {
+
+        .page-header-left h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: #fff;
-            border: 1px solid #dbe3ef;
-            padding: 8px 12px;
-            border-radius: 8px;
-            min-width: 260px;
+            gap: 10px;
         }
-        .search-box input { border: none; outline: none; font-size: 14px; width: 100%; }
-        .table-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-            overflow: hidden;
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th, td {
-            padding: 12px 14px;
-            text-align: left;
-            border-bottom: 1px solid #eef2f7;
+        .page-header-left h2 i { color: var(--purple); }
+
+        .page-header-left p {
             font-size: 13px;
-            color: #334155;
+            color: var(--muted);
+            margin-top: 4px;
         }
-        th {
-            background: #f8fafc;
-            color: #64748b;
-            font-weight: 700;
-            font-size: 11px;
-            text-transform: uppercase;
-        }
-        .actions-col { width: 110px; text-align: right; white-space: nowrap; }
-        .icon-btn {
-            border: 1px solid #e2e8f0;
-            background: #fff;
-            color: #64748b;
-            width: 30px;
-            height: 30px;
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 15px;
             border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
             cursor: pointer;
-            margin-left: 6px;
+            white-space: nowrap;
+            transition: all .2s;
         }
-        .icon-btn:hover {
-            background: #fff8e1;
-            color: #92400e;
-            border-color: #fcd34d;
+        .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+        .btn-primary { background: var(--purple); color: #fff; }
+        .btn-primary:hover { background: #6d28d9; }
+        .btn-ghost   { background: var(--bg); color: var(--muted); }
+        .btn-ghost:hover { background: var(--border); }
+        .btn-danger  { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+        .btn-danger:hover { background: var(--red); color: #fff; }
+
+        .btn-sm { padding: 7px 11px; font-size: 12px; border-radius: 7px; }
+
+        /* Layout dois painéis */
+        .two-col {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            align-items: start;
         }
-        .muted { color: #94a3b8; }
+        @media (max-width: 960px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-count {
+            font-size: 11px;
+            background: #f3e8ff;
+            color: #6d28d9;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .search-box {
+            position: relative;
+        }
+        .search-box i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: .8rem;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 9px 11px 9px 30px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--purple);
+            background: #fff;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .filter-row select {
+            border-radius: 7px;
+            border: 1.5px solid var(--border);
+            font-size: 12px;
+            padding: 7px 9px;
+            background: #f8fafc;
+            color: var(--muted);
+        }
+
+        /* Lista de alunos */
+        .student-list {
+            overflow-y: auto;
+            max-height: calc(100vh - 300px);
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .student-item:last-child { border-bottom: none; }
+        .student-item:hover { background: #f8fafc; }
+
+        .student-item.is-active {
+            background: #f3e8ff;
+            box-shadow: inset 4px 0 0 var(--purple);
+        }
+
+        .s-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            background: #a855f7;
+            color: #fff;
+            font-size: .8rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .s-info { flex: 1; min-width: 0; }
+        .s-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .s-sub {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .s-badge {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .badge-ativo   { background:#d1fae5; color:#065f46; }
+        .badge-inativo { background:#fee2e2; color:#991b1b; }
+        .badge-egresso { background:#e0f2fe; color:#0369a1; }
+
+        .empty-list {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .empty-list i {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #cbd5e1;
+            display: block;
+        }
+
+        /* Painel direito */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Hero aluno */
+        .student-hero {
+            border-radius: var(--radius);
+            padding: 22px 26px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, #6d28d9 0%, #4f46e5 100%);
+        }
+        .student-hero::before {
+            content:'';
+            position:absolute;
+            top:-50px; right:-40px;
+            width:160px; height:160px;
+            border-radius:50%;
+            background:rgba(255,255,255,.08);
+        }
+        .hero-ava {
+            width: 64px;
+            height: 64px;
+            border-radius: 999px;
+            border: 3px solid rgba(255,255,255,.35);
+            background: rgba(255,255,255,.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color:#fff;
+            flex-shrink: 0;
+            font-weight: 800;
+        }
+        .hero-body { flex:1; min-width:170px; }
+        .hero-name {
+            font-size: 19px;
+            font-weight: 800;
+            color: #fff;
+        }
+        .hero-name.ph {
+            color: rgba(255,255,255,.6);
+            font-style: italic;
+            font-weight: 400;
+            font-size: 15px;
+        }
+        .hero-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,.8);
+            margin-top: 3px;
+        }
+        .hero-tags {
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+            margin-top:9px;
+        }
+        .hero-tag {
+            padding: 3px 9px;
+            border-radius:999px;
+            font-size:10px;
+            font-weight:700;
+            color:#fff;
+            background:rgba(255,255,255,.18);
+            letter-spacing:.04em;
+            text-transform:uppercase;
+        }
+
+        .hero-actions {
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+        }
+
+        /* Abas */
+        .tabs-nav {
+            display:flex;
+            background:#f8fafc;
+            border-radius:var(--radius) var(--radius) 0 0;
+            border:1px solid var(--border);
+            border-bottom:none;
+            overflow-x:auto;
+            padding:6px 10px 0;
+            gap:4px;
+            scrollbar-width:none;
+        }
+        .tabs-nav::-webkit-scrollbar { display:none; }
+
+        .tab-btn {
+            border:none;
+            background:none;
+            padding:9px 14px 10px;
+            border-radius:9px 9px 0 0;
+            font-size:12px;
+            font-weight:700;
+            color:var(--muted);
+            display:flex;
+            align-items:center;
+            gap:6px;
+            cursor:pointer;
+            border-bottom:3px solid transparent;
+            white-space:nowrap;
+        }
+        .tab-btn:hover { background:#fff; color:var(--text); }
+        .tab-btn.active {
+            background:#fff;
+            color:var(--purple);
+            border-bottom-color:var(--purple);
+        }
+
+        .tab-panel {
+            display:none;
+            background:#fff;
+            border:1px solid var(--border);
+            border-top:none;
+            border-radius:0 0 var(--radius) var(--radius);
+            padding:18px 20px 20px;
+        }
+        .tab-panel.active { display:block; }
+
+        /* Formulário */
+        .fg {
+            display:grid;
+            grid-template-columns:repeat(2,1fr);
+            gap:14px 16px;
+        }
+        .fg-3 { grid-template-columns:repeat(3,1fr); }
+        .fg .full { grid-column:span 2; }
+        @media (max-width:720px) {
+            .fg, .fg-3 { grid-template-columns:1fr; }
+            .fg .full { grid-column:span 1; }
+        }
+
+        .f {
+            display:flex;
+            flex-direction:column;
+            gap:4px;
+        }
+        .f label {
+            font-size:11px;
+            font-weight:700;
+            text-transform:uppercase;
+            color:var(--muted);
+            letter-spacing:.03em;
+        }
+        .f input, .f select, .f textarea {
+            border-radius:8px;
+            border:1.5px solid var(--border);
+            padding:8px 10px;
+            font-size:13px;
+            background:#f9fafb;
+            color:var(--text);
+            transition:border-color .15s;
+            font-family:inherit;
+        }
+        .f input:focus, .f select:focus, .f textarea:focus {
+            outline:none;
+            border-color:var(--purple);
+            background:#fff;
+        }
+        .f textarea { resize:vertical; min-height:70px; }
+
+        .section-label {
+            font-size:11px;
+            font-weight:800;
+            text-transform:uppercase;
+            color:var(--purple);
+            letter-spacing:.06em;
+            padding-bottom:6px;
+            border-bottom:1px dashed #e9d5ff;
+            margin-bottom:8px;
+        }
+
+        .form-footer {
+            margin-top:16px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            align-items:center;
+        }
+        .form-status {
+            font-size:13px;
+            font-weight:600;
+            color:#059669;
+        }
+        .form-status.error { color:var(--red); }
+
+        /* Presença / tabela simples */
+        .simple-table {
+            width:100%;
+            border-collapse:collapse;
+            font-size:13px;
+        }
+        .simple-table th {
+            background:#f8fafc;
+            color:var(--muted);
+            font-size:11px;
+            font-weight:700;
+            text-transform:uppercase;
+            padding:8px 10px;
+            border-bottom:1px solid var(--border);
+            text-align:left;
+        }
+        .simple-table td {
+            padding:9px 10px;
+            border-bottom:1px solid #f1f5f9;
+        }
+        .simple-table tr:last-child td { border-bottom:none; }
+
+        .empty-table {
+            text-align:center;
+            color:var(--muted);
+            padding:26px 10px !important;
+        }
     </style>
 </head>
-<body class="theme-petroleo" data-shell-title="Alunos" data-shell-breadcrumb="LDFP / Secretaria / EBD / Alunos" data-shell-active="ebd_alunos.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
-    <main class="main-content enterprise-main">
-        <div class="page-wrap">
-            <div class="page-header">
-                <button class="btn-primary" type="button" id="btnNovoAluno"><i class="fa-solid fa-plus"></i> Novo Aluno</button>
-                <div class="search-box">
+<body class="theme-petroleo"
+      data-shell-title="EBD · Alunos"
+      data-shell-breadcrumb="LDFP / Secretaria / EBD / Alunos"
+      data-shell-active="ebd_alunos.html"
+      data-shell-chip="Ambiente autenticado"
+      data-shell-role="Administrador">
+
+<main class="main-content enterprise-main">
+<div class="page-wrap">
+
+    <!-- Cabeçalho -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h2><i class="fa-solid fa-book-bible"></i> EBD · Alunos</h2>
+            <p>Gerencie alunos, turmas e acompanhamento das revistinhas da EBD</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" id="btnAtualizar">
+                <i class="fa-solid fa-rotate-right"></i> Atualizar
+            </button>
+            <button class="btn btn-primary" id="btnNovoAluno">
+                <i class="fa-solid fa-plus"></i> Novo Aluno
+            </button>
+        </div>
+    </div>
+
+    <!-- Dois painéis -->
+    <div class="two-col">
+
+        <!-- ESQUERDA: Lista de alunos -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span>Alunos matriculados</span>
+                    <span class="panel-count" id="alunosCount">0</span>
+                </div>
+                <div class="search-box" style="margin-bottom:6px;">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="searchInput" placeholder="Pesquisar aluno...">
+                    <input type="text" id="searchInput" placeholder="Buscar por nome, estágio ou turma...">
+                </div>
+                <div class="filter-row">
+                    <select id="filterTurma">
+                        <option value="">Todas as turmas</option>
+                    </select>
+                    <select id="filterSituacao">
+                        <option value="">Todas as situações</option>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Transferido">Transferido</option>
+                        <option value="Egresso">Egresso</option>
+                    </select>
+                </div>
+            </div>
+            <div class="student-list" id="studentList">
+                <div class="empty-list">
+                    <i class="fa-solid fa-child-reaching"></i>
+                    Nenhum aluno cadastrado ainda.
+                </div>
+            </div>
+        </div>
+
+        <!-- DIREITA: Hero + Abas -->
+        <div class="right-panel">
+
+            <!-- Hero -->
+            <div class="student-hero" id="studentHero">
+                <div class="hero-ava" id="heroAva">EBD</div>
+                <div class="hero-body">
+                    <div class="hero-name ph" id="heroName">Nenhum aluno selecionado</div>
+                    <div class="hero-sub" id="heroSub">Selecione um aluno ou clique em "Novo Aluno" para cadastrar</div>
+                    <div class="hero-tags" id="heroTags">
+                        <span class="hero-tag">
+                            <i class="fa-solid fa-church" style="margin-right:4px;"></i> LDFP
+                        </span>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <button class="btn btn-ghost btn-sm" id="btnIrParaMembro">
+                        <i class="fa-solid fa-user"></i> Ver ficha do membro
+                    </button>
+                    <button class="btn btn-ghost btn-sm" id="btnMarcarPresencaRapida">
+                        <i class="fa-solid fa-check"></i> Presença hoje
+                    </button>
                 </div>
             </div>
 
-            <div class="table-card">
-                <table>
+            <!-- Abas -->
+            <div class="tabs-nav">
+                <button class="tab-btn active" data-tab="abaDados">
+                    <i class="fa-solid fa-id-card-clip"></i> Dados do Aluno
+                </button>
+                <button class="tab-btn" data-tab="abaRevista">
+                    <i class="fa-solid fa-book-open"></i> Revista & Lição
+                </button>
+                <button class="tab-btn" data-tab="abaPresenca">
+                    <i class="fa-solid fa-calendar-check"></i> Presença
+                </button>
+            </div>
+
+            <!-- Conteúdo das abas -->
+            <div id="abaDados" class="tab-panel active">
+                <div class="section-label">Dados básicos</div>
+                <form id="alunoForm">
+                    <div class="fg">
+                        <div class="f full">
+                            <label>Nome do aluno</label>
+                            <input type="text" name="nome" placeholder="Nome completo do aluno">
+                        </div>
+                        <div class="f">
+                            <label>Estágio / Faixa</label>
+                            <input type="text" name="estagio" placeholder="Ex.: Primários, Juniores, Adolescentes">
+                        </div>
+                        <div class="f">
+                            <label>Turma / Classe</label>
+                            <input type="text" name="turma" placeholder="Nome da turma">
+                        </div>
+                        <div class="f">
+                            <label>Situação</label>
+                            <select name="situacao">
+                                <option value="Ativo">Ativo</option>
+                                <option value="Transferido">Transferido</option>
+                                <option value="Egresso">Egresso</option>
+                            </select>
+                        </div>
+                        <div class="f">
+                            <label>Data de nascimento</label>
+                            <input type="date" name="nascimento">
+                        </div>
+                        <div class="f">
+                            <label>Responsável</label>
+                            <input type="text" name="responsavel" placeholder="Nome do responsável">
+                        </div>
+                        <div class="f">
+                            <label>Telefone do responsável</label>
+                            <input type="tel" name="telefone">
+                        </div>
+                    </div>
+
+                    <div class="section-label" style="margin-top:18px;">Observações</div>
+                    <div class="f">
+                        <label>Anotações sobre o aluno</label>
+                        <textarea name="obs" placeholder="Anotações importantes, necessidades específicas, pedidos dos responsáveis..."></textarea>
+                    </div>
+
+                    <div class="form-footer">
+                        <button type="button" class="btn btn-primary" id="btnSalvarAluno">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar
+                        </button>
+                        <button type="button" class="btn btn-ghost" id="btnLimparAluno">
+                            <i class="fa-solid fa-broom"></i> Limpar
+                        </button>
+                        <button type="button" class="btn btn-danger" id="btnExcluirAluno">
+                            <i class="fa-solid fa-trash-can"></i> Excluir
+                        </button>
+                        <span class="form-status" id="formStatus"></span>
+                    </div>
+                </form>
+            </div>
+
+            <div id="abaRevista" class="tab-panel">
+                <div class="section-label">Revista da turma</div>
+                <div class="fg">
+                    <div class="f full">
+                        <label>Revista / Título</label>
+                        <input type="text" name="revistaTitulo" placeholder="Ex.: Lições Bíblicas · 1º Trimestre 2026">
+                    </div>
+                    <div class="f">
+                        <label>Classe / Turma</label>
+                        <input type="text" name="revistaTurma" placeholder="Mesma turma do aluno ou específica da revista">
+                    </div>
+                    <div class="f">
+                        <label>Faixa etária</label>
+                        <input type="text" name="revistaFaixa" placeholder="Ex.: 07 a 09 anos">
+                    </div>
+                    <div class="f">
+                        <label>Professor da turma</label>
+                        <input type="text" name="revistaProfessor">
+                    </div>
+                    <div class="f">
+                        <label>Data início trimestre</label>
+                        <input type="date" name="revistaInicio">
+                    </div>
+                    <div class="f">
+                        <label>Data fim trimestre</label>
+                        <input type="date" name="revistaFim">
+                    </div>
+                </div>
+
+                <div class="section-label" style="margin-top:18px;">Lição atual</div>
+                <div class="fg">
+                    <div class="f">
+                        <label>Nº da lição</label>
+                        <input type="number" name="licaoNumero" min="1" step="1" placeholder="1, 2, 3...">
+                    </div>
+                    <div class="f full">
+                        <label>Título da lição</label>
+                        <input type="text" name="licaoTitulo" placeholder="Título da lição deste domingo">
+                    </div>
+                    <div class="f">
+                        <label>Data deste domingo</label>
+                        <input type="date" name="licaoData">
+                    </div>
+                    <div class="f">
+                        <label>Status</label>
+                        <select name="licaoStatus">
+                            <option value="planejada">Planejada</option>
+                            <option value="ministrada">Ministrada</option>
+                            <option value="revisão">Revisão</option>
+                        </select>
+                    </div>
+                </div>
+
+                <p style="font-size:12px;color:var(--muted);margin-top:10px;">
+                    Esta aba não é por aluno individual, é uma “fotografia” da revista/ lição que a turma está estudando neste período.
+                </p>
+            </div>
+
+            <div id="abaPresenca" class="tab-panel">
+                <div class="section-label">Presença por domingo (visão rápida)</div>
+
+                <table class="simple-table">
                     <thead>
                         <tr>
-                            <th>Nome</th>
-                            <th>Estágio</th>
-                            <th>Nome da Turma</th>
-                            <th class="actions-col">Ações</th>
+                            <th>Data</th>
+                            <th>Lição</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody id="studentsBody"></tbody>
+                    <tbody id="presencaBody">
+                        <tr>
+                            <td colspan="3" class="empty-table">
+                                Nenhum registro de presença ainda. Clique em “Presença hoje” no topo para registrar rapidamente.
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
+
         </div>
-    </main>
 
-    <script src="session.js?v=20260501"></script>
-    <script src="enterprise-shell.js?v=20260501"></script>
-    <script>
-        requireAuthSession();
+    </div>
+</div>
+</main>
 
-        const STORAGE_KEY = 'ldfpEbdStudents';
-        const studentsBody = document.getElementById('studentsBody');
-        const searchInput = document.getElementById('searchInput');
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+    requireAuthSession();
 
-        document.getElementById('btnNovoAluno').addEventListener('click', () => {
-            window.location.href = 'ebd_aluno_novo.html';
+    const STORAGE_KEY = 'ldfpEbdStudents'; // mantém compatível com o que você já tinha
+
+    const $ = (id) => document.getElementById(id);
+
+    const readStudents = () => {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+        catch { return []; }
+    };
+    const writeStudents = (list) =>
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+
+    /* Estado */
+    let alunos = readStudents();
+    let filtroTexto   = '';
+    let filtroTurma   = '';
+    let filtroSituacao= '';
+    let selecionadoId = null;
+
+    const initials = (nome) => {
+        if (!nome) return 'EBD';
+        const parts = nome.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+        return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+    };
+
+    const badgeClass = (sit) => {
+        const s = (sit || '').toLowerCase();
+        if (s === 'ativo') return 'badge-ativo';
+        if (s === 'egresso' || s === 'transferido') return 'badge-egresso';
+        return 'badge-ativo';
+    };
+
+    const setStatus = (msg, isError=false) => {
+        const el = $('formStatus');
+        el.textContent = msg || '';
+        el.className = 'form-status' + (isError ? ' error' : '');
+    };
+
+    const updateHero = (aluno) => {
+        const nameEl = $('heroName');
+        const subEl  = $('heroSub');
+        const tagsEl = $('heroTags');
+        const avaEl  = $('heroAva');
+
+        if (!aluno) {
+            nameEl.textContent = 'Nenhum aluno selecionado';
+            nameEl.className = 'hero-name ph';
+            subEl.textContent = 'Selecione um aluno ou clique em "Novo Aluno" para cadastrar';
+            tagsEl.innerHTML = `
+                <span class="hero-tag">
+                    <i class="fa-solid fa-church" style="margin-right:4px;"></i>LDFP
+                </span>
+            `;
+            avaEl.textContent = 'EBD';
+            return;
+        }
+
+        const nome = aluno.nome || '-';
+        const estagio = aluno.estagio || '';
+        const turma   = aluno.turma || '';
+        const situacao = aluno.situacao || 'Ativo';
+
+        nameEl.textContent = nome;
+        nameEl.className = 'hero-name';
+        subEl.textContent = `${estagio || 'Sem estágio definido'}${turma ? ' · ' + turma : ''}`;
+
+        let sitLabel = situacao;
+        let icon = 'fa-solid fa-circle';
+        if (situacao === 'Ativo') icon = 'fa-solid fa-circle-check';
+        if (situacao === 'Transferido' || situacao === 'Egresso') icon = 'fa-solid fa-right-left';
+
+        tagsEl.innerHTML = `
+            ${turma ? `<span class="hero-tag"><i class="fa-solid fa-users-line" style="margin-right:4px;"></i>${turma}</span>` : ''}
+            ${estagio ? `<span class="hero-tag">${estagio}</span>` : ''}
+            <span class="hero-tag"><i class="${icon}" style="margin-right:4px;"></i>${sitLabel}</span>
+        `;
+
+        avaEl.textContent = initials(nome);
+    };
+
+    const preencherForm = (aluno) => {
+        const form = document.forms.alunoForm;
+        if (!form) return;
+
+        form.nome.value         = aluno?.nome || '';
+        form.estagio.value      = aluno?.estagio || '';
+        form.turma.value        = aluno?.turma || '';
+        form.situacao.value     = aluno?.situacao || 'Ativo';
+        form.nascimento.value   = aluno?.nascimento || '';
+        form.responsavel.value  = aluno?.responsavel || '';
+        form.telefone.value     = aluno?.telefone || '';
+        form.obs.value          = aluno?.obs || '';
+
+        // Revista / lição (por enquanto guardadas no próprio aluno)
+        form.revistaTitulo.value   = aluno?.revistaTitulo || '';
+        form.revistaTurma.value    = aluno?.revistaTurma || aluno?.turma || '';
+        form.revistaFaixa.value    = aluno?.revistaFaixa || '';
+        form.revistaProfessor.value= aluno?.revistaProfessor || '';
+        form.revistaInicio.value   = aluno?.revistaInicio || '';
+        form.revistaFim.value      = aluno?.revistaFim || '';
+        form.licaoNumero.value     = aluno?.licaoNumero || '';
+        form.licaoTitulo.value     = aluno?.licaoTitulo || '';
+        form.licaoData.value       = aluno?.licaoData || '';
+        form.licaoStatus.value     = aluno?.licaoStatus || 'planejada';
+    };
+
+    const obterFormData = () => {
+        const form = document.forms.alunoForm;
+        const data = {
+            id: selecionadoId || String(Date.now()),
+            nome: form.nome.value.trim(),
+            estagio: form.estagio.value.trim(),
+            turma: form.turma.value.trim(),
+            situacao: form.situacao.value || 'Ativo',
+            nascimento: form.nascimento.value || '',
+            responsavel: form.responsavel.value.trim(),
+            telefone: form.telefone.value.trim(),
+            obs: form.obs.value.trim(),
+
+            revistaTitulo: form.revistaTitulo.value.trim(),
+            revistaTurma: form.revistaTurma.value.trim(),
+            revistaFaixa: form.revistaFaixa.value.trim(),
+            revistaProfessor: form.revistaProfessor.value.trim(),
+            revistaInicio: form.revistaInicio.value || '',
+            revistaFim: form.revistaFim.value || '',
+            licaoNumero: form.licaoNumero.value.trim(),
+            licaoTitulo: form.licaoTitulo.value.trim(),
+            licaoData: form.licaoData.value || '',
+            licaoStatus: form.licaoStatus.value || 'planejada',
+
+            presencas: (alunos.find(a => a.id === selecionadoId)?.presencas) || []
+        };
+        return data;
+    };
+
+    const renderLista = () => {
+        const listEl = $('studentList');
+        const countEl = $('alunosCount');
+
+        let filtrados = alunos.filter(a => {
+            const textoBase = (
+                (a.nome || '') + ' ' +
+                (a.estagio || '') + ' ' +
+                (a.turma || '')
+            ).toLowerCase();
+
+            if (filtroTexto && !textoBase.includes(filtroTexto)) return false;
+            if (filtroTurma && String(a.turma || '').toLowerCase() !== filtroTurma) return false;
+            if (filtroSituacao && String(a.situacao || '') !== filtroSituacao) return false;
+            return true;
         });
 
-        function readStudents() {
-            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        countEl.textContent = filtrados.length;
+
+        if (!filtrados.length) {
+            listEl.innerHTML = `
+                <div class="empty-list">
+                    <i class="fa-solid fa-child-reaching"></i>
+                    Nenhum aluno encontrado com os filtros atuais.
+                </div>
+            `;
+            return;
         }
 
-        function writeStudents(list) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        listEl.innerHTML = filtrados.map(a => {
+            const id = a.id;
+            const ativo = selecionadoId === id ? 'is-active' : '';
+            const badge = badgeClass(a.situacao || 'Ativo');
+            const turma = a.turma || 'Sem turma';
+
+            return `
+                <div class="student-item ${ativo}" data-id="${id}">
+                    <div class="s-avatar">${initials(a.nome)}</div>
+                    <div class="s-info">
+                        <div class="s-name">${a.nome || '-'}</div>
+                        <div class="s-sub">${turma}${a.estagio ? ' · ' + a.estagio : ''}</div>
+                    </div>
+                    <span class="s-badge ${badge}">${a.situacao || 'Ativo'}</span>
+                </div>
+            `;
+        }).join('');
+
+        listEl.querySelectorAll('.student-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const id = el.getAttribute('data-id');
+                selecionarAluno(id);
+            });
+        });
+    };
+
+    const preencherFiltroTurma = () => {
+        const sel = $('filterTurma');
+        const turmas = Array.from(new Set(alunos.map(a => (a.turma || '').trim()).filter(Boolean)));
+        sel.innerHTML = '<option value="">Todas as turmas</option>' +
+            turmas.map(t => `<option value="${t.toLowerCase()}">${t}</option>`).join('');
+    };
+
+    const selecionarAluno = (id) => {
+        selecionadoId = id;
+        const aluno = alunos.find(a => a.id === id);
+        updateHero(aluno);
+        preencherForm(aluno);
+        setStatus('');
+        renderLista();
+        renderPresencas(aluno);
+    };
+
+    const limparForm = () => {
+        selecionadoId = null;
+        const form = document.forms.alunoForm;
+        form.reset();
+        form.situacao.value = 'Ativo';
+        form.licaoStatus.value = 'planejada';
+        updateHero(null);
+        setStatus('');
+        renderLista();
+        renderPresencas(null);
+    };
+
+    const salvarAluno = () => {
+        const data = obterFormData();
+        if (!data.nome) {
+            setStatus('Informe o nome do aluno.', true);
+            return;
         }
 
-        function renderRows() {
-            const students = readStudents();
-            if (!students.length) {
-                studentsBody.innerHTML = '<tr><td colspan="4" class="muted">Nenhum resultado foi encontrado.</td></tr>';
-                return;
-            }
+        const idx = alunos.findIndex(a => a.id === data.id);
+        if (idx >= 0) {
+            alunos[idx] = data;
+        } else {
+            alunos.push(data);
+        }
+        writeStudents(alunos);
+        preencherFiltroTurma();
+        selecionadoId = data.id;
+        updateHero(data);
+        setStatus('Dados do aluno salvos com sucesso.');
+        renderLista();
+        renderPresencas(data);
+    };
 
-            studentsBody.innerHTML = students.map((item) => `
-                <tr data-search="${(item.nome || '').toLowerCase()} ${(item.estagio || '').toLowerCase()} ${(item.turma || '').toLowerCase()}">
-                    <td>${item.nome || '-'}</td>
-                    <td>${item.estagio || '-'}</td>
-                    <td>${item.turma || '-'}</td>
-                    <td class="actions-col">
-                        <button class="icon-btn" type="button" title="Editar" data-edit="${item.id}"><i class="fa-regular fa-pen-to-square"></i></button>
-                        <button class="icon-btn" type="button" title="Excluir" data-delete="${item.id}"><i class="fa-regular fa-trash-can"></i></button>
+    const excluirAluno = () => {
+        if (!selecionadoId) {
+            setStatus('Selecione um aluno para excluir.', true);
+            return;
+        }
+        const aluno = alunos.find(a => a.id === selecionadoId);
+        if (!confirm(`Excluir o aluno "${aluno?.nome || ''}" da EBD?`)) return;
+
+        alunos = alunos.filter(a => a.id !== selecionadoId);
+        writeStudents(alunos);
+        limparForm();
+        preencherFiltroTurma();
+        setStatus('Aluno excluído.', false);
+    };
+
+    /* Presença (simplificado, em cima do aluno) */
+    const renderPresencas = (aluno) => {
+        const tbody = $('presencaBody');
+        if (!aluno || !Array.isArray(aluno.presencas) || !aluno.presencas.length) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="empty-table">
+                        Nenhum registro de presença ainda. Clique em “Presença hoje” no topo para registrar rapidamente.
                     </td>
                 </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = aluno.presencas
+            .sort((a,b) => (a.data || '').localeCompare(b.data || ''))
+            .map(p => `
+                <tr>
+                    <td>${p.data || '-'}</td>
+                    <td>${p.licao || '-'}</td>
+                    <td>${p.status || 'Presente'}</td>
+                </tr>
             `).join('');
+    };
+
+    const marcarPresencaHoje = () => {
+        if (!selecionadoId) {
+            setStatus('Selecione um aluno para registrar presença.', true);
+            return;
         }
+        const aluno = alunos.find(a => a.id === selecionadoId);
+        if (!aluno) return;
 
-        function handleTableAction(event) {
-            const editId = event.target.closest('[data-edit]')?.getAttribute('data-edit');
-            if (editId) {
-                window.location.href = `ebd_aluno_novo.html?edit=${encodeURIComponent(editId)}`;
-                return;
-            }
+        const hoje = new Date();
+        const yyyy = hoje.getFullYear();
+        const mm   = String(hoje.getMonth()+1).padStart(2,'0');
+        const dd   = String(hoje.getDate()).padStart(2,'0');
+        const data = `${yyyy}-${mm}-${dd}`;
 
-            const deleteId = event.target.closest('[data-delete]')?.getAttribute('data-delete');
-            if (!deleteId) return;
+        const form = document.forms.alunoForm;
+        const liNum = form.licaoNumero.value.trim();
+        const liTit = form.licaoTitulo.value.trim();
 
-            const next = readStudents().filter((item) => String(item.id) !== String(deleteId));
-            writeStudents(next);
-            renderRows();
-            applyFilter();
-        }
-
-        function applyFilter() {
-            const term = searchInput.value.trim().toLowerCase();
-            const rows = Array.from(studentsBody.querySelectorAll('tr'));
-            rows.forEach((row) => {
-                const text = row.getAttribute('data-search') || row.textContent.toLowerCase();
-                row.style.display = text.includes(term) ? '' : 'none';
-            });
-        }
-
-        studentsBody.addEventListener('click', handleTableAction);
-        searchInput.addEventListener('input', applyFilter);
-
-        window.addEventListener('storage', () => {
-            renderRows();
-            applyFilter();
+        aluno.presencas = aluno.presencas || [];
+        aluno.presencas.push({
+            data,
+            licao: liNum ? `Lição ${liNum}${liTit ? ' - ' + liTit : ''}` : (liTit || 'Lição não informada'),
+            status: 'Presente'
         });
 
-        renderRows();
-    </script>
+        writeStudents(alunos);
+        renderPresencas(aluno);
+        setStatus('Presença de hoje registrada para este aluno.');
+    };
+
+    /* Eventos UI */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            const tabId = btn.dataset.tab;
+            if (tabId) document.getElementById(tabId)?.classList.add('active');
+        });
+    });
+
+    $('btnNovoAluno').addEventListener('click', limparForm);
+    $('btnLimparAluno').addEventListener('click', limparForm);
+    $('btnSalvarAluno').addEventListener('click', salvarAluno);
+    $('btnExcluirAluno').addEventListener('click', excluirAluno);
+    $('btnAtualizar').addEventListener('click', () => {
+        alunos = readStudents();
+        preencherFiltroTurma();
+        renderLista();
+    });
+
+    $('btnMarcarPresencaRapida').addEventListener('click', marcarPresencaHoje);
+
+    $('btnIrParaMembro').addEventListener('click', () => {
+        if (!selecionadoId) {
+            setStatus('Selecione um aluno para abrir a ficha de membro.', true);
+            return;
+        }
+        alert('Integração futura: abrir a ficha do membro correspondente em membros.html');
+    });
+
+    $('searchInput').addEventListener('input', (e) => {
+        filtroTexto = e.target.value.toLowerCase().trim();
+        renderLista();
+    });
+    $('filterTurma').addEventListener('change', (e) => {
+        filtroTurma = e.target.value;
+        renderLista();
+    });
+    $('filterSituacao').addEventListener('change', (e) => {
+        filtroSituacao = e.target.value;
+        renderLista();
+    });
+
+    /* Inicialização */
+    preencherFiltroTurma();
+    renderLista();
+</script>
 </body>
 </html>

@@ -427,8 +427,17 @@
 
         // ── Banner de alerta ─────────────────────────────────────────────────
         const params = new URLSearchParams(location.search);
+        const suggestedPlanSlug = String(params.get('plano') || '').trim().toLowerCase();
+        const suggestedFeatureName = String(params.get('feature_nome') || params.get('feature') || '').trim();
         if (params.get('expirado') || (user?.statusAssinatura && ['cancelado','suspensa','expirado'].includes(user.statusAssinatura))) {
             document.getElementById('bannerAlerta').classList.remove('hidden');
+        }
+
+        if (suggestedFeatureName) {
+            const subtitle = document.querySelector('.page-title p');
+            if (subtitle) {
+                subtitle.textContent = `Para liberar ${suggestedFeatureName}, recomendamos os planos abaixo com este recurso.`;
+            }
         }
 
         // ── Toggle Mensal/Anual ──────────────────────────────────────────────
@@ -464,7 +473,8 @@
 
             grid.innerHTML = planosData.map((p, i) => {
                 const preco = ciclo === 'anual' ? Number(p.preco_anual) : Number(p.preco_mensal);
-                const featured = i === 1; // destaque no segundo plano
+                const isSuggested = !!suggestedPlanSlug && String(p.slug || '').toLowerCase() === suggestedPlanSlug;
+                const featured = isSuggested || (!suggestedPlanSlug && i === 1);
                 const features = (() => {
                     try { return JSON.parse(p.features_json); } catch(_) { return []; }
                 })();
@@ -495,7 +505,7 @@
                         onclick="abrirModal('${escapeHtml(p.slug)}', '${escapeHtml(p.nome)}', ${preco})"
                         ${isGratis ? 'disabled title="Plano gratuito não requer pagamento"' : ''}
                     >
-                        ${isGratis ? 'Plano Atual (Trial)' : 'Assinar agora'}
+                        ${isGratis ? 'Plano Atual (Trial)' : (isSuggested ? 'Assinar recomendado' : 'Assinar agora')}
                     </button>
                 </div>`;
             }).join('');

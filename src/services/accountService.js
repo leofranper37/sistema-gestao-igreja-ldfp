@@ -6,8 +6,8 @@ const accountModel = require('../models/accountModel');
 
 function normalizePlanoSlug(plano) {
     const normalized = String(plano || '').trim().toLowerCase();
-    if (normalized === 'edon') {
-        return 'eden';
+    if (normalized === 'edon' || normalized === 'eden') {
+        return 'hebrom';
     }
 
     return plano;
@@ -56,7 +56,7 @@ async function registerAccount(payload) {
     let churchMetadata = existingChurch || null;
 
     if (!igrejaId) {
-        igrejaId = await accountModel.createChurch(payload.igreja);
+        igrejaId = await accountModel.createChurch(payload.igreja, payload.plano);
         churchMetadata = await accountModel.findChurchByName(payload.igreja);
     }
 

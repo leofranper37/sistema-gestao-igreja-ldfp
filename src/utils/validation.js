@@ -21,7 +21,8 @@ const createContaSchema = Joi.object({
     igreja: Joi.string().trim().min(2).max(255).required().label('Igreja'),
     nome: Joi.string().trim().min(2).max(255).required().label('Nome'),
     email: emailSchema.required().label('E-mail'),
-    senha: Joi.string().min(8).max(72).required().label('Senha')
+    senha: Joi.string().min(8).max(72).required().label('Senha'),
+    plano: Joi.string().trim().pattern(/^[a-z0-9-]{2,40}$/i).optional().label('Plano')
 });
 
 const loginSchema = Joi.object({
@@ -48,6 +49,7 @@ const membroSchema = Joi.object({
     nome: Joi.string().trim().min(1).max(255).required().label('Nome'),
     email: emailSchema.allow('', null).label('E-mail'),
     telefone: Joi.string().trim().max(50).allow('', null).label('Telefone'),
+    cargo: Joi.string().trim().max(255).allow('', null).label('Cargo'),
     apelido: Joi.string().trim().max(255).allow('', null),
     nascimento: Joi.string().trim().pattern(/^\d{4}-\d{2}-\d{2}$/).allow('', null),
     sexo: Joi.string().trim().max(50).allow('', null),
@@ -64,7 +66,18 @@ const membroSchema = Joi.object({
     cpf: Joi.string().trim().max(50).allow('', null),
     rg: Joi.string().trim().max(50).allow('', null),
     nacionalidade: Joi.string().trim().max(100).allow('', null),
-    naturalidade: Joi.string().trim().max(255).allow('', null)
+    naturalidade: Joi.string().trim().max(255).allow('', null),
+    fotoUrl: Joi.string().trim().max(255).allow('', null),
+    acesso_app_midia: Joi.alternatives().try(
+        Joi.boolean(),
+        Joi.number().valid(0, 1),
+        Joi.string().valid('0', '1', 'true', 'false', 'sim', 'nao', 'não')
+    ).optional(),
+    gerenciar_midias: Joi.alternatives().try(
+        Joi.boolean(),
+        Joi.number().valid(0, 1),
+        Joi.string().valid('0', '1', 'true', 'false', 'sim', 'nao', 'não')
+    ).optional()
 });
 
 const visitanteSchema = Joi.object({

@@ -60,7 +60,12 @@ async function deleteOutrasIgreja({ igrejaId, id }) {
     }
 }
 
+async function countOutrasIgrejas(igrejaId) {
+    return outrasIgrejasModel.countOutrasIgrejas(igrejaId);
+}
+
 module.exports = {
+    countOutrasIgrejas,
     createOutrasIgreja,
     deleteOutrasIgreja,
     listOutrasIgrejas,

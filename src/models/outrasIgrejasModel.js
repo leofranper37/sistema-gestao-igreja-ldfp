@@ -185,7 +185,19 @@ async function deleteOutrasIgreja({ igrejaId, id }) {
     return result.affectedRows;
 }
 
+async function countOutrasIgrejas(igrejaId) {
+    await ensureOutrasIgrejasTable();
+
+    const [[row]] = await pool.query(
+        'SELECT COUNT(*) AS total FROM outras_igrejas WHERE igreja_id = ?',
+        [igrejaId]
+    );
+
+    return row?.total || 0;
+}
+
 module.exports = {
+    countOutrasIgrejas,
     createOutrasIgreja,
     deleteOutrasIgreja,
     getOutrasIgrejaById,

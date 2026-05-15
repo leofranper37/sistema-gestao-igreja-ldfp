@@ -52,6 +52,19 @@
 3. Clique em **Create** — o cPanel clona o projeto automaticamente
 4. Para futuras atualizações: clique em **Update** → **Deploy HEAD Commit**
 
+### Automação opcional com Webhook (GitHub -> cPanel)
+
+1. No cPanel, abra **Git Version Control** e entre no repositório já criado.
+2. Copie a URL de **Webhook** fornecida pelo cPanel.
+3. No GitHub, acesse **Settings > Webhooks > Add webhook**.
+4. Configure:
+    - **Payload URL**: URL copiada do cPanel
+    - **Content type**: `application/json`
+    - **Events**: `Just the push event`
+5. Salve e faça um push de teste.
+
+Com isso, cada `git push` notifica o cPanel para atualizar o deploy sem processo manual de pull.
+
 **Opção B: Via File Manager (se não tiver Git configurado)**
 
 1. Compacte o projeto em `.zip` (sem node_modules e sem .env)
@@ -92,6 +105,9 @@ APP_BASE_URL=https://ldfp.com.br
 APP_PUBLIC_BASE_URL=https://ldfp.com.br
 PAYMENT_BASE_URL=https://ldfp.com.br
 CORS_ORIGIN=https://ldfp.com.br,https://www.ldfp.com.br
+USE_DIST_PUBLIC=true
+LOGIN_RATE_LIMIT_WINDOW_MS=900000
+LOGIN_RATE_LIMIT_MAX=10
 
 DB_HOST=localhost
 DB_PORT=3306
@@ -127,6 +143,18 @@ WHATSAPP_PROVIDER=mock
 1. Na aplicação listada em **Setup Node.js App**, clique em **Run NPM Install**
 2. Aguarde 2-3 minutos (instalação de todas as dependências)
 3. Você verá: ✅ npm install started / completed
+
+---
+
+### ETAPA 5.1 — Build de Produção (minificação)
+
+Via **Terminal SSH** no cPanel:
+```bash
+cd /home/seu_usuario/ldfp.com.br
+source /home/seu_usuario/nodevenv/ldfp.com.br/18/bin/activate && npm run build
+```
+
+Esse comando gera os arquivos otimizados em `dist/public`. Com `USE_DIST_PUBLIC=true`, o servidor passa a servir automaticamente essa pasta quando ela existir.
 
 ---
 

@@ -40,10 +40,32 @@ async function listMembros(req, res) {
 
 async function createMembro(req, res) {
     const payload = req.validatedBody;
+    const igrejaId = Number(req.auth.igrejaId || 1);
+    const maxCadastros = Number(req.auth.maxCadastros || 0);
+
+    if (maxCadastros > 0) {
+        const totalAtual = Number(await systemService.getTotalMembros(igrejaId));
+        if (totalAtual >= maxCadastros) {
+            throw createHttpError(
+                403,
+                `Limite do plano atingido: seu plano permite até ${maxCadastros} cadastros de membros. Faça upgrade para continuar.`
+            );
+        }
+    }
+
+    const parseFlag = (value) => {
+        if (value === true || value === 1 || value === '1') return 1;
+        if (typeof value === 'string') {
+            const normalized = value.trim().toLowerCase();
+            if (normalized === 'true' || normalized === 'sim') return 1;
+        }
+        return 0;
+    };
     const member = {
         nome: payload.nome,
         email: payload.email || null,
         telefone: payload.telefone || null,
+        cargo: payload.cargo || null,
         apelido: payload.apelido || null,
         nascimento: payload.nascimento || null,
         sexo: payload.sexo || null,
@@ -59,10 +81,13 @@ async function createMembro(req, res) {
         cpf: payload.cpf || null,
         rg: payload.rg || null,
         nacionalidade: payload.nacionalidade || null,
-        naturalidade: payload.naturalidade || null
+        naturalidade: payload.naturalidade || null,
+        fotoUrl: payload.fotoUrl || null,
+        acesso_app_midia: parseFlag(payload.acesso_app_midia),
+        gerenciar_midias: parseFlag(payload.gerenciar_midias)
     };
 
-    await systemService.createMembro({ ...member, igrejaId: Number(req.auth.igrejaId || 1) });
+    await systemService.createMembro({ ...member, igrejaId });
     audit('membro.create', req, { nome: member.nome, email: member.email });
 
     res.status(201).json({ message: 'Membro salvo com sucesso.' });

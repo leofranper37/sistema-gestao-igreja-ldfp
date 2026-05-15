@@ -3,617 +3,859 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Agenda</title>
+    <title>LDFP - Agenda & Eventos</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .agenda-wrap {
-            padding: 22px 28px 28px;
-            display: grid;
-            grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
-            gap: 18px;
+        :root {
+            --brand:   #0f766e;
+            --teal:    #0d9488;
+            --cyan:    #0ea5e9;
+            --green:   #10b981;
+            --red:     #dc2626;
+            --yellow:  #f59e0b;
+            --purple:  #8b5cf6;
+            --surface: #ffffff;
+            --bg:      #f1f5f9;
+            --border:  #e2e8f0;
+            --text:    #0f172a;
+            --muted:   #64748b;
+            --radius:  14px;
+            --shadow:  0 4px 16px rgba(15,23,42,.08);
+            --shadow-lg: 0 12px 32px rgba(15,23,42,.14);
         }
 
-        .agenda-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-            overflow: hidden;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .page-wrap {
+            padding: 24px 28px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .agenda-card-header {
+        /* Cabeçalho */
+        .page-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 14px 16px;
-            border-bottom: 1px solid #e5e7eb;
-            background: linear-gradient(120deg, #f8fafc 0%, #eef6ff 100%);
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        .agenda-title {
-            margin: 0;
-            font-size: 1rem;
-            color: #0f172a;
+        .page-header-left h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-header-left h2 i { color: var(--teal); }
+        .page-header-left p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-primary { background: linear-gradient(90deg, var(--brand), var(--teal)); color: #fff; }
+        .btn-primary:hover { opacity: .9; }
+        .btn-ghost { background: var(--bg); color: var(--muted); border: 1.5px solid var(--border); }
+        .btn-ghost:hover { background: var(--border); }
+        .btn-danger { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+        .btn-danger:hover { background: var(--red); color: #fff; }
+        .btn-sm { padding: 7px 11px; font-size: 12px; border-radius: 7px; }
+
+        /* Layout principal */
+        .agenda-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 960px) { .agenda-layout { grid-template-columns: 1fr; } }
+
+        /* Panel base */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
         }
 
-        .agenda-controls {
+        .panel-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
             display: flex;
             align-items: center;
             gap: 8px;
         }
+        .panel-title i { color: var(--teal); }
 
-        .btn-clean {
-            border: 1px solid #dbe3ee;
-            background: #fff;
-            color: #334155;
-            border-radius: 8px;
-            padding: 8px 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
+        /* Calendário */
+        .cal-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .btn-primary {
-            border: 0;
-            background: #0f766e;
-            color: #fff;
-            border-radius: 8px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .month-label {
+        .cal-month {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text);
             min-width: 160px;
             text-align: center;
-            font-weight: 700;
-            color: #0f172a;
         }
 
-        .calendar-grid {
+        .cal-grid {
+            padding: 16px;
+        }
+
+        .cal-weekdays {
             display: grid;
-            grid-template-columns: repeat(7, minmax(0, 1fr));
-            border-top: 1px solid #e5e7eb;
-            border-left: 1px solid #e5e7eb;
-        }
-
-        .calendar-weekday,
-        .calendar-cell {
-            border-right: 1px solid #e5e7eb;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .calendar-weekday {
-            background: #f8fafc;
-            text-align: center;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: #64748b;
-            padding: 8px 4px;
-            font-weight: 700;
-        }
-
-        .calendar-cell {
-            min-height: 96px;
-            padding: 6px;
-            cursor: pointer;
-            background: #fff;
-            transition: background-color 0.2s ease;
-        }
-
-        .calendar-cell:hover {
-            background: #f8fbff;
-        }
-
-        .calendar-cell.outside {
-            background: #f8fafc;
-            color: #94a3b8;
-        }
-
-        .calendar-cell.selected {
-            outline: 2px solid #0f766e;
-            outline-offset: -2px;
-            background: #ecfeff;
-        }
-
-        .calendar-day {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #0f172a;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
             margin-bottom: 6px;
         }
 
-        .calendar-event {
-            display: block;
-            font-size: 0.7rem;
-            border-radius: 6px;
-            padding: 3px 5px;
-            margin-bottom: 4px;
-            color: #134e4a;
+        .cal-weekday {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            padding: 4px 0;
+        }
+
+        .cal-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .cal-cell {
+            min-height: 72px;
+            border-radius: 10px;
+            padding: 6px;
+            border: 1.5px solid transparent;
+            cursor: pointer;
+            transition: all .15s;
+            background: var(--bg);
+            position: relative;
+        }
+        .cal-cell:hover { border-color: var(--teal); background: #f0fdfa; }
+        .cal-cell.other-month { opacity: .35; cursor: default; }
+        .cal-cell.today { border-color: var(--teal); background: #f0fdfa; }
+        .cal-cell.selected {
+            border-color: var(--brand);
             background: #ccfbf1;
+            box-shadow: 0 0 0 2px rgba(15,118,110,.15);
+        }
+
+        .cal-day-num {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 3px;
+        }
+        .cal-cell.today .cal-day-num {
+            color: var(--brand);
+        }
+        .cal-cell.other-month .cal-day-num { color: var(--muted); }
+
+        .cal-event-tag {
+            display: block;
+            font-size: 10px;
+            background: var(--teal);
+            color: #fff;
+            border-radius: 4px;
+            padding: 1px 5px;
+            margin-top: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .event-list {
-            padding: 12px 14px 14px;
+        .cal-more {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 2px;
         }
 
-        .event-list-title {
-            margin: 0 0 10px;
-            font-size: 0.95rem;
-            color: #1e293b;
+        /* Painel lateral de eventos do dia */
+        .day-panel { display: flex; flex-direction: column; }
+
+        .day-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
         }
 
-        .event-item {
-            border: 1px solid #e2e8f0;
+        .day-events {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 520px;
+            overflow-y: auto;
+        }
+
+        .event-card {
+            background: var(--bg);
+            border: 1.5px solid var(--border);
             border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 8px;
-            background: #ffffff;
+            padding: 12px 14px;
+            position: relative;
+            border-left: 4px solid var(--teal);
         }
 
-        .event-item h4 {
-            margin: 0 0 4px;
-            font-size: 0.9rem;
-            color: #0f172a;
+        .event-card h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
         }
 
-        .event-item p {
-            margin: 0;
-            font-size: 0.78rem;
-            color: #64748b;
+        .event-card p {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 2px;
         }
 
-        .event-actions {
-            margin-top: 8px;
+        .event-card-actions {
             display: flex;
             gap: 6px;
+            margin-top: 8px;
         }
 
-        .event-actions button {
-            border: 1px solid #dbe3ee;
-            border-radius: 6px;
-            background: #fff;
-            padding: 5px 8px;
-            font-size: 0.72rem;
-            cursor: pointer;
-        }
-
-        .event-actions .danger {
-            color: #b91c1c;
-            border-color: #fecaca;
-            background: #fef2f2;
-        }
-
-        .empty-state {
-            font-size: 0.82rem;
-            color: #94a3b8;
+        .empty-day {
             text-align: center;
-            padding: 20px 8px;
-            border: 1px dashed #dbe3ee;
-            border-radius: 10px;
-            background: #f8fafc;
+            padding: 40px 20px;
+            color: var(--muted);
+            font-size: 13px;
         }
+        .empty-day i { font-size: 1.8rem; color: #cbd5e1; display: block; margin-bottom: 10px; }
 
+        /* Status */
+        .status-bar {
+            font-size: 12px;
+            padding: 8px 14px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            min-height: 34px;
+        }
+        .status-bar.error { color: var(--red); }
+        .status-bar.ok { color: var(--green); }
+
+        /* Modal */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.45);
+            background: rgba(2,6,23,.6);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 120;
+            z-index: 1000;
+            padding: 20px;
         }
-
-        .modal-overlay.show {
-            display: flex;
-        }
+        .modal-overlay.show { display: flex; }
 
         .modal {
-            width: min(480px, 92vw);
-            background: #fff;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
-            padding: 16px;
-        }
-
-        .modal h3 {
-            margin: 0 0 12px;
-            color: #0f172a;
-        }
-
-        .form-field {
-            margin-bottom: 10px;
-        }
-
-        .form-field label {
-            display: block;
-            font-size: 0.76rem;
-            margin-bottom: 4px;
-            color: #475569;
-            font-weight: 700;
-        }
-
-        .form-field input,
-        .form-field textarea {
-            width: 100%;
-            box-sizing: border-box;
-            border: 1px solid #dbe3ee;
-            border-radius: 8px;
-            padding: 9px 10px;
-            font-size: 0.86rem;
-            font-family: inherit;
-        }
-
-        .modal-actions {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            width: min(96vw, 540px);
+            overflow: hidden;
             display: flex;
-            justify-content: flex-end;
+            flex-direction: column;
+        }
+
+        .modal-head {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-head h3 {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
             gap: 8px;
-            margin-top: 12px;
+        }
+        .modal-head h3 i { color: var(--teal); }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .modal-close:hover { background: var(--bg); color: var(--text); }
+
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
         }
 
-        .message {
-            margin-top: 8px;
-            font-size: 0.78rem;
-            color: #b91c1c;
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+        .field input,
+        .field select,
+        .field textarea {
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text);
+            background: var(--bg);
+            font-family: inherit;
+            transition: border-color .2s;
+        }
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #fff;
+        }
+        .field textarea { min-height: 80px; resize: vertical; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .modal-foot {
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
         }
 
-        @media (max-width: 1100px) {
-            .agenda-wrap {
-                grid-template-columns: 1fr;
-                padding: 14px;
-            }
-
-            .calendar-cell {
-                min-height: 84px;
-            }
+        .form-msg {
+            font-size: 12px;
+            color: var(--red);
+            min-height: 18px;
         }
+
+        /* Tipo badge */
+        .tipo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+        .tipo-culto    { background: #dbeafe; color: #1d4ed8; }
+        .tipo-reuniao  { background: #fef3c7; color: #92400e; }
+        .tipo-evento   { background: #d1fae5; color: #065f46; }
+        .tipo-outro    { background: #f1f5f9; color: #475569; }
+
+        /* Loading */
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .loading-spinner i { font-size: 1.5rem; display: block; margin-bottom: 10px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="theme-petroleo" data-shell-title="Agenda" data-shell-breadcrumb="LDFP / Secretaria / Agenda" data-shell-active="agenda.html" data-shell-chip="Agenda ativa" data-shell-role="Administrador">
-    <main class="main-content enterprise-main">
-        <section class="agenda-wrap">
-            <article class="agenda-card">
-                <header class="agenda-card-header">
-                    <h2 class="agenda-title">Calendario mensal</h2>
-                    <div class="agenda-controls">
-                        <button type="button" class="btn-clean" id="btnPrev"><i class="fa-solid fa-chevron-left"></i></button>
-                        <div class="month-label" id="monthLabel"></div>
-                        <button type="button" class="btn-clean" id="btnNext"><i class="fa-solid fa-chevron-right"></i></button>
-                        <button type="button" class="btn-primary" id="btnNovoEvento"><i class="fa-solid fa-plus"></i> Novo evento</button>
-                    </div>
-                </header>
-                <div class="calendar-grid" id="calendarGrid"></div>
-            </article>
+<body class="theme-petroleo"
+      data-shell-title="Agenda"
+      data-shell-breadcrumb="LDFP / Agenda & Eventos"
+      data-shell-active="agenda.html"
+      data-shell-chip="Ambiente autenticado"
+      data-shell-role="Administrador">
 
-            <aside class="agenda-card">
-                <header class="agenda-card-header">
-                    <h3 class="agenda-title" id="selectedDateLabel">Eventos do dia</h3>
-                </header>
-                <div class="event-list" id="eventList"></div>
-            </aside>
-        </section>
-    </main>
+<main class="main-content enterprise-main">
+<div class="page-wrap">
 
-    <div class="modal-overlay" id="eventModal">
-        <div class="modal">
-            <h3 id="modalTitle">Novo evento</h3>
-            <form id="eventForm">
-                <input type="hidden" id="eventId">
-                <div class="form-field">
-                    <label for="titulo">Titulo</label>
-                    <input type="text" id="titulo" maxlength="255" required>
-                </div>
-                <div class="form-field">
-                    <label for="descricao">Descricao</label>
-                    <textarea id="descricao" rows="3" maxlength="4000"></textarea>
-                </div>
-                <div class="form-field">
-                    <label for="inicio">Inicio</label>
-                    <input type="datetime-local" id="inicio" required>
-                </div>
-                <div class="form-field">
-                    <label for="fim">Fim</label>
-                    <input type="datetime-local" id="fim" required>
-                </div>
-                <div class="message" id="formMessage"></div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-clean" id="btnCancelar">Cancelar</button>
-                    <button type="submit" class="btn-primary">Salvar</button>
-                </div>
-            </form>
+    <!-- Cabeçalho -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h2><i class="fa-solid fa-calendar-days"></i> Agenda & Eventos</h2>
+            <p>Gerencie cultos, reuniões e eventos da igreja</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-ghost" id="btnHoje">
+                <i class="fa-solid fa-crosshairs"></i> Hoje
+            </button>
+            <button class="btn btn-primary" id="btnNovoEvento">
+                <i class="fa-solid fa-plus"></i> Novo Evento
+            </button>
         </div>
     </div>
 
-    <script src="session.js?v=20260501"></script>
-    <script src="enterprise-shell.js?v=20260501"></script>
-    <script>
-        requireAuthSession();
+    <!-- Layout principal -->
+    <div class="agenda-layout">
 
-        const monthNames = ['janeiro', 'fevereiro', 'marco', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-        const weekNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+        <!-- Calendário -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fa-solid fa-calendar"></i>
+                    <span id="calMonthLabel">Carregando...</span>
+                </div>
+                <div class="cal-nav">
+                    <button class="btn btn-ghost btn-sm" id="btnPrev">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-ghost btn-sm" id="btnNext">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
 
-        let currentMonth = new Date();
-        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-        let selectedDate = new Date();
-        let monthEvents = [];
+            <div class="cal-grid">
+                <div class="cal-weekdays">
+                    <div class="cal-weekday">Dom</div>
+                    <div class="cal-weekday">Seg</div>
+                    <div class="cal-weekday">Ter</div>
+                    <div class="cal-weekday">Qua</div>
+                    <div class="cal-weekday">Qui</div>
+                    <div class="cal-weekday">Sex</div>
+                    <div class="cal-weekday">Sáb</div>
+                </div>
+                <div class="cal-days" id="calDays">
+                    <div class="loading-spinner" style="grid-column:span 7">
+                        <i class="fa-solid fa-circle-notch"></i>
+                        Carregando eventos...
+                    </div>
+                </div>
+            </div>
 
-        const calendarGrid = document.getElementById('calendarGrid');
-        const monthLabel = document.getElementById('monthLabel');
-        const selectedDateLabel = document.getElementById('selectedDateLabel');
-        const eventList = document.getElementById('eventList');
-        const eventModal = document.getElementById('eventModal');
-        const eventForm = document.getElementById('eventForm');
+            <div class="status-bar" id="statusBar"></div>
+        </div>
 
-        function formatDateKey(date) {
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
+        <!-- Painel lateral do dia -->
+        <div class="panel day-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fa-solid fa-list-ul"></i>
+                    <span class="day-label" id="dayLabel">Selecione um dia</span>
+                </div>
+                <button class="btn btn-primary btn-sm" id="btnNovoNoDia">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+
+            <div class="day-events" id="dayEvents">
+                <div class="empty-day">
+                    <i class="fa-regular fa-calendar-xmark"></i>
+                    Clique em um dia no calendário para ver os eventos.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</main>
+
+<!-- Modal novo/editar evento -->
+<div class="modal-overlay" id="eventModal">
+    <div class="modal">
+        <div class="modal-head">
+            <h3><i class="fa-solid fa-calendar-plus"></i> <span id="modalTitle">Novo Evento</span></h3>
+            <button class="modal-close" id="btnModalClose"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="eventId">
+            <div class="field">
+                <label>Título do evento *</label>
+                <input type="text" id="titulo" placeholder="Ex: Culto de Domingo, Reunião de Líderes...">
+            </div>
+            <div class="field">
+                <label>Tipo</label>
+                <select id="tipo">
+                    <option value="Culto">Culto</option>
+                    <option value="Reunião">Reunião</option>
+                    <option value="Evento">Evento Especial</option>
+                    <option value="EBD">EBD</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+            <div class="grid-2">
+                <div class="field">
+                    <label>Início *</label>
+                    <input type="datetime-local" id="inicio">
+                </div>
+                <div class="field">
+                    <label>Fim *</label>
+                    <input type="datetime-local" id="fim">
+                </div>
+            </div>
+            <div class="field">
+                <label>Local</label>
+                <input type="text" id="local" placeholder="Ex: Templo principal, Sala 3...">
+            </div>
+            <div class="field">
+                <label>Descrição</label>
+                <textarea id="descricao" placeholder="Detalhes adicionais sobre o evento..."></textarea>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <span class="form-msg" id="formMessage"></span>
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost" id="btnCancelar">Cancelar</button>
+                <button class="btn btn-primary" id="btnSalvarEvento">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+    requireAuthSession();
+
+    /* ── Helpers ── */
+    const $ = id => document.getElementById(id);
+
+    const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const DIAS  = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+
+    let currentMonth = new Date();
+    currentMonth.setDate(1);
+
+    let selectedDate  = new Date();
+    let monthEvents   = [];
+
+    /* ── Formatação ── */
+    const toInputDT = iso => {
+        const d = new Date(iso);
+        const pad = n => String(n).padStart(2,'0');
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    };
+
+    const toApiDT = local => {
+        if (!local) return '';
+        return new Date(local).toISOString();
+    };
+
+    const fmtDateTime = iso => {
+        if (!iso) return '-';
+        const d = new Date(iso);
+        return d.toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short' });
+    };
+
+    const fmtDate = d => `${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`;
+
+    const isSameDay = (d1, d2) =>
+        d1.getFullYear() === d2.getFullYear() &&
+        d1.getMonth()    === d2.getMonth()    &&
+        d1.getDate()     === d2.getDate();
+
+    const eventMatchesDay = (ev, d) => {
+        const s = new Date(ev.inicio);
+        const e = new Date(ev.fim);
+        const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const dayEnd = new Date(day.getTime() + 86400000 - 1);
+        return s <= dayEnd && e >= day;
+    };
+
+    const tipoCls = tipo => {
+        const map = { Culto:'culto', Reunião:'reuniao', Evento:'evento' };
+        return map[tipo] || 'outro';
+    };
+
+    /* ── Status bar ── */
+    const setStatus = (msg, type='') => {
+        const el = $('statusBar');
+        el.textContent = msg || '';
+        el.className = 'status-bar' + (type ? ' ' + type : '');
+    };
+
+    /* ── Renderizar calendário ── */
+    const renderCalendar = () => {
+        $('calMonthLabel').textContent = `${MESES[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
+
+        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const lastDay  = new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0);
+        const today    = new Date();
+
+        const grid = $('calDays');
+        grid.innerHTML = '';
+
+        /* Preencher dias anteriores */
+        let startDow = firstDay.getDay();
+        for (let i = startDow - 1; i >= 0; i--) {
+            const d = new Date(firstDay);
+            d.setDate(d.getDate() - i - 1);
+            grid.appendChild(buildCell(d, true));
         }
 
-        function toInputDateTime(value) {
-            if (!value) return '';
-            const normalized = String(value).replace(' ', 'T').slice(0, 16);
-            return normalized;
+        /* Dias do mês */
+        for (let d = 1; d <= lastDay.getDate(); d++) {
+            const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d);
+            grid.appendChild(buildCell(date, false));
         }
 
-        function parseDateTime(value) {
-            const parsed = new Date(value);
-            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        /* Completar linha final */
+        const total = startDow + lastDay.getDate();
+        const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+        for (let i = 1; i <= remaining; i++) {
+            const d = new Date(lastDay);
+            d.setDate(d.getDate() + i);
+            grid.appendChild(buildCell(d, true));
         }
+    };
 
-        function toApiDateTime(value) {
-            const date = parseDateTime(value);
-            return date ? date.toISOString() : '';
-        }
+    const buildCell = (date, otherMonth) => {
+        const cell = document.createElement('div');
+        cell.className = 'cal-cell' +
+            (otherMonth ? ' other-month' : '') +
+            (isSameDay(date, new Date()) ? ' today' : '') +
+            (isSameDay(date, selectedDate) ? ' selected' : '');
 
-        function toDateLabel(date) {
-            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-        }
+        const num = document.createElement('div');
+        num.className = 'cal-day-num';
+        num.textContent = date.getDate();
+        cell.appendChild(num);
 
-        function eventMatchesDay(event, date) {
-            const start = parseDateTime(String(event.inicio).replace(' ', 'T'));
-            const end = parseDateTime(String(event.fim).replace(' ', 'T'));
-            if (!start || !end) return false;
-
-            const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
-            const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1, 0, 0, 0, 0);
-
-            return start < dayEnd && end > dayStart;
-        }
-
-        function renderCalendar() {
-            monthLabel.textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
-            calendarGrid.innerHTML = '';
-
-            weekNames.forEach((name) => {
-                const header = document.createElement('div');
-                header.className = 'calendar-weekday';
-                header.textContent = name;
-                calendarGrid.appendChild(header);
+        if (!otherMonth) {
+            const evs = monthEvents.filter(e => eventMatchesDay(e, date));
+            evs.slice(0,2).forEach(ev => {
+                const tag = document.createElement('span');
+                tag.className = 'cal-event-tag';
+                tag.textContent = ev.titulo;
+                cell.appendChild(tag);
             });
-
-            const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-            const gridStart = new Date(monthStart);
-            gridStart.setDate(monthStart.getDate() - monthStart.getDay());
-
-            for (let i = 0; i < 42; i += 1) {
-                const cellDate = new Date(gridStart);
-                cellDate.setDate(gridStart.getDate() + i);
-
-                const cell = document.createElement('div');
-                cell.className = 'calendar-cell';
-                if (cellDate.getMonth() !== currentMonth.getMonth()) {
-                    cell.classList.add('outside');
-                }
-                if (formatDateKey(cellDate) === formatDateKey(selectedDate)) {
-                    cell.classList.add('selected');
-                }
-
-                const day = document.createElement('div');
-                day.className = 'calendar-day';
-                day.textContent = String(cellDate.getDate());
-                cell.appendChild(day);
-
-                const events = monthEvents.filter((event) => eventMatchesDay(event, cellDate)).slice(0, 2);
-                events.forEach((event) => {
-                    const tag = document.createElement('span');
-                    tag.className = 'calendar-event';
-                    tag.title = event.titulo;
-                    tag.textContent = event.titulo;
-                    cell.appendChild(tag);
-                });
-
-                cell.addEventListener('click', () => {
-                    selectedDate = cellDate;
-                    renderCalendar();
-                    renderDayEvents();
-                });
-
-                calendarGrid.appendChild(cell);
-            }
-        }
-
-        function renderDayEvents() {
-            selectedDateLabel.textContent = `Eventos de ${toDateLabel(selectedDate)}`;
-            const events = monthEvents.filter((event) => eventMatchesDay(event, selectedDate));
-
-            if (!events.length) {
-                eventList.innerHTML = '<div class="empty-state">Nenhum evento neste dia.</div>';
-                return;
+            if (evs.length > 2) {
+                const more = document.createElement('div');
+                more.className = 'cal-more';
+                more.textContent = `+${evs.length - 2} mais`;
+                cell.appendChild(more);
             }
 
-            eventList.innerHTML = events.map((event) => {
-                const inicio = toInputDateTime(event.inicio);
-                const fim = toInputDateTime(event.fim);
-                return `
-                    <article class="event-item">
-                        <h4>${event.titulo}</h4>
-                        <p>${inicio.replace('T', ' ')} ate ${fim.replace('T', ' ')}</p>
-                        <p>${event.descricao || 'Sem descricao.'}</p>
-                        <div class="event-actions">
-                            <button type="button" data-action="edit" data-id="${event.id}">Editar</button>
-                            <button type="button" class="danger" data-action="delete" data-id="${event.id}">Excluir</button>
-                        </div>
-                    </article>
-                `;
-            }).join('');
-
-            eventList.querySelectorAll('button[data-action="edit"]').forEach((button) => {
-                button.addEventListener('click', () => openModal(Number(button.dataset.id)));
-            });
-
-            eventList.querySelectorAll('button[data-action="delete"]').forEach((button) => {
-                button.addEventListener('click', () => removeEvent(Number(button.dataset.id)));
-            });
-        }
-
-        async function fetchMonthEvents() {
-            const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1, 0, 0, 0, 0);
-            const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1, 0, 0, 0, 0);
-            const query = new URLSearchParams({
-                start: start.toISOString(),
-                end: end.toISOString()
-            });
-
-            const response = await fetch(`/agenda/eventos?${query.toString()}`);
-            if (!response.ok) {
-                throw new Error('Falha ao carregar agenda.');
-            }
-
-            monthEvents = await response.json();
-        }
-
-        function resetFormMessage(text = '') {
-            const node = document.getElementById('formMessage');
-            node.textContent = text;
-        }
-
-        function openModal(id = null) {
-            const modalTitle = document.getElementById('modalTitle');
-            const idNode = document.getElementById('eventId');
-            const titulo = document.getElementById('titulo');
-            const descricao = document.getElementById('descricao');
-            const inicio = document.getElementById('inicio');
-            const fim = document.getElementById('fim');
-
-            resetFormMessage();
-            idNode.value = '';
-
-            if (id) {
-                const event = monthEvents.find((item) => Number(item.id) === Number(id));
-                if (!event) return;
-                modalTitle.textContent = 'Editar evento';
-                idNode.value = String(event.id);
-                titulo.value = event.titulo || '';
-                descricao.value = event.descricao || '';
-                inicio.value = toInputDateTime(event.inicio);
-                fim.value = toInputDateTime(event.fim);
-            } else {
-                modalTitle.textContent = 'Novo evento';
-                const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 19, 0, 0, 0);
-                const end = new Date(start.getTime() + (2 * 60 * 60 * 1000));
-                titulo.value = '';
-                descricao.value = '';
-                inicio.value = toInputDateTime(start.toISOString());
-                fim.value = toInputDateTime(end.toISOString());
-            }
-
-            eventModal.classList.add('show');
-        }
-
-        function closeModal() {
-            eventModal.classList.remove('show');
-        }
-
-        async function submitEvent(event) {
-            event.preventDefault();
-
-            const id = document.getElementById('eventId').value;
-            const payload = {
-                titulo: document.getElementById('titulo').value.trim(),
-                descricao: document.getElementById('descricao').value.trim(),
-                inicio: toApiDateTime(document.getElementById('inicio').value),
-                fim: toApiDateTime(document.getElementById('fim').value)
-            };
-
-            if (!payload.titulo || !payload.inicio || !payload.fim) {
-                resetFormMessage('Preencha título, início e fim.');
-                return;
-            }
-
-            const url = id ? `/agenda/eventos/${id}` : '/agenda/eventos';
-            const method = id ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                const data = await response.json().catch(() => ({}));
-                resetFormMessage(data.error || 'Nao foi possivel salvar o evento.');
-                return;
-            }
-
-            closeModal();
-            await refreshAgenda();
-        }
-
-        async function removeEvent(id) {
-            if (!confirm('Deseja excluir este evento?')) {
-                return;
-            }
-
-            const response = await fetch(`/agenda/eventos/${id}`, { method: 'DELETE' });
-            if (!response.ok) {
-                alert('Nao foi possivel excluir o evento.');
-                return;
-            }
-
-            await refreshAgenda();
-        }
-
-        async function refreshAgenda() {
-            try {
-                await fetchMonthEvents();
+            cell.addEventListener('click', () => {
+                selectedDate = date;
                 renderCalendar();
                 renderDayEvents();
-            } catch (_error) {
-                eventList.innerHTML = '<div class="empty-state">Falha ao carregar agenda agora.</div>';
-            }
+            });
         }
 
-        document.getElementById('btnPrev').addEventListener('click', async () => {
-            currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
-            selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-            await refreshAgenda();
+        return cell;
+    };
+
+    /* ── Renderizar eventos do dia ── */
+    const renderDayEvents = () => {
+        $('dayLabel').textContent = fmtDate(selectedDate);
+        const evs = monthEvents.filter(e => eventMatchesDay(e, selectedDate));
+        const container = $('dayEvents');
+
+        if (!evs.length) {
+            container.innerHTML = `
+                <div class="empty-day">
+                    <i class="fa-regular fa-calendar-xmark"></i>
+                    Nenhum evento neste dia.
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = evs.map(ev => `
+            <div class="event-card">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                    <span class="tipo-badge tipo-${tipoCls(ev.tipo || 'Culto')}">
+                        <i class="fa-solid fa-circle" style="font-size:6px"></i>
+                        ${ev.tipo || 'Culto'}
+                    </span>
+                </div>
+                <h4>${ev.titulo}</h4>
+                <p><i class="fa-regular fa-clock" style="margin-right:4px"></i>
+                   ${fmtDateTime(ev.inicio)} → ${fmtDateTime(ev.fim)}</p>
+                ${ev.local ? `<p><i class="fa-solid fa-location-dot" style="margin-right:4px"></i>${ev.local}</p>` : ''}
+                ${ev.descricao ? `<p style="margin-top:4px">${ev.descricao}</p>` : ''}
+                <div class="event-card-actions">
+                    <button class="btn btn-ghost btn-sm" data-edit="${ev.id}">
+                        <i class="fa-solid fa-pen"></i> Editar
+                    </button>
+                    <button class="btn btn-danger btn-sm" data-del="${ev.id}">
+                        <i class="fa-solid fa-trash-can"></i> Excluir
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        container.querySelectorAll('[data-edit]').forEach(btn => {
+            btn.addEventListener('click', () => openModal(Number(btn.dataset.edit)));
+        });
+        container.querySelectorAll('[data-del]').forEach(btn => {
+            btn.addEventListener('click', () => removeEvent(Number(btn.dataset.del)));
+        });
+    };
+
+    /* ── API ── */
+    const fetchMonthEvents = async () => {
+        const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const end   = new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 1);
+        const q = new URLSearchParams({ start: start.toISOString(), end: end.toISOString() });
+
+        const res = await fetch(`/agenda/eventos?${q}`);
+        if (!res.ok) throw new Error('Falha ao carregar agenda.');
+        monthEvents = await res.json();
+    };
+
+    const refreshAgenda = async () => {
+        try {
+            setStatus('Carregando...');
+            await fetchMonthEvents();
+            renderCalendar();
+            renderDayEvents();
+            setStatus(`${monthEvents.length} evento(s) em ${MESES[currentMonth.getMonth()]}.`, 'ok');
+        } catch (err) {
+            setStatus(err.message, 'error');
+        }
+    };
+
+    /* ── Modal ── */
+    const openModal = (id = null) => {
+        $('formMessage').textContent = '';
+        $('eventId').value = '';
+
+        if (id) {
+            const ev = monthEvents.find(e => Number(e.id) === Number(id));
+            if (!ev) return;
+            $('modalTitle').textContent = 'Editar Evento';
+            $('eventId').value   = String(ev.id);
+            $('titulo').value    = ev.titulo || '';
+            $('tipo').value      = ev.tipo   || 'Culto';
+            $('inicio').value    = toInputDT(ev.inicio);
+            $('fim').value       = toInputDT(ev.fim);
+            $('local').value     = ev.local  || '';
+            $('descricao').value = ev.descricao || '';
+        } else {
+            $('modalTitle').textContent = 'Novo Evento';
+            const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 19, 0);
+            const end   = new Date(start.getTime() + 7200000);
+            $('titulo').value    = '';
+            $('tipo').value      = 'Culto';
+            $('inicio').value    = toInputDT(start.toISOString());
+            $('fim').value       = toInputDT(end.toISOString());
+            $('local').value     = '';
+            $('descricao').value = '';
+        }
+
+        $('eventModal').classList.add('show');
+    };
+
+    const closeModal = () => $('eventModal').classList.remove('show');
+
+    const salvarEvento = async () => {
+        $('formMessage').textContent = '';
+        const id      = $('eventId').value;
+        const titulo  = $('titulo').value.trim();
+        const tipo    = $('tipo').value;
+        const inicio  = toApiDT($('inicio').value);
+        const fim     = toApiDT($('fim').value);
+        const local   = $('local').value.trim();
+        const descricao = $('descricao').value.trim();
+
+        if (!titulo || !inicio || !fim) {
+            $('formMessage').textContent = 'Preencha título, início e fim.';
+            return;
+        }
+
+        const url    = id ? `/agenda/eventos/${id}` : '/agenda/eventos';
+        const method = id ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ titulo, tipo, inicio, fim, local, descricao })
         });
 
-        document.getElementById('btnNext').addEventListener('click', async () => {
-            currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
-            selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-            await refreshAgenda();
-        });
+        if (!res.ok) {
+            const d = await res.json().catch(() => ({}));
+            $('formMessage').textContent = d.error || 'Não foi possível salvar.';
+            return;
+        }
 
-        document.getElementById('btnNovoEvento').addEventListener('click', () => openModal());
-        document.getElementById('btnCancelar').addEventListener('click', closeModal);
-        eventModal.addEventListener('click', (event) => {
-            if (event.target === eventModal) {
-                closeModal();
-            }
-        });
+        closeModal();
+        await refreshAgenda();
+    };
 
-        eventForm.addEventListener('submit', submitEvent);
+    const removeEvent = async id => {
+        if (!confirm('Deseja excluir este evento?')) return;
+        const res = await fetch(`/agenda/eventos/${id}`, { method: 'DELETE' });
+        if (!res.ok) { alert('Não foi possível excluir o evento.'); return; }
+        await refreshAgenda();
+    };
 
+    /* ── Eventos UI ── */
+    $('btnNovoEvento').addEventListener('click', () => openModal());
+    $('btnNovoNoDia').addEventListener('click', () => openModal());
+    $('btnModalClose').addEventListener('click', closeModal);
+    $('btnCancelar').addEventListener('click', closeModal);
+    $('btnSalvarEvento').addEventListener('click', salvarEvento);
+
+    $('eventModal').addEventListener('click', e => {
+        if (e.target === $('eventModal')) closeModal();
+    });
+
+    $('btnHoje').addEventListener('click', () => {
+        currentMonth = new Date();
+        currentMonth.setDate(1);
+        selectedDate = new Date();
         refreshAgenda();
-    </script>
+    });
+
+    $('btnPrev').addEventListener('click', () => {
+        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth()-1, 1);
+        selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        refreshAgenda();
+    });
+
+    $('btnNext').addEventListener('click', () => {
+        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 1);
+        selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        refreshAgenda();
+    });
+
+    /* ── Init ── */
+    refreshAgenda();
+</script>
 </body>
 </html>

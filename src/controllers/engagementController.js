@@ -52,6 +52,8 @@ async function loginMembroApp(req, res) {
         id: membro.id,
         nome: membro.nome,
         email: membro.email || '',
+        cargo: membro.cargo || '',
+        foto_url: membro.foto_url || null,
         igrejaId: membro.igreja_id,
         nome_igreja: membro.nome_igreja,
         role: 'membro',
@@ -75,7 +77,7 @@ async function primeiroAcessoMembroApp(req, res) {
 
     const cpfLimpo = String(cpf).replace(/\D/g, '');
 
-    let sql = `SELECT m.id, m.nome, m.cpf, m.app_senha, m.igreja_id, i.nome AS nome_igreja
+    let sql = `SELECT m.id, m.nome, m.email, m.cpf, m.cargo, m.foto_url, m.app_senha, m.igreja_id, i.nome AS nome_igreja
                FROM membros m
                INNER JOIN igrejas i ON i.id = m.igreja_id
                WHERE REPLACE(REPLACE(REPLACE(m.cpf, '.', ''), '-', ''), '/', '') = $1`;
@@ -105,6 +107,8 @@ async function primeiroAcessoMembroApp(req, res) {
         id: membro.id,
         nome: membro.nome,
         email: membro.email || '',
+        cargo: membro.cargo || '',
+        foto_url: membro.foto_url || null,
         igrejaId: membro.igreja_id,
         nome_igreja: membro.nome_igreja,
         role: 'membro',

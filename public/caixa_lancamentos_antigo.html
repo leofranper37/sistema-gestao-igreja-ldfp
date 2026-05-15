@@ -278,11 +278,12 @@
             try {
                 const resp = await fetch('/saldo');
                 const data = await resp.json();
-                const valor = parseCurrency(data.saldo || '0');
+                const valor = parseCurrency(data.saldo);
                 saldoAtualEl.textContent = `R$ ${formatCurrency(valor)}`;
                 saldoAtualEl.classList.toggle('negativo', valor < 0);
-            } catch {
-                saldoAtualEl.textContent = 'R$ 0,00';
+            } catch (error) {
+                console.error('Erro ao carregar saldo:', error);
+                saldoAtualEl.textContent = 'Erro';
             }
         }
 
@@ -290,30 +291,25 @@
             try {
                 const resp = await fetch('/transacoes');
                 const data = await resp.json();
-                transacoes = Array.isArray(data) ? data : [];
-                aplicarFiltroRapido();
-            } catch {
-                transacoes = [];
+                transacoes = data.transacoes || [];
+                renderTabela(transacoes);
+            } catch (error) {
+                console.error('Erro ao carregar transações:', error);
                 renderTabela([]);
             }
         }
 
-        function aplicarFiltroRapido() {
-            const termo = buscaRapida.value.trim().toLowerCase();
-            const lista = termo
-                ? transacoes.filter((t) => (t.description || '').toLowerCase().includes(termo))
-                : transacoes;
-            renderTabela(lista);
-        }
-
-        form.addEventListener('submit', async (e) => {
+        async function registrarLancamento(e) {
             e.preventDefault();
-            const descricao = document.getElementById('desc').value.trim();
-            const valor = document.getElementById('valor').value.trim();
+            statusMsg.textContent = '';
+            statusMsg.classList.remove('error');
+
+            const desc = document.getElementById('desc').value.trim();
+            const valor = parseCurrency(document.getElementById('valor').value);
             const tipo = document.getElementById('tipo').value;
 
-            if (!descricao || !valor) {
-                statusMsg.textContent = 'Preencha descrição e valor.';
+            if (!desc || valor <= 0) {
+                statusMsg.textContent = 'Preencha a descrição e um valor válido.';
                 statusMsg.classList.add('error');
                 return;
             }
@@ -322,29 +318,35 @@
                 const resp = await fetch('/transacoes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ descricao, valor, tipo })
+                    body: JSON.stringify({ description: desc, amount: valor, type: tipo })
                 });
+                const data = await resp.json();
 
-                if (!resp.ok) {
-                    const data = await resp.json().catch(() => ({}));
-                    throw new Error(data.error || 'Não foi possível registrar.');
+                if (resp.ok) {
+                    statusMsg.textContent = 'Lançamento registrado com sucesso!';
+                    form.reset();
+                    await carregarSaldo();
+                    await carregarTransacoes();
+                } else {
+                    statusMsg.textContent = data.error || 'Erro ao registrar lançamento.';
+                    statusMsg.classList.add('error');
                 }
-
-                statusMsg.textContent = 'Lançamento registrado com sucesso.';
-                statusMsg.classList.remove('error');
-                form.reset();
-                await carregarSaldo();
-                await carregarTransacoes();
-            } catch (err) {
-                statusMsg.textContent = err.message;
+            } catch (error) {
+                console.error('Erro de rede:', error);
+                statusMsg.textContent = 'Erro de conexão ao registrar lançamento.';
                 statusMsg.classList.add('error');
             }
-        });
+        }
 
-        buscaRapida.addEventListener('input', aplicarFiltroRapido);
-        document.getElementById('btnRecarregar').addEventListener('click', async () => {
-            await carregarSaldo();
-            await carregarTransacoes();
+        form.addEventListener('submit', registrarLancamento);
+        document.getElementById('btnRecarregar').addEventListener('click', () => {
+            carregarSaldo();
+            carregarTransacoes();
+        });
+        buscaRapida.addEventListener('input', () => {
+            const termo = buscaRapida.value.toLowerCase();
+            const filtrado = transacoes.filter(t => t.description.toLowerCase().includes(termo));
+            renderTabela(filtrado);
         });
 
         carregarSaldo();

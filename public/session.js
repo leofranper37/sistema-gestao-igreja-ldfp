@@ -1,5 +1,6 @@
 (function () {
     const STORAGE_KEY = 'ldfpAuth';
+    const LEGACY_TOKEN_KEY = 'token';
     const originalFetch = window.fetch.bind(window);
 
     function keepOnlyFirst(selector) {
@@ -63,9 +64,35 @@
     function getStoredAuth() {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
-            return raw ? JSON.parse(raw) : null;
+            const parsed = raw ? JSON.parse(raw) : null;
+
+            if (parsed?.token) {
+                // Mantem compatibilidade com paginas antigas que leem token direto.
+                localStorage.setItem(LEGACY_TOKEN_KEY, parsed.token);
+                sessionStorage.setItem(LEGACY_TOKEN_KEY, parsed.token);
+                return parsed;
+            }
+
+            const legacyToken = sessionStorage.getItem(LEGACY_TOKEN_KEY) || localStorage.getItem(LEGACY_TOKEN_KEY);
+            if (!legacyToken) {
+                return null;
+            }
+
+            let legacyUser = null;
+            try {
+                legacyUser = JSON.parse(localStorage.getItem('ldfpUser') || 'null');
+            } catch (ignore) {
+                legacyUser = null;
+            }
+
+            return {
+                token: legacyToken,
+                user: legacyUser
+            };
         } catch (error) {
             localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(LEGACY_TOKEN_KEY);
+            sessionStorage.removeItem(LEGACY_TOKEN_KEY);
             return null;
         }
     }
@@ -79,11 +106,16 @@
             token: payload.token,
             user: payload.user
         }));
+
+        localStorage.setItem(LEGACY_TOKEN_KEY, payload.token);
+        sessionStorage.setItem(LEGACY_TOKEN_KEY, payload.token);
     }
 
     function clearAuthSession() {
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem('ldfpUser');
+        localStorage.removeItem(LEGACY_TOKEN_KEY);
+        sessionStorage.removeItem(LEGACY_TOKEN_KEY);
     }
 
     function getAuthToken() {
@@ -159,6 +191,7 @@
     };
 
     window.getStoredAuth = getStoredAuth;
+    window.getAuthToken = getAuthToken;
     window.saveAuthSession = saveAuthSession;
     window.clearAuthSession = clearAuthSession;
     window.requireAuthSession = requireAuthSession;

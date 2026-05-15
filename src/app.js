@@ -1,6 +1,9 @@
 const cors = require('cors');
 const express = require('express');
+const fs = require('fs');
+const helmet = require('helmet');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const config = require('./config');
 const logger = require('./config/logger');
@@ -8,6 +11,7 @@ const errorHandler = require('./middlewares/errorHandler');
 const { createHttpError } = require('./utils/httpError');
 const accountRoutes = require('./routes/accountRoutes');
 const agendaRoutes = require('./routes/agendaRoutes');
+const appMembroRoutes = require('./routes/appMembroRoutes');
 const bancoRoutes = require('./routes/bancoRoutes');
 const cargoRoutes = require('./routes/cargoRoutes');
 const contasPagarRoutes = require('./routes/contasPagarRoutes');
@@ -15,8 +19,6 @@ const financeRoutes = require('./routes/financeRoutes');
 const engagementRoutes = require('./routes/engagementRoutes');
 const missionariosRoutes = require('./routes/missionariosRoutes');
 const outrasIgrejasRoutes = require('./routes/outrasIgrejasRoutes');
-const clienteRoutes = require('./routes/clienteRoutes');
-const fabricaRoutes = require('./routes/fabricaRoutes');
 const realtimeRoutes = require('./routes/realtimeRoutes');
 const systemRoutes = require('./routes/systemRoutes');
 const superAdminRoutes = require('./routes/superAdminRoutes');
@@ -27,8 +29,27 @@ const app = express();
 const maintenanceModeEnabled = process.env.MAINTENANCE_MODE === 'true' || false;
 const setupRouteEnabled = process.env.ENABLE_SETUP_ROUTE === 'true'
     || (process.env.NODE_ENV !== 'production' && process.env.ENABLE_SETUP_ROUTE !== 'false');
+const shouldUseDistPublic = String(process.env.USE_DIST_PUBLIC || '').trim().toLowerCase() === 'true';
+const distPublicPath = path.join(__dirname, '..', '..', 'dist', 'public');
+const publicPath = path.join(__dirname, '..', 'public');
+const staticAssetsPath = shouldUseDistPublic && fs.existsSync(distPublicPath)
+    ? distPublicPath
+    : publicPath;
 
 const allowedOrigins = config.cors.allowedOrigins;
+
+const loginRateLimitWindowMs = Number.parseInt(process.env.LOGIN_RATE_LIMIT_WINDOW_MS || '', 10) || 15 * 60 * 1000;
+const loginRateLimitMax = Number.parseInt(process.env.LOGIN_RATE_LIMIT_MAX || '', 10) || 10;
+
+const loginRateLimiter = rateLimit({
+    windowMs: loginRateLimitWindowMs,
+    limit: loginRateLimitMax,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: {
+        error: 'Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente novamente.'
+    }
+});
 
 app.use(cors(allowedOrigins.length ? {
     origin(origin, callback) {
@@ -39,6 +60,12 @@ app.use(cors(allowedOrigins.length ? {
         return callback(createHttpError(403, 'Origem não permitida por CORS.'));
     }
 } : undefined));
+
+app.disable('x-powered-by');
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+}));
 
 app.use(express.json({ limit: '1mb' }));
 app.use((req, res, next) => {
@@ -75,7 +102,11 @@ app.use((req, res, next) => {
     return res.status(503).sendFile(path.join(__dirname, '..', 'public', 'maintenance.html'));
 });
 
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(staticAssetsPath));
+
+app.use('/login', loginRateLimiter);
+app.use('/esqueci-senha', loginRateLimiter);
+app.use('/redefinir-senha', loginRateLimiter);
 
 app.use((req, res, next) => {
     const startedAt = Date.now();
@@ -97,6 +128,7 @@ app.use((req, res, next) => {
 
 app.use(financeRoutes);
 app.use(bancoRoutes);
+app.use(appMembroRoutes);
 app.use(contasPagarRoutes);
 app.use(engagementRoutes);
 app.use(cargoRoutes);
@@ -104,8 +136,6 @@ app.use(accountRoutes);
 app.use(agendaRoutes);
 app.use(missionariosRoutes);
 app.use(outrasIgrejasRoutes);
-app.use('/api/cliente', clienteRoutes);
-app.use('/api/fabrica', fabricaRoutes);
 app.use(realtimeRoutes);
 app.use(systemRoutes);
 app.use(superAdminRoutes);

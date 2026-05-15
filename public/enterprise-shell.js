@@ -21,6 +21,7 @@
     }
 
     const ROLE_FEATURES = {
+        super_admin: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'configuracoes', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao', 'planos'],
         admin: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'configuracoes', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao'],
         secretaria: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao'],
         pastor: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'cargos', 'whatsapp', 'autocadastro', 'app_midia', 'telao'],
@@ -32,6 +33,10 @@
     };
 
     const ROLE_ALIASES = {
+        'super_admin': 'super_admin',
+        superadmin: 'super_admin',
+        'super-administrador': 'super_admin',
+        'super administrador': 'super_admin',
         administrador: 'admin',
         adm: 'admin',
         tesouraria: 'financeiro',
@@ -79,11 +84,17 @@
         'app_midia.html': 'app_midia',
         'telao_visitantes.html': 'telao',
         'financeiro.html': 'financeiro',
+        'dizimos.html': 'financeiro',
+        'tesouraria_dizimos.html': 'financeiro',
+        'dizimos_lancamentos.html': 'financeiro',
+        'dizimos_tipos_receita.html': 'financeiro',
+        'tesouraria_caixa.html': 'financeiro',
         'caixa_lancamentos.html': 'financeiro',
         'caixa_ativar_mes.html': 'financeiro',
         'caixa_saldo_inicial.html': 'financeiro',
         'bancos_lancamentos.html': 'financeiro',
         'banco.html': 'financeiro',
+        'tesouraria_bancos.html': 'financeiro',
         'importacao_extrato.html': 'financeiro',
         'pagamentos.html': 'pagamentos',
         'contas_pagar.html': 'financeiro',
@@ -99,10 +110,49 @@
         'relatorios_tesouraria.html': 'financeiro',
         'relatorios_contabilidade.html': 'financeiro',
         'configuracoes.html': 'configuracoes',
-        'app_membro.html': 'app_membro'
+        'planos_lista.html': 'planos',
+        'planos_editar.html': 'planos',
+        'app_membro.html': 'app_membro',
+        'dashboard_membro.html': 'app_membro'
     };
 
     let dynamicFeatureAllowList = null;
+
+    const FEATURE_KEY_ALIASES = {
+        ebd: 'criancas',
+        ebd_dominical: 'criancas',
+        credencial_membro: 'app_membro',
+        credencial: 'app_membro',
+        congregacoes: 'igrejas',
+        outras_igrejas: 'igrejas',
+        portaria: 'portaria_qr',
+        app_midia: 'app_midia',
+        app_membro: 'app_membro',
+        relatorios: 'financeiro',
+        grupos: 'membros',
+        grupos_celulas: 'membros'
+    };
+
+    function normalizeFeatureKey(value) {
+        const raw = String(value || '').trim().toLowerCase();
+        if (!raw) {
+            return '';
+        }
+
+        return FEATURE_KEY_ALIASES[raw] || raw;
+    }
+
+    function normalizeFeatureAllowList(featureKeys) {
+        if (!Array.isArray(featureKeys)) {
+            return null;
+        }
+
+        const normalized = featureKeys
+            .map((key) => normalizeFeatureKey(key))
+            .filter(Boolean);
+
+        return normalized.length ? Array.from(new Set(normalized)) : null;
+    }
 
     function getAuthUser() {
         if (typeof window.getStoredAuth !== 'function') {
@@ -121,19 +171,9 @@
         return ROLE_ALIASES[rawRole] || rawRole || 'visitante';
     }
 
-    function getVisibleFeatures(user) {
+    function getRoleVisibleFeatures(user) {
         const role = getUserRole(user);
         const roleFeatures = ROLE_FEATURES[role];
-
-        if (Array.isArray(dynamicFeatureAllowList)) {
-            if (Array.isArray(roleFeatures)) {
-                return roleFeatures.filter((feature) => dynamicFeatureAllowList.includes(feature));
-            }
-
-            if (user) {
-                return ROLE_FEATURES.admin.filter((feature) => dynamicFeatureAllowList.includes(feature));
-            }
-        }
 
         if (roleFeatures) {
             return roleFeatures;
@@ -147,6 +187,16 @@
         return ROLE_FEATURES.visitante;
     }
 
+    function getEnabledFeatures(user) {
+        const roleFeatures = getRoleVisibleFeatures(user);
+
+        if (Array.isArray(dynamicFeatureAllowList)) {
+            return roleFeatures.filter((feature) => dynamicFeatureAllowList.includes(feature));
+        }
+
+        return roleFeatures;
+    }
+
     function normalizeLinkItem(item) {
         if (Array.isArray(item)) {
             const [href, icon, label, feature] = item;
@@ -156,18 +206,250 @@
         return item || {};
     }
 
-    function canAccessFeature(user, feature) {
+    function canUseFeature(user, feature) {
         if (!feature) {
             return true;
         }
 
-        return getVisibleFeatures(user).includes(feature);
+        return getEnabledFeatures(user).includes(feature);
+    }
+
+    function canDisplayFeature(user, feature) {
+        if (!feature) {
+            return true;
+        }
+
+        return getRoleVisibleFeatures(user).includes(feature);
     }
 
     function filterLinksByRole(links, user) {
         return links
             .map(normalizeLinkItem)
-            .filter((item) => canAccessFeature(user, item.feature));
+            .filter((item) => canDisplayFeature(user, item.feature));
+    }
+
+    function renderMenuLink(item, activePath, user) {
+        const href = item.href;
+        const label = item.label || '';
+        const feature = item.feature || '';
+        const isLocked = feature ? !canUseFeature(user, feature) : false;
+        const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
+        const lockClass = isLocked ? 'menu-link-locked' : '';
+        const classes = [activeClass, lockClass].filter(Boolean).join(' ');
+        const safeHref = isLocked ? '#' : href;
+        const dataFeature = feature ? `data-feature="${feature}"` : '';
+        const lockIcon = isLocked ? '<i class="fa-solid fa-lock menu-link-lock" aria-hidden="true"></i>' : '';
+
+        return `<a href="${safeHref}" class="${classes}" data-href="${href}" data-label="${label}" ${dataFeature} ${isLocked ? 'data-locked="true"' : ''}><i class="${item.icon}"></i><span>${label}</span>${lockIcon}</a>`;
+    }
+
+    function ensureLockStyles() {
+        if (document.getElementById('ldfp-shell-lock-styles')) {
+            return;
+        }
+
+        const style = document.createElement('style');
+        style.id = 'ldfp-shell-lock-styles';
+        style.textContent = `
+            .menu-link-locked {
+                opacity: .58;
+                cursor: not-allowed;
+            }
+
+            .menu-link-locked:hover {
+                transform: none;
+            }
+
+            .menu-link-lock {
+                margin-left: auto;
+                font-size: .72rem;
+                color: #f59e0b;
+            }
+
+            .ldfp-upgrade-modal {
+                position: fixed;
+                inset: 0;
+                background: rgba(2, 6, 23, .7);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                padding: 20px;
+            }
+
+            .ldfp-upgrade-modal.is-open {
+                display: flex;
+            }
+
+            .ldfp-upgrade-card {
+                width: min(520px, 100%);
+                background: #ffffff;
+                border-radius: 14px;
+                border: 1px solid #e5e7eb;
+                box-shadow: 0 25px 50px rgba(2, 6, 23, .25);
+                overflow: hidden;
+            }
+
+            .ldfp-upgrade-head {
+                background: linear-gradient(135deg, #0f172a, #1e293b);
+                color: #f8fafc;
+                padding: 14px 18px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .ldfp-upgrade-head h3 {
+                margin: 0;
+                font-size: 16px;
+                font-weight: 700;
+            }
+
+            .ldfp-upgrade-close {
+                border: 0;
+                background: transparent;
+                color: #f8fafc;
+                font-size: 18px;
+                line-height: 1;
+                cursor: pointer;
+            }
+
+            .ldfp-upgrade-body {
+                padding: 18px;
+                color: #0f172a;
+                font-size: 14px;
+                line-height: 1.55;
+            }
+
+            .ldfp-upgrade-resource {
+                font-weight: 700;
+                color: #b45309;
+            }
+
+            .ldfp-upgrade-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-top: 16px;
+            }
+
+            .ldfp-upgrade-btn {
+                border: 1px solid #cbd5e1;
+                background: #f8fafc;
+                color: #0f172a;
+                padding: 9px 14px;
+                border-radius: 9px;
+                font-weight: 600;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            .ldfp-upgrade-btn.primary {
+                background: #f59e0b;
+                color: #111827;
+                border-color: #f59e0b;
+            }
+        `;
+
+        document.head.appendChild(style);
+    }
+
+    function ensureUpgradeModal() {
+        if (document.getElementById('ldfpUpgradeModal')) {
+            return;
+        }
+
+        const modal = document.createElement('div');
+        modal.id = 'ldfpUpgradeModal';
+        modal.className = 'ldfp-upgrade-modal';
+        modal.innerHTML = `
+            <div class="ldfp-upgrade-card" role="dialog" aria-modal="true" aria-labelledby="ldfpUpgradeTitle">
+                <div class="ldfp-upgrade-head">
+                    <h3 id="ldfpUpgradeTitle">Recurso indisponível no plano atual</h3>
+                    <button type="button" class="ldfp-upgrade-close" data-upgrade-close="true" aria-label="Fechar">&times;</button>
+                </div>
+                <div class="ldfp-upgrade-body">
+                    <p><span class="ldfp-upgrade-resource" id="ldfpUpgradeResource">Este módulo</span> não está incluído no plano da sua igreja.</p>
+                    <p>Solicite ativação no painel administrativo ou faça upgrade para liberar este recurso.</p>
+                    <div class="ldfp-upgrade-actions">
+                        <a href="assinar.html" class="ldfp-upgrade-btn primary" id="ldfpUpgradePlansLink">Ver planos</a>
+                        <a href="mailto:contato@ldfp.com.br?subject=Upgrade%20de%20plano%20-%20LDFP" class="ldfp-upgrade-btn">Falar com suporte</a>
+                        <button type="button" class="ldfp-upgrade-btn" data-upgrade-close="true">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modal.addEventListener('click', (event) => {
+            const closeRequested = event.target === modal || event.target?.dataset?.upgradeClose === 'true';
+            if (closeRequested) {
+                modal.classList.remove('is-open');
+            }
+        });
+
+        document.body.appendChild(modal);
+    }
+
+    function getSuggestedPlanByFeature(feature) {
+        const featurePlanMap = {
+            whatsapp: 'hebrom',
+            autocadastro: 'betel',
+            portaria_qr: 'betel',
+            app_midia: 'betel',
+            telao: 'siao',
+            missionarios: 'siao',
+            igrejas: 'siao',
+            pagamentos: 'betel',
+            financeiro: 'betel'
+        };
+
+        return featurePlanMap[String(feature || '').trim()] || 'betel';
+    }
+
+    function openUpgradeModal(resourceName, feature) {
+        const modal = document.getElementById('ldfpUpgradeModal');
+        if (!modal) {
+            return;
+        }
+
+        const target = modal.querySelector('#ldfpUpgradeResource');
+        if (target) {
+            target.textContent = resourceName || 'Este módulo';
+        }
+
+        const plansLink = modal.querySelector('#ldfpUpgradePlansLink');
+        if (plansLink) {
+            const suggestedPlan = getSuggestedPlanByFeature(feature);
+            const query = new URLSearchParams({
+                origem: 'menu_bloqueado',
+                feature: String(feature || '').trim(),
+                feature_nome: resourceName || 'modulo',
+                plano: suggestedPlan
+            });
+            plansLink.href = `assinar.html?${query.toString()}`;
+        }
+
+        modal.classList.add('is-open');
+    }
+
+    function showLockedFeatureMessage(anchor) {
+        const feature = String(anchor?.dataset?.feature || '').trim();
+        const label = String(anchor?.dataset?.label || 'Este módulo').trim();
+        const featureLabelMap = {
+            whatsapp: 'Módulo de WhatsApp',
+            autocadastro: 'Aprovação de Cadastro',
+            portaria_qr: 'Portaria QR',
+            telao: 'Telão',
+            igrejas: 'Congregações e Outras Igrejas',
+            missionarios: 'Missionários',
+            app_midia: 'App de Mídia',
+            pagamentos: 'Links de Pagamento',
+            financeiro: 'Módulo Financeiro'
+        };
+
+        const resourceName = featureLabelMap[feature] || label;
+        openUpgradeModal(resourceName, feature);
     }
 
     function normalizePath(href) {
@@ -199,10 +481,7 @@
         const buttonClass = hasActiveLink ? 'dropdown-btn active' : 'dropdown-btn';
         const displayStyle = hasActiveLink || openByDefault ? 'display: block;' : 'display: none;';
 
-        const linksHtml = allowedLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const linksHtml = allowedLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
         return `
             <button class="${buttonClass}" type="button">
@@ -217,8 +496,8 @@
 
     function renderSecretariaGroup(activePath, user) {
         const membrosLinks = [
-            ['membros.html', 'fa-regular fa-id-card', 'Ficha Cadastral', 'membros'],
-            ['cadastro.html', 'fa-solid fa-file-pen', 'Ficha de Cadastro', 'membros'],
+            ['lista_membros.html', 'fa-solid fa-address-book', 'Lista de Membros', 'membros'],
+            ['membros.html', 'fa-solid fa-user-plus', 'Cadastrar Novo Membro', 'membros'],
             ['cargos.html', 'fa-solid fa-briefcase', 'Cargos', 'cargos'],
             ['situacoes.html', 'fa-solid fa-toggle-on', 'Situações', 'membros'],
             ['congregacoes.html', 'fa-solid fa-church', 'Congregações', 'membros']
@@ -230,10 +509,7 @@
         ];
 
         const grupoLinks = [
-            ['grupos.html', 'fa-solid fa-people-group', 'Grupos', 'membros'],
-            ['grupo_novo.html', 'fa-solid fa-plus', 'Cadastro', 'membros'],
-            ['grupos_categorias.html', 'fa-solid fa-tags', 'Categorias', 'membros'],
-            ['grupos_reunioes.html', 'fa-solid fa-users-rectangle', 'Reuniões', 'membros']
+            ['grupos.html', 'fa-solid fa-people-group', 'Grupos', 'membros']
         ];
 
         const escalaLinks = [
@@ -243,9 +519,9 @@
         ];
 
         const ebdLinks = [
-            ['ebd_alunos.html', 'fa-solid fa-user-graduate', 'Alunos', 'criancas'],
-            ['ebd_turmas.html', 'fa-solid fa-people-group', 'Turmas', 'criancas'],
-            ['ebd_grades.html', 'fa-solid fa-table-cells-large', 'Grades EBD', 'criancas']
+            ['ebd_alunos.html', 'fa-solid fa-child-reaching', 'Alunos', 'criancas'],
+            ['ebd_turmas.html', 'fa-solid fa-users-line', 'Turmas & Revistas', 'criancas'],
+            ['ebd_grades.html', 'fa-solid fa-calendar-days', 'Grades & Presença', 'criancas']
         ];
 
         const batismoLinks = [
@@ -255,7 +531,6 @@
         ];
 
         const otherLinks = [
-            ['lista_membros.html', 'fa-solid fa-users', 'Lista de Membros', 'membros'],
             ['agenda.html', 'fa-solid fa-calendar-days', 'Agenda', 'agenda'],
             ['outras_igrejas.html', 'fa-solid fa-globe', 'Outras Igrejas', 'igrejas'],
             ['missionarios.html', 'fa-solid fa-person-rays', 'Missionários', 'missionarios'],
@@ -300,40 +575,19 @@
         const ebdActive = allowedEbdLinks.some(({ href }) => isLinkActive(href, activePath));
         const batismoActive = allowedBatismoLinks.some(({ href }) => isLinkActive(href, activePath));
 
-        const membrosHtml = allowedMembrosLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const membrosHtml = allowedMembrosLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
-        const historicoHtml = allowedHistoricoLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const historicoHtml = allowedHistoricoLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
-        const grupoHtml = allowedGrupoLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const grupoHtml = allowedGrupoLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
-        const escalaHtml = allowedEscalaLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const escalaHtml = allowedEscalaLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
-        const ebdHtml = allowedEbdLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const ebdHtml = allowedEbdLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
-        const batismoHtml = allowedBatismoLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const batismoHtml = allowedBatismoLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
-        const otherHtml = allowedOtherLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const otherHtml = allowedOtherLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
         return `
             <button class="dropdown-btn ${secretariaHasActive ? 'active' : ''}" type="button">
@@ -396,27 +650,24 @@
 
     function renderTesourariaGroup(activePath, user) {
         const dizimosLinks = [
-            ['dizimos.html', 'fa-solid fa-hand-holding-dollar', 'Lançamentos de Dízimos', 'financeiro'],
-            ['tipos_receitas.html', 'fa-solid fa-tags', 'Tipos de Receitas', 'financeiro']
+            ['tesouraria_dizimos.html', 'fa-solid fa-coins', 'Dízimos', 'financeiro']
         ];
 
         const caixaLinks = [
-            ['financeiro.html', 'fa-solid fa-cash-register', 'Visão Geral do Caixa', 'financeiro'],
-            ['caixa_lancamentos.html', 'fa-solid fa-file-invoice', 'Lançamentos do Caixa', 'financeiro'],
-            ['caixa_ativar_mes.html', 'fa-solid fa-calendar-check', 'Ativar Mês do Caixa', 'financeiro'],
-            ['caixa_saldo_inicial.html', 'fa-solid fa-circle-dollar-to-slot', 'Saldo Inicial do Caixa', 'financeiro']
+            ['tesouraria_caixa.html', 'fa-solid fa-cash-register', 'Caixa', 'financeiro'],
+            ['caixa_ativar_mes.html', 'fa-solid fa-circle-dollar-to-slot', 'Ativar Mês / Saldo Inicial', 'financeiro']
         ];
 
         const bancosLinks = [
+            ['tesouraria_bancos.html', 'fa-solid fa-building-columns', 'Bancos', 'financeiro'],
             ['bancos_lancamentos.html', 'fa-solid fa-file-invoice-dollar', 'Lançamentos Bancários', 'financeiro'],
-            ['banco.html', 'fa-solid fa-building-columns', 'Cadastro de Bancos', 'financeiro'],
-            ['importacao_extrato.html', 'fa-solid fa-file-import', 'Importação de Extrato', 'financeiro']
+            ['importacao_extrato.html', 'fa-solid fa-file-import', 'Importar Extrato', 'financeiro']
         ];
 
         const otherLinks = [
             ['pagamentos.html', 'fa-solid fa-link', 'Links de Pagamento', 'pagamentos'],
             ['contas_pagar.html', 'fa-solid fa-file-invoice-dollar', 'Contas a Pagar', 'financeiro'],
-            ['recibo.html', 'fa-solid fa-receipt', 'Recibo', 'financeiro'],
+            ['recibo.html', 'fa-solid fa-receipt', 'Recibos', 'financeiro'],
             ['transferencias.html', 'fa-solid fa-right-left', 'Transferências', 'financeiro']
         ];
 
@@ -435,25 +686,13 @@
         const tesourariaActive = dizimosActive || caixaActive || bancosActive || allowedOtherLinks.some(({ href }) => isLinkActive(href, activePath));
         const tesourariaDisplay = tesourariaActive ? 'display: block;' : 'display: none;';
 
-        const dizimosHtml = allowedDizimosLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const dizimosHtml = allowedDizimosLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
-        const caixaHtml = allowedCaixaLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const caixaHtml = allowedCaixaLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
-        const bancosHtml = allowedBancosLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const bancosHtml = allowedBancosLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
-        const otherHtml = allowedOtherLinks.map(({ href, icon: linkIcon, label }) => {
-            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
-            return `<a href="${href}" class="${activeClass}"><i class="${linkIcon}"></i><span>${label}</span></a>`;
-        }).join('');
+        const otherHtml = allowedOtherLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
 
         return `
             <button class="dropdown-btn ${tesourariaActive ? 'active' : ''}" type="button">
@@ -462,7 +701,7 @@
             </button>
             <div class="dropdown-container" style="${tesourariaDisplay}">
                 ${allowedDizimosLinks.length ? `<button class="sub-dropdown-btn ${dizimosActive ? 'active' : ''}" type="button">
-                    <span><i class="fa-solid fa-coins icon-left"></i> Dízimos</span>
+                    <span><i class="fa-solid fa-coins icon-left"></i> Dízimos & Ofertas</span>
                     <i class="fa-solid fa-chevron-right arrow"></i>
                 </button>
                 <div class="sub-dropdown-container" style="${dizimosActive ? 'display: block;' : 'display: none;'}">
@@ -505,6 +744,7 @@
                     ${renderLegacyGroup('Menu LDFP', 'fa-solid fa-house', [
                         ['dashboard.html', 'fa-regular fa-eye', 'Visão Geral', 'dashboard'],
                         ['app_membro.html', 'fa-solid fa-mobile-screen-button', 'App do Membro'],
+                        ['dashboard_membro.html', 'fa-solid fa-user-group', 'Painel do Membro'],
                         ['novidades.html', 'fa-solid fa-star', 'Novidades'],
                         ['configuracoes.html', 'fa-solid fa-gear', 'Configurações', 'configuracoes'],
                         ['index.html', 'fa-solid fa-right-from-bracket', 'Sair']
@@ -609,13 +849,41 @@
 
             if (hasCurrentClass || hrefMatch || (prevBtn && prevBtn.classList.contains('active')) || inlineOpen) {
                 container.classList.add('is-open');
+                container.style.display = 'block';
                 if (prevBtn) prevBtn.classList.add('active');
             } else {
                 container.classList.remove('is-open');
+                container.style.display = 'none';
                 if (prevBtn) prevBtn.classList.remove('active');
             }
         });
 
+        // Clique nos botões dropdown (Secretaria, Tesouraria, etc.)
+        sidebar.querySelectorAll('.dropdown-btn').forEach((btn) => {
+            btn.addEventListener('click', function () {
+                const container = this.nextElementSibling;
+                if (!container || !container.classList.contains('dropdown-container')) return;
+
+                const isOpen = container.classList.contains('is-open');
+
+                // Fecha todos os outros
+                sidebar.querySelectorAll('.dropdown-container').forEach((c) => {
+                    c.classList.remove('is-open');
+                    c.style.display = 'none';
+                    const prevBtn = c.previousElementSibling;
+                    if (prevBtn) prevBtn.classList.remove('active');
+                });
+
+                // Abre ou fecha o clicado
+                if (!isOpen) {
+                    container.classList.add('is-open');
+                    container.style.display = 'block';
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Toggle da sidebar no mobile
         menuToggle.addEventListener('click', function () {
             sidebar.classList.toggle('is-open');
         });
@@ -624,31 +892,6 @@
             if (window.innerWidth > 1080) {
                 sidebar.classList.remove('is-open');
             }
-        });
-
-        // Ao clicar em um botão principal, abre só o correspondente e fecha os outros
-        sidebar.querySelectorAll('.dropdown-btn').forEach((button) => {
-            button.addEventListener('click', function () {
-                const isOpening = !this.classList.contains('active');
-
-                sidebar.querySelectorAll('.dropdown-btn').forEach((otherButton) => {
-                    if (otherButton !== this) {
-                        otherButton.classList.remove('active');
-                        const otherContainer = otherButton.nextElementSibling;
-                        if (otherContainer && otherContainer.classList.contains('dropdown-container')) {
-                            otherContainer.classList.remove('is-open');
-                        }
-                    }
-                });
-
-                const container = this.nextElementSibling;
-                if (!container || !container.classList.contains('dropdown-container')) {
-                    return;
-                }
-
-                this.classList.toggle('active', isOpening);
-                container.classList.toggle('is-open', isOpening);
-            });
         });
 
         // Sub-dropdowns continuam usando a lógica de exibição interna (se houver)
@@ -665,6 +908,13 @@
             });
         });
 
+        sidebar.querySelectorAll('a[data-locked="true"]').forEach((anchor) => {
+            anchor.addEventListener('click', function (event) {
+                event.preventDefault();
+                showLockedFeatureMessage(anchor);
+            });
+        });
+
     }
 
     async function loadDynamicFeatures() {
@@ -677,10 +927,11 @@
 
             const payload = await response.json();
             const featureKeys = Array.isArray(payload?.featureKeys) ? payload.featureKeys : null;
+            const normalizedFeatures = normalizeFeatureAllowList(featureKeys);
 
             // Fallback de compatibilidade: se o catálogo SaaS ainda não foi configurado,
             // mantém o menu padrão por perfil para não bloquear módulos já existentes.
-            dynamicFeatureAllowList = featureKeys && featureKeys.length > 0 ? featureKeys : null;
+            dynamicFeatureAllowList = normalizedFeatures;
         } catch (_) {
             dynamicFeatureAllowList = null;
         }
@@ -694,7 +945,7 @@
             return;
         }
 
-        if (!canAccessFeature(user, requiredFeature)) {
+        if (!canUseFeature(user, requiredFeature)) {
             window.location.href = 'dashboard.html';
         }
     }
@@ -735,6 +986,8 @@
 
             main.classList.add('enterprise-main');
             body.classList.add('legacy-sidebar-mode');
+            ensureLockStyles();
+            ensureUpgradeModal();
 
             if (!document.getElementById('enterpriseSidebar')) {
                 body.insertAdjacentHTML('afterbegin', renderSidebar(activePath, getAuthUser()));

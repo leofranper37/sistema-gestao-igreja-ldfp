@@ -213,6 +213,7 @@
         .btn-slate { background: #64748b; }
         .btn-sm { padding: 5px 9px; font-size: 11px; border-radius: 6px; }
         .btn-full { width: 100%; justify-content: center; margin-top: 6px; }
+        .btn-mt-8 { margin-top: 8px; }
         .btn-primary:hover { opacity: .9; }
         .btn-blue:hover { background: #0369a1; }
         .btn-red:hover { background: #b91c1c; }
@@ -452,7 +453,7 @@
                             <div class="filter-bar">
                                 <div class="filter-group">
                                     <label for="filtroComp">Competência</label>
-                                    <input type="month" id="filtroComp">
+                                    <input type="text" id="filtroComp" placeholder="AAAA-MM" pattern="\\d{4}-\\d{2}">
                                 </div>
                                 <div class="filter-group">
                                     <label for="filtroTipo">Tipo</label>
@@ -527,7 +528,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="competencia">Competência</label>
-                                    <input type="month" id="competencia" required>
+                                    <input type="text" id="competencia" placeholder="AAAA-MM" pattern="\\d{4}-\\d{2}" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="observacao">Observação (opcional)</label>
@@ -610,7 +611,7 @@
                                 <button type="submit" class="btn btn-primary btn-full">
                                     <i class="fa-solid fa-save"></i> <span id="tipoSubmitLabel">Criar Tipo</span>
                                 </button>
-                                <button type="button" class="btn btn-slate btn-full" id="btnCancelarTipo" style="display:none; margin-top: 8px;" onclick="cancelarTipo()">
+                                <button type="button" class="btn btn-slate btn-full btn-mt-8" id="btnCancelarTipo" hidden onclick="cancelarTipo()">
                                     <i class="fa-solid fa-xmark"></i> Cancelar
                                 </button>
                                 <div id="msgTiposForm" class="status-msg"></div>
@@ -623,331 +624,6 @@
         </div>
     </main>
 
-    <!-- Scripts do Shell (sempre no final do body) -->
-    <script src="session.js?v=20260501"></script>
-    <script src="enterprise-shell.js?v=20260501"></script>
-
-    <script>
-    requireAuthSession();
-
-    // Funções auxiliares
-    const $ = id => document.getElementById(id);
-    const fmtVal = val => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-    const monthToComp = monthStr => monthStr ? monthStr.replace('-', '') : '';
-    const compToDisplay = compStr => {
-        if (!compStr || compStr.length !== 6) return compStr;
-        return `${compStr.substring(4, 6)}/${compStr.substring(0, 4)}`;
-    };
-
-    const badgeClass = {
-        dizimo: 'badge-dizimo',
-        oferta: 'badge-oferta',
-        missoes: 'badge-missoes',
-        outros: 'badge-outros'
-    };
-    const tipoLabels = {
-        dizimo: 'Dízimo',
-        oferta: 'Oferta',
-        missoes: 'Missões',
-        outros: 'Outros'
-    };
-
-    let currentPage = 1;
-    let totalPages = 1;
-
-    // Mensagens de status
-    function setMsg(id, msg, type = '') {
-        const el = $(id);
-        if (el) {
-            el.textContent = msg;
-            el.className = `status-msg ${type}`;
-            if (msg) {
-                setTimeout(() => {
-                    el.textContent = '';
-                    el.className = 'status-msg';
-                }, 5000);
-            }
-        }
-    }
-
-    // Lógica das abas
-    document.querySelectorAll('.inner-tab').forEach(button => {
-        button.addEventListener('click', () => {
-            document.querySelectorAll('.inner-tab').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.inner-panel').forEach(panel => panel.classList.remove('active'));
-
-            button.classList.add('active');
-            $(`panel-${button.dataset.tab}`).classList.add('active');
-
-            // Atualiza a URL sem recarregar a página
-            const url = new URL(window.location);
-            url.searchParams.set('tab', button.dataset.tab);
-            window.history.pushState({}, '', url);
-        });
-    });
-
-    // Ativa a aba correta ao carregar a página (se houver 'tab' na URL)
-    const urlParams = new URLSearchParams(window.location.search);
-    const activeTab = urlParams.get('tab');
-    if (activeTab) {
-        const tabButton = document.querySelector(`.inner-tab[data-tab="${activeTab}"]`);
-        if (tabButton) {
-            tabButton.click(); // Simula o clique para ativar a aba
-        }
-    } else {
-        // Se não houver tab na URL, garante que a primeira aba esteja ativa
-        document.querySelector('.inner-tab[data-tab="lancamentos"]').click();
-    }
-
-
-    // Preview do formulário de lançamento
-    function updatePreview() {
-        const valor = parseFloat($('valor').value.trim().replace(',', '.')) || 0;
-        const tipo = $('tipo').value;
-        const membroNome = $('membroNome').value.trim() || 'Membro';
-        const competencia = $('competencia').value;
-        const observacao = $('observacao').value.trim();
-
-        $('previewValor').textContent = fmtVal(valor);
-        $('previewTipo').textContent = tipoLabels[tipo] || tipo;
-        $('previewMembro').textContent = membroNome;
-        $('previewComp').textContent = competencia ? compToDisplay(monthToComp(competencia)) : 'Mês/Ano';
-        $('previewObs').textContent = observacao ? `Obs: ${observacao}` : '';
-    }
-
-    $('valor').addEventListener('input', updatePreview);
-    $('tipo').addEventListener('change', updatePreview);
-    $('membroNome').addEventListener('input', updatePreview);
-    $('competencia').addEventListener('input', updatePreview);
-    $('observacao').addEventListener('input', updatePreview);
-
-    // Lógica de carregamento e CRUD de Dízimos
-    async function loadTotais() {
-        const comp = monthToComp($('filtroComp').value);
-        const params = comp ? `?competencia=${encodeURIComponent(comp)}` : '';
-        try {
-            const r = await fetch(`/dizimos/totais${params}`);
-            const d = await r.json();
-            if (r.ok) {
-                $('kpiTotal').textContent = fmtVal(d.totalGeral);
-                $('kpiDizimo').textContent = fmtVal(d.totalDizimos);
-                $('kpiOferta').textContent = fmtVal(d.totalOfertas);
-                $('kpiMissoes').textContent = fmtVal(d.totalMissoes);
-                $('kpiOutros').textContent = fmtVal(d.totalOutros);
-                $('kpiCount').textContent = `${d.totalLancamentos} lançamentos`;
-            }
-        } catch (e) { /* console.error("Erro ao carregar totais:", e); */ }
-    }
-
-    async function loadLista(page = 1) {
-        const comp = monthToComp($('filtroComp').value);
-        const tipo = $('filtroTipo').value;
-        const nome = $('filtroNome').value.trim();
-        const params = new URLSearchParams({ page, limit: 50 });
-        if (comp) params.set('competencia', comp);
-        if (tipo) params.set('tipo', tipo);
-        if (nome) params.set('membroNome', nome);
-
-        try {
-            const r = await fetch(`/dizimos?${params}`);
-            const d = await r.json();
-            if (!r.ok) { setMsg('msgLista', d.error || 'Erro ao carregar.', 'error'); return; }
-
-            const items = d.items || [];
-            totalPages = d.meta?.totalPages || 1;
-            currentPage = d.meta?.page || 1;
-
-            $('pagInfo').textContent = `Pág ${currentPage} de ${totalPages}`;
-            $('btnAnterior').disabled = currentPage <= 1;
-            $('btnProximo').disabled = currentPage >= totalPages;
-
-            if (!items.length) {
-                $('tbDizimos').innerHTML = `
-                    <tr class="empty-row">
-                        <td colspan="6">
-                            <i class="fa-solid fa-inbox" style="font-size:20px;color:#cbd5e1;display:block;margin-bottom:6px;"></i>
-                            Nenhum lançamento encontrado.
-                        </td>
-                    </tr>`;
-                return;
-            }
-
-            $('tbDizimos').innerHTML = items.map(item => `
-                <tr>
-                    <td><strong>${item.membro_nome || '-'}</strong></td>
-                    <td style="color:var(--muted);">${compToDisplay(item.competencia)}</td>
-                    <td><span class="badge ${badgeClass[item.tipo] || 'badge-outros'}">${tipoLabels[item.tipo] || item.tipo}</span></td>
-                    <td class="val-green">${fmtVal(item.valor)}</td>
-                    <td style="color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.observacao || ''}">${item.observacao || '-'}</td>
-                    <td>
-                        <button class="btn btn-red btn-sm" onclick="excluir(${item.id})" title="Remover">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-            setMsg('msgLista', '');
-        } catch (e) {
-            setMsg('msgLista', 'Falha de conexão ao carregar lançamentos.', 'error');
-        }
-    }
-
-    async function refresh() {
-        await Promise.all([loadLista(currentPage), loadTotais()]);
-    }
-
-    window.excluir = async function(id) {
-        if (!confirm('Remover este lançamento? Esta ação não pode ser desfeita.')) return;
-        const r = await fetch(`/dizimos/${id}`, { method: 'DELETE' });
-        if (r.ok) { setMsg('msgLista', 'Lançamento removido.', 'ok'); refresh(); }
-        else { const d = await r.json().catch(() => ({})); setMsg('msgLista', d.error || 'Erro ao remover.', 'error'); }
-    };
-
-    $('btnFiltrar').addEventListener('click', () => { currentPage = 1; refresh(); });
-    $('btnAnterior').addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadLista(currentPage); } });
-    $('btnProximo').addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; loadLista(currentPage); } });
-
-    $('formDizimo').addEventListener('submit', async e => {
-        e.preventDefault();
-        setMsg('msgForm', '');
-
-        const valorRaw = parseFloat($('valor').value.trim().replace(',', '.'));
-        if (!valorRaw || valorRaw <= 0) { setMsg('msgForm', 'Informe um valor válido.', 'error'); return; }
-        if (!$('competencia').value) { setMsg('msgForm', 'Selecione a competência.', 'error'); return; }
-
-        const body = {
-            membroNome: $('membroNome').value.trim(),
-            valor: valorRaw,
-            competencia: monthToComp($('competencia').value),
-            tipo: $('tipo').value,
-            observacao: $('observacao').value.trim() || null
-        };
-
-        const r = await fetch('/dizimos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const d = await r.json().catch(() => ({}));
-
-        if (!r.ok) { setMsg('msgForm', d.error || 'Erro ao registrar.', 'error'); return; }
-
-        setMsg('msgForm', 'Lançamento registrado com sucesso!', 'ok');
-        $('formDizimo').reset();
-        updatePreview();
-        currentPage = 1;
-        refresh();
-    });
-
-    /* Tipos de receitas */
-    const natLabel = { entrada: 'Entrada', saida: 'Saída' };
-    const catLabel = { dizimo: 'Dízimo', oferta: 'Oferta', missoes: 'Missões', campanha: 'Campanha', social: 'Social', manutencao: 'Manutenção', outros: 'Outros' };
-
-    async function loadTipos() {
-        try {
-            const r = await fetch('/tipos-receita');
-            const rows = await r.json().catch(() => []);
-
-            if (!r.ok) { setMsg('msgTiposLista', rows.error || 'Erro ao carregar tipos.', 'error'); return; }
-
-            if (!rows.length) {
-                $('tbTipos').innerHTML = `<tr class="empty-row"><td colspan="5">Nenhum tipo cadastrado.</td></tr>`;
-                return;
-            }
-
-            $('tbTipos').innerHTML = rows.map(t => `
-                <tr>
-                    <td><strong>${t.nome}</strong>${t.descricao ? `<br><small style="color:var(--muted)">${t.descricao}</small>` : ''}</td>
-                    <td>
-                        <span class="tipo-natureza ${t.natureza === 'entrada' ? 'natureza-e' : 'natureza-s'}">
-                            <i class="fa-solid ${t.natureza === 'entrada' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
-                            ${natLabel[t.natureza] || t.natureza}
-                        </span>
-                    </td>
-                    <td>${catLabel[t.categoria] || t.categoria || '-'}</td>
-                    <td>
-                        <span class="badge" style="background:${t.ativo !== false ? '#dcfce7' : '#f1f5f9'};color:${t.ativo !== false ? '#15803d' : '#64748b'}">
-                            ${t.ativo !== false ? 'Ativo' : 'Inativo'}
-                        </span>
-                    </td>
-                    <td style="white-space:nowrap;">
-                        <button class="btn btn-blue btn-sm" onclick="editarTipo(${t.id})" title="Editar">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button class="btn btn-red btn-sm" onclick="excluirTipo(${t.id})" title="Excluir">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-            window._tiposCache = rows;
-            setMsg('msgTiposLista', '');
-        } catch (e) {
-            setMsg('msgTiposLista', 'Falha de conexão ao carregar tipos.', 'error');
-        }
-    }
-
-    window.editarTipo = function(id) {
-        const t = (window._tiposCache || []).find(x => x.id === id);
-        if (!t) return;
-        $('tipoEditId').value = id;
-        $('tipoNome').value = t.nome;
-        $('tipoNatureza').value = t.natureza || 'entrada';
-        $('tipoCategoria').value = t.categoria || 'outros';
-        $('tipoDescricao').value = t.descricao || '';
-        $('tipoFormTitle').innerHTML = '<i class="fa-solid fa-pen"></i> Editar tipo';
-        $('tipoSubmitLabel').textContent = 'Salvar alterações';
-        $('btnCancelarTipo').style.display = '';
-    };
-
-    window.excluirTipo = async function(id) {
-        if (!confirm('Remover este tipo de receita?')) return;
-        const r = await fetch(`/tipos-receita/${id}`, { method: 'DELETE' });
-        if (r.ok) { setMsg('msgTiposLista', 'Tipo removido.', 'ok'); loadTipos(); }
-        else { const d = await r.json().catch(() => ({})); setMsg('msgTiposLista', d.error || 'Erro ao remover.', 'error'); }
-    };
-
-    function cancelarTipo() {
-        $('formTipo').reset();
-        $('tipoEditId').value = '';
-        $('tipoFormTitle').innerHTML = '<i class="fa-solid fa-plus"></i> Novo tipo';
-        $('tipoSubmitLabel').textContent = 'Criar tipo';
-        $('btnCancelarTipo').style.display = 'none';
-        setMsg('msgTiposForm', '');
-    }
-
-    $('formTipo').addEventListener('submit', async e => {
-        e.preventDefault();
-        const editId = $('tipoEditId').value;
-        const body = {
-            nome: $('tipoNome').value.trim(),
-            natureza: $('tipoNatureza').value,
-            categoria: $('tipoCategoria').value,
-            descricao: $('tipoDescricao').value.trim() || null
-        };
-
-        const r = await fetch(editId ? `/tipos-receita/${editId}` : '/tipos-receita', {
-            method: editId ? 'PUT' : 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const d = await r.json().catch(() => ({}));
-
-        if (!r.ok) { setMsg('msgTiposForm', d.error || 'Erro ao salvar.', 'error'); return; }
-
-        setMsg('msgTiposForm', editId ? 'Tipo atualizado!' : 'Tipo criado!', 'ok');
-        cancelarTipo();
-        loadTipos();
-    });
-
-    /* INIT */
-    const hoje = new Date();
-    const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-    $('competencia').value = mesAtual;
-    $('filtroComp').value = mesAtual;
-    updatePreview();
-    refresh();
-    loadTipos();
-    </script>
+    <script src="script.js?v=20260516"></script>
 </body>
 </html>

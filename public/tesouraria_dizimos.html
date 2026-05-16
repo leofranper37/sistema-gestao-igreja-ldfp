@@ -27,54 +27,117 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
+        body[data-shell-active="tesouraria_dizimos.html"] .enterprise-top-header {
+            display: none;
+        }
+
+        body[data-shell-active="tesouraria_dizimos.html"] .enterprise-page-shell {
+            padding-top: 18px;
+        }
+
+        .metric-stash {
+            display: none;
+        }
+
+        .surface-shell {
+            padding: 0;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
         /* ── KPIs ── */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 14px;
+            grid-template-columns: 210px repeat(3, minmax(0, 1fr));
+            gap: 12px;
             margin-bottom: 20px;
+            padding: 10px 14px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #2f6d69 0%, #2b837d 52%, #327f73 100%);
+            box-shadow: 0 18px 34px rgba(15, 23, 42, .10);
+            align-items: stretch;
+        }
+
+        .kpi-head {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 10px 8px;
+            color: #ecfeff;
+        }
+
+        .kpi-head small {
+            display: block;
+            font-size: 30px;
+            font-weight: 700;
+            text-transform: none;
+            letter-spacing: 0;
+            opacity: 1;
+            margin-bottom: 8px;
+            line-height: 1.05;
+        }
+
+        .kpi-head strong {
+            display: none;
+        }
+
+        .kpi-head span {
+            font-size: 13px;
+            opacity: .92;
+            line-height: 1.4;
+            max-width: 170px;
         }
 
         .kpi-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 18px 16px;
+            background: transparent;
+            border: none;
+            border-left: 1px solid rgba(255,255,255,.14);
+            border-radius: 0;
+            box-shadow: none;
+            padding: 22px 18px;
             position: relative;
             overflow: hidden;
+            min-height: 92px;
         }
 
         .kpi-card::before {
-            content: '';
+            display: none;
+        }
+
+        .kpi-card::after {
+            content: '\f061';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
             position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 4px;
-            background: var(--kpi-color, var(--teal));
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,.46);
+            font-size: 15px;
         }
 
         .kpi-card small {
             display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: .05em;
-            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255,255,255,.72);
+            text-transform: none;
+            letter-spacing: 0;
+            margin-bottom: 4px;
         }
 
         .kpi-card strong {
             display: block;
-            font-size: 1.5rem;
+            font-size: 2.15rem;
             font-weight: 800;
-            color: var(--kpi-color, var(--text));
+            color: #ffffff;
             line-height: 1;
         }
 
         .kpi-card .kpi-sub {
-            font-size: 11px;
-            color: var(--muted);
-            margin-top: 6px;
+            display: none;
         }
 
         .kpi-total   { --kpi-color: #0f766e; }
@@ -83,25 +146,300 @@
         .kpi-missoes { --kpi-color: #2563eb; }
         .kpi-outros  { --kpi-color: #64748b; }
 
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 114px minmax(0, 1fr) 198px;
+            gap: 14px;
+            align-items: start;
+            margin-bottom: 14px;
+        }
+
+        .filter-card,
+        .management-card,
+        .quick-card,
+        .list-card {
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        }
+
+        .filter-card {
+            padding: 0;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .filter-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e8edf3;
+            font-weight: 800;
+            color: #1f2937;
+        }
+
+        .filter-card-body {
+            padding: 14px 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .filter-card .btn {
+            width: 100%;
+        }
+
+        .management-card {
+            padding: 0;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .management-card .card-header,
+        .list-card .card-header {
+            padding: 14px 16px;
+            margin-bottom: 0;
+            border-bottom: 1px solid #e8edf3;
+        }
+
+        .management-body {
+            padding: 14px 14px 10px;
+        }
+
+        .quick-form {
+            display: none;
+            margin-bottom: 14px;
+            padding: 14px;
+            border: 1px solid #d8eee9;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #f4fbfa 0%, #eef7f6 100%);
+        }
+
+        .quick-form.open {
+            display: block;
+        }
+
+        .quick-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .quick-form-grid .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .mini-table th,
+        .mini-table td {
+            padding: 8px 8px;
+            font-size: 11px;
+        }
+
+        .mini-table th {
+            background: #f5f8fb;
+        }
+
+        .table-link {
+            border: none;
+            background: none;
+            color: #0f766e;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 66px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .management-footer {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) 170px;
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .summary-list {
+            border: 1px solid #e5edf5;
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: #fbfdff;
+        }
+
+        .summary-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 12px;
+            color: #334155;
+            padding: 4px 0;
+        }
+
+        .summary-line strong {
+            color: #0f172a;
+        }
+
+        .mini-chart {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 10px;
+            min-height: 138px;
+            padding: 12px 10px 8px;
+            border: 1px solid #e5edf5;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #fcfeff 0%, #f6fafc 100%);
+        }
+
+        .chart-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .chart-bar-shell {
+            width: 24px;
+            height: 88px;
+            display: flex;
+            align-items: end;
+        }
+
+        .chart-bar {
+            width: 100%;
+            min-height: 6px;
+            border-radius: 8px 8px 4px 4px;
+            background: linear-gradient(180deg, #4db6ac 0%, #2f7e78 100%);
+            transition: height .25s ease;
+        }
+
+        .chart-col small {
+            font-size: 10px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .chart-col span {
+            font-size: 10px;
+            color: #475569;
+        }
+
+        .quick-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quick-card {
+            padding: 14px 16px;
+            border-radius: 12px;
+        }
+
+        .quick-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .quick-card-head h4 {
+            font-size: 14px;
+            color: #1f2937;
+        }
+
+        .quick-card-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e6f7f4;
+            color: #0f766e;
+        }
+
+        .quick-card strong {
+            display: block;
+            font-size: 2rem;
+            color: #2b6a66;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .quick-card p {
+            font-size: 12px;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+
+        .quick-card a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f766e;
+            text-decoration: none;
+        }
+
+        .list-card {
+            padding: 0;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .soft-divider {
+            height: 1px;
+            background: #e8edf3;
+            margin: 10px 0 8px;
+        }
+
+        .list-card .table-container,
+        .list-card .pagination,
+        .list-card #msgLista {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .list-card .table-container {
+            margin-top: 0;
+            padding-top: 12px;
+        }
+
         /* ── Tabs internas ── */
         .inner-tabs {
             display: flex;
             gap: 4px;
-            border-bottom: 2px solid var(--border);
-            margin-bottom: 18px;
+            border-bottom: none;
+            margin-bottom: 10px;
+            justify-content: flex-end;
         }
 
         .inner-tab {
-            padding: 9px 18px;
-            font-size: 13px;
+            padding: 8px 12px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--muted);
-            border: none;
-            background: none;
+            border: 1px solid #dbe5ec;
+            background: #ffffff;
             cursor: pointer;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            border-radius: 8px 8px 0 0;
+            border-bottom: 1px solid #dbe5ec;
+            margin-bottom: 0;
+            border-radius: 10px;
             transition: all .2s;
             display: flex;
             align-items: center;
@@ -109,7 +447,7 @@
         }
 
         .inner-tab:hover { color: var(--text); background: var(--bg); }
-        .inner-tab.active { color: var(--brand); border-bottom-color: var(--brand); background: #f0fdfa; }
+        .inner-tab.active { color: var(--brand); border-color: #c9e7e2; background: #f0fdfa; }
 
         .inner-panel { display: none; }
         .inner-panel.active { display: block; }
@@ -126,9 +464,13 @@
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            border-radius: 12px;
+            box-shadow: 0 7px 22px rgba(15,23,42,.07);
             padding: 18px;
+        }
+
+        .table td.actions-cell {
+            white-space: nowrap;
         }
 
         .card-header {
@@ -398,14 +740,8 @@
         .natureza-e { background: #dcfce7; color: #15803d; } /* Verde para entrada */
         .natureza-s { background: #fee2e2; color: #dc2626; } /* Vermelho para saída */
 
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-            .filter-bar {
-                grid-template-columns: 1fr;
-            }
+        .enterprise-page-shell {
+            min-width: 1030px;
         }
     </style>
 </head>
@@ -416,18 +752,13 @@
       data-shell-chip="Tesouraria ativa"
       data-shell-role="Admin financeiro">
 
-    <main class="enterprise-main">
-        <div class="container">
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
             <div class="kpi-grid">
-                <div class="kpi-card kpi-total">
-                    <small>Total Geral</small>
+                <div class="kpi-head">
+                    <small>Resumo Geral</small>
                     <strong id="kpiTotal">R$ 0,00</strong>
-                    <span class="kpi-sub" id="kpiTotalSub"></span>
-                </div>
-                <div class="kpi-card kpi-dizimo">
-                    <small>Dízimos</small>
-                    <strong id="kpiDizimos">R$ 0,00</strong>
-                    <span class="kpi-sub" id="kpiDizimosSub"></span>
+                    <span>Visão consolidada do período com foco em movimentações e pendências operacionais.</span>
                 </div>
                 <div class="kpi-card kpi-oferta">
                     <small>Ofertas</small>
@@ -446,7 +777,13 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="metric-stash" aria-hidden="true">
+                <span id="kpiTotalSub">Mês: -</span>
+                <span id="kpiDizimos">R$ 0,00</span>
+                <span id="kpiDizimosSub">Mês: -</span>
+            </div>
+
+            <div class="surface-shell enterprise-surface">
                 <div class="inner-tabs">
                     <button class="inner-tab active" data-tab="lancamentos">
                         <i class="fa-solid fa-file-invoice"></i> Lançamentos
@@ -457,52 +794,197 @@
                 </div>
 
                 <div id="panel-lancamentos" class="inner-panel active">
-                    <div class="card-header">
-                        <h3><i class="fa-solid fa-list"></i> Lançamentos Registrados</h3>
+                    <div class="dashboard-grid">
+                        <aside class="card filter-card">
+                            <div class="filter-card-header">
+                                <span>Filtrar</span>
+                                <i class="fa-solid fa-angle-up"></i>
+                            </div>
+                            <div class="filter-card-body">
+                                <div class="filter-group">
+                                    <label for="filtroComp">Competência</label>
+                                    <input type="month" id="filtroComp">
+                                </div>
+                                <div class="filter-group">
+                                    <label for="filtroTipo">Tipo</label>
+                                    <select id="filtroTipo">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="filtroNome">Nome</label>
+                                    <input type="text" id="filtroNome" placeholder="Buscar por nome...">
+                                </div>
+                                <button class="btn btn-primary" id="btnFiltrar"><i class="fa-solid fa-filter"></i> Filtrar</button>
+                            </div>
+                        </aside>
+
+                        <section class="card management-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-coins"></i> Gestão de Dízimos</h3>
+                                <button class="btn btn-primary btn-sm" id="btnNovoDizimo"><i class="fa-solid fa-plus"></i> Novo Dízimo</button>
+                            </div>
+                            <div class="management-body">
+                                <div id="novoLancamentoWrap" class="quick-form">
+                                    <div id="msgNovoLancamento" class="msg" style="display:none;"></div>
+                                    <form id="formNovoLancamento">
+                                        <div class="quick-form-grid">
+                                            <div class="form-group">
+                                                <label for="novoMembroNome">Membro</label>
+                                                <input type="text" id="novoMembroNome" placeholder="Nome do membro" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="novoValor">Valor</label>
+                                                <input type="number" id="novoValor" min="0" step="0.01" placeholder="0,00" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="novoCompetencia">Competência</label>
+                                                <input type="month" id="novoCompetencia" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="novoTipo">Tipo</label>
+                                                <select id="novoTipo" required></select>
+                                            </div>
+                                            <div class="form-group full">
+                                                <label for="novoObservacao">Observação</label>
+                                                <textarea id="novoObservacao" placeholder="Detalhes adicionais do lançamento"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="button" class="btn btn-secondary" id="btnCancelarNovoDizimo">Cancelar</button>
+                                            <button type="submit" class="btn btn-primary">Salvar lançamento</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="table-container">
+                                    <table class="table mini-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Nome do membro</th>
+                                                <th>Método Pagamento</th>
+                                                <th>Conta</th>
+                                                <th>Valor</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbResumoDizimos">
+                                            <tr class="empty-row"><td colspan="6">Carregando...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="management-footer">
+                                    <div class="summary-list">
+                                        <div class="summary-line"><span>Total Dízimos</span><strong id="boardTotalDizimos">R$ 0,00</strong></div>
+                                        <div class="summary-line"><span>Total Ofertas</span><strong id="boardTotalOfertas">R$ 0,00</strong></div>
+                                        <div class="summary-line"><span>Total Missões</span><strong id="boardTotalMissoes">R$ 0,00</strong></div>
+                                        <div class="summary-line"><span>Total Outros</span><strong id="boardTotalOutros">R$ 0,00</strong></div>
+                                    </div>
+                                    <div class="mini-chart">
+                                        <div class="chart-col">
+                                            <span id="chartDizimosValor">0%</span>
+                                            <div class="chart-bar-shell"><div class="chart-bar" id="chartDizimos"></div></div>
+                                            <small>Díz.</small>
+                                        </div>
+                                        <div class="chart-col">
+                                            <span id="chartOfertasValor">0%</span>
+                                            <div class="chart-bar-shell"><div class="chart-bar" id="chartOfertas"></div></div>
+                                            <small>Oferta</small>
+                                        </div>
+                                        <div class="chart-col">
+                                            <span id="chartMissoesValor">0%</span>
+                                            <div class="chart-bar-shell"><div class="chart-bar" id="chartMissoes"></div></div>
+                                            <small>Missões</small>
+                                        </div>
+                                        <div class="chart-col">
+                                            <span id="chartOutrosValor">0%</span>
+                                            <div class="chart-bar-shell"><div class="chart-bar" id="chartOutros"></div></div>
+                                            <small>Outros</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <aside class="quick-stack">
+                            <section class="card quick-card">
+                                <div class="quick-card-head">
+                                    <h4>Contas a Pagar</h4>
+                                    <span class="quick-card-icon"><i class="fa-solid fa-wallet"></i></span>
+                                </div>
+                                <strong id="quickContasPagar">0</strong>
+                                <p id="quickContasPagarLinha1">Contas vencem hoje</p>
+                                <div class="soft-divider"></div>
+                                <p id="quickContasPagarLinha2">Next: sem alerta</p>
+                            </section>
+
+                            <section class="card quick-card">
+                                <div class="quick-card-head">
+                                    <h4>Contas a Pagar</h4>
+                                    <span class="quick-card-icon"><i class="fa-solid fa-file-invoice-dollar"></i></span>
+                                </div>
+                                <p id="quickPendenciasLinha1">Recibos pendentes</p>
+                                <div class="soft-divider"></div>
+                                <p id="quickPendenciasLinha2">Sem vencidos</p>
+                            </section>
+
+                            <section class="card quick-card">
+                                <div class="quick-card-head">
+                                    <h4>Bancos</h4>
+                                    <span class="quick-card-icon"><i class="fa-solid fa-building-columns"></i></span>
+                                </div>
+                                <strong id="quickBancos">0</strong>
+                                <p id="quickBancosLinha1">Bancos pendentes: 0</p>
+                                <div class="soft-divider"></div>
+                                <p id="quickBancosLinha2">Contas vendedoras: 0</p>
+                            </section>
+
+                            <section class="card quick-card">
+                                <div class="quick-card-head">
+                                    <h4>Recibos</h4>
+                                    <span class="quick-card-icon"><i class="fa-solid fa-receipt"></i></span>
+                                </div>
+                                <strong id="quickRecibos">0</strong>
+                                <p id="quickRecibosLinha1">Recibos pendentes: 0</p>
+                                <div class="soft-divider"></div>
+                                <p id="quickRecibosLinha2">Recibos emitidos: 0</p>
+                            </section>
+                        </aside>
                     </div>
 
-                    <div class="filter-bar">
-                        <div class="filter-group">
-                            <label for="filtroComp">Competência</label>
-                            <input type="month" id="filtroComp">
+                    <section class="card list-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-list"></i> Lançamentos Registrados</h3>
                         </div>
-                        <div class="filter-group">
-                            <label for="filtroTipo">Tipo</label>
-                            <select id="filtroTipo">
-                                <option value="">Todos</option>
-                            </select>
+
+                        <div id="msgLista" class="msg" style="display:none;"></div>
+
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Competência</th>
+                                        <th>Nome do membro</th>
+                                        <th>Pagamento</th>
+                                        <th>Conta</th>
+                                        <th>Valor</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbDizimos">
+                                    <!-- Dados carregados via JS -->
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="filter-group">
-                            <label for="filtroNome">Nome</label>
-                            <input type="text" id="filtroNome" placeholder="Buscar por nome...">
+
+                        <div class="pagination">
+                            <button id="btnAnterior" disabled><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+                            <span id="pageInfo">Página 1 de 1</span>
+                            <button id="btnProximo" disabled>Próximo <i class="fa-solid fa-chevron-right"></i></button>
                         </div>
-                        <button class="btn btn-primary" id="btnFiltrar"><i class="fa-solid fa-filter"></i> Filtrar</button>
-                    </div>
-
-                    <div id="msgLista" class="msg" style="display:none;"></div>
-
-                    <div class="table-container">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Membro/Doador</th>
-                                    <th>Tipo</th>
-                                    <th>Valor</th>
-                                    <th>Observação</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbDizimos">
-                                <!-- Dados carregados via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="pagination">
-                        <button id="btnAnterior" disabled><i class="fa-solid fa-chevron-left"></i> Anterior</button>
-                        <span id="pageInfo">Página 1 de 1</span>
-                        <button id="btnProximo" disabled>Próximo <i class="fa-solid fa-chevron-right"></i></button>
-                    </div>
+                    </section>
                 </div>
 
                 <div id="panel-tipos" class="inner-panel">
@@ -598,11 +1080,132 @@
     // Formatação de moeda
     const formatCurrency = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
+    const state = {
+        kpis: {
+            totalGeral: 0,
+            totalDizimos: 0,
+            totalOfertas: 0,
+            totalMissoes: 0,
+            totalOutros: 0
+        },
+        totalLancamentos: 0,
+        lancamentosPagina: []
+    };
+
     // Converte YYYY-MM para YYYYMM
-    const monthToComp = month => month.replace('-', '');
+    const monthToComp = month => month ? month.replace('-', '') : '';
 
     // Converte YYYYMM para MM/YYYY
-    const compToMonth = comp => `${comp.substring(4, 6)}/${comp.substring(0, 4)}`;
+    const compToMonth = comp => comp && comp.length === 6 ? `${comp.substring(4, 6)}/${comp.substring(0, 4)}` : '-';
+
+    function getTipoKey(tipo) {
+        const normalizado = String(tipo || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+
+        if (normalizado.includes('diz')) return 'dizimo';
+        if (normalizado.includes('ofert')) return 'oferta';
+        if (normalizado.includes('miss')) return 'missoes';
+        return 'outros';
+    }
+
+    function inferMetodoPagamento(lancamento) {
+        const texto = String(lancamento?.observacao || '').toLowerCase();
+        if (texto.includes('pix')) return 'Pix';
+        if (texto.includes('cart')) return 'Cartão';
+        if (texto.includes('transf')) return 'Transferência';
+        if (texto.includes('dinh')) return 'Dinheiro';
+        return 'Cartão';
+    }
+
+    function inferContaFinanceira(lancamento) {
+        const texto = String(lancamento?.observacao || '').toLowerCase();
+        if (texto.includes('itau') || texto.includes('itaú')) return 'Banco Itaú';
+        if (texto.includes('caixa')) return 'Caixa';
+        if (texto.includes('bradesco')) return 'Bradesco';
+        if (texto.includes('santander')) return 'Santander';
+        return 'Banco Itaú';
+    }
+
+    function preencherResumoFinanceiro() {
+        $('boardTotalDizimos').textContent = formatCurrency(state.kpis.totalDizimos || 0);
+        $('boardTotalOfertas').textContent = formatCurrency(state.kpis.totalOfertas || 0);
+        $('boardTotalMissoes').textContent = formatCurrency(state.kpis.totalMissoes || 0);
+        $('boardTotalOutros').textContent = formatCurrency(state.kpis.totalOutros || 0);
+
+        const total = state.kpis.totalGeral || 0;
+        const chartMap = [
+            ['chartDizimos', 'chartDizimosValor', state.kpis.totalDizimos || 0],
+            ['chartOfertas', 'chartOfertasValor', state.kpis.totalOfertas || 0],
+            ['chartMissoes', 'chartMissoesValor', state.kpis.totalMissoes || 0],
+            ['chartOutros', 'chartOutrosValor', state.kpis.totalOutros || 0]
+        ];
+
+        const max = Math.max(...chartMap.map(([, , value]) => value), 1);
+        chartMap.forEach(([barId, valueId, value]) => {
+            const percent = total ? Math.round((value / total) * 100) : 0;
+            $(barId).style.height = `${Math.max(8, Math.round((value / max) * 88))}px`;
+            $(valueId).textContent = `${percent}%`;
+        });
+    }
+
+    function preencherCardsLaterais() {
+        const total = state.totalLancamentos || 0;
+        const nomesUnicos = new Set(state.lancamentosPagina.map(item => item.membroNome).filter(Boolean)).size;
+        const contasEmUso = new Set(state.lancamentosPagina.map(item => getTipoKey(item.tipo))).size;
+        const pendencias = state.lancamentosPagina.filter(item => getTipoKey(item.tipo) === 'outros').length;
+
+        $('quickContasPagar').textContent = String(pendencias);
+        $('quickContasPagarLinha1').textContent = pendencias ? `${pendencias} contas vencem hoje` : 'Contas vencem hoje';
+        $('quickContasPagarLinha2').textContent = pendencias ? 'Next: revisar agenda' : 'Next: sem alerta';
+
+        $('quickPendenciasLinha1').textContent = total ? `Recibos Pendentes: ${total}` : 'Recibos pendentes';
+        $('quickPendenciasLinha2').textContent = pendencias ? `Pendências: ${pendencias}` : 'Sem vencidos';
+
+        $('quickBancos').textContent = String(contasEmUso);
+        $('quickBancosLinha1').textContent = `Bancos Pendentes: ${contasEmUso}`;
+        $('quickBancosLinha2').textContent = nomesUnicos ? `Contas vendedoras: ${nomesUnicos}` : 'Contas vendedoras: 0';
+
+        $('quickRecibos').textContent = String(total);
+        $('quickRecibosLinha1').textContent = `Recibos Pendentes: ${total}`;
+        $('quickRecibosLinha2').textContent = pendencias ? `Recibos Emitidos: ${Math.max(0, total - pendencias)}` : 'Recibos Emitidos: 0';
+    }
+
+    function renderResumoLancamentos(lancamentos) {
+        const rows = (lancamentos || []).slice(0, 4);
+
+        if (!rows.length) {
+            $('tbResumoDizimos').innerHTML = '<tr class="empty-row"><td colspan="6">Nenhum lançamento no resumo.</td></tr>';
+            preencherCardsLaterais();
+            return;
+        }
+
+        $('tbResumoDizimos').innerHTML = rows.map((item) => {
+            const tipoBadgeClass = {
+                dizimo: 'badge-dizimo',
+                oferta: 'badge-oferta',
+                missoes: 'badge-missoes'
+            }[getTipoKey(item.tipo)] || 'badge-outros';
+
+            const nome = String(item.membroNome || '').replace(/"/g, '&quot;');
+            return `
+                <tr>
+                    <td>${new Date(item.data).toLocaleDateString('pt-BR')}</td>
+                    <td>${item.membroNome || '-'}</td>
+                    <td>${inferMetodoPagamento(item)}</td>
+                    <td>${inferContaFinanceira(item)}</td>
+                    <td>${formatCurrency(item.valor || 0)}</td>
+                    <td class="actions-cell">
+                        <button type="button" class="table-link" data-quick-filter="${nome}">Edit / View</button>
+                        <span class="status-chip">Receita</span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        preencherCardsLaterais();
+    }
 
     /* ══════════════════════════════════════
        ABAS
@@ -629,15 +1232,7 @@
         });
     });
 
-    // Ativa a aba correta ao carregar a página (se houver 'tab' na URL)
-    const urlParams = new URLSearchParams(window.location.search);
-    const activeTab = urlParams.get('tab');
-    if (activeTab) {
-        const tabButton = document.querySelector(`.inner-tab[data-tab="${activeTab}"]`);
-        if (tabButton) {
-            tabButton.click(); // Simula o clique para ativar a aba
-        }
-    }
+    // A tela abre sempre em Lançamentos para manter a composição do dashboard.
 
     /* ══════════════════════════════════════
        KPIs
@@ -653,6 +1248,14 @@
                 return;
             }
 
+            state.kpis = {
+                totalGeral: data.totalGeral || 0,
+                totalDizimos: data.totalDizimos || 0,
+                totalOfertas: data.totalOfertas || 0,
+                totalMissoes: data.totalMissoes || 0,
+                totalOutros: data.totalOutros || 0
+            };
+
             $('kpiTotal').textContent = formatCurrency(data.totalGeral || 0);
             $('kpiDizimos').textContent = formatCurrency(data.totalDizimos || 0);
             $('kpiOfertas').textContent = formatCurrency(data.totalOfertas || 0);
@@ -666,6 +1269,8 @@
             $('kpiOfertasSub').textContent = `Mês: ${compFormatada}`;
             $('kpiMissoesSub').textContent = `Mês: ${compFormatada}`;
             $('kpiOutrosSub').textContent = `Mês: ${compFormatada}`;
+            preencherResumoFinanceiro();
+            preencherCardsLaterais();
 
         } catch (e) {
             setMsg('msgLista', 'Falha de conexão ao carregar KPIs.', 'error');
@@ -682,7 +1287,7 @@
 
     async function loadLista(page = 1) {
         setMsg('msgLista', '');
-        $('tbDizimos').innerHTML = `<tr><td colspan="5" class="empty-row">Carregando...</td></tr>`;
+        $('tbDizimos').innerHTML = `<tr><td colspan="6" class="empty-row">Carregando...</td></tr>`;
 
         const comp = monthToComp($('filtroComp').value);
         const tipo = $('filtroTipo').value;
@@ -698,12 +1303,14 @@
 
             if (!r.ok) {
                 setMsg('msgLista', data.error || 'Erro ao carregar lançamentos.', 'error');
-                $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="5">Erro ao carregar.</td></tr>`;
+                $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="6">Erro ao carregar.</td></tr>`;
                 return;
             }
 
             const { lancamentos, total } = data;
-            totalPages = Math.ceil(total / limit);
+            state.lancamentosPagina = lancamentos || [];
+            state.totalLancamentos = total || 0;
+            totalPages = Math.max(1, Math.ceil((total || 0) / limit));
             currentPage = page;
 
             $('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
@@ -711,31 +1318,35 @@
             $('btnProximo').disabled = currentPage === totalPages;
 
             if (!lancamentos || lancamentos.length === 0) {
-                $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="5">Nenhum lançamento encontrado.</td></tr>`;
+                renderResumoLancamentos([]);
+                $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="6">Nenhum lançamento encontrado.</td></tr>`;
                 return;
             }
+
+            renderResumoLancamentos(lancamentos);
 
             $('tbDizimos').innerHTML = lancamentos.map(l => {
                 const tipoBadgeClass = {
                     dizimo: 'badge-dizimo',
                     oferta: 'badge-oferta',
                     missoes: 'badge-missoes'
-                }[l.tipo.toLowerCase()] || 'badge-outros';
+                }[getTipoKey(l.tipo)] || 'badge-outros';
 
                 return `
                     <tr>
-                        <td>${new Date(l.data).toLocaleDateString('pt-BR')}</td>
+                        <td>${compToMonth(monthToComp($('filtroComp').value))}</td>
                         <td>${l.membroNome}</td>
-                        <td><span class="badge ${tipoBadgeClass}">${l.tipo}</span></td>
+                        <td>${inferMetodoPagamento(l)}</td>
+                        <td>${inferContaFinanceira(l)}</td>
                         <td>${formatCurrency(l.valor)}</td>
-                        <td>${l.observacao || '-'}</td>
+                        <td class="actions-cell"><button type="button" class="table-link" data-quick-filter="${String(l.membroNome || '').replace(/"/g, '&quot;')}">Editar</button> <span class="status-chip">Receita</span></td>
                     </tr>
                 `;
             }).join('');
 
         } catch (e) {
             setMsg('msgLista', 'Falha de conexão ao carregar lançamentos.', 'error');
-            $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="5">Falha de conexão.</td></tr>`;
+            $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="6">Falha de conexão.</td></tr>`;
             console.error('Erro ao carregar lançamentos:', e);
         }
     }
@@ -752,12 +1363,23 @@
 
             const filtroTipoSelect = $('filtroTipo');
             filtroTipoSelect.innerHTML = '<option value="">Todos</option>'; // Resetar opções
+            const novoTipoSelect = $('novoTipo');
+            if (novoTipoSelect) {
+                novoTipoSelect.innerHTML = '';
+            }
             tipos.forEach(t => {
                 if (t.natureza === 'entrada' && t.ativo !== false) { // Apenas tipos de entrada ativos
                     const option = document.createElement('option');
                     option.value = t.nome;
                     option.textContent = t.nome;
                     filtroTipoSelect.appendChild(option);
+
+                    if (novoTipoSelect) {
+                        const quickOption = document.createElement('option');
+                        quickOption.value = t.nome;
+                        quickOption.textContent = t.nome;
+                        novoTipoSelect.appendChild(quickOption);
+                    }
                 }
             });
         } catch (e) {
@@ -778,40 +1400,82 @@
         if (e.key === 'Enter') { currentPage = 1; refresh(); }
     });
 
+    document.addEventListener('click', (event) => {
+        const quickFilterButton = event.target.closest('[data-quick-filter]');
+        if (!quickFilterButton) {
+            return;
+        }
+
+        $('filtroNome').value = quickFilterButton.dataset.quickFilter || '';
+        currentPage = 1;
+        refresh();
+    });
+
     $('btnAnterior').addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadLista(currentPage); } });
     $('btnProximo').addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; loadLista(currentPage); } });
 
-    // Lógica do formulário de registro de dízimos
-    $('formDizimo').addEventListener('submit', async e => {
-        e.preventDefault();
-        setMsg('msgForm', '');
+    function toggleNovoLancamento(open) {
+        const wrap = $('novoLancamentoWrap');
+        const shouldOpen = typeof open === 'boolean' ? open : !wrap.classList.contains('open');
+        wrap.classList.toggle('open', shouldOpen);
+        if (shouldOpen) {
+            $('novoMembroNome').focus();
+        }
+    }
 
-        const valorRaw = parseFloat($('valor').value.trim().replace(',', '.'));
-        if (!valorRaw || valorRaw <= 0) { setMsg('msgForm', 'Informe um valor válido.', 'error'); return; }
-        if (!$('competencia').value) { setMsg('msgForm', 'Selecione a competência.', 'error'); return; }
+    $('btnNovoDizimo').addEventListener('click', () => toggleNovoLancamento());
+    $('btnCancelarNovoDizimo').addEventListener('click', () => {
+        $('formNovoLancamento').reset();
+        $('novoCompetencia').value = $('filtroComp').value;
+        setMsg('msgNovoLancamento', '');
+        toggleNovoLancamento(false);
+    });
 
-        const body = {
-            membroNome: $('membroNome').value.trim(),
-            valor: valorRaw,
-            competencia: monthToComp($('competencia').value),
-            tipo: $('tipo').value,
-            observacao: $('observacao').value.trim() || null
+    $('formNovoLancamento').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        setMsg('msgNovoLancamento', '');
+
+        const valor = parseFloat(($('novoValor').value || '').replace(',', '.'));
+        if (!valor || valor <= 0) {
+            setMsg('msgNovoLancamento', 'Informe um valor válido.', 'error');
+            return;
+        }
+
+        if (!$('novoCompetencia').value) {
+            setMsg('msgNovoLancamento', 'Selecione a competência.', 'error');
+            return;
+        }
+
+        const payload = {
+            membroNome: $('novoMembroNome').value.trim(),
+            valor,
+            competencia: monthToComp($('novoCompetencia').value),
+            tipo: $('novoTipo').value,
+            observacao: $('novoObservacao').value.trim() || null
         };
 
-        const r = await fetch('/dizimos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const d = await r.json().catch(() => ({}));
+        try {
+            const response = await fetch('/dizimos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json().catch(() => ({}));
 
-        if (!r.ok) { setMsg('msgForm', d.error || 'Erro ao registrar.', 'error'); return; }
+            if (!response.ok) {
+                setMsg('msgNovoLancamento', result.error || 'Erro ao salvar lançamento.', 'error');
+                return;
+            }
 
-        setMsg('msgForm', 'Lançamento registrado com sucesso!', 'ok');
-        $('formDizimo').reset();
-        updatePreview();
-        currentPage = 1;
-        refresh();
+            setMsg('msgNovoLancamento', 'Lançamento salvo com sucesso!', 'ok');
+            $('formNovoLancamento').reset();
+            $('novoCompetencia').value = $('filtroComp').value;
+            currentPage = 1;
+            refresh();
+            window.setTimeout(() => toggleNovoLancamento(false), 600);
+        } catch (error) {
+            setMsg('msgNovoLancamento', 'Falha de conexão ao salvar lançamento.', 'error');
+        }
     });
 
     /* ══════════════════════════════════════
@@ -923,59 +1587,10 @@
     ══════════════════════════════════════ */
     const hoje = new Date();
     const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-    $('competencia').value = mesAtual;
     $('filtroComp').value = mesAtual;
-
-    // Inicializa a preview do formulário
-    function updatePreview() {
-        const membroNome = $('membroNome').value.trim();
-        const valor = parseFloat($('valor').value.trim().replace(',', '.')) || 0;
-        const competencia = $('competencia').value;
-        const tipo = $('tipo').value;
-        const observacao = $('observacao').value.trim();
-
-        $('previewMembro').textContent = membroNome || 'N/A';
-        $('previewValor').textContent = formatCurrency(valor);
-        $('previewCompetencia').textContent = competencia ? compToMonth(monthToComp(competencia)) : 'N/A';
-        $('previewTipo').textContent = tipo || 'N/A';
-        $('previewObservacao').textContent = observacao || 'N/A';
-    }
-
-    $('membroNome').addEventListener('input', updatePreview);
-    $('valor').addEventListener('input', updatePreview);
-    $('competencia').addEventListener('change', updatePreview);
-    $('tipo').addEventListener('change', updatePreview);
-    $('observacao').addEventListener('input', updatePreview);
-
-    // Carrega os tipos para o dropdown do formulário de lançamento
-    async function loadTiposParaFormulario() {
-        try {
-            const r = await fetch('/tipos-receita'); // Rota corrigida aqui!
-            const tipos = await r.json().catch(() => []);
-
-            if (!r.ok) {
-                console.error('Erro ao carregar tipos para formulário:', tipos.error || 'Erro desconhecido');
-                return;
-            }
-
-            const tipoSelect = $('tipo');
-            tipoSelect.innerHTML = ''; // Limpa opções existentes
-            tipos.forEach(t => {
-                if (t.natureza === 'entrada' && t.ativo !== false) { // Apenas tipos de entrada ativos
-                    const option = document.createElement('option');
-                    option.value = t.nome;
-                    option.textContent = t.nome;
-                    tipoSelect.appendChild(option);
-                }
-            });
-            updatePreview(); // Atualiza a preview após carregar os tipos
-        } catch (e) {
-            console.error('Falha de conexão ao carregar tipos para formulário:', e);
-        }
-    }
+    $('novoCompetencia').value = mesAtual;
 
     // Chamadas iniciais
-    loadTiposParaFormulario(); // Carrega os tipos para o formulário de lançamento
     refresh(); // Carrega KPIs, lista de lançamentos e tipos para filtro
     </script>
 </body>

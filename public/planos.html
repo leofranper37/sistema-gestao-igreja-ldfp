@@ -222,12 +222,66 @@
 
 <script>
   const plansGrid = document.getElementById('plansGrid');
+  const PLANOS_FALLBACK = [
+    {
+      slug: 'hebrom',
+      nome: 'Hebrom',
+      subtitulo: 'Igrejas em formacao',
+      preco_mensal: 50,
+      preco_anual: 500,
+      features_json: '["App Web Instalavel (PWA)","150 cadastros","1 congregacao","Suporte via e-mail"]'
+    },
+    {
+      slug: 'betel',
+      nome: 'Betel',
+      subtitulo: 'Igrejas em crescimento',
+      preco_mensal: 80,
+      preco_anual: 800,
+      features_json: '["App do Membro","300 cadastros","5 congregacoes","Suporte via e-mail e WhatsApp"]'
+    },
+    {
+      slug: 'siao',
+      nome: 'Siao',
+      subtitulo: 'Operacao avancada',
+      preco_mensal: 100,
+      preco_anual: 1000,
+      features_json: '["App do Membro","500 cadastros","10 congregacoes","Suporte prioritario"]'
+    }
+  ];
+
+  async function loadPlanosFromStatic() {
+    const resp = await fetch('planos-data.json', { headers: { Accept: 'application/json' } });
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status} ao consultar planos-data.json`);
+    }
+
+    const planos = await resp.json();
+    if (!Array.isArray(planos)) {
+      throw new Error('planos-data.json nao retornou um array.');
+    }
+
+    return planos;
+  }
 
   async function carregarPlanos() {
     try {
-      const resp = await fetch('/api/planos');
-      if (!resp.ok) throw new Error('Não foi possível carregar os planos.');
-      const planos = await resp.json();
+      let planos = [];
+
+      try {
+        planos = await loadPlanosFromStatic();
+      } catch (_staticError) {
+        planos = [];
+      }
+
+      if (!Array.isArray(planos) || !planos.length) {
+        const resp = await fetch('/api/pagamentos/planos', { headers: { Accept: 'application/json' } });
+        if (!resp.ok) throw new Error('Não foi possível carregar os planos.');
+        planos = await resp.json();
+      }
+
+      if (!Array.isArray(planos) || !planos.length) {
+        planos = PLANOS_FALLBACK;
+      }
 
       if (!Array.isArray(planos) || !planos.length) {
         plansGrid.innerHTML = '<p style="color:#9ca3af;font-size:0.9rem;">Nenhum plano disponível no momento.</p>';
@@ -288,7 +342,53 @@
       }).join('');
     } catch (err) {
       console.error(err);
-      plansGrid.innerHTML = '<p style="color:#f87171;font-size:0.9rem;">Erro ao carregar os planos. Tente novamente em alguns instantes.</p>';
+        plansGrid.innerHTML = PLANOS_FALLBACK.map(p => {
+          const features = (() => {
+            try { return JSON.parse(p.features_json || '[]'); } catch (_e) { return []; }
+          })();
+
+          return `
+            <article class="plan-card ${p.slug === 'betel' ? 'highlight' : ''}">
+              <div class="plan-header">
+                <div class="plan-name">
+                  ${p.nome}
+                  ${p.slug === 'betel' ? '<span style="font-size:0.7rem;background:rgba(248,250,252,0.08);padding:2px 8px;border-radius:999px;color:#fed7aa;">Mais escolhido</span>' : ''}
+                </div>
+                <div class="plan-subtitle">${p.subtitulo || ''}</div>
+              </div>
+
+              <div class="plan-price">
+                <div class="plan-price-main">
+                  R$ ${Number(p.preco_mensal).toFixed(2).replace('.', ',')}
+                  <small>/mês</small>
+                </div>
+                <div class="plan-price-annual">
+                  ou R$ ${Number(p.preco_anual).toFixed(2).replace('.', ',')} /ano
+                </div>
+              </div>
+
+              <ul class="plan-features">
+                ${features.map(f => `
+                  <li>
+                    <i class="fa-solid fa-check"></i>
+                    ${f}
+                  </li>
+                `).join('')}
+              </ul>
+
+              <div class="plan-footer">
+                <button class="plan-cta primary" onclick="assinarPlano('${p.slug}')">
+                  <span>Começar com ${p.nome}</span>
+                  <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <button class="plan-cta outline" onclick="assinarPlano('${p.slug}')">
+                  <i class="fa-solid fa-bolt"></i>
+                  Testar agora, configurar depois
+                </button>
+              </div>
+            </article>
+          `;
+        }).join('');
     }
   }
 

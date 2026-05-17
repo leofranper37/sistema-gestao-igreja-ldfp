@@ -1,4 +1,5 @@
 ﻿const path = require('path');
+const fs = require('fs');
 const mysql = require('mysql2/promise');
 let pg;
 try {
@@ -16,12 +17,24 @@ try {
 }
 
 // SQLite database path:
-// - Local/dev: project root file
-// - Production-like runtime: writable /tmp directory
-const dbPath = process.env.SQLITE_DB_PATH
+// - Accepts absolute or relative SQLITE_DB_PATH
+// - Falls back to /tmp in production-like runtime
+// - Uses project root file in local/dev
+const projectRoot = path.resolve(__dirname, '../..');
+const configuredDbPath = process.env.SQLITE_DB_PATH
     || (process.env.NODE_ENV === 'production'
         ? '/tmp/ldfp_db.sqlite'
-        : path.resolve(__dirname, '../../ldfp_db.sqlite'));
+        : path.join(projectRoot, 'ldfp_db.sqlite'));
+
+const dbPath = path.isAbsolute(configuredDbPath)
+    ? configuredDbPath
+    : path.resolve(projectRoot, configuredDbPath);
+
+try {
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+} catch (mkdirError) {
+    console.error('⚠️ Não foi possível garantir a pasta do SQLite:', mkdirError?.message || mkdirError);
+}
 
 const db = sqlite3 ? new sqlite3.Database(dbPath, (err) => {
     if (err) {

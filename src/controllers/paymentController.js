@@ -28,8 +28,45 @@ async function gerarCartao(req, res) {
     res.json(result);
 }
 
-// GET /api/pagamentos/planos  — lista planos disponíveis
+// GET /api/pagamentos/planos  — lista planos disponíveis (com fallback garantido)
 async function listarPlanos(req, res) {
+    // Fallback padrão se tudo falhar
+    const FALLBACK_PLANOS = [
+        {
+            slug: 'hebrom',
+            nome: 'Hebrom',
+            subtitulo: 'Igrejas em formacao',
+            preco_mensal: 50,
+            preco_anual: 500,
+            max_cadastros: 150,
+            max_congregacoes: 1,
+            modulo_app_membro: 0,
+            features_json: '["App Web Instalavel (PWA)","150 cadastros","1 congregacao","Suporte via e-mail"]'
+        },
+        {
+            slug: 'betel',
+            nome: 'Betel',
+            subtitulo: 'Igrejas em crescimento',
+            preco_mensal: 80,
+            preco_anual: 800,
+            max_cadastros: 300,
+            max_congregacoes: 5,
+            modulo_app_membro: 1,
+            features_json: '["App do Membro","300 cadastros","5 congregacoes","Suporte via e-mail e WhatsApp"]'
+        },
+        {
+            slug: 'siao',
+            nome: 'Siao',
+            subtitulo: 'Operacao avancada',
+            preco_mensal: 100,
+            preco_anual: 1000,
+            max_cadastros: 500,
+            max_congregacoes: 10,
+            modulo_app_membro: 1,
+            features_json: '["App do Membro","500 cadastros","10 congregacoes","Suporte prioritario"]'
+        }
+    ];
+
     try {
         const [rows] = await pool.query(
             `SELECT slug, nome, subtitulo, preco_mensal, preco_anual,
@@ -38,10 +75,17 @@ async function listarPlanos(req, res) {
                WHERE ativo = 1 AND LOWER(slug) NOT IN ('eden', 'edon')
              ORDER BY preco_mensal ASC`
         );
-        res.json(rows || []);
-    } catch (_) {
-        res.json([]);
+        
+        // Se obteve dados do banco, retorna eles
+        if (Array.isArray(rows) && rows.length > 0) {
+            return res.json(rows);
+        }
+    } catch (err) {
+        console.error('[paymentController] Erro ao consultar saas_planos:', err.message);
     }
+    
+    // Fallback: retorna planos padrão se banco falhar ou estiver vazio
+    res.json(FALLBACK_PLANOS);
 }
 
 // GET /api/pagamentos/status  — status da assinatura da igreja logada

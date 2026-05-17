@@ -263,132 +263,83 @@
     return planos;
   }
 
-  async function carregarPlanos() {
-    try {
-      let planos = [];
+  function renderPlanos(planos) {
+    if (!Array.isArray(planos) || !planos.length) {
+      plansGrid.innerHTML = '<p style="color:#9ca3af;font-size:0.9rem;">Nenhum plano disponível no momento.</p>';
+      return;
+    }
 
+    const destaqueSlug = 'betel';
+
+    plansGrid.innerHTML = planos.map(p => {
+      let features = [];
       try {
-        planos = await loadPlanosFromStatic();
+        features = JSON.parse(p.features_json || '[]');
+      } catch (_e) {
+        features = [];
+      }
+
+      return `
+        <article class="plan-card ${p.slug === destaqueSlug ? 'highlight' : ''}">
+          <div class="plan-header">
+            <div class="plan-name">
+              ${p.nome}
+              ${p.slug === destaqueSlug ? '<span style="font-size:0.7rem;background:rgba(248,250,252,0.08);padding:2px 8px;border-radius:999px;color:#fed7aa;">Mais escolhido</span>' : ''}
+            </div>
+            <div class="plan-subtitle">${p.subtitulo || ''}</div>
+          </div>
+
+          <div class="plan-price">
+            <div class="plan-price-main">
+              R$ ${Number(p.preco_mensal).toFixed(2).replace('.', ',')}
+              <small>/mês</small>
+            </div>
+            <div class="plan-price-annual">
+              ou R$ ${Number(p.preco_anual).toFixed(2).replace('.', ',')} /ano
+            </div>
+          </div>
+
+          <ul class="plan-features">
+            ${features.map(f => `
+              <li>
+                <i class="fa-solid fa-check"></i>
+                ${f}
+              </li>
+            `).join('')}
+          </ul>
+
+          <div class="plan-footer">
+            <button class="plan-cta primary" onclick="assinarPlano('${p.slug}')">
+              <span>Começar com ${p.nome}</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <button class="plan-cta outline" onclick="assinarPlano('${p.slug}')">
+              <i class="fa-solid fa-bolt"></i>
+              Testar agora, configurar depois
+            </button>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  async function carregarPlanos() {
+    let planos = PLANOS_FALLBACK;
+
+    try {
+      try {
+        const planosEstaticos = await loadPlanosFromStatic();
+        if (Array.isArray(planosEstaticos) && planosEstaticos.length) {
+          planos = planosEstaticos;
+        }
       } catch (_staticError) {
-        planos = [];
-      }
-
-      if (!Array.isArray(planos) || !planos.length) {
-        const resp = await fetch('/api/pagamentos/planos', { headers: { Accept: 'application/json' } });
-        if (!resp.ok) throw new Error('Não foi possível carregar os planos.');
-        planos = await resp.json();
-      }
-
-      if (!Array.isArray(planos) || !planos.length) {
         planos = PLANOS_FALLBACK;
       }
 
-      if (!Array.isArray(planos) || !planos.length) {
-        plansGrid.innerHTML = '<p style="color:#9ca3af;font-size:0.9rem;">Nenhum plano disponível no momento.</p>';
-        return;
-      }
-
-      const destaqueSlug = 'betel';
-
-      plansGrid.innerHTML = planos.map(p => {
-        let features = [];
-        try {
-          features = JSON.parse(p.features_json || '[]');
-        } catch (_e) {
-          features = [];
-        }
-
-        return `
-          <article class="plan-card ${p.slug === destaqueSlug ? 'highlight' : ''}">
-            <div class="plan-header">
-              <div class="plan-name">
-                ${p.nome}
-                ${p.slug === destaqueSlug ? '<span style="font-size:0.7rem;background:rgba(248,250,252,0.08);padding:2px 8px;border-radius:999px;color:#fed7aa;">Mais escolhido</span>' : ''}
-              </div>
-              <div class="plan-subtitle">${p.subtitulo || ''}</div>
-            </div>
-
-            <div class="plan-price">
-              <div class="plan-price-main">
-                R$ ${Number(p.preco_mensal).toFixed(2).replace('.', ',')}
-                <small>/mês</small>
-              </div>
-              <div class="plan-price-annual">
-                ou R$ ${Number(p.preco_anual).toFixed(2).replace('.', ',')} /ano
-              </div>
-            </div>
-
-            <ul class="plan-features">
-              ${features.map(f => `
-                <li>
-                  <i class="fa-solid fa-check"></i>
-                  ${f}
-                </li>
-              `).join('')}
-            </ul>
-
-            <div class="plan-footer">
-              <button class="plan-cta primary" onclick="assinarPlano('${p.slug}')">
-                <span>Começar com ${p.nome}</span>
-                <i class="fa-solid fa-arrow-right"></i>
-              </button>
-              <button class="plan-cta outline" onclick="assinarPlano('${p.slug}')">
-                <i class="fa-solid fa-bolt"></i>
-                Testar agora, configurar depois
-              </button>
-            </div>
-          </article>
-        `;
-      }).join('');
+      renderPlanos(planos);
     } catch (err) {
       console.error(err);
-        plansGrid.innerHTML = PLANOS_FALLBACK.map(p => {
-          const features = (() => {
-            try { return JSON.parse(p.features_json || '[]'); } catch (_e) { return []; }
-          })();
-
-          return `
-            <article class="plan-card ${p.slug === 'betel' ? 'highlight' : ''}">
-              <div class="plan-header">
-                <div class="plan-name">
-                  ${p.nome}
-                  ${p.slug === 'betel' ? '<span style="font-size:0.7rem;background:rgba(248,250,252,0.08);padding:2px 8px;border-radius:999px;color:#fed7aa;">Mais escolhido</span>' : ''}
-                </div>
-                <div class="plan-subtitle">${p.subtitulo || ''}</div>
-              </div>
-
-              <div class="plan-price">
-                <div class="plan-price-main">
-                  R$ ${Number(p.preco_mensal).toFixed(2).replace('.', ',')}
-                  <small>/mês</small>
-                </div>
-                <div class="plan-price-annual">
-                  ou R$ ${Number(p.preco_anual).toFixed(2).replace('.', ',')} /ano
-                </div>
-              </div>
-
-              <ul class="plan-features">
-                ${features.map(f => `
-                  <li>
-                    <i class="fa-solid fa-check"></i>
-                    ${f}
-                  </li>
-                `).join('')}
-              </ul>
-
-              <div class="plan-footer">
-                <button class="plan-cta primary" onclick="assinarPlano('${p.slug}')">
-                  <span>Começar com ${p.nome}</span>
-                  <i class="fa-solid fa-arrow-right"></i>
-                </button>
-                <button class="plan-cta outline" onclick="assinarPlano('${p.slug}')">
-                  <i class="fa-solid fa-bolt"></i>
-                  Testar agora, configurar depois
-                </button>
-              </div>
-            </article>
-          `;
-        }).join('');
+      renderPlanos(PLANOS_FALLBACK);
     }
   }
 

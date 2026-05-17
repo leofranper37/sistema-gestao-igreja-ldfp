@@ -3,7 +3,7 @@
  * Handles caching, offline support, and background sync
  */
 
-const CACHE_NAME = 'ldfp-v7';
+const CACHE_NAME = 'ldfp-v8';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -20,6 +20,8 @@ const STATIC_ASSETS = [
     '/app_membro_v2.html',
     '/app_midia.html',
     '/dashboard_membro.html',
+    '/planos.html',
+    '/planos-data.json',
     '/style.css',
     '/app.css',
     '/app.js',
@@ -32,7 +34,9 @@ const NETWORK_FIRST_PATHS = new Set([
     '/enterprise-shell.js',
     '/session.js',
     '/style.css',
-    '/app.css'
+    '/app.css',
+    '/planos.html',
+    '/planos-data.json'
 ]);
 
 // Install event - cache essential assets

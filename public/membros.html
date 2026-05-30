@@ -1210,8 +1210,9 @@
             return el ? el.value.trim() : '';
         };
 
+        const modeContainer = document.querySelector(currentMode === 'rapido' ? '#quickMode' : '#fullMode') || document;
         const all = {};
-        document.querySelectorAll('[name]').forEach(el => {
+        modeContainer.querySelectorAll('[name]').forEach(el => {
             if (Object.prototype.hasOwnProperty.call(all, el.name)) return;
             if (el.type === 'checkbox') {
                 all[el.name] = el.checked ? '1' : '0';

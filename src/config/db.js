@@ -593,9 +593,17 @@ async function initializeDatabase() {
             naturalidade VARCHAR(120) NULL,
             data_nascimento VARCHAR(30) NULL,
             situacao VARCHAR(30) DEFAULT 'Ativo',
+            cargo VARCHAR(120) NULL,
+            foto_url VARCHAR(500) NULL,
+            acesso_app_midia TINYINT(1) NOT NULL DEFAULT 0,
+            gerenciar_midias TINYINT(1) NOT NULL DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             INDEX idx_membros_igreja (igreja_id)
         )`);
+        try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN cargo VARCHAR(120) NULL`); } catch(_){}
+        try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN foto_url VARCHAR(500) NULL`); } catch(_){}
+        try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN acesso_app_midia TINYINT(1) NOT NULL DEFAULT 0`); } catch(_){}
+        try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN gerenciar_midias TINYINT(1) NOT NULL DEFAULT 0`); } catch(_){}
 
         await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS usuarios (
             id INT AUTO_INCREMENT PRIMARY KEY,

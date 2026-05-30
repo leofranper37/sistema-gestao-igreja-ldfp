@@ -438,7 +438,7 @@ async function createMembro(payload) {
             nome, email, telefone, cargo, apelido, nascimento, sexo, estado_civil, profissao,
             cep, endereco, numero, bairro, cidade, estado, celular, cpf, rg, nacionalidade, naturalidade,
             foto_url, acesso_app_midia, gerenciar_midias
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
             payload.igrejaId,
             payload.nome,

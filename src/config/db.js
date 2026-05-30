@@ -687,6 +687,37 @@ async function initializeDatabase() {
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN ultimo_pagamento DATETIME`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN proximo_vencimento DATETIME`); } catch(_){}
 
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS saas_modulos (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            slug VARCHAR(100) NOT NULL UNIQUE,
+            nome VARCHAR(255) NOT NULL,
+            descricao TEXT,
+            icon VARCHAR(100) DEFAULT 'fa-puzzle-piece',
+            feature_key VARCHAR(100),
+            route_path VARCHAR(255),
+            ativo TINYINT(1) NOT NULL DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`);
+
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS saas_plano_modulos (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            plano_slug VARCHAR(50) NOT NULL,
+            modulo_slug VARCHAR(100) NOT NULL,
+            ativo TINYINT(1) NOT NULL DEFAULT 1,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_plano_modulo (plano_slug, modulo_slug)
+        )`);
+
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS igreja_modulos (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            igreja_id INT NOT NULL,
+            modulo_slug VARCHAR(100) NOT NULL,
+            ativo TINYINT(1),
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_igreja_modulo (igreja_id, modulo_slug)
+        )`);
+
         console.log('✅ Tabelas principais verificadas/criadas no MySQL.');
         return;
     }
@@ -889,6 +920,37 @@ async function initializeDatabase() {
             safeAlter('ALTER TABLE igrejas ADD COLUMN mensalidade_valor REAL NOT NULL DEFAULT 0');
             safeAlter('ALTER TABLE igrejas ADD COLUMN ultimo_pagamento TEXT');
             safeAlter('ALTER TABLE igrejas ADD COLUMN proximo_vencimento TEXT');
+
+            db.run(`CREATE TABLE IF NOT EXISTS saas_modulos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                slug TEXT NOT NULL UNIQUE,
+                nome TEXT NOT NULL,
+                descricao TEXT,
+                icon TEXT DEFAULT 'fa-puzzle-piece',
+                feature_key TEXT,
+                route_path TEXT,
+                ativo INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )`);
+
+            db.run(`CREATE TABLE IF NOT EXISTS saas_plano_modulos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                plano_slug TEXT NOT NULL,
+                modulo_slug TEXT NOT NULL,
+                ativo INTEGER NOT NULL DEFAULT 1,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (plano_slug, modulo_slug)
+            )`);
+
+            db.run(`CREATE TABLE IF NOT EXISTS igreja_modulos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                igreja_id INTEGER NOT NULL,
+                modulo_slug TEXT NOT NULL,
+                ativo INTEGER,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (igreja_id, modulo_slug)
+            )`);
 
             // Sentinela: garante que todos os comandos acima já foram executados antes de resolver.
             db.run('SELECT 1', (err) => {

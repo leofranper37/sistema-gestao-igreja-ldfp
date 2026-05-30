@@ -18,12 +18,12 @@ try {
 
 // SQLite database path:
 // - Accepts absolute or relative SQLITE_DB_PATH
-// - Falls back to /tmp in production-like runtime
+// - Falls back to data/ inside project root (writable on cPanel shared hosting)
 // - Uses project root file in local/dev
 const projectRoot = path.resolve(__dirname, '../..');
 const configuredDbPath = process.env.SQLITE_DB_PATH
     || (process.env.NODE_ENV === 'production'
-        ? '/tmp/ldfp_db.sqlite'
+        ? path.join(projectRoot, 'data', 'ldfp_db.sqlite')
         : path.join(projectRoot, 'ldfp_db.sqlite'));
 
 const dbPath = path.isAbsolute(configuredDbPath)

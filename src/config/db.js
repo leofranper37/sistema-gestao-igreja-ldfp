@@ -206,10 +206,6 @@ function buildMysqlConfig() {
 }
 
 function getMysqlPool() {
-    if (db) {
-        return null;
-    }
-
     if (mysqlPool) {
         return mysqlPool;
     }
@@ -225,11 +221,11 @@ function getMysqlPool() {
 
     try {
         mysqlPool = mysql.createPool(config);
-        console.log('✅ Fallback MySQL ativado para runtime sem sqlite3.');
+        console.log('✅ MySQL pool ativado.');
         return mysqlPool;
     } catch (error) {
         mysqlPoolInitError = error;
-        console.error('❌ Falha ao iniciar fallback MySQL:', error?.message || error);
+        console.error('❌ Falha ao iniciar MySQL:', error?.message || error);
         return null;
     }
 }

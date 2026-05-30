@@ -67,7 +67,6 @@ async function findUserByEmail(email) {
     const [rows] = await pool.query(
         `SELECT u.id, u.igreja, u.igreja_id, u.role, u.nome, u.email, u.password_hash,
                 i.plano, i.status_assinatura, i.trial_starts_at, i.trial_ends_at, i.max_cadastros, i.max_congregacoes,
-            i.config_personalizada_json,
                 i.modulo_app_membro, i.modulo_app_midia, i.modulo_ebd,
                 i.modulo_agenda_eventos, i.modulo_escala_culto, i.modulo_pedidos_oracao, i.modulo_mural_oracao
          FROM usuarios u

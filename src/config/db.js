@@ -562,8 +562,10 @@ async function initializeDatabase() {
             modulo_escala_culto TINYINT(1) NOT NULL DEFAULT 0,
             modulo_pedidos_oracao TINYINT(1) NOT NULL DEFAULT 1,
             modulo_mural_oracao TINYINT(1) NOT NULL DEFAULT 1,
+            config_personalizada_json LONGTEXT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
+        try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN config_personalizada_json LONGTEXT NULL`); } catch(_){}
 
         await activeMysqlPool.query(`INSERT IGNORE INTO igrejas (id, nome) VALUES (1, 'Igreja Padrão')`);
 

@@ -694,6 +694,7 @@ async function initializeDatabase() {
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN telefone VARCHAR(60)`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN cnpj VARCHAR(30)`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN mensalidade_valor DECIMAL(10,2) NOT NULL DEFAULT 0`); } catch(_){}
+        try { await activeMysqlPool.query('ALTER TABLE saas_planos CHANGE `versículo` `versiculo` TEXT'); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN ultimo_pagamento DATETIME`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN proximo_vencimento DATETIME`); } catch(_){}
 

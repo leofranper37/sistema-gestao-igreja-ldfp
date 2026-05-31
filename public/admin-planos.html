@@ -374,7 +374,7 @@ document.getElementById('createPlanModal')?.addEventListener('click', (e) => {
   if (!t) { location.href = 'login.html'; return; }
   try {
     const p = JSON.parse(atob(t.split('.')[1]));
-    if (!['super-admin','admin'].includes(p.role)) { location.href = 'login.html'; }
+    if (!['super-admin','super_admin','superadmin','master'].includes(p.role)) { location.href = 'login.html'; }
   } catch(_) { location.href = 'login.html'; }
 })();
 

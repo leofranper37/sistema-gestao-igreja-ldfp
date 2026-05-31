@@ -333,7 +333,7 @@ function toast(msg, type='success') {
 (function() {
   const t = token();
   if (!t) { location.href = 'login.html'; return; }
-  try { const p = JSON.parse(atob(t.split('.')[1])); if (!['super-admin','admin'].includes(p.role)) location.href = 'login.html'; } catch(_){}
+  try { const p = JSON.parse(atob(t.split('.')[1])); if (!['super-admin','super_admin','superadmin','master'].includes(p.role)) location.href = 'login.html'; } catch(_){}
 })();
 
 document.getElementById('f-status_assinatura').addEventListener('change', refreshTrialPanel);

@@ -387,7 +387,7 @@ async function saveModules() {
     toast('Regras de modulo atualizadas com sucesso.');
   } catch (error) { toast(error.message, 'error'); }
 }
-(function () { if (!window.requireAuthSession || !window.requireAuthSession()) return; const role = String(window.getStoredAuth?.()?.user?.role || '').toLowerCase(); if (!['super-admin', 'admin'].includes(role)) location.href = 'dashboard.html'; })();
+(function () { if (!window.requireAuthSession || !window.requireAuthSession()) return; const role = String(window.getStoredAuth?.()?.user?.role || '').toLowerCase(); if (!['super-admin','super_admin','superadmin','master'].includes(role)) location.href = 'dashboard.html'; })();
 loadAllData();
 </script>
 </body>

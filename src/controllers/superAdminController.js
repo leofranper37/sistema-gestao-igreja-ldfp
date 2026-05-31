@@ -1,5 +1,8 @@
 const { pool } = require('../config/db');
 const moduleAccessService = require('../services/moduleAccessService');
+const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -59,7 +62,23 @@ async function getSuperAdminOverview(req, res) {
         const pendingCount = fmt(pending[0]?.cnt);
         const pendingAmount = fmt(pending[0]?.total);
 
-        res.json({ total, ativas, trial, suspensas, trialExpirando, trialExpirado, mrr, pendingCount, pendingAmount });
+        const [customers] = await pool.query(
+            `SELECT i.id, i.nome, i.plano, i.status_assinatura,
+                    i.responsavel AS responsavel_nome,
+                    i.email_admin AS responsavel_email,
+                    i.mensalidade_valor, i.proximo_vencimento,
+                    i.trial_ends_at, i.max_cadastros, i.created_at,
+                    COUNT(m.id) AS membros_ativos
+             FROM igrejas i
+             LEFT JOIN membros m ON m.igreja_id = i.id
+             GROUP BY i.id
+             ORDER BY i.created_at DESC`
+        );
+
+        res.json({
+            kpis: { mrr, activeChurches: ativas, pendingPayments: pendingCount, pendingAmount, total, trial, suspensas, trialExpirando, trialExpirado },
+            customers: customers || []
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -524,6 +543,129 @@ async function getMinhaConta(req, res) {
     }
 }
 
+// ── Sistema Config ───────────────────────────────────────────────────────────
+
+async function getSistemaConfig(req, res) {
+    try {
+        const [rows] = await pool.query(`SELECT config_value FROM sistema_config WHERE config_key = 'main' LIMIT 1`);
+        const cfg = rows.length ? safeJson(rows[0].config_value, {}) : {};
+        res.json(cfg);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+async function putSistemaConfig(req, res) {
+    try {
+        const payload = req.body || {};
+        const json = JSON.stringify(payload);
+        await pool.query(
+            `INSERT INTO sistema_config (config_key, config_value) VALUES ('main', ?)
+             ON DUPLICATE KEY UPDATE config_value = ?, updated_at = CURRENT_TIMESTAMP`,
+            [json, json]
+        );
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+function gitInfo() {
+    let branch = 'unknown', shortHead = 'unknown';
+    try { branch = execSync('git rev-parse --abbrev-ref HEAD', { timeout: 3000 }).toString().trim(); } catch (_) {}
+    try { shortHead = execSync('git rev-parse --short HEAD', { timeout: 3000 }).toString().trim(); } catch (_) {}
+    return { branch, shortHead };
+}
+
+async function getSistemaDiagnostico(req, res) {
+    try {
+        const git = gitInfo();
+        const uptimeSec = Math.floor(process.uptime());
+
+        const backupsDir = path.join(process.cwd(), 'backups');
+        let backups = [];
+        try {
+            backups = fs.readdirSync(backupsDir).map(f => {
+                const stats = fs.statSync(path.join(backupsDir, f));
+                return { name: f, size: stats.size, updatedAt: stats.mtime.toISOString() };
+            }).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 10);
+        } catch (_) {}
+
+        let lastCheckpoint = null;
+        try {
+            const [rows] = await pool.query(`SELECT nota, created_at FROM retomada_checkpoints ORDER BY created_at DESC LIMIT 1`);
+            if (rows.length) lastCheckpoint = { note: rows[0].nota, at: rows[0].created_at };
+        } catch (_) {}
+
+        let focus = { currentObjective: '' };
+        try {
+            const [cfgRows] = await pool.query(`SELECT config_value FROM sistema_config WHERE config_key = 'retomada' LIMIT 1`);
+            if (cfgRows.length) { const s = safeJson(cfgRows[0].config_value, {}); focus = s.focus || focus; }
+        } catch (_) {}
+
+        res.json({ now: new Date().toISOString(), git, runtime: { uptimeSec }, backups, retomada: { focus, lastCheckpoint } });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+// ── Retomada ─────────────────────────────────────────────────────────────────
+
+async function getRetomada(req, res) {
+    try {
+        const [rows] = await pool.query(`SELECT config_value FROM sistema_config WHERE config_key = 'retomada' LIMIT 1`);
+        const state = rows.length ? safeJson(rows[0].config_value, {}) : {};
+        const git = gitInfo();
+
+        let checkpoints = [];
+        try {
+            const [cpRows] = await pool.query(`SELECT nota, git_branch, git_head, created_at FROM retomada_checkpoints ORDER BY created_at DESC LIMIT 20`);
+            checkpoints = cpRows.map(r => ({ note: r.nota, git: { branch: r.git_branch, shortHead: r.git_head }, at: r.created_at }));
+        } catch (_) {}
+
+        res.json({
+            trigger: state.trigger || 'LDFP_CONTINUAR',
+            updatedAt: state.updatedAt || null,
+            filePath: '.ldfp-resume/state.json',
+            focus: state.focus || { currentObjective: '', nextSteps: [] },
+            environment: state.environment || { productionUrl: 'https://www.ldfp.com.br', cloudIdeUrl: '' },
+            git: { branch: git.branch, shortHead: git.shortHead, dirty: false },
+            checkpoints
+        });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+async function putRetomada(req, res) {
+    try {
+        let existing = {};
+        try {
+            const [rows] = await pool.query(`SELECT config_value FROM sistema_config WHERE config_key = 'retomada' LIMIT 1`);
+            if (rows.length) existing = safeJson(rows[0].config_value, {});
+        } catch (_) {}
+
+        const payload = { ...existing, ...req.body, updatedAt: new Date().toISOString() };
+        const json = JSON.stringify(payload);
+        await pool.query(
+            `INSERT INTO sistema_config (config_key, config_value) VALUES ('retomada', ?)
+             ON DUPLICATE KEY UPDATE config_value = ?, updated_at = CURRENT_TIMESTAMP`,
+            [json, json]
+        );
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+async function postRetomadaCheckpoint(req, res) {
+    try {
+        const { note } = req.body || {};
+        const git = gitInfo();
+        await pool.query(
+            `INSERT INTO retomada_checkpoints (nota, git_branch, git_head) VALUES (?, ?, ?)`,
+            [note || 'Checkpoint', git.branch, git.shortHead]
+        );
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+// ── Fábrica de Inovações (AI Stub) ───────────────────────────────────────────
+
+async function postFactoryAiSuggest(req, res) {
+    res.json({ suggestion: 'Configure uma chave OpenAI no servidor para habilitar sugestões automáticas de módulos.' });
+}
+
 module.exports = {
     listPlanosPublico,
     getSuperAdminOverview,
@@ -545,5 +687,12 @@ module.exports = {
     getIgrejaModulos,
     putIgrejaModulos,
     getMyEffectiveModules,
-    getMinhaConta
+    getMinhaConta,
+    getSistemaConfig,
+    putSistemaConfig,
+    getSistemaDiagnostico,
+    getRetomada,
+    putRetomada,
+    postRetomadaCheckpoint,
+    postFactoryAiSuggest
 };

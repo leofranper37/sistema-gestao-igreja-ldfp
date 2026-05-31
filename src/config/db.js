@@ -729,6 +729,20 @@ async function initializeDatabase() {
             UNIQUE KEY unique_igreja_modulo (igreja_id, modulo_slug)
         )`);
 
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS sistema_config (
+            config_key VARCHAR(100) NOT NULL PRIMARY KEY,
+            config_value LONGTEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )`);
+
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS retomada_checkpoints (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nota TEXT,
+            git_branch VARCHAR(100),
+            git_head VARCHAR(100),
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`);
+
         console.log('✅ Tabelas principais verificadas/criadas no MySQL.');
         return;
     }

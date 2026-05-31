@@ -20,7 +20,14 @@ const {
     getIgrejaModulos,
     putIgrejaModulos,
     getMyEffectiveModules,
-    getMinhaConta
+    getMinhaConta,
+    getSistemaConfig,
+    putSistemaConfig,
+    getSistemaDiagnostico,
+    getRetomada,
+    putRetomada,
+    postRetomadaCheckpoint,
+    postFactoryAiSuggest
 } = require('../controllers/superAdminController');
 
 const router = express.Router();
@@ -59,6 +66,19 @@ router.put('/api/saas/planos/:slug/modulos', ...isSuperAdmin, putPlanoModulos);
 // Módulos por Igreja
 router.get('/api/saas/igrejas/:id/modulos', ...isSuperAdmin, getIgrejaModulos);
 router.put('/api/saas/igrejas/:id/modulos', ...isSuperAdmin, putIgrejaModulos);
+
+// Sistema: Configuração Global e Diagnóstico
+router.get('/api/saas/sistema/config', ...isSuperAdmin, getSistemaConfig);
+router.put('/api/saas/sistema/config', ...isSuperAdmin, putSistemaConfig);
+router.get('/api/saas/sistema/diagnostico', ...isSuperAdmin, getSistemaDiagnostico);
+
+// Retomada Inteligente
+router.get('/api/saas/retomada', ...isSuperAdmin, getRetomada);
+router.put('/api/saas/retomada', ...isSuperAdmin, putRetomada);
+router.post('/api/saas/retomada/checkpoint', ...isSuperAdmin, postRetomadaCheckpoint);
+
+// Fábrica de Inovações (AI)
+router.post('/api/saas/factory/ai-suggest', ...isSuperAdmin, postFactoryAiSuggest);
 
 // Acesso efetivo do usuário autenticado (menu/telas)
 router.get('/api/modulos/me', requireAuth, getMyEffectiveModules);

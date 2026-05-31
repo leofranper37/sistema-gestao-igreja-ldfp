@@ -60,6 +60,7 @@ th{position:sticky;top:0;background:#f8fafc;color:var(--muted);text-transform:up
     <a href="super-admin.html" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
     <a href="admin-igrejas.html" class="menu-item"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
     <a href="admin-assinaturas.html" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Assinaturas & Faturas</a>
+    <a href="admin-modulos.html" class="menu-item"><i class="fa-solid fa-puzzle-piece"></i> Catálogo de Módulos</a>
     <a href="admin-retomada.html" class="menu-item"><i class="fa-solid fa-rocket"></i> Retomada Inteligente</a>
     <div class="menu-label">Configuracoes SaaS</div>
     <a href="admin-planos.html" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Precos</a>
@@ -498,15 +499,17 @@ async function publishFactory(){
     }
   };
 
-  const r = await fetch('/api/saas/sistema/config', {
-    method: 'PUT',
+  const r = await fetch('/api/saas/factory/publish', {
+    method: 'POST',
     headers: headers(),
     body: JSON.stringify(payload)
   });
 
   if (!r.ok) throw new Error('Nao foi possivel publicar inovacoes.');
+  const result = await r.json();
   await loadConfig();
-  toast('Fabrica publicada. Clientes passam a refletir os modulos publicados.');
+  const syncMsg = result.synced ? ` ${result.synced} módulo(s) sincronizados para uso imediato.` : '';
+  toast('Fabrica publicada com sucesso.' + syncMsg);
 }
 
 function applyAiSuggestionToEditors(suggestion){

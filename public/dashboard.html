@@ -500,6 +500,20 @@
                 target.innerHTML = '<div class="recent-empty">Não foi possível carregar os dados agora.</div>';
             }
         });
+
+        // Botão Painel Admin visível apenas para super-admin / admin
+        (function showAdminButton() {
+            const auth = window.getStoredAuth ? window.getStoredAuth() : null;
+            const role = auth?.user?.role || auth?.role || '';
+            const superRoles = ['super-admin', 'super_admin', 'superadmin', 'master', 'admin', 'owner', 'root'];
+            if (!superRoles.includes(role)) return;
+            const btn = document.createElement('a');
+            btn.href = 'super-admin.html';
+            btn.title = 'Painel Admin SaaS';
+            btn.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:#1e40af;color:#fff;border-radius:50px;padding:10px 20px;font-size:13px;font-weight:600;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.35);display:flex;align-items:center;gap:8px;';
+            btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Painel Admin';
+            document.body.appendChild(btn);
+        })();
     </script>
 </body>
 </html>

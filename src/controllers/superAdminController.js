@@ -660,10 +660,125 @@ async function postRetomadaCheckpoint(req, res) {
     } catch (err) { res.status(500).json({ error: err.message }); }
 }
 
-// ── Fábrica de Inovações (AI Stub) ───────────────────────────────────────────
+// ── Fábrica de Inovações ─────────────────────────────────────────────────────
 
 async function postFactoryAiSuggest(req, res) {
-    res.json({ suggestion: 'Configure uma chave OpenAI no servidor para habilitar sugestões automáticas de módulos.' });
+    const prompt = String(req.body?.prompt || '').trim();
+    const words = prompt.toLowerCase();
+
+    let name = '', description = '', route = 'construcao.html', plans = ['siao'];
+
+    if (words.includes('financ') || words.includes('caixa') || words.includes('tesourar')) {
+        name = 'Painel Financeiro Avançado'; description = 'Relatórios, gráficos e exportação financeira completa.';
+        route = 'financeiro.html'; plans = ['betel', 'siao'];
+    } else if (words.includes('membro') || words.includes('secretar') || words.includes('cadastro')) {
+        name = 'Gestão de Membros'; description = 'Controle de membros, visitantes e secretaria.';
+        route = 'membros.html'; plans = ['hebrom', 'betel', 'siao'];
+    } else if (words.includes('ebd') || words.includes('escola') || words.includes('dominical')) {
+        name = 'EBD — Escola Dominical'; description = 'Gestão completa da Escola Bíblica Dominical.';
+        route = 'ebd_turmas.html'; plans = ['betel', 'siao'];
+    } else if (words.includes('batismo')) {
+        name = 'Controle de Batismos'; description = 'Registro, inscrições e controle de batismos.';
+        route = 'batismos.html'; plans = ['betel', 'siao'];
+    } else if (words.includes('whatsapp') || words.includes('mensagem') || words.includes('comunicac')) {
+        name = 'Comunicação WhatsApp'; description = 'Central de comunicação com membros via WhatsApp.';
+        route = 'comunicacao_whatsapp.html'; plans = ['siao'];
+    } else if (words.includes('escala') || words.includes('voluntar') || words.includes('ministér')) {
+        name = 'Escalas de Ministérios'; description = 'Gerenciamento de escalas e voluntários.';
+        route = 'escalas.html'; plans = ['betel', 'siao'];
+    } else if (words.includes('agenda') || words.includes('event') || words.includes('calend')) {
+        name = 'Agenda e Eventos'; description = 'Calendário e gerenciamento de eventos da igreja.';
+        route = 'agenda.html'; plans = ['hebrom', 'betel', 'siao'];
+    } else if (words.includes('dashboard') || words.includes('indicador') || words.includes('crescimento')) {
+        name = 'Dashboard Executivo'; description = 'Indicadores de crescimento com gráficos e métricas.';
+        route = 'dashboard.html'; plans = ['siao'];
+    } else {
+        const titleParts = prompt.split(' ').slice(0, 5).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+        name = titleParts.join(' ') || 'Novo Módulo';
+        description = 'Módulo desenvolvido conforme necessidade descrita.';
+        route = 'construcao.html';
+        plans = ['siao'];
+    }
+
+    res.json({
+        suggestion: {
+            module: { id: 'mod-' + Date.now(), name, description, route, status: 'lab', enabled: true, targetPlans: plans },
+            menuOverride: null,
+            rationale: [
+                `Módulo "${name}" identificado a partir do prompt fornecido.`,
+                `Rota sugerida: ${route}`,
+                `Planos-alvo recomendados: ${plans.join(', ')}.`,
+                'Status inicial "Lab" — valide antes de publicar.',
+                'Clique em Publicar para ativar nos planos selecionados.'
+            ]
+        }
+    });
+}
+
+async function postFactoryPublish(req, res) {
+    try {
+        const factory = req.body?.factory || {};
+
+        // Salva estado da fábrica em sistema_config['main']
+        let existing = {};
+        try {
+            const [rows] = await pool.query(`SELECT config_value FROM sistema_config WHERE config_key = 'main' LIMIT 1`);
+            if (rows.length) existing = safeJson(rows[0].config_value, {});
+        } catch (_) {}
+        const payload = { ...existing, factory };
+        const json = JSON.stringify(payload);
+        await pool.query(
+            `INSERT INTO sistema_config (config_key, config_value) VALUES ('main', ?)
+             ON DUPLICATE KEY UPDATE config_value = ?, updated_at = CURRENT_TIMESTAMP`,
+            [json, json]
+        );
+
+        // Sincroniza módulos publicados com saas_modulos + saas_plano_modulos
+        const modules = Array.isArray(factory.modules) ? factory.modules : [];
+        let synced = 0;
+
+        for (const mod of modules) {
+            const isPublished = mod.status === 'published' && mod.enabled !== false;
+            const namePart = String(mod.name || '')
+                .toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '')
+                .slice(0, 35);
+            if (!namePart) continue;
+            const slug = ('fac-' + namePart).slice(0, 50);
+            const nome = String(mod.name || slug).trim();
+            const descricao = String(mod.description || '').trim() || null;
+            const routePath = String(mod.route || '').trim() || null;
+            const featureKey = 'factory:' + namePart;
+            const ativo = isPublished ? 1 : 0;
+
+            await pool.query(
+                `INSERT INTO saas_modulos (slug, nome, descricao, icon, feature_key, route_path, ativo, updated_at)
+                 VALUES (?, ?, ?, 'fa-lightbulb', ?, ?, ?, CURRENT_TIMESTAMP)
+                 ON DUPLICATE KEY UPDATE nome = ?, descricao = ?, route_path = ?, ativo = ?, updated_at = CURRENT_TIMESTAMP`,
+                [slug, nome, descricao, featureKey, routePath, ativo, nome, descricao, routePath, ativo]
+            );
+
+            if (isPublished) {
+                const targetPlans = Array.isArray(mod.targetPlans) ? mod.targetPlans : [];
+                for (const planSlug of targetPlans) {
+                    if (!planSlug) continue;
+                    await pool.query(
+                        `INSERT INTO saas_plano_modulos (plano_slug, modulo_slug, ativo, updated_at)
+                         VALUES (?, ?, 1, CURRENT_TIMESTAMP)
+                         ON DUPLICATE KEY UPDATE ativo = 1, updated_at = CURRENT_TIMESTAMP`,
+                        [planSlug, slug]
+                    );
+                }
+                synced++;
+            }
+        }
+
+        res.json({ ok: true, synced, total: modules.length });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 }
 
 module.exports = {
@@ -694,5 +809,6 @@ module.exports = {
     getRetomada,
     putRetomada,
     postRetomadaCheckpoint,
-    postFactoryAiSuggest
+    postFactoryAiSuggest,
+    postFactoryPublish
 };

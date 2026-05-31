@@ -27,7 +27,8 @@ const {
     getRetomada,
     putRetomada,
     postRetomadaCheckpoint,
-    postFactoryAiSuggest
+    postFactoryAiSuggest,
+    postFactoryPublish
 } = require('../controllers/superAdminController');
 
 const router = express.Router();
@@ -77,8 +78,9 @@ router.get('/api/saas/retomada', ...isSuperAdmin, getRetomada);
 router.put('/api/saas/retomada', ...isSuperAdmin, putRetomada);
 router.post('/api/saas/retomada/checkpoint', ...isSuperAdmin, postRetomadaCheckpoint);
 
-// Fábrica de Inovações (AI)
+// Fábrica de Inovações
 router.post('/api/saas/factory/ai-suggest', ...isSuperAdmin, postFactoryAiSuggest);
+router.post('/api/saas/factory/publish', ...isSuperAdmin, postFactoryPublish);
 
 // Acesso efetivo do usuário autenticado (menu/telas)
 router.get('/api/modulos/me', requireAuth, getMyEffectiveModules);

@@ -577,11 +577,11 @@
 
         carregarStatusPlano();
 
-        // Botão Painel Admin visível apenas para super-admin / admin
+        // Botão Painel Admin visível apenas para super-admin (SaaS owner)
         (function showAdminButton() {
             const auth = window.getStoredAuth ? window.getStoredAuth() : null;
             const role = auth?.user?.role || auth?.role || '';
-            const superRoles = ['super-admin', 'super_admin', 'superadmin', 'master', 'admin', 'owner', 'root'];
+            const superRoles = ['super-admin', 'super_admin', 'superadmin', 'master'];
             if (!superRoles.includes(role)) return;
             const btn = document.createElement('a');
             btn.href = 'super-admin.html';

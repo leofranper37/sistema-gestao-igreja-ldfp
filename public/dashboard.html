@@ -151,6 +151,17 @@
         .stat-card.churches { border-left-color: #14b8a6; }
         .stat-card.churches .stat-icon { background: #ccfbf1; color: #0d9488; }
 
+        /* ── Banner de status do plano ── */
+        .plan-banner { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-radius: 12px; margin-bottom: 24px; gap: 12px; flex-wrap: wrap; }
+        .plan-banner.trial  { background: #fef9c3; border: 1px solid #fde047; }
+        .plan-banner.ativa  { background: #f0fdf4; border: 1px solid #86efac; }
+        .plan-banner.alerta { background: #fef2f2; border: 1px solid #fca5a5; }
+        .plan-banner-info { display: flex; align-items: center; gap: 12px; }
+        .plan-banner-text strong { display: block; font-size: 14px; color: #1e293b; }
+        .plan-banner-text span   { font-size: 12px; color: #64748b; }
+        .btn-upgrade { background: #0f766e; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .btn-upgrade:hover { opacity: .88; }
+
         .recent-panel {
             background: #fff;
             border-radius: 14px;
@@ -263,6 +274,9 @@
                 <i class="fa-solid fa-chart-line"></i>
                 Visão Geral do Sistema
             </div>
+
+            <!-- Banner status do plano -->
+            <div id="planStatusBanner" style="display:none"></div>
 
             <!-- Seção: Comunidade -->
             <div class="section-title"><i class="fa-solid fa-people-group" style="margin-right: 8px; color: #0ea5e9;"></i>Comunidade</div>
@@ -500,6 +514,68 @@
                 target.innerHTML = '<div class="recent-empty">Não foi possível carregar os dados agora.</div>';
             }
         });
+
+        // ── Banner de status do plano ──────────────────────────────────
+        async function carregarStatusPlano() {
+            try {
+                const tok = sessionStorage.getItem('token') || localStorage.getItem('token');
+                if (!tok) return;
+                const r = await fetch('/api/pagamentos/status', { headers: { Authorization: 'Bearer ' + tok } });
+                if (!r.ok) return;
+                const data = await r.json();
+                renderPlanBanner(data);
+            } catch (_) {}
+        }
+
+        function renderPlanBanner(data) {
+            const banner = document.getElementById('planStatusBanner');
+            if (!banner) return;
+            const status = data.status || '';
+            const planoNome = (data.plano || '').toUpperCase();
+            const upgradeUrl = 'planos.html?upgrade=1';
+
+            if (status === 'trial') {
+                const trialEnd = data.trialEndsAt ? new Date(data.trialEndsAt) : null;
+                const dias = trialEnd ? Math.max(0, Math.ceil((trialEnd - new Date()) / 86400000)) : '?';
+                const diasTxt = typeof dias === 'number' ? (dias > 0 ? `${dias} dia(s) restante(s)` : 'Expira hoje') : '';
+                banner.className = 'plan-banner trial';
+                banner.innerHTML = `
+                    <div class="plan-banner-info">
+                        <i class="fa-solid fa-hourglass-half" style="color:#ca8a04;font-size:22px"></i>
+                        <div class="plan-banner-text">
+                            <strong>Período de Teste — Acesso Completo</strong>
+                            <span>${diasTxt} &bull; Explore todas as funcionalidades sem restrições</span>
+                        </div>
+                    </div>
+                    <a href="${upgradeUrl}" class="btn-upgrade"><i class="fa-solid fa-arrow-up"></i> Contratar plano agora</a>`;
+            } else if (status === 'ativa') {
+                const venc = data.proximoVencimento ? new Date(data.proximoVencimento).toLocaleDateString('pt-BR') : 'Não definido';
+                banner.className = 'plan-banner ativa';
+                banner.innerHTML = `
+                    <div class="plan-banner-info">
+                        <i class="fa-solid fa-circle-check" style="color:#16a34a;font-size:22px"></i>
+                        <div class="plan-banner-text">
+                            <strong>Plano ${planoNome} — Ativo</strong>
+                            <span>Próximo vencimento: ${venc}</span>
+                        </div>
+                    </div>
+                    <a href="${upgradeUrl}" class="btn-upgrade" style="background:#0369a1"><i class="fa-solid fa-arrow-up"></i> Melhorar plano</a>`;
+            } else if (['cancelado', 'expirado', 'suspensa', 'inativa'].includes(status)) {
+                banner.className = 'plan-banner alerta';
+                banner.innerHTML = `
+                    <div class="plan-banner-info">
+                        <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;font-size:22px"></i>
+                        <div class="plan-banner-text">
+                            <strong>Assinatura inativa</strong>
+                            <span>Seu acesso está limitado. Assine um plano para continuar.</span>
+                        </div>
+                    </div>
+                    <a href="${upgradeUrl}" class="btn-upgrade" style="background:#dc2626"><i class="fa-solid fa-bolt"></i> Reativar agora</a>`;
+            } else { return; }
+            banner.style.display = '';
+        }
+
+        carregarStatusPlano();
 
         // Botão Painel Admin visível apenas para super-admin / admin
         (function showAdminButton() {

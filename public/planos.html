@@ -222,6 +222,8 @@
 
 <script>
   const plansGrid = document.getElementById('plansGrid');
+  const _isUpgradeMode = new URLSearchParams(window.location.search).get('upgrade') === '1';
+
   const PLANOS_FALLBACK = [
     {
       slug: 'hebrom',
@@ -313,10 +315,10 @@
               <span>Começar com ${p.nome}</span>
               <i class="fa-solid fa-arrow-right"></i>
             </button>
-            <button class="plan-cta outline" onclick="assinarPlano('${p.slug}')">
+            ${_isUpgradeMode ? '' : `<button class="plan-cta outline" onclick="assinarPlano('${p.slug}')">
               <i class="fa-solid fa-bolt"></i>
               Testar agora, configurar depois
-            </button>
+            </button>`}
           </div>
         </article>
       `;
@@ -342,10 +344,23 @@
   }
 
   function assinarPlano(slug) {
-    window.location.href = `cadastro_igreja.html?plano=${encodeURIComponent(slug)}`;
+    if (_isUpgradeMode) {
+      window.location.href = `assinar.html?plano=${encodeURIComponent(slug)}&upgrade=1`;
+    } else {
+      window.location.href = `cadastro_igreja.html?plano=${encodeURIComponent(slug)}`;
+    }
   }
 
   carregarPlanos();
+
+  // Modo upgrade: exibe aviso acima do grid de planos
+  if (_isUpgradeMode) {
+    const notice = document.createElement('div');
+    notice.style.cssText = 'background:rgba(15,118,110,.13);border:1px solid rgba(15,118,110,.35);color:#99f6e4;padding:11px 16px;border-radius:10px;font-size:0.85rem;text-align:center;margin-bottom:20px;';
+    notice.innerHTML = '<i class="fa-solid fa-info-circle" style="margin-right:6px"></i><strong>Upgrade de plano:</strong> o período de teste já foi utilizado. Clique em "Começar com…" para contratar diretamente.';
+    const grid = document.getElementById('plansGrid');
+    if (grid) grid.parentNode.insertBefore(notice, grid);
+  }
 </script>
 </body>
 </html>

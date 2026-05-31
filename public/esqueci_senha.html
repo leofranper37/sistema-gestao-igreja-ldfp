@@ -35,7 +35,7 @@
                 <label>E-mail</label>
                 <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
             </div>
-            <button type="button" class="btn" id="btnEnviar" onclick="enviar()">Enviar link de recuperação</button>
+            <button type="button" class="btn" id="btnEnviar" onclick="enviar()">Enviar solicitação</button>
         </form>
 
         <div id="msg" class="msg"></div>
@@ -64,19 +64,20 @@
             btn.textContent = 'Enviando...';
 
             try {
-                // Registra pedido de redefinição para o admin processar
-                await fetch('/api/reset-request', {
+                const resp = await fetch('/api/reset-request', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })
-                }).catch(() => {});
+                });
+
+                if (!resp.ok) throw new Error('Falha no servidor');
 
                 msgEl.className = 'msg ok';
                 msgEl.textContent = 'Solicitação enviada! O administrador redefinirá sua senha em breve.';
                 document.getElementById('email').value = '';
             } catch (err) {
                 msgEl.className = 'msg erro';
-                msgEl.textContent = 'Erro de conexão. Tente novamente.';
+                msgEl.textContent = 'Erro de conexão. Tente novamente mais tarde.';
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Enviar solicitação';

@@ -622,7 +622,7 @@ async function getRetomada(req, res) {
             updatedAt: state.updatedAt || null,
             filePath: '.ldfp-resume/state.json',
             focus: state.focus || { currentObjective: '', nextSteps: [] },
-            environment: state.environment || { productionUrl: 'https://www.ldfp.com.br', cloudIdeUrl: '' },
+            environment: state.environment || { productionUrl: 'https://www.ldfp.com.br', cloudIdeUrl: 'https://github.dev/leofranper37/sistema-gestao-igreja-ldfp' },
             git: { branch: git.branch, shortHead: git.shortHead, dirty: false },
             checkpoints
         });

@@ -97,8 +97,12 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
           <input id="productionUrl" type="text" value="https://www.ldfp.com.br">
         </div>
         <div class="form-row">
-          <label>URL Cloud IDE (github.dev)</label>
-          <input id="cloudIdeUrl" type="text" value="https://improved-funicular-5xjvrqxg4q9hpv6r.github.dev/">
+          <label>URL Cloud IDE (VS Code no navegador)</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input id="cloudIdeUrl" type="text" value="https://github.dev/leofranper37/sistema-gestao-igreja-ldfp" style="flex:1">
+            <button class="btn btn-outline" style="white-space:nowrap" onclick="resetIdeUrl()" title="Restaurar padrão"><i class="fa-solid fa-rotate-left"></i></button>
+          </div>
+          <small style="color:var(--muted);font-size:11px;margin-top:4px;display:block">github.dev abre o VS Code direto no navegador, sem instalar nada</small>
         </div>
       </div>
     </section>
@@ -122,7 +126,8 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
         </div>
         <div class="actions" style="margin-bottom:12px;">
           <button class="btn btn-success" onclick="createCheckpoint()"><i class="fa-solid fa-bookmark"></i> Salvar Checkpoint</button>
-          <button class="btn btn-gold" onclick="continueWork()"><i class="fa-solid fa-play"></i> Continuar Trabalho</button>
+          <button class="btn btn-gold" onclick="openVsCode()"><i class="fa-brands fa-github"></i> Abrir VS Code</button>
+          <button class="btn btn-outline" onclick="openProd()"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Sistema</button>
         </div>
 
         <div>
@@ -158,7 +163,10 @@ async function loadState() {
     document.getElementById('currentObjective').value = currentState.focus?.currentObjective || '';
     document.getElementById('nextSteps').value = (currentState.focus?.nextSteps || []).join('\n');
     document.getElementById('productionUrl').value = currentState.environment?.productionUrl || 'https://www.ldfp.com.br';
-    document.getElementById('cloudIdeUrl').value = currentState.environment?.cloudIdeUrl || 'https://improved-funicular-5xjvrqxg4q9hpv6r.github.dev/';
+    // Se a URL salva for de um codespace antigo (expirado), usa o github.dev permanente
+    const savedIde = currentState.environment?.cloudIdeUrl || '';
+    const isOldCodespace = savedIde.includes('github.dev') && !savedIde.includes('github.dev/leofranper37') && savedIde !== GITHUB_DEV_DEFAULT;
+    document.getElementById('cloudIdeUrl').value = (!savedIde || isOldCodespace) ? GITHUB_DEV_DEFAULT : savedIde;
 
     const checkpoints = Array.isArray(currentState.checkpoints) ? currentState.checkpoints.slice(0, 8) : [];
     const ul = document.getElementById('checkpointsList');
@@ -220,23 +228,24 @@ async function createCheckpoint() {
   }
 }
 
-function continueWork() {
-  const prod = document.getElementById('productionUrl').value.trim();
-  const cloud = document.getElementById('cloudIdeUrl').value.trim();
+const GITHUB_DEV_DEFAULT = 'https://github.dev/leofranper37/sistema-gestao-igreja-ldfp';
 
-  if (!prod && !cloud) {
-    toast('Defina ao menos uma URL de continuidade', false);
-    return;
-  }
+function resetIdeUrl() {
+  document.getElementById('cloudIdeUrl').value = GITHUB_DEV_DEFAULT;
+}
 
-  if (cloud) {
-    window.open(cloud, '_blank');
-  }
-  if (prod) {
-    window.open(prod, '_blank');
-  }
+function openVsCode() {
+  let url = document.getElementById('cloudIdeUrl').value.trim();
+  if (!url) url = GITHUB_DEV_DEFAULT;
+  window.open(url, '_blank');
+  toast('VS Code aberto no navegador ✓', true);
+}
 
-  toast('Ambientes de continuidade abertos', true);
+function openProd() {
+  const url = document.getElementById('productionUrl').value.trim();
+  if (!url) { toast('URL de produção não definida', false); return; }
+  window.open(url, '_blank');
+  toast('Sistema aberto ✓', true);
 }
 
 function esc(s) {

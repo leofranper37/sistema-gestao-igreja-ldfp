@@ -236,6 +236,20 @@ async function updateSaasIgrejaContrato(req, res) {
 
 // ── Planos ───────────────────────────────────────────────────────────────────
 
+async function listPlanosPublico(req, res) {
+    try {
+        const [rows] = await pool.query(
+            `SELECT slug, nome, subtitulo, versiculo, preco_mensal, preco_anual,
+                    max_cadastros, max_congregacoes, modulo_app_membro, features_json
+             FROM saas_planos WHERE ativo = 1 ORDER BY preco_mensal ASC`
+        );
+        const result = rows.map(r => ({ ...r, features: safeJson(r.features_json, []) }));
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 async function listPlanos(req, res) {
     try {
         const [rows] = await pool.query(`SELECT * FROM saas_planos ORDER BY preco_mensal ASC`);
@@ -511,6 +525,7 @@ async function getMinhaConta(req, res) {
 }
 
 module.exports = {
+    listPlanosPublico,
     getSuperAdminOverview,
     getSaasFaturamento,
     getSaasIgrejas,

@@ -327,20 +327,18 @@
     let planos = PLANOS_FALLBACK;
 
     try {
-      try {
-        const planosEstaticos = await loadPlanosFromStatic();
-        if (Array.isArray(planosEstaticos) && planosEstaticos.length) {
-          planos = planosEstaticos;
+      const resp = await fetch('/api/planos', { headers: { Accept: 'application/json' } });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (Array.isArray(data) && data.length) {
+          planos = data;
         }
-      } catch (_staticError) {
-        planos = PLANOS_FALLBACK;
       }
-
-      renderPlanos(planos);
-    } catch (err) {
-      console.error(err);
-      renderPlanos(PLANOS_FALLBACK);
+    } catch (_err) {
+      // usa fallback
     }
+
+    renderPlanos(planos);
   }
 
   function assinarPlano(slug) {

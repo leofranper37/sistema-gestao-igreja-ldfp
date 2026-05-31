@@ -44,32 +44,7 @@
             <div class="form-group"><label>Crie uma Senha</label><input id="senha" type="password" placeholder="********" required></div>
             <div class="form-group">
                 <label style="margin-bottom:8px;display:block;">Escolha seu Plano</label>
-                <div class="planos-grid">
-                    <div class="plano-card" onclick="selecionarPlano('eden', this)">
-                        <span class="plano-badge">✓</span>
-                        <div class="plano-nome">🌱 Éden</div>
-                        <div class="plano-preco">Grátis</div>
-                        <div class="plano-limite">Até 30 cadastros</div>
-                    </div>
-                    <div class="plano-card" onclick="selecionarPlano('hebrom', this)">
-                        <span class="plano-badge">✓</span>
-                        <div class="plano-nome">🏕️ Hebrom</div>
-                        <div class="plano-preco">R$ 50/mês</div>
-                        <div class="plano-limite">Até 150 cadastros</div>
-                    </div>
-                    <div class="plano-card" onclick="selecionarPlano('betel', this)">
-                        <span class="plano-badge">✓</span>
-                        <div class="plano-nome">⛪ Betel</div>
-                        <div class="plano-preco">R$ 80/mês</div>
-                        <div class="plano-limite">Até 300 cadastros</div>
-                    </div>
-                    <div class="plano-card" onclick="selecionarPlano('siao', this)">
-                        <span class="plano-badge">✓</span>
-                        <div class="plano-nome">🏛️ Sião</div>
-                        <div class="plano-preco">R$ 100/mês</div>
-                        <div class="plano-limite">Até 500 cadastros</div>
-                    </div>
-                </div>
+                <div class="planos-grid" id="planos-grid"><p style="color:#888;font-size:13px;padding:8px 0;">Carregando planos...</p></div>
                 <input type="hidden" id="plano" value="">
                 <div id="planoError" style="color:#b91c1c;font-size:12px;display:none;">Selecione um plano para continuar.</div>
             </div>
@@ -196,12 +171,49 @@
             }
         }
 
+        const ICONES_PLANO = { eden: '🌱', hebrom: '🏕️', betel: '⛪', siao: '🏛️' };
+
         function selecionarPlano(slug, el) {
             document.querySelectorAll('.plano-card').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
             document.getElementById('plano').value = slug;
             document.getElementById('planoError').style.display = 'none';
         }
+
+        async function carregarPlanosForm() {
+            const grid = document.getElementById('planos-grid');
+            try {
+                const resp = await fetch('/api/planos', { headers: { Accept: 'application/json' } });
+                const planos = resp.ok ? await resp.json() : [];
+                if (!Array.isArray(planos) || !planos.length) throw new Error('vazio');
+                grid.innerHTML = planos.map(p => {
+                    const icone = ICONES_PLANO[p.slug] || '🏠';
+                    const preco = Number(p.preco_mensal) === 0
+                        ? 'Grátis'
+                        : 'R$ ' + Number(p.preco_mensal).toFixed(2).replace('.', ',') + '/mês';
+                    return `<div class="plano-card" onclick="selecionarPlano('${p.slug}', this)">
+                        <span class="plano-badge">✓</span>
+                        <div class="plano-nome">${icone} ${p.nome}</div>
+                        <div class="plano-preco">${preco}</div>
+                        <div class="plano-limite">Até ${p.max_cadastros} cadastros</div>
+                    </div>`;
+                }).join('');
+            } catch (_) {
+                grid.innerHTML = [
+                    { slug:'eden',  nome:'Éden',  icone:'🌱', preco:'Grátis',           limite:30 },
+                    { slug:'hebrom',nome:'Hebrom', icone:'🏕️', preco:'R$ 69,90/mês',    limite:150 },
+                    { slug:'betel', nome:'Betel',  icone:'⛪',  preco:'R$ 89,90/mês',    limite:300 },
+                    { slug:'siao',  nome:'Sião',   icone:'🏛️', preco:'R$ 120,90/mês',   limite:500 }
+                ].map(p => `<div class="plano-card" onclick="selecionarPlano('${p.slug}', this)">
+                    <span class="plano-badge">✓</span>
+                    <div class="plano-nome">${p.icone} ${p.nome}</div>
+                    <div class="plano-preco">${p.preco}</div>
+                    <div class="plano-limite">Até ${p.limite} cadastros</div>
+                </div>`).join('');
+            }
+        }
+
+        carregarPlanosForm();
 
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {

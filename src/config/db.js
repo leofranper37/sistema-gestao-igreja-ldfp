@@ -524,13 +524,12 @@ async function initializeDatabase() {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
         await activePgPool.query(`INSERT INTO saas_planos (slug,nome,subtitulo,preco_mensal,preco_anual,max_cadastros,max_congregacoes,modulo_app_membro,features_json) VALUES
-            ('eden','Éden','O começo de tudo',0,0,30,1,0,'["App Web (PWA)","Até 30 cadastros","1 congregação","EBD Dominical","Grupos/Células","Financeiro (com limites)","Relatórios (com limites)"]'),
             ('hebrom','Hebrom','Igrejas em formação',50,500,150,1,0,'["App Web (PWA)","Até 150 cadastros","1 congregação","EBD Dominical","Credencial de Membro","Grupos/Células","Financeiro completo","Relatórios completos","Suporte via e-mail"]'),
             ('betel','Betel','Igrejas em crescimento',80,800,300,5,1,'["App Web (PWA)","App do Membro","Até 300 cadastros","Até 5 congregações","EBD Dominical","Credencial de Membro","Grupos/Células","Financeiro completo","Relatórios completos","Suporte via WhatsApp"]'),
             ('siao','Sião','Igrejas consolidadas',100,1000,500,10,1,'["App Web (PWA)","App do Membro","Até 500 cadastros","Até 10 congregações","EBD Dominical","Credencial de Membro","Grupos/Células","Financeiro completo","Relatórios completos","Suporte via Telefone","Consultoria Contábil"]')
             ON CONFLICT (slug) DO NOTHING`);
-        await activePgPool.query(`DELETE FROM saas_planos WHERE LOWER(slug) = 'edon'`);
-        await activePgPool.query(`UPDATE igrejas SET plano = 'eden' WHERE LOWER(plano) = 'edon'`);
+        await activePgPool.query(`DELETE FROM saas_planos WHERE LOWER(slug) IN ('edon','eden')`);
+        await activePgPool.query(`UPDATE igrejas SET plano = 'hebrom' WHERE LOWER(plano) IN ('edon','eden')`);
         try { await activePgPool.query(`ALTER TABLE igrejas ADD COLUMN responsavel VARCHAR(255)`); } catch(_){}
         try { await activePgPool.query(`ALTER TABLE igrejas ADD COLUMN email_admin VARCHAR(255)`); } catch(_){}
         try { await activePgPool.query(`ALTER TABLE igrejas ADD COLUMN telefone VARCHAR(60)`); } catch(_){}
@@ -683,12 +682,11 @@ async function initializeDatabase() {
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
         await activeMysqlPool.query(`INSERT IGNORE INTO saas_planos (slug,nome,subtitulo,preco_mensal,preco_anual,max_cadastros,max_congregacoes,modulo_app_membro,features_json) VALUES
-            ('eden','Éden','O começo de tudo',0,0,30,1,0,'["App Web (PWA)","Até 30 cadastros","1 congregação","EBD Dominical","Grupos/Células","Financeiro (com limites)","Relatórios (com limites)"]'),
             ('hebrom','Hebrom','Igrejas em formação',50,500,150,1,0,'["App Web (PWA)","Até 150 cadastros","1 congregação","EBD Dominical","Credencial de Membro","Grupos/Células","Financeiro completo","Relatórios completos","Suporte via e-mail"]'),
             ('betel','Betel','Igrejas em crescimento',80,800,300,5,1,'["App Web (PWA)","App do Membro","Até 300 cadastros","Até 5 congregações","EBD Dominical","Credencial de Membro","Grupos/Células","Financeiro completo","Relatórios completos","Suporte via WhatsApp"]'),
             ('siao','Sião','Igrejas consolidadas',100,1000,500,10,1,'["App Web (PWA)","App do Membro","Até 500 cadastros","Até 10 congregações","EBD Dominical","Credencial de Membro","Grupos/Células","Financeiro completo","Relatórios completos","Suporte via Telefone","Consultoria Contábil"]')`);
-        await activeMysqlPool.query(`DELETE FROM saas_planos WHERE LOWER(slug) = 'edon'`);
-        await activeMysqlPool.query(`UPDATE igrejas SET plano = 'eden' WHERE LOWER(plano) = 'edon'`);
+        await activeMysqlPool.query(`DELETE FROM saas_planos WHERE LOWER(slug) IN ('edon','eden')`);
+        await activeMysqlPool.query(`UPDATE igrejas SET plano = 'hebrom' WHERE LOWER(plano) IN ('edon','eden')`);
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN responsavel VARCHAR(255)`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN email_admin VARCHAR(255)`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN telefone VARCHAR(60)`); } catch(_){}
@@ -931,13 +929,12 @@ async function initializeDatabase() {
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             )`);
             db.run(`INSERT OR IGNORE INTO saas_planos (slug,nome,subtitulo,preco_mensal,preco_anual,max_cadastros,max_congregacoes,modulo_app_membro,features_json) VALUES
-                ('eden','Éden','O começo de tudo',0,0,30,1,0,'["App Web (PWA)","Até 30 cadastros","1 congregação","EBD Dominical","Grupos/Células","Financeiro (com limites)","Relatórios (com limites)"]'),
                 ('hebrom','Hebrom','Igrejas em formação',50,500,150,1,0,'["App Web (PWA)","Até 150 cadastros","1 congregação","EBD Dominical","Credencial de Membro","Grupos/Células","Financeiro completo","Relatórios completos","Suporte via e-mail"]'),
                 ('betel','Betel','Igrejas em crescimento',80,800,300,5,1,'["App Web (PWA)","App do Membro","Até 300 cadastros","Até 5 congregações","EBD Dominical","Credencial de Membro","Grupos/Células","Financeiro completo","Relatórios completos","Suporte via WhatsApp"]'),
                 ('siao','Sião','Igrejas consolidadas',100,1000,500,10,1,'["App Web (PWA)","App do Membro","Até 500 cadastros","Até 10 congregações","EBD Dominical","Credencial de Membro","Grupos/Células","Financeiro completo","Relatórios completos","Suporte via Telefone","Consultoria Contábil"]')`
             );
-            db.run(`DELETE FROM saas_planos WHERE LOWER(slug) = 'edon'`);
-            db.run(`UPDATE igrejas SET plano = 'eden' WHERE LOWER(plano) = 'edon'`);
+            db.run(`DELETE FROM saas_planos WHERE LOWER(slug) IN ('edon','eden')`);
+            db.run(`UPDATE igrejas SET plano = 'hebrom' WHERE LOWER(plano) IN ('edon','eden')`);
             safeAlter('ALTER TABLE igrejas ADD COLUMN responsavel TEXT');
             safeAlter('ALTER TABLE igrejas ADD COLUMN email_admin TEXT');
             safeAlter('ALTER TABLE igrejas ADD COLUMN telefone TEXT');

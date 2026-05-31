@@ -28,7 +28,15 @@ const {
     putRetomada,
     postRetomadaCheckpoint,
     postFactoryAiSuggest,
-    postFactoryPublish
+    postFactoryPublish,
+    listNovidadesPublic,
+    listNovidadesAdmin,
+    createNovidade,
+    updateNovidade,
+    deleteNovidade,
+    listUsuariosAdmin,
+    postResetSenha,
+    listResetRequests
 } = require('../controllers/superAdminController');
 
 const router = express.Router();
@@ -81,6 +89,18 @@ router.post('/api/saas/retomada/checkpoint', ...isSuperAdmin, postRetomadaCheckp
 // Fábrica de Inovações
 router.post('/api/saas/factory/ai-suggest', ...isSuperAdmin, postFactoryAiSuggest);
 router.post('/api/saas/factory/publish', ...isSuperAdmin, postFactoryPublish);
+
+// Novidades (público: sem auth / admin: com auth)
+router.get('/api/novidades', listNovidadesPublic);
+router.get('/api/saas/novidades', ...isSuperAdmin, listNovidadesAdmin);
+router.post('/api/saas/novidades', ...isSuperAdmin, createNovidade);
+router.put('/api/saas/novidades/:id', ...isSuperAdmin, updateNovidade);
+router.delete('/api/saas/novidades/:id', ...isSuperAdmin, deleteNovidade);
+
+// Usuários e Reset de Senha
+router.get('/api/saas/usuarios', ...isSuperAdmin, listUsuariosAdmin);
+router.post('/api/saas/usuarios/reset-senha', ...isSuperAdmin, postResetSenha);
+router.get('/api/saas/reset-requests', ...isSuperAdmin, listResetRequests);
 
 // Acesso efetivo do usuário autenticado (menu/telas)
 router.get('/api/modulos/me', requireAuth, getMyEffectiveModules);

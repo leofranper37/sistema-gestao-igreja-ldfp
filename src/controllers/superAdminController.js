@@ -659,7 +659,109 @@ async function postRetomadaCheckpoint(req, res) {
         res.json({ ok: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 }
+// ── Novidades (SaaS broadcast) ───────────────────────────────────────────────
 
+async function listNovidadesPublic(req, res) {
+    try {
+        const [rows] = await pool.query(
+            `SELECT id, titulo, subtitulo, conteudo, tags, tipo, destaque, created_at
+             FROM sistema_novidades WHERE ativo = 1 ORDER BY created_at DESC LIMIT 50`
+        );
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+async function listNovidadesAdmin(req, res) {
+    try {
+        const [rows] = await pool.query(`SELECT * FROM sistema_novidades ORDER BY created_at DESC`);
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+async function createNovidade(req, res) {
+    try {
+        const { titulo, subtitulo, conteudo, tags, tipo, destaque, ativo } = req.body || {};
+        if (!titulo) return res.status(400).json({ error: 'Título é obrigatório.' });
+        const [r] = await pool.query(
+            `INSERT INTO sistema_novidades (titulo, subtitulo, conteudo, tags, tipo, destaque, ativo)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [titulo.trim(), subtitulo || null, conteudo || null, tags || null,
+             tipo || 'release', destaque ? 1 : 0, ativo === false ? 0 : 1]
+        );
+        res.status(201).json({ id: r.insertId, titulo });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+async function updateNovidade(req, res) {
+    try {
+        const id = Number(req.params.id);
+        const { titulo, subtitulo, conteudo, tags, tipo, destaque, ativo } = req.body || {};
+        await pool.query(
+            `UPDATE sistema_novidades SET titulo=?, subtitulo=?, conteudo=?, tags=?, tipo=?,
+             destaque=?, ativo=?, updated_at=CURRENT_TIMESTAMP WHERE id=?`,
+            [titulo || '', subtitulo || null, conteudo || null, tags || null,
+             tipo || 'release', destaque ? 1 : 0, ativo === false ? 0 : 1, id]
+        );
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+async function deleteNovidade(req, res) {
+    try {
+        const id = Number(req.params.id);
+        await pool.query(`DELETE FROM sistema_novidades WHERE id = ?`, [id]);
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+// ── Usuários / Reset de Senha ────────────────────────────────────────────────
+
+async function listUsuariosAdmin(req, res) {
+    try {
+        const q = String(req.query.q || '').trim();
+        let sql = `SELECT u.id, u.nome, u.email, u.role, u.igreja, u.igreja_id,
+                          i.status_assinatura, i.plano
+                   FROM usuarios u
+                   LEFT JOIN igrejas i ON i.id = u.igreja_id`;
+        const params = [];
+        if (q) {
+            sql += ` WHERE u.email LIKE ? OR u.nome LIKE ? OR u.igreja LIKE ?`;
+            params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+        }
+        sql += ` ORDER BY u.id DESC LIMIT 100`;
+        const [rows] = await pool.query(sql, params);
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+async function postResetSenha(req, res) {
+    try {
+        const bcrypt = require('bcryptjs');
+        const { email, nova_senha } = req.body || {};
+        if (!email || !nova_senha || nova_senha.length < 8) {
+            return res.status(400).json({ error: 'E-mail e nova senha (mín. 8 chars) são obrigatórios.' });
+        }
+        const emailNorm = email.toLowerCase().trim();
+        const [users] = await pool.query(`SELECT id FROM usuarios WHERE email = ? LIMIT 1`, [emailNorm]);
+        if (!users.length) return res.status(404).json({ error: 'Usuário não encontrado.' });
+        const hash = await bcrypt.hash(nova_senha, 12);
+        await pool.query(`UPDATE usuarios SET password_hash = ? WHERE email = ?`, [hash, emailNorm]);
+        await pool.query(
+            `UPDATE password_reset_requests SET status = 'resolvido', resolved_at = CURRENT_TIMESTAMP
+             WHERE email = ? AND status = 'pendente'`, [emailNorm]
+        );
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
+async function listResetRequests(req, res) {
+    try {
+        const [rows] = await pool.query(
+            `SELECT * FROM password_reset_requests ORDER BY created_at DESC LIMIT 200`
+        );
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
 // ── Fábrica de Inovações ─────────────────────────────────────────────────────
 
 async function postFactoryAiSuggest(req, res) {
@@ -810,5 +912,13 @@ module.exports = {
     putRetomada,
     postRetomadaCheckpoint,
     postFactoryAiSuggest,
-    postFactoryPublish
+    postFactoryPublish,
+    listNovidadesPublic,
+    listNovidadesAdmin,
+    createNovidade,
+    updateNovidade,
+    deleteNovidade,
+    listUsuariosAdmin,
+    postResetSenha,
+    listResetRequests
 };

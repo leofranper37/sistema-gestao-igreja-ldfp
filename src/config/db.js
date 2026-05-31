@@ -741,6 +741,28 @@ async function initializeDatabase() {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS sistema_novidades (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            titulo VARCHAR(200) NOT NULL,
+            subtitulo VARCHAR(300),
+            conteudo TEXT,
+            tags VARCHAR(500),
+            tipo VARCHAR(50) DEFAULT 'release',
+            destaque TINYINT(1) DEFAULT 0,
+            ativo TINYINT(1) DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )`);
+
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS password_reset_requests (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            email VARCHAR(200) NOT NULL,
+            nome VARCHAR(200),
+            status VARCHAR(20) DEFAULT 'pendente',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            resolved_at DATETIME
+        )`);
+
         console.log('✅ Tabelas principais verificadas/criadas no MySQL.');
         return;
     }

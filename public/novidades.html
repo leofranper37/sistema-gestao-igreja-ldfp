@@ -250,6 +250,14 @@
                 </p>
             </section>
 
+            <!-- Feed Dinâmico (gerenciado pelo admin) -->
+            <section id="dinamicFeed" style="display:none;margin-bottom:18px">
+                <h3 style="font-size:16px;font-weight:800;color:#0f172a;margin-bottom:12px">
+                    <i class="fa-solid fa-bullhorn" style="color:#2563eb"></i> Últimas Novidades
+                </h3>
+                <div id="dinamicItems" class="nv-feed"></div>
+            </section>
+
             <section class="nv-grid">
                 <article class="nv-card">
                     <h3><i class="fa-solid fa-newspaper"></i> Feed de Releases por Dominio</h3>
@@ -385,6 +393,39 @@
 <script src="enterprise-shell.js"></script>
 <script>
     requireAuthSession();
+
+    // Carrega novidades dinâmicas do admin
+    (async function() {
+        try {
+            const r = await fetch('/api/novidades');
+            if (!r.ok) return;
+            const items = await r.json();
+            if (!items.length) return;
+
+            const tipoLabel = { release:'🚀 Release', feature:'✨ Funcionalidade', fix:'🔧 Correção', melhoria:'⚡ Melhoria', aviso:'⚠️ Aviso' };
+            const tipoColor = { release:'#1d4ed8', feature:'#166534', fix:'#c2410c', melhoria:'#7e22ce', aviso:'#92400e' };
+
+            document.getElementById('dinamicFeed').style.display = '';
+            document.getElementById('dinamicItems').innerHTML = items.map(n => `
+                <div class="nv-item" style="${n.destaque ? 'border-color:#2563eb;background:#eff6ff' : ''}">
+                    <div class="nv-item-head">
+                        <span class="nv-tag" style="background:${tipoColor[n.tipo]||'#1d4ed8'}22;color:${tipoColor[n.tipo]||'#1d4ed8'}">
+                            ${tipoLabel[n.tipo] || n.tipo}
+                        </span>
+                        <span class="nv-date">${new Date(n.created_at).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <h4>${n.titulo}</h4>
+                    ${n.subtitulo ? `<p style="color:#475569;font-size:12px;margin:4px 0 0">${n.subtitulo}</p>` : ''}
+                    ${n.conteudo ? `<p style="margin-top:8px;font-size:13px;color:#334155">${n.conteudo.replace(/\n/g,'<br>')}</p>` : ''}
+                    ${n.tags ? `<div class="nv-pill-list" style="margin-top:8px">
+                        ${n.tags.split(',').map(t=>`<span class="nv-pill">${t.trim()}</span>`).join('')}
+                    </div>` : ''}
+                </div>
+            `).join('');
+        } catch(e) {
+            // Silently fallback to static content
+        }
+    })();
 </script>
 </body>
 </html>

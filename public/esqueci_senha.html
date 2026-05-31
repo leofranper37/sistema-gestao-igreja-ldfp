@@ -28,7 +28,7 @@
         </div>
 
         <h2 style="margin-bottom: 6px; font-size: 20px;">Esqueceu sua senha?</h2>
-        <p style="color:#666; font-size:13px; margin-bottom:24px;">Informe seu e-mail e enviaremos um link para redefinir sua senha.</p>
+        <p style="color:#666; font-size:13px; margin-bottom:24px;">Informe seu e-mail e o administrador redefinirá sua senha em breve.</p>
 
         <form onsubmit="return false;">
             <div class="form-group">
@@ -64,29 +64,22 @@
             btn.textContent = 'Enviando...';
 
             try {
-                const resp = await fetch('/esqueci-senha', {
+                // Registra pedido de redefinição para o admin processar
+                await fetch('/api/reset-request', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })
-                });
-
-                const data = await resp.json().catch(() => ({}));
-
-                if (!resp.ok) {
-                    msgEl.className = 'msg erro';
-                    msgEl.textContent = data.error || 'Erro ao processar a solicitação.';
-                    return;
-                }
+                }).catch(() => {});
 
                 msgEl.className = 'msg ok';
-                msgEl.textContent = data.message || 'Se este e-mail estiver cadastrado, você receberá o link em instantes.';
+                msgEl.textContent = 'Solicitação enviada! O administrador redefinirá sua senha em breve.';
                 document.getElementById('email').value = '';
             } catch (err) {
                 msgEl.className = 'msg erro';
                 msgEl.textContent = 'Erro de conexão. Tente novamente.';
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Enviar link de recuperação';
+                btn.textContent = 'Enviar solicitação';
             }
         }
 

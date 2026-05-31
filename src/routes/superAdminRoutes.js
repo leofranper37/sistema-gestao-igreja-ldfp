@@ -39,8 +39,15 @@ const {
     listResetRequests
 } = require('../controllers/superAdminController');
 
+const {
+    listarBackups,
+    detalharBackup,
+    executarBackup,
+    restaurarIgreja
+} = require('../controllers/backupController');
+
 const router = express.Router();
-const isSuperAdmin = [requireAuth, authorize(['super-admin', 'admin'])];
+const isSuperAdmin = [requireAuth, authorize(['super-admin'])];
 
 // Dashboard
 router.get('/super-admin/overview', ...isSuperAdmin, getSuperAdminOverview);
@@ -101,6 +108,12 @@ router.delete('/api/saas/novidades/:id', ...isSuperAdmin, deleteNovidade);
 router.get('/api/saas/usuarios', ...isSuperAdmin, listUsuariosAdmin);
 router.post('/api/saas/usuarios/reset-senha', ...isSuperAdmin, postResetSenha);
 router.get('/api/saas/reset-requests', ...isSuperAdmin, listResetRequests);
+
+// Backup & Recuperação de dados por igreja
+router.get('/api/saas/backups',                       ...isSuperAdmin, listarBackups);
+router.get('/api/saas/backups/:data',                 ...isSuperAdmin, detalharBackup);
+router.post('/api/saas/backups/executar',             ...isSuperAdmin, executarBackup);
+router.post('/api/saas/backups/restaurar/:igrejaId',  ...isSuperAdmin, restaurarIgreja);
 
 // Acesso efetivo do usuário autenticado (menu/telas)
 router.get('/api/modulos/me', requireAuth, getMyEffectiveModules);

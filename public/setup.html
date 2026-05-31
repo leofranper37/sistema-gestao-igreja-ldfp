@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Primeiro Acesso — LDFP Sistema</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a;font-family:system-ui,sans-serif}
+  .card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+  .logo-icon{width:44px;height:44px;border-radius:12px;background:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff}
+  h1{font-size:20px;color:#f1f5f9;font-weight:700}
+  .sub{font-size:13px;color:#64748b;margin-top:4px}
+  .notice{background:#0f2d1a;border:1px solid #166534;color:#4ade80;border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:22px;line-height:1.5}
+  label{display:block;font-size:12px;color:#94a3b8;font-weight:600;margin-bottom:6px;margin-top:16px;text-transform:uppercase;letter-spacing:.5px}
+  input{width:100%;padding:11px 14px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;font-size:14px;outline:none;transition:.2s}
+  input:focus{border-color:#3b82f6}
+  button{width:100%;margin-top:24px;padding:13px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:.2s}
+  button:hover:not(:disabled){background:#2563eb}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  #msg{margin-top:14px;font-size:13px;text-align:center;min-height:20px}
+  .ok{color:#4ade80}.err{color:#f87171}
+  .link{margin-top:20px;text-align:center}
+  .link a{color:#60a5fa;font-size:13px;text-decoration:none}
+  .done{display:none;text-align:center;padding:10px 0}
+  .done .check{font-size:48px;margin-bottom:12px}
+  .done h2{color:#4ade80;font-size:20px;margin-bottom:8px}
+  .done p{color:#94a3b8;font-size:13px;margin-bottom:20px}
+  .done a{display:inline-block;background:#1d4ed8;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">L</div>
+    <div><h1>LDFP Sistema</h1><div class="sub">Configuração do primeiro acesso</div></div>
+  </div>
+
+  <div id="formArea">
+    <div class="notice">
+      🔒 Esta página só funciona <strong>uma vez</strong>, enquanto não existe nenhum administrador cadastrado. Após criar o primeiro super-admin, ela fica desativada automaticamente.
+    </div>
+
+    <label>Nome completo</label>
+    <input id="nome" type="text" placeholder="Seu nome" autocomplete="name">
+
+    <label>E-mail</label>
+    <input id="email" type="email" placeholder="admin@exemplo.com" autocomplete="email">
+
+    <label>Senha (mínimo 8 caracteres)</label>
+    <input id="senha" type="password" placeholder="••••••••" autocomplete="new-password">
+
+    <label>Confirmar senha</label>
+    <input id="senha2" type="password" placeholder="••••••••" autocomplete="new-password">
+
+    <button id="btn" onclick="criar()">Criar administrador</button>
+    <div id="msg"></div>
+  </div>
+
+  <div class="done" id="doneArea">
+    <div class="check">✅</div>
+    <h2>Administrador criado!</h2>
+    <p>Acesse o sistema com o e-mail e senha que você cadastrou.</p>
+    <a href="login.html">Ir para o Login</a>
+  </div>
+</div>
+
+<script>
+async function criar() {
+  const nome   = document.getElementById('nome').value.trim();
+  const email  = document.getElementById('email').value.trim();
+  const senha  = document.getElementById('senha').value;
+  const senha2 = document.getElementById('senha2').value;
+  const msg    = document.getElementById('msg');
+  const btn    = document.getElementById('btn');
+
+  msg.textContent = '';
+  msg.className   = '';
+
+  if (!nome || !email || !senha) {
+    msg.textContent = 'Preencha todos os campos.';
+    msg.className = 'err';
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msg.textContent = 'E-mail inválido.';
+    msg.className = 'err';
+    return;
+  }
+  if (senha.length < 8) {
+    msg.textContent = 'A senha precisa ter pelo menos 8 caracteres.';
+    msg.className = 'err';
+    return;
+  }
+  if (senha !== senha2) {
+    msg.textContent = 'As senhas não coincidem.';
+    msg.className = 'err';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Criando...';
+
+  try {
+    const resp = await fetch('/api/firstrun/super-admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, email, senha })
+    });
+    const data = await resp.json().catch(() => ({}));
+
+    if (!resp.ok) {
+      throw new Error(data.error || 'Erro ao criar administrador.');
+    }
+
+    document.getElementById('formArea').style.display = 'none';
+    document.getElementById('doneArea').style.display  = 'block';
+
+  } catch (err) {
+    msg.textContent = err.message;
+    msg.className = 'err';
+    btn.disabled = false;
+    btn.textContent = 'Criar administrador';
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') criar(); });
+
+// Verifica se a rota ainda está disponível
+fetch('/api/firstrun/super-admin', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
+  .then(r => r.json()).then(d => {
+    if (d.error === 'Já existe um super-admin. Rota desativada.') {
+      document.getElementById('formArea').innerHTML =
+        '<p style="color:#f87171;text-align:center;padding:20px 0">Um administrador já foi criado.<br><br><a href="login.html" style="color:#60a5fa">Ir para o Login →</a></p>';
+    }
+  }).catch(() => {});
+</script>
+</body>
+</html>

@@ -203,6 +203,70 @@ if (setupRouteEnabled) {
     });
 }
 
+/* ------------------------------------------------------------------ */
+/*  ROTA DE PRIMEIRO ACESSO — cria super-admin se nenhum existir       */
+/*  Auto-desativa assim que o primeiro super-admin for criado          */
+/* ------------------------------------------------------------------ */
+app.post('/api/firstrun/super-admin', express.json(), async (req, res) => {
+    try {
+        const bcrypt = require('bcryptjs');
+        const { pool } = require('./config/db');
+
+        const [existing] = await pool.query(
+            "SELECT id FROM usuarios WHERE role = 'super-admin' LIMIT 1"
+        );
+        if (existing && existing.length > 0) {
+            return res.status(403).json({ error: 'Já existe um super-admin. Rota desativada.' });
+        }
+
+        const { nome, email, senha } = req.body || {};
+        if (!nome || !email || !senha || senha.length < 8) {
+            return res.status(400).json({ error: 'Nome, e-mail e senha (mín. 8 chars) são obrigatórios.' });
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ error: 'E-mail inválido.' });
+        }
+
+        const [dupEmail] = await pool.query(
+            'SELECT id FROM usuarios WHERE email = ? LIMIT 1', [email.toLowerCase().trim()]
+        );
+        if (dupEmail && dupEmail.length > 0) {
+            // Promove usuário existente para super-admin
+            const hash = await bcrypt.hash(senha, 12);
+            await pool.query(
+                "UPDATE usuarios SET role = 'super-admin', password_hash = ? WHERE email = ?",
+                [hash, email.toLowerCase().trim()]
+            );
+            return res.status(200).json({ message: 'Usuário promovido a super-admin com sucesso!', email: email.toLowerCase().trim() });
+        }
+
+        let igrejaId;
+        const [igRows] = await pool.query("SELECT id FROM igrejas WHERE nome = 'LDFP Master' LIMIT 1");
+        if (igRows && igRows.length > 0) {
+            igrejaId = igRows[0].id;
+        } else {
+            const [igRes] = await pool.query(
+                "INSERT INTO igrejas (nome, plano, status_assinatura, max_cadastros, max_congregacoes) VALUES ('LDFP Master', 'siao', 'ativa', 999999, 999)"
+            );
+            igrejaId = igRes.insertId;
+        }
+
+        const hash = await bcrypt.hash(senha, 12);
+        const [result] = await pool.query(
+            'INSERT INTO usuarios (igreja, igreja_id, nome, email, password_hash, role) VALUES (?, ?, ?, ?, ?, ?)',
+            ['LDFP Master', igrejaId, nome.trim(), email.toLowerCase().trim(), hash, 'super-admin']
+        );
+
+        return res.status(201).json({
+            message: 'Super-admin criado! Acesse login.html com seu e-mail e senha.',
+            id: result.insertId,
+            email: email.toLowerCase().trim()
+        });
+    } catch (err) {
+        return res.status(500).json({ error: 'Erro interno: ' + err.message });
+    }
+});
+
 app.use((req, res, next) => {
     next(createHttpError(404, 'Rota não encontrada.'));
 });

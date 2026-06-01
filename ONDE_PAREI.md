@@ -8,10 +8,10 @@
 ## 🗓️ Última atualização: 01/06/2026
 
 ## ✅ Último commit enviado
-- **Hash:** `2308c18`
+- **Hash:** `14f297e`
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `feat: onboarding guiado 3 passos (igreja/logo -> membros -> caixa)`
+- **Mensagem:** `feat: Item 6 - Relatório por membro`
 
 ---
 
@@ -34,7 +34,9 @@
 | Relatório financeiro exportável | `GET /api/saas/relatorio-financeiro?mes=YYYY-MM[&formato=csv]` + `public/admin-relatorio-financeiro.html` — KPIs + tabela + botão Exportar CSV | `95d1c6d` |
 | Tela de novidades para membros | Painel `#panel-novidades` + botão na bottom-nav + `loadNovidades()` em `app_membro_v2.html` | `95d1c6d` |
 | Sistema de onboarding guiado | `public/onboarding.html` — wizard 3 passos; 3 rotas em `accountRoutes.js`; redirect automático no `dashboard.html` | `2308c18` |
-| **Web Push Notifications** | `src/routes/pushRoutes.js` — VAPID auto-gerado via `sistema_config`, endpoints subscribe/unsubscribe/send; `push_subscriptions` no DB; banner "Ativar notificações" em `app_membro_v2.html`; `public/admin-push.html` | pendente |
+| **Web Push Notifications** | `src/routes/pushRoutes.js` — VAPID auto-gerado via `sistema_config`, endpoints subscribe/unsubscribe/send; `push_subscriptions` no DB; banner "Ativar notificações" em `app_membro_v2.html`; `public/admin-push.html` | `9c4c8d1` |
+| **Multi-Congregação (painel)** | `GET /congregacoes/painel` (retorna filiais + limite plano + disponível); reescrita de `public/congregacoes.html` — KPI cards, barra de uso do plano, card-grid para cada filial, CRUD modal conectado à API real | `2375419` |
+| **Relatório por membro** | `GET /api/membros/:id/relatorio` — perfil, histórico de dízimos/ofertas, KPIs, gráfico mensal CSS, export CSV; `public/relatorio-membro.html`; botão "Relatório" em `membros.html` | `14f297e` |
 
 ---
 
@@ -50,8 +52,7 @@ cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
 
 ## 🏗️ Backlog — próximas funcionalidades (em ordem de prioridade)
 
-- [ ] **Item 6 — Relatório por membro** — histórico de dízimos, batismo, escala, grupos
-- [ ] **Item 7 — Multi-congregáção** — painel para igrejas com múltiplas filiais
+*(backlog concluído — próximo item a definir)*
 
 ---
 

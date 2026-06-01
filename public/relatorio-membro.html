@@ -344,16 +344,31 @@
                 </div>
             </div>
 
-            <!-- Batismos — módulo não integrado ainda -->
+            <!-- Batismos -->
             <div class="sect-header" id="batismosSect" style="display:none;">
                 <i class="fa-solid fa-water" style="color:#0ea5e9;"></i>
                 <h3>Batismos</h3>
                 <div class="sect-sep-line"></div>
             </div>
-            <div class="coming-soon" id="batismosInfo" style="display:none;">
-                <i class="fa-solid fa-water"></i>
-                Módulo de batismos em integração — dados serão exibidos em breve.
+            <div id="batismosInfo" style="display:none;">
+                <div class="table-wrapper">
+                    <table class="info-table" id="batismosTable">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Local</th>
+                                <th>Pastor</th>
+                                <th>Status candidato</th>
+                            </tr>
+                        </thead>
+                        <tbody id="batismosTbody">
+                            <tr><td colspan="5" class="empty-table">Nenhum registro.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
 
             <!-- Escalas — módulo não integrado ainda -->
             <div class="sect-header" id="escalasSect" style="display:none;">
@@ -517,8 +532,23 @@
             }).join('');
         }
 
+        function renderBatismos(items) {
+            if (!items || !items.length) return;
+            $('batismosSect').style.display = '';
+            $('batismosInfo').style.display = '';
+            const statusClass = s => s === 'Confirmado' ? 'tipo-dizimo' : s === 'Desistiu' ? 'tipo-outro' : 'tipo-oferta';
+            $('batismosTbody').innerHTML = items.map(b => `
+                <tr>
+                    <td>${escHtml(fmtDate(b.data_batismo) || '—')}</td>
+                    <td>${escHtml(b.descricao || '—')}</td>
+                    <td>${escHtml(b.local_batismo || '—')}</td>
+                    <td>${escHtml(b.pastor || '—')}</td>
+                    <td><span class="tipo-badge ${statusClass(b.status_candidato)}">${escHtml(b.status_candidato || 'Pendente')}</span></td>
+                </tr>`).join('');
+        }
+
         function showSections() {
-            ['batismosSect','batismosInfo','escalasSect','escalasInfo','gruposSect','gruposInfo']
+            ['escalasSect','escalasInfo','gruposSect','gruposInfo']
                 .forEach(id => $(`${id}`).style.display = '');
         }
 
@@ -563,12 +593,13 @@
                     throw new Error(d.message || `Erro ${resp.status}`);
                 }
                 const data = await resp.json();
-                const { membro, dizimos } = data;
+                const { membro, dizimos, batismos } = data;
 
                 renderProfile(membro);
                 renderKPIs(dizimos.totais);
                 renderBarChart(dizimos.resumo_mensal);
                 renderDizimos(dizimos.items);
+                renderBatismos(batismos || []);
                 showSections();
 
                 // Atualiza título da aba

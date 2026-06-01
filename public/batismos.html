@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -452,11 +452,11 @@
 <main class="main-content enterprise-main">
 <div class="page-wrap">
 
-    <!-- Cabeçalho -->
+    <!-- CabeÃ§alho -->
     <div class="page-header">
         <div class="page-header-left">
             <h2><i class="fa-solid fa-water"></i> Batismos</h2>
-            <p>Gerencie cerimônias de batismo e candidatos</p>
+            <p>Gerencie cerimÃ´nias de batismo e candidatos</p>
         </div>
         <div class="header-actions">
             <button class="btn btn-ghost btn-sm" id="btnRecarregar">
@@ -468,14 +468,14 @@
         </div>
     </div>
 
-    <!-- Dois painéis -->
+    <!-- Dois painÃ©is -->
     <div class="two-col">
 
         <!-- Painel esquerdo: lista -->
         <div class="panel">
             <div class="panel-header">
                 <div class="panel-title">
-                    <span><i class="fa-solid fa-list"></i> Cerimônias</span>
+                    <span><i class="fa-solid fa-list"></i> CerimÃ´nias</span>
                     <span class="panel-count" id="countBatismos">0</span>
                 </div>
                 <div class="search-box">
@@ -485,7 +485,7 @@
                 <div class="filtros">
                     <select id="filterStatus">
                         <option value="">Todos os status</option>
-                        <option value="Não">Em aberto</option>
+                        <option value="NÃ£o">Em aberto</option>
                         <option value="Sim">Encerrados</option>
                     </select>
                 </div>
@@ -544,7 +544,7 @@
                         <i class="fa-solid fa-users"></i> Candidatos
                     </button>
                     <button class="tab-btn" data-tab="tabObs">
-                        <i class="fa-solid fa-note-sticky"></i> Observações
+                        <i class="fa-solid fa-note-sticky"></i> ObservaÃ§Ãµes
                     </button>
                 </div>
 
@@ -554,56 +554,56 @@
                 <div class="tab-panel active" id="tabDados">
                     <form name="batForm">
                         <div class="form-section">
-                            <div class="section-title">Informações da cerimônia</div>
+                            <div class="section-title">InformaÃ§Ãµes da cerimÃ´nia</div>
                             <div class="form-grid g2">
                                 <div class="field" style="grid-column:span 2;">
-                                    <label>Descrição</label>
-                                    <input type="text" name="descricao" placeholder="Ex: Batismo 1º Semestre 2026">
+                                    <label>DescriÃ§Ã£o</label>
+                                    <input type="text" name="descricao" placeholder="Ex: Batismo 1Âº Semestre 2026">
                                 </div>
                                 <div class="field">
                                     <label>Data do Batismo</label>
                                     <input type="date" name="dataBatismo">
                                 </div>
                                 <div class="field">
-                                    <label>Horário</label>
+                                    <label>HorÃ¡rio</label>
                                     <input type="time" name="horario">
                                 </div>
                                 <div class="field">
                                     <label>Local</label>
-                                    <input type="text" name="localBatismo" placeholder="Local da cerimônia">
+                                    <input type="text" name="localBatismo" placeholder="Local da cerimÃ´nia">
                                 </div>
                                 <div class="field">
-                                    <label>Pastor Responsável</label>
+                                    <label>Pastor ResponsÃ¡vel</label>
                                     <input type="text" name="pastor" placeholder="Nome do pastor">
                                 </div>
                                 <div class="field">
-                                    <label>Situação</label>
+                                    <label>SituaÃ§Ã£o</label>
                                     <select name="encerrado">
-                                        <option value="Não">Em aberto</option>
+                                        <option value="NÃ£o">Em aberto</option>
                                         <option value="Sim">Encerrado</option>
                                     </select>
                                 </div>
                                 <div class="field">
-                                    <label>Congregação</label>
-                                    <input type="text" name="congregacao" placeholder="Congregação">
+                                    <label>CongregaÃ§Ã£o</label>
+                                    <input type="text" name="congregacao" placeholder="CongregaÃ§Ã£o">
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-section">
-                            <div class="section-title">Aula pré-batismal</div>
+                            <div class="section-title">Aula prÃ©-batismal</div>
                             <div class="form-grid g3">
                                 <div class="field">
                                     <label>Data da aula</label>
                                     <input type="date" name="dataAula">
                                 </div>
                                 <div class="field">
-                                    <label>Professor / Responsável</label>
-                                    <input type="text" name="professorAula" placeholder="Nome do responsável">
+                                    <label>Professor / ResponsÃ¡vel</label>
+                                    <input type="text" name="professorAula" placeholder="Nome do responsÃ¡vel">
                                 </div>
                                 <div class="field">
                                     <label>Local da aula</label>
-                                    <input type="text" name="localAula" placeholder="Sala ou endereço">
+                                    <input type="text" name="localAula" placeholder="Sala ou endereÃ§o">
                                 </div>
                             </div>
                         </div>
@@ -660,7 +660,7 @@
                                     <th>Nome</th>
                                     <th>Telefone</th>
                                     <th>Status</th>
-                                    <th>Ações</th>
+                                    <th>AÃ§Ãµes</th>
                                 </tr>
                             </thead>
                             <tbody id="candidatosBody">
@@ -674,29 +674,29 @@
                     </div>
                 </div>
 
-                <!-- Aba Observações -->
+                <!-- Aba ObservaÃ§Ãµes -->
                 <div class="tab-panel" id="tabObs">
                     <form name="batForm">
                         <div class="form-section">
-                            <div class="section-title">Observações gerais</div>
+                            <div class="section-title">ObservaÃ§Ãµes gerais</div>
                             <div class="field">
-                                <label>Observações</label>
-                                <textarea name="obs" rows="5" placeholder="Observações sobre a cerimônia..."></textarea>
+                                <label>ObservaÃ§Ãµes</label>
+                                <textarea name="obs" rows="5" placeholder="ObservaÃ§Ãµes sobre a cerimÃ´nia..."></textarea>
                             </div>
                         </div>
                         <div class="form-section">
-                            <div class="section-title">Registros pós-cerimônia</div>
+                            <div class="section-title">Registros pÃ³s-cerimÃ´nia</div>
                             <div class="form-grid g2">
                                 <div class="field">
                                     <label>Total de batizados</label>
                                     <input type="number" name="totalBatizados" min="0" placeholder="0">
                                 </div>
                                 <div class="field">
-                                    <label>Fotógrafo / Responsável mídia</label>
+                                    <label>FotÃ³grafo / ResponsÃ¡vel mÃ­dia</label>
                                     <input type="text" name="fotografo" placeholder="Nome">
                                 </div>
                                 <div class="field" style="grid-column:span 2;">
-                                    <label>Link de fotos / vídeo</label>
+                                    <label>Link de fotos / vÃ­deo</label>
                                     <input type="url" name="linkMidia" placeholder="https://...">
                                 </div>
                             </div>
@@ -704,7 +704,7 @@
                     </form>
                     <div class="form-actions">
                         <button class="btn btn-primary" id="btnSalvarObs">
-                            <i class="fa-solid fa-floppy-disk"></i> Salvar observações
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar observaÃ§Ãµes
                         </button>
                     </div>
                 </div>
@@ -721,52 +721,46 @@
 <script>
     requireAuthSession();
 
-    const STORAGE_KEY = 'ldfpBaptisms';
-
     const $ = id => document.getElementById(id);
 
-    const makeId = () =>
-        window.crypto?.randomUUID?.() || String(Date.now() + Math.random());
-
-    const readBatismos  = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    const writeBatismos = list => localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-
-    let batismos   = readBatismos();
-    let selecionado = null;
-    let filtroTexto = '';
+    let batismos     = [];
+    let batismoAtual = null;   // full object with candidatos
+    let filtroTexto  = '';
     let filtroStatus = '';
+    let searchTimer  = null;
 
-    /* ── Helpers ── */
+    /* â”€â”€ API helper â”€â”€ */
+    const api = (url, opts = {}) => fetch(url, {
+        headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+        ...opts,
+    }).then(async r => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.message || `Erro ${r.status}`);
+        return data;
+    });
+
     const fmtDate = iso => {
         if (!iso) return '-';
-        const [y, m, d] = iso.split('-');
+        const [y, m, d] = String(iso).slice(0, 10).split('-');
         return `${d}/${m}/${y}`;
     };
 
-    const countCandidatos = bat => {
-        const c = bat.candidatos || [];
-        return {
-            total:     c.length,
-            confirm:   c.filter(x => x.status === 'Confirmado').length,
-            pendente:  c.filter(x => x.status === 'Pendente').length,
-            desistiu:  c.filter(x => x.status === 'Desistiu').length,
-        };
-    };
-
-    /* ── Render lista ── */
-    const renderLista = () => {
-        const lista = batismos
-            .filter(b => {
-                const txt = (b.descricao + ' ' + (b.pastor || '') + ' ' + (b.localBatismo || '')).toLowerCase();
-                const okTxt = !filtroTexto || txt.includes(filtroTexto);
-                const okSt  = !filtroStatus || b.encerrado === filtroStatus;
-                return okTxt && okSt;
-            })
-            .sort((a, b) => (b.dataBatismo || '').localeCompare(a.dataBatismo || ''));
-
-        $('countBatismos').textContent = lista.length;
-
-        if (!lista.length) {
+    /* â”€â”€ Load lista â”€â”€ */
+    async function loadBatismos() {
+        try {
+            const q = filtroTexto ? `&q=${encodeURIComponent(filtroTexto)}` : '';
+            const s = filtroStatus ? `&encerrado=${encodeURIComponent(filtroStatus)}` : '';
+            const data = await api(`/api/batismos?limit=200${q}${s}`);
+            batismos = data.items || [];
+            $('countBatismos').textContent = data.total ?? batismos.length;
+            renderLista();
+        } catch (e) {
+            setStatus(e.message, true);
+        }
+    }
+    /* â”€â”€ Render lista â”€â”€ */
+    function renderLista() {
+        if (!batismos.length) {
             $('batList').innerHTML = `
                 <div class="empty-list">
                     <i class="fa-solid fa-water"></i>
@@ -774,22 +768,21 @@
                 </div>`;
             return;
         }
-
-        $('batList').innerHTML = lista.map(b => {
-            const enc = b.encerrado === 'Sim';
-            const cnt = countCandidatos(b);
+        $('batList').innerHTML = batismos.map(b => {
+            const enc   = b.encerrado === 'Sim';
+            const total = Number(b.total_candidatos) || 0;
             return `
-                <div class="bat-item ${b.id === selecionado ? 'is-active' : ''}"
+                <div class="bat-item ${b.id === batismoAtual?.id ? 'is-active' : ''}"
                      data-id="${b.id}">
                     <div class="bat-icon ${enc ? 'encerrado' : ''}">
                         <i class="fa-solid fa-water"></i>
                     </div>
                     <div class="bat-info">
-                        <div class="bat-name">${b.descricao || 'Sem descrição'}</div>
+                        <div class="bat-name">${b.descricao || 'Sem descriÃ§Ã£o'}</div>
                         <div class="bat-sub">
-                            ${fmtDate(b.dataBatismo)}
-                            ${b.pastor ? '· ' + b.pastor : ''}
-                            · ${cnt.total} candidato${cnt.total !== 1 ? 's' : ''}
+                            ${fmtDate(b.data_batismo)}
+                            ${b.pastor ? 'Â· ' + b.pastor : ''}
+                            Â· ${total} candidato${total !== 1 ? 's' : ''}
                         </div>
                     </div>
                     <span class="bat-badge ${enc ? 'badge-encerrado' : 'badge-aberto'}">
@@ -799,33 +792,35 @@
         }).join('');
 
         $('batList').querySelectorAll('.bat-item').forEach(el => {
-            el.addEventListener('click', () => selecionarBatismo(el.dataset.id));
+            el.addEventListener('click', () => selecionarBatismo(Number(el.dataset.id)));
         });
-    };
+    }
 
-    /* ── Hero ── */
+    /* â”€â”€ Hero â”€â”€ */
     const updateHero = bat => {
         if (!bat) {
-            $('heroName').textContent = 'Novo Batismo';
-            $('heroSub').textContent  = 'Preencha os dados e salve';
-            $('heroTotal').textContent   = '0';
-            $('heroConfirm').textContent = '0';
-            $('heroPend').textContent    = '0';
+            $('heroName').textContent     = 'Novo Batismo';
+            $('heroSub').textContent      = 'Preencha os dados e salve';
+            $('heroTotal').textContent    = '0';
+            $('heroConfirm').textContent  = '0';
+            $('heroPend').textContent     = '0';
             $('batHero').style.background = 'linear-gradient(135deg, #0284c7, #0ea5e9)';
             return;
         }
-        const cnt = countCandidatos(bat);
-        $('heroName').textContent    = bat.descricao || 'Batismo';
-        $('heroSub').textContent     = `${fmtDate(bat.dataBatismo)}${bat.localBatismo ? ' · ' + bat.localBatismo : ''}${bat.pastor ? ' · ' + bat.pastor : ''}`;
-        $('heroTotal').textContent   = cnt.total;
-        $('heroConfirm').textContent = cnt.confirm;
-        $('heroPend').textContent    = cnt.pendente;
+        const cands   = bat.candidatos || [];
+        const confirm = cands.filter(c => c.status === 'Confirmado').length;
+        const pend    = cands.filter(c => c.status === 'Pendente').length;
+        $('heroName').textContent     = bat.descricao || 'Batismo';
+        $('heroSub').textContent      = `${fmtDate(bat.data_batismo)}${bat.local_batismo ? ' Â· ' + bat.local_batismo : ''}${bat.pastor ? ' Â· ' + bat.pastor : ''}`;
+        $('heroTotal').textContent    = cands.length;
+        $('heroConfirm').textContent  = confirm;
+        $('heroPend').textContent     = pend;
         $('batHero').style.background = bat.encerrado === 'Sim'
             ? 'linear-gradient(135deg, #64748b, #94a3b8)'
             : 'linear-gradient(135deg, #0284c7, #0ea5e9)';
     };
 
-    /* ── Preencher form ── */
+    /* â”€â”€ Preencher form â”€â”€ */
     const preencherForm = bat => {
         const setVal = (name, val) => {
             const el = document.querySelector(`[name="${name}"]`);
@@ -834,28 +829,29 @@
         if (!bat) {
             document.querySelectorAll('form[name="batForm"] [name]').forEach(el => el.value = '');
             const enc = document.querySelector('[name="encerrado"]');
-            if (enc) enc.value = 'Não';
+            if (enc) enc.value = 'NÃ£o';
             renderCandidatos(null);
             return;
         }
+        // snake_case API â†’ camelCase form names
         setVal('descricao',      bat.descricao);
-        setVal('dataBatismo',    bat.dataBatismo);
+        setVal('dataBatismo',    bat.data_batismo);
         setVal('horario',        bat.horario);
-        setVal('localBatismo',   bat.localBatismo);
+        setVal('localBatismo',   bat.local_batismo);
         setVal('pastor',         bat.pastor);
-        setVal('encerrado',      bat.encerrado || 'Não');
+        setVal('encerrado',      bat.encerrado || 'NÃ£o');
         setVal('congregacao',    bat.congregacao);
-        setVal('dataAula',       bat.dataAula);
-        setVal('professorAula',  bat.professorAula);
-        setVal('localAula',      bat.localAula);
+        setVal('dataAula',       bat.data_aula);
+        setVal('professorAula',  bat.professor_aula);
+        setVal('localAula',      bat.local_aula);
         setVal('obs',            bat.obs);
-        setVal('totalBatizados', bat.totalBatizados);
+        setVal('totalBatizados', bat.total_batizados);
         setVal('fotografo',      bat.fotografo);
-        setVal('linkMidia',      bat.linkMidia);
+        setVal('linkMidia',      bat.link_midia);
         renderCandidatos(bat);
     };
 
-    /* ── Candidatos ── */
+    /* â”€â”€ Candidatos â”€â”€ */
     const renderCandidatos = bat => {
         const tbody = $('candidatosBody');
         if (!bat || !bat.candidatos?.length) {
@@ -864,155 +860,165 @@
             </td></tr>`;
             return;
         }
-        tbody.innerHTML = bat.candidatos.map((c, i) => `
+        const statusOpts = ['Pendente', 'Confirmado', 'Desistiu'];
+        tbody.innerHTML = bat.candidatos.map(c => `
             <tr>
                 <td>${c.nome || '-'}</td>
                 <td>${c.telefone || '-'}</td>
                 <td>
-                    <span class="cand-badge cand-${c.status?.toLowerCase() || 'pendente'}">
-                        ${c.status || 'Pendente'}
-                    </span>
+                    <select class="cand-status-sel" data-cid="${c.id}">
+                        ${statusOpts.map(s => `<option value="${s}" ${c.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                    </select>
                 </td>
                 <td>
-                    <button class="btn btn-ghost btn-sm btn-rm-cand" data-idx="${i}">
+                    <button class="btn btn-ghost btn-sm btn-rm-cand" data-cid="${c.id}">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </td>
             </tr>
         `).join('');
 
+        tbody.querySelectorAll('.cand-status-sel').forEach(sel => {
+            sel.addEventListener('change', async () => {
+                if (!batismoAtual) return;
+                try {
+                    await api(`/api/batismos/${batismoAtual.id}/candidatos/${sel.dataset.cid}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ status: sel.value }),
+                    });
+                    await recarregarSelecionado();
+                } catch (e) { setStatus(e.message, true); }
+            });
+        });
+
         tbody.querySelectorAll('.btn-rm-cand').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const bat = batismos.find(b => b.id === selecionado);
-                if (!bat) return;
-                bat.candidatos.splice(Number(btn.dataset.idx), 1);
-                writeBatismos(batismos);
-                renderCandidatos(bat);
-                updateHero(bat);
-                renderLista();
+            btn.addEventListener('click', async () => {
+                if (!batismoAtual) return;
+                if (!confirm('Remover este candidato?')) return;
+                try {
+                    await api(`/api/batismos/${batismoAtual.id}/candidatos/${btn.dataset.cid}`, { method: 'DELETE' });
+                    await recarregarSelecionado();
+                    setStatus('Candidato removido.');
+                } catch (e) { setStatus(e.message, true); }
             });
         });
     };
 
-    /* ── Selecionar ── */
-    const selecionarBatismo = id => {
-        selecionado = id;
-        const bat = batismos.find(b => b.id === id);
-        updateHero(bat);
-        preencherForm(bat);
-        setStatus('');
-        renderLista();
+    /* â”€â”€ Selecionar â”€â”€ */
+    const selecionarBatismo = async id => {
+        try {
+            batismoAtual = await api(`/api/batismos/${id}`);
+            updateHero(batismoAtual);
+            preencherForm(batismoAtual);
+            setStatus('');
+            renderLista();
+        } catch (e) { setStatus(e.message, true); }
     };
 
-    /* ── Status ── */
+    const recarregarSelecionado = async () => {
+        if (!batismoAtual) return;
+        batismoAtual = await api(`/api/batismos/${batismoAtual.id}`);
+        updateHero(batismoAtual);
+        preencherForm(batismoAtual);
+        await loadBatismos();
+    };
+
+    /* â”€â”€ Status â”€â”€ */
     const setStatus = (msg, err) => {
         const el = $('statusMsg');
         el.textContent = msg || '';
         el.className = 'status-msg' + (err ? ' error' : '');
     };
 
-    /* ── Coletar form ── */
+    /* â”€â”€ Coletar form â”€â”€ */
     const getPayload = () => {
         const get = name => {
             const el = document.querySelector(`[name="${name}"]`);
             return el ? el.value.trim() : '';
         };
+        // camelCase form names â†’ snake_case API fields
         return {
             descricao:      get('descricao'),
-            dataBatismo:    get('dataBatismo'),
-            horario:        get('horario'),
-            localBatismo:   get('localBatismo'),
-            pastor:         get('pastor'),
-            encerrado:      get('encerrado') || 'Não',
-            congregacao:    get('congregacao'),
-            dataAula:       get('dataAula'),
-            professorAula:  get('professorAula'),
-            localAula:      get('localAula'),
-            obs:            get('obs'),
-            totalBatizados: get('totalBatizados'),
-            fotografo:      get('fotografo'),
-            linkMidia:      get('linkMidia'),
+            data_batismo:   get('dataBatismo')    || null,
+            horario:        get('horario')         || null,
+            local_batismo:  get('localBatismo')    || null,
+            pastor:         get('pastor')          || null,
+            encerrado:      get('encerrado')       || 'NÃ£o',
+            congregacao:    get('congregacao')     || null,
+            data_aula:      get('dataAula')        || null,
+            professor_aula: get('professorAula')   || null,
+            local_aula:     get('localAula')       || null,
+            obs:            get('obs')             || null,
+            total_batizados: Number(get('totalBatizados')) || 0,
+            fotografo:      get('fotografo')       || null,
+            link_midia:     get('linkMidia')       || null,
         };
     };
 
-    /* ── Salvar ── */
-    const salvar = () => {
+    /* â”€â”€ Salvar â”€â”€ */
+    const salvar = async () => {
         setStatus('');
         const payload = getPayload();
-        if (!payload.descricao) { setStatus('Informe a descrição do batismo.', true); return; }
-
-        if (selecionado) {
-            const idx = batismos.findIndex(b => b.id === selecionado);
-            if (idx >= 0) {
-                batismos[idx] = {
-                    ...batismos[idx],
-                    ...payload,
-                    updatedAt: new Date().toISOString()
-                };
+        if (!payload.descricao) { setStatus('Informe a descriÃ§Ã£o do batismo.', true); return; }
+        try {
+            if (batismoAtual?.id) {
+                batismoAtual = await api(`/api/batismos/${batismoAtual.id}`, {
+                    method: 'PUT', body: JSON.stringify(payload),
+                });
+            } else {
+                batismoAtual = await api('/api/batismos', {
+                    method: 'POST', body: JSON.stringify(payload),
+                });
             }
-        } else {
-            const novo = {
-                id: makeId(),
-                ...payload,
-                candidatos: [],
-                createdAt: new Date().toISOString()
-            };
-            batismos.push(novo);
-            selecionado = novo.id;
-        }
-        writeBatismos(batismos);
-        setStatus('Batismo salvo com sucesso!');
-        const bat = batismos.find(b => b.id === selecionado);
-        updateHero(bat);
-        renderLista();
+            await loadBatismos();
+            updateHero(batismoAtual);
+            preencherForm(batismoAtual);
+            setStatus('Batismo salvo com sucesso!');
+        } catch (e) { setStatus(e.message, true); }
     };
 
-    /* ── Excluir ── */
-    const excluir = () => {
-        if (!selecionado) { setStatus('Selecione um batismo para excluir.', true); return; }
-        const bat = batismos.find(b => b.id === selecionado);
-        if (!confirm(`Excluir o batismo "${bat?.descricao}"? Esta ação não pode ser desfeita.`)) return;
-        batismos = batismos.filter(b => b.id !== selecionado);
-        writeBatismos(batismos);
-        selecionado = null;
-        limpar();
-        setStatus('Batismo excluído.');
-        renderLista();
+    /* â”€â”€ Excluir â”€â”€ */
+    const excluir = async () => {
+        if (!batismoAtual?.id) { setStatus('Selecione um batismo para excluir.', true); return; }
+        if (!confirm(`Excluir o batismo "${batismoAtual.descricao}"? Esta aÃ§Ã£o nÃ£o pode ser desfeita.`)) return;
+        try {
+            await api(`/api/batismos/${batismoAtual.id}`, { method: 'DELETE' });
+            batismoAtual = null;
+            limpar();
+            setStatus('Batismo excluÃ­do.');
+            await loadBatismos();
+        } catch (e) { setStatus(e.message, true); }
     };
 
-    /* ── Limpar ── */
+    /* â”€â”€ Limpar â”€â”€ */
     const limpar = () => {
-        selecionado = null;
+        batismoAtual = null;
         preencherForm(null);
         updateHero(null);
         setStatus('');
         renderLista();
     };
 
-    /* ── Adicionar candidato ── */
-    $('btnAddCandidato').addEventListener('click', () => {
-        if (!selecionado) { setStatus('Salve o batismo antes de adicionar candidatos.', true); return; }
+    /* â”€â”€ Adicionar candidato â”€â”€ */
+    $('btnAddCandidato').addEventListener('click', async () => {
+        if (!batismoAtual?.id) { setStatus('Salve o batismo antes de adicionar candidatos.', true); return; }
         const nome   = $('candNome').value.trim();
         const status = $('candStatus').value;
         const tel    = $('candTel').value.trim();
-        const membro = $('candMembro').value.trim();
         if (!nome) { setStatus('Informe o nome do candidato.', true); return; }
-
-        const bat = batismos.find(b => b.id === selecionado);
-        if (!bat) return;
-        bat.candidatos = bat.candidatos || [];
-        bat.candidatos.push({ nome, status, telefone: tel, membro });
-        writeBatismos(batismos);
-        $('candNome').value = '';
-        $('candTel').value  = '';
-        $('candMembro').value = '';
-        renderCandidatos(bat);
-        updateHero(bat);
-        renderLista();
-        setStatus('Candidato adicionado!');
+        try {
+            await api(`/api/batismos/${batismoAtual.id}/candidatos`, {
+                method: 'POST',
+                body: JSON.stringify({ nome, status, telefone: tel || null }),
+            });
+            $('candNome').value = '';
+            $('candTel').value  = '';
+            await recarregarSelecionado();
+            setStatus('Candidato adicionado!');
+        } catch (e) { setStatus(e.message, true); }
     });
 
-    /* ── Eventos ── */
+    /* â”€â”€ Eventos â”€â”€ */
     $('btnNovoBatismo').addEventListener('click', limpar);
     $('btnLimpar').addEventListener('click', limpar);
     $('btnSalvar').addEventListener('click', salvar);
@@ -1020,15 +1026,16 @@
     $('btnSalvarObs').addEventListener('click', salvar);
     $('btnExcluir').addEventListener('click', excluir);
     $('btnExcluirHero').addEventListener('click', excluir);
-    $('btnRecarregar').addEventListener('click', () => { batismos = readBatismos(); renderLista(); });
+    $('btnRecarregar').addEventListener('click', loadBatismos);
 
     $('searchInput').addEventListener('input', e => {
         filtroTexto = e.target.value.toLowerCase().trim();
-        renderLista();
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(loadBatismos, 400);
     });
     $('filterStatus').addEventListener('change', e => {
         filtroStatus = e.target.value;
-        renderLista();
+        loadBatismos();
     });
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1040,8 +1047,8 @@
         });
     });
 
-    /* ── Init ── */
-    renderLista();
+    /* â”€â”€ Init â”€â”€ */
+    loadBatismos();
     updateHero(null);
 </script>
 </body>

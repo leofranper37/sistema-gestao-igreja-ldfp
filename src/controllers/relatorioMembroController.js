@@ -62,6 +62,28 @@ async function getRelatorioMembro(req, res) {
         b.competencia.localeCompare(a.competencia)
     );
 
+    // 4. Batismos em que o membro é candidato
+    let batismosRows = [];
+    try {
+        const fmtD = d => {
+            if (!d) return null;
+            if (d instanceof Date) return d.toISOString().slice(0, 10);
+            return String(d).slice(0, 10);
+        };
+        const [rows] = await pool.query(
+            `SELECT b.descricao, b.data_batismo, b.local_batismo, b.pastor, b.encerrado,
+                    c.status AS status_candidato, c.created_at AS data_inscricao
+             FROM batismo_candidatos c
+             JOIN batismos b ON b.id = c.batismo_id
+             WHERE c.igreja_id = ? AND (c.membro_id = ? OR c.nome = ?)
+             ORDER BY b.data_batismo DESC LIMIT 50`,
+            [igrejaId, membroId, membro.nome]
+        );
+        batismosRows = rows.map(r => ({ ...r, data_batismo: fmtD(r.data_batismo) }));
+    } catch (_) {
+        // tabela ainda não existe — ignora silenciosamente
+    }
+
     return res.json({
         membro,
         dizimos: {
@@ -73,7 +95,8 @@ async function getRelatorioMembro(req, res) {
                 ultima_contribuicao: ultimaContribuicao
             },
             resumo_mensal: resumoMensal
-        }
+        },
+        batismos: batismosRows
     });
 }
 

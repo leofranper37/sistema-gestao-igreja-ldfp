@@ -5,13 +5,13 @@
 
 ---
 
-## 🗓️ Última atualização: 31/05/2026
+## 🗓️ Última atualização: 01/06/2026
 
 ## ✅ Último commit enviado
-- **Hash:** `fed8ef9`
+- **Hash:** `(pendente — a enviar)`
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `feat: pagina admin-metricas.html com KPIs MRR, churn, ARPU e graficos de barras CSS`
+- **Mensagem:** `feat: item 3 novidades para membros no app_membro_v2.html`
 
 ---
 
@@ -31,13 +31,15 @@
 | Backend métricas SaaS | `GET /api/saas/metricas` — MRR, churn, ARPU, crescimento, receita mensal | `d4b704f` |
 | Página admin-metricas.html | `public/admin-metricas.html` — KPIs + 3 gráficos de barras CSS | `fed8ef9` |
 | Link Métricas SaaS no sidebar | Adicionado em `super-admin.html`, `admin-igrejas.html`, `admin-assinaturas.html`, `admin-modulos.html` | `fed8ef9` |
+| Relatório financeiro exportável | `GET /api/saas/relatorio-financeiro?mes=YYYY-MM[&formato=csv]` + `public/admin-relatorio-financeiro.html` — KPIs + tabela + botão Exportar CSV; link adicionado no sidebar de todas as páginas admin | `(pendente)` |
+| Tela de novidades para membros | Painel `#panel-novidades` + botão na bottom-nav + `loadNovidades()` em `app_membro_v2.html`; consome `GET /api/novidades` pública | `(pendente)` |
 
 ---
 
 ## ⚙️ Servidor (cPanel) — estado atual
 
 - **Último `git pull` no servidor:** 31/05/2026 (incluiu commits até `d4b704f`)
-- **AÇÃO NECESSÁRIA AO RETOMAR:** fazer `git pull` + `touch tmp/restart.txt` para pegar o commit `fed8ef9`
+- **AÇÃO NECESSÁRIA AO RETOMAR:** fazer `git pull` + `touch tmp/restart.txt` para pegar os novos commits
 
 ```bash
 cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
@@ -47,8 +49,6 @@ cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
 
 ## 🏗️ Backlog — próximas funcionalidades (em ordem de prioridade)
 
-- [ ] **Item 2 — Relatório financeiro exportável** — endpoint `GET /api/saas/relatorio-financeiro?mes=YYYY-MM` + botão "Exportar CSV" nas páginas financeiras
-- [ ] **Item 3 — Tela de notificações/novidades para membros** — tabela `sistema_novidades` já existe no banco; criar visualização no `app_membro_v2.html` ou página dedicada
 - [ ] **Item 4 — Sistema de onboarding guiado** — wizard para nova igreja: nome/logo -> membros -> caixa
 
 ---

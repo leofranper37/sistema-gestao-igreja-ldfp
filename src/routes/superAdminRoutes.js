@@ -4,6 +4,7 @@ const {
     getSuperAdminOverview,
     getSaasMetricas,
     getSaasFaturamento,
+    getSaasRelatorioFinanceiro,
     getSaasIgrejas,
     getSaasIgrejaContrato,
     patchIgrejaStatus,
@@ -55,6 +56,9 @@ router.get('/super-admin/overview', ...isSuperAdmin, getSuperAdminOverview);
 
 // Métricas SaaS
 router.get('/api/saas/metricas', ...isSuperAdmin, getSaasMetricas);
+
+// Relatório Financeiro exportável
+router.get('/api/saas/relatorio-financeiro', ...isSuperAdmin, getSaasRelatorioFinanceiro);
 
 // Faturamento MRR
 router.get('/api/saas/faturamento', ...isSuperAdmin, getSaasFaturamento);

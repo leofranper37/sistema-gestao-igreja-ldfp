@@ -960,6 +960,85 @@ async function getSaasMetricas(req, res) {
     }
 }
 
+// ── Relatório Financeiro exportável ─────────────────────────────────────────
+
+async function getSaasRelatorioFinanceiro(req, res) {
+    const mes = req.query.mes; // YYYY-MM
+    const formato = (req.query.formato || 'json').toLowerCase();
+
+    if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
+        return res.status(400).json({ error: 'Parâmetro "mes" obrigatório no formato YYYY-MM.' });
+    }
+
+    try {
+        let rows;
+        // MySQL
+        try {
+            [rows] = await pool.query(
+                `SELECT i.nome AS igreja, i.plano, i.email_admin,
+                        pl.id, pl.descricao, pl.valor, pl.status,
+                        pl.payment_method, pl.provider, pl.reference_code,
+                        pl.paid_at, pl.created_at
+                 FROM payment_links pl
+                 JOIN igrejas i ON i.id = pl.igreja_id
+                 WHERE DATE_FORMAT(pl.created_at, '%Y-%m') = ?
+                 ORDER BY pl.created_at DESC`,
+                [mes]
+            );
+        } catch (_) {
+            // PostgreSQL fallback
+            [rows] = await pool.query(
+                `SELECT i.nome AS igreja, i.plano, i.email_admin,
+                        pl.id, pl.descricao, pl.valor, pl.status,
+                        pl.payment_method, pl.provider, pl.reference_code,
+                        pl.paid_at, pl.created_at
+                 FROM payment_links pl
+                 JOIN igrejas i ON i.id = pl.igreja_id
+                 WHERE TO_CHAR(pl.created_at, 'YYYY-MM') = $1
+                 ORDER BY pl.created_at DESC`,
+                [mes]
+            );
+        }
+
+        rows = rows || [];
+
+        // Totalizadores
+        const totalArrecadado = rows.filter(r => r.status === 'pago').reduce((s, r) => s + fmt(r.valor), 0);
+        const totalPendente = rows.filter(r => r.status === 'pendente').reduce((s, r) => s + fmt(r.valor), 0);
+        const qtdPago = rows.filter(r => r.status === 'pago').length;
+        const qtdPendente = rows.filter(r => r.status === 'pendente').length;
+        const totalIgrejas = new Set(rows.map(r => r.igreja)).size;
+
+        if (formato === 'csv') {
+            const csvHeader = 'ID,Igreja,Plano,Email,Descricao,Valor,Status,Metodo,Provedor,Referencia,Pago em,Criado em\n';
+            const esc = v => {
+                if (v === null || v === undefined) return '';
+                const s = String(v).replace(/"/g, '""');
+                return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+            };
+            const fmtDt = v => v ? new Date(v).toLocaleString('pt-BR') : '';
+            const csvBody = rows.map(r =>
+                [r.id, r.igreja, r.plano, r.email_admin, r.descricao,
+                 Number(r.valor).toFixed(2), r.status, r.payment_method,
+                 r.provider, r.reference_code, fmtDt(r.paid_at), fmtDt(r.created_at)
+                ].map(esc).join(',')
+            ).join('\n');
+
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', `attachment; filename="relatorio-financeiro-${mes}.csv"`);
+            return res.send('\uFEFF' + csvHeader + csvBody); // BOM para Excel
+        }
+
+        res.json({
+            mes,
+            totais: { totalArrecadado, totalPendente, qtdPago, qtdPendente, totalIgrejas },
+            lancamentos: rows,
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 module.exports = {
     listPlanosPublico,
     getSuperAdminOverview,
@@ -998,5 +1077,6 @@ module.exports = {
     deleteNovidade,
     listUsuariosAdmin,
     postResetSenha,
-    listResetRequests
+    listResetRequests,
+    getSaasRelatorioFinanceiro,
 };

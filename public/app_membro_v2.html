@@ -587,6 +587,24 @@
     .bottom-item.active {
       color: var(--accent);
     }
+
+    /* NOVIDADES */
+    .novidade-card { background:var(--bg-card); border-radius:var(--radius-md); padding:16px; margin-bottom:12px; border-left:3px solid var(--border); }
+    .novidade-card.destaque { border-left-color:#a78bfa; background:linear-gradient(135deg,#1b2433 80%,#1e1b4b33 100%); }
+    .novidade-badges { margin-bottom:8px; display:flex; flex-wrap:wrap; gap:5px; }
+    .novidade-badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+    .badge-release  { background:#d1fae5; color:#065f46; }
+    .badge-feature  { background:#dbeafe; color:#1e40af; }
+    .badge-fix      { background:#fee2e2; color:#991b1b; }
+    .badge-aviso    { background:#fef3c7; color:#92400e; }
+    .badge-melhoria { background:#ede9fe; color:#5b21b6; }
+    .badge-destaque { background:#fef9c3; color:#854d0e; }
+    .novidade-titulo { font-size:15px; font-weight:700; color:var(--text); margin-bottom:4px; }
+    .novidade-sub { font-size:12px; color:var(--muted); margin-bottom:8px; }
+    .novidade-conteudo { font-size:13px; color:#d1d5db; line-height:1.6; white-space:pre-wrap; }
+    .novidade-footer { margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .novidade-data { font-size:11px; color:var(--muted); }
+    .novidade-tags { font-size:11px; color:var(--accent); }
   </style>
 </head>
 <body>
@@ -796,6 +814,20 @@
         </div>
       </div>
     </section>
+
+    <!-- NOVIDADES -->
+    <section id="panel-novidades" class="panel">
+      <div class="panel-title">
+        <h1>Novidades</h1>
+        <p>Atualizações e comunicados da sua igreja.</p>
+      </div>
+      <div id="listaNovidades">
+        <div class="event-empty">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <p>Carregando novidades...</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- BOTTOM NAV -->
@@ -819,6 +851,10 @@
     <div class="bottom-item" data-target="panel-eventos">
       <i class="fa-solid fa-calendar-check"></i>
       <span>Eventos</span>
+    </div>
+    <div class="bottom-item" data-target="panel-novidades">
+      <i class="fa-solid fa-bell"></i>
+      <span>Novidades</span>
     </div>
   </nav>
 </div>
@@ -1241,6 +1277,46 @@
     return `${y}-${m}`;
   }
 
+  let _novidadesCarregadas = false;
+
+  function loadNovidades() {
+    const el = document.getElementById('listaNovidades');
+    el.innerHTML = '<div class="event-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando novidades...</p></div>';
+    const tipoLabel = { release:'Nova versão', feature:'Funcionalidade', fix:'Correção', aviso:'Aviso', melhoria:'Melhoria' };
+    const fmtDate = s => new Date(s).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+    fetch('/api/novidades')
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(items => {
+        _novidadesCarregadas = true;
+        if (!items || !items.length) {
+          el.innerHTML = '<div class="event-empty"><i class="fa-regular fa-bell-slash fa-2x" style="margin-bottom:8px"></i><p>Nenhuma novidade publicada ainda.</p></div>';
+          return;
+        }
+        el.innerHTML = items.map(n => {
+          const tipo = n.tipo || 'release';
+          const label = tipoLabel[tipo] || tipo;
+          const tagsHtml = n.tags ? n.tags.split(',').map(t => `<span>#${t.trim()}</span>`).join(' ') : '';
+          return `
+            <div class="novidade-card${n.destaque ? ' destaque' : ''}">
+              <div class="novidade-badges">
+                <span class="novidade-badge badge-${tipo}">${label}</span>
+                ${n.destaque ? '<span class="novidade-badge badge-destaque">⭐ Destaque</span>' : ''}
+              </div>
+              <div class="novidade-titulo">${n.titulo}</div>
+              ${n.subtitulo ? `<div class="novidade-sub">${n.subtitulo}</div>` : ''}
+              ${n.conteudo ? `<div class="novidade-conteudo">${n.conteudo}</div>` : ''}
+              <div class="novidade-footer">
+                <span class="novidade-data"><i class="fa-regular fa-clock" style="margin-right:4px"></i>${fmtDate(n.created_at)}</span>
+                ${tagsHtml ? `<span class="novidade-tags">${tagsHtml}</span>` : ''}
+              </div>
+            </div>`;
+        }).join('');
+      })
+      .catch(() => {
+        el.innerHTML = '<div class="event-empty"><i class="fa-solid fa-triangle-exclamation" style="color:var(--accent)"></i><p>Erro ao carregar novidades.<br><small>Verifique sua conexão.</small></p></div>';
+      });
+  }
+
   async function loadEventos() {
     labelMes.textContent = dataAtual.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
     listaEventosEl.innerHTML = '<div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;"><i class="fa-solid fa-spinner fa-spin"></i></div>';
@@ -1336,6 +1412,7 @@
     if (id === 'panel-video')   loadVideos();
     if (id === 'panel-fotos')   loadFotos();
     if (id === 'panel-eventos') loadEventos();
+    if (id === 'panel-novidades' && !_novidadesCarregadas) loadNovidades();
   }
 
   bottomItems.forEach(item => {

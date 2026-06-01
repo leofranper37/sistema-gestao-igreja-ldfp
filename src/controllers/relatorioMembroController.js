@@ -84,6 +84,29 @@ async function getRelatorioMembro(req, res) {
         // tabela ainda não existe — ignora silenciosamente
     }
 
+    // 5. Escalas em que o membro está atribuído
+    let escalasRows = [];
+    try {
+        const fmtD2 = d => {
+            if (!d) return null;
+            if (d instanceof Date) return d.toISOString().slice(0, 10);
+            return String(d).slice(0, 10);
+        };
+        const [erows] = await pool.query(
+            `SELECT e.title AS evento, i.instance_date AS data, f.name AS funcao
+             FROM escalas_atribuicoes a
+             JOIN escalas_instancias i ON i.id = a.instance_id
+             JOIN escalas_funcoes f   ON f.id = a.function_id
+             JOIN escalas_eventos e   ON e.id = i.event_id
+             WHERE a.church_id = ? AND a.member_id = ? AND i.is_cancelled = 0
+             ORDER BY i.instance_date DESC LIMIT 30`,
+            [igrejaId, membroId]
+        );
+        escalasRows = erows.map(r => ({ ...r, data: fmtD2(r.data) }));
+    } catch (_) {
+        // tabelas ainda não existem — ignora silenciosamente
+    }
+
     return res.json({
         membro,
         dizimos: {
@@ -96,7 +119,8 @@ async function getRelatorioMembro(req, res) {
             },
             resumo_mensal: resumoMensal
         },
-        batismos: batismosRows
+        batismos: batismosRows,
+        escalas: escalasRows
     });
 }
 

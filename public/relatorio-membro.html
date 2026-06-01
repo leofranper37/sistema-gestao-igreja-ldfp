@@ -370,15 +370,27 @@
             </div>
 
 
-            <!-- Escalas — módulo não integrado ainda -->
+            <!-- Escalas de Serviço -->
             <div class="sect-header" id="escalasSect" style="display:none;">
                 <i class="fa-solid fa-calendar-check" style="color:#8b5cf6;"></i>
                 <h3>Escalas de Serviço</h3>
                 <div class="sect-sep-line"></div>
             </div>
-            <div class="coming-soon" id="escalasInfo" style="display:none;">
-                <i class="fa-solid fa-calendar-check"></i>
-                Módulo de escalas em integração — dados serão exibidos em breve.
+            <div id="escalasInfo" style="display:none;">
+                <div class="table-wrapper">
+                    <table class="info-table" id="escalasTable">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Evento</th>
+                                <th>Função</th>
+                            </tr>
+                        </thead>
+                        <tbody id="escalasTbody">
+                            <tr><td colspan="3" class="empty-table">Nenhum registro.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Grupos / Células — módulo não integrado ainda -->
@@ -547,9 +559,21 @@
                 </tr>`).join('');
         }
 
+        function renderEscalas(items) {
+            if (!items || !items.length) return;
+            $('escalasSect').style.display = '';
+            $('escalasInfo').style.display = '';
+            $('escalasTbody').innerHTML = items.map(e => `
+                <tr>
+                    <td>${escHtml(fmtDate(e.data) || '—')}</td>
+                    <td>${escHtml(e.evento || '—')}</td>
+                    <td>${escHtml(e.funcao || '—')}</td>
+                </tr>`).join('');
+        }
+
         function showSections() {
-            ['escalasSect','escalasInfo','gruposSect','gruposInfo']
-                .forEach(id => $(`${id}`).style.display = '');
+            ['gruposSect','gruposInfo']
+                .forEach(id => $(id).style.display = '');
         }
 
         /* ─── Export CSV ──────────────────────────────────────── */
@@ -593,13 +617,14 @@
                     throw new Error(d.message || `Erro ${resp.status}`);
                 }
                 const data = await resp.json();
-                const { membro, dizimos, batismos } = data;
+                const { membro, dizimos, batismos, escalas } = data;
 
                 renderProfile(membro);
                 renderKPIs(dizimos.totais);
                 renderBarChart(dizimos.resumo_mensal);
                 renderDizimos(dizimos.items);
                 renderBatismos(batismos || []);
+                renderEscalas(escalas || []);
                 showSections();
 
                 // Atualiza título da aba

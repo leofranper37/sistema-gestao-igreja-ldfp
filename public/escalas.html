@@ -570,7 +570,7 @@
             const inst = (matrizData.instances || []).find(i => i.instance_id == instanceId);
             const func = (matrizData.functions || []).find(f => f.id == functionId);
             qs('#modalAtribuirContexto').textContent = (inst ? inst.instance_date + ' - ' + inst.title : '') + ' / ' + (func ? func.name : '');
-            const r = await fetch(API + '/membros?churchId=' + churchId());
+            const r = await fetch(API + '/api/escalas/membros');
             const membros = await r.json();
             const sel = qs('#atribuir-member_id');
             sel.innerHTML = '<option value="">Selecione</option>' + membros.map(m => `<option value="${m.id}">${m.full_name}</option>`).join('');

@@ -97,12 +97,42 @@ async function getTotalMembros(igrejaId) {
 }
 
 async function getHealthStatus() {
-    const databaseOk = await systemModel.pingDatabase();
+    // Banco de dados
+    const db = await systemModel.getDbHealth();
+
+    // Memória
+    const mem   = process.memoryUsage();
+    const toMb  = b => Math.round(b / 1024 / 1024 * 10) / 10;
+
+    // Uptime legível
+    const uptimeSec  = Math.floor(process.uptime());
+    const h = Math.floor(uptimeSec / 3600);
+    const m = Math.floor((uptimeSec % 3600) / 60);
+    const s = uptimeSec % 60;
+    const uptimeHuman = [h && `${h}h`, m && `${m}m`, `${s}s`].filter(Boolean).join(' ');
 
     return {
-        status: databaseOk ? 'ok' : 'degraded',
-        database: databaseOk ? 'up' : 'down',
-        timestamp: new Date().toISOString()
+        status:    db.ok ? 'ok' : 'degraded',
+        timestamp: new Date().toISOString(),
+        uptime: {
+            seconds: uptimeSec,
+            human:   uptimeHuman,
+        },
+        memory: {
+            heapUsedMb:  toMb(mem.heapUsed),
+            heapTotalMb: toMb(mem.heapTotal),
+            rssMb:       toMb(mem.rss),
+            externalMb:  toMb(mem.external),
+        },
+        database: {
+            status:         db.ok ? 'up' : 'down',
+            responseTimeMs: db.responseTimeMs,
+            version:        db.version || null,
+        },
+        node: {
+            version: process.version,
+            env:     process.env.NODE_ENV || 'development',
+        },
     };
 }
 

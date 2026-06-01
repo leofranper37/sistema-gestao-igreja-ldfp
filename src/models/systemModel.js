@@ -936,6 +936,20 @@ async function pingDatabase() {
     return Number(row?.ok) === 1;
 }
 
+async function getDbHealth() {
+    const start = Date.now();
+    try {
+        const [[row]] = await pool.query('SELECT 1 AS ok, VERSION() AS version');
+        return {
+            ok:            Number(row?.ok) === 1,
+            version:       row?.version || null,
+            responseTimeMs: Date.now() - start,
+        };
+    } catch (err) {
+        return { ok: false, version: null, responseTimeMs: Date.now() - start, error: err.message };
+    }
+}
+
 module.exports = {
     countMembros,
     countVisitantes,
@@ -954,6 +968,7 @@ module.exports = {
     listCriancas,
     listCongregados,
     pingDatabase,
+    getDbHealth,
     listMembrosWithFilters,
     listMembros,
     listVisitantes,

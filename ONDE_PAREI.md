@@ -8,10 +8,10 @@
 ## 🗓️ Última atualização: 01/06/2026
 
 ## ✅ Último commit enviado
-- **Hash:** `(pendente — a enviar)`
+- **Hash:** `95d1c6d`
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `feat: item 3 novidades para membros no app_membro_v2.html`
+- **Mensagem:** `feat: relatorio financeiro CSV + tela novidades membros`
 
 ---
 
@@ -31,15 +31,15 @@
 | Backend métricas SaaS | `GET /api/saas/metricas` — MRR, churn, ARPU, crescimento, receita mensal | `d4b704f` |
 | Página admin-metricas.html | `public/admin-metricas.html` — KPIs + 3 gráficos de barras CSS | `fed8ef9` |
 | Link Métricas SaaS no sidebar | Adicionado em `super-admin.html`, `admin-igrejas.html`, `admin-assinaturas.html`, `admin-modulos.html` | `fed8ef9` |
-| Relatório financeiro exportável | `GET /api/saas/relatorio-financeiro?mes=YYYY-MM[&formato=csv]` + `public/admin-relatorio-financeiro.html` — KPIs + tabela + botão Exportar CSV; link adicionado no sidebar de todas as páginas admin | `(pendente)` |
-| Tela de novidades para membros | Painel `#panel-novidades` + botão na bottom-nav + `loadNovidades()` em `app_membro_v2.html`; consome `GET /api/novidades` pública | `(pendente)` |
+| Relatório financeiro exportável | `GET /api/saas/relatorio-financeiro?mes=YYYY-MM[&formato=csv]` + `public/admin-relatorio-financeiro.html` — KPIs + tabela + botão Exportar CSV; link adicionado no sidebar de todas as páginas admin | `95d1c6d` |
+| Tela de novidades para membros | Painel `#panel-novidades` + botão na bottom-nav + `loadNovidades()` em `app_membro_v2.html`; consome `GET /api/novidades` pública | `95d1c6d` |
 
 ---
 
 ## ⚙️ Servidor (cPanel) — estado atual
 
-- **Último `git pull` no servidor:** 31/05/2026 (incluiu commits até `d4b704f`)
-- **AÇÃO NECESSÁRIA AO RETOMAR:** fazer `git pull` + `touch tmp/restart.txt` para pegar os novos commits
+- **Último `git pull` no servidor:** pendente (rodar o comando abaixo)
+- **AÇÃO NECESSÁRIA AO RETOMAR:** fazer `git pull` + `touch tmp/restart.txt`
 
 ```bash
 cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt

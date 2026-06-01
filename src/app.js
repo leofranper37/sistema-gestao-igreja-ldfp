@@ -31,6 +31,7 @@ const gruposRoutes    = require('./routes/gruposRoutes');
 const ebdRoutes       = require('./routes/ebdRoutes');
 const criancasRoutes   = require('./routes/criancasRoutes');
 const dashboardRoutes  = require('./routes/dashboardRoutes');
+const auditRoutes      = require('./routes/auditRoutes');
 
 const app = express();
 
@@ -48,6 +49,19 @@ const allowedOrigins = config.cors.allowedOrigins;
 
 const loginRateLimitWindowMs = Number.parseInt(process.env.LOGIN_RATE_LIMIT_WINDOW_MS || '', 10) || 15 * 60 * 1000;
 const loginRateLimitMax = Number.parseInt(process.env.LOGIN_RATE_LIMIT_MAX || '', 10) || 10;
+
+const apiRateLimitWindowMs = Number.parseInt(process.env.API_RATE_LIMIT_WINDOW_MS || '', 10) || 15 * 60 * 1000;
+const apiRateLimitMax = Number.parseInt(process.env.API_RATE_LIMIT_MAX || '', 10) || 300;
+
+const apiRateLimiter = rateLimit({
+    windowMs: apiRateLimitWindowMs,
+    limit: apiRateLimitMax,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: {
+        error: 'Muitas requisições. Aguarde alguns minutos e tente novamente.'
+    }
+});
 
 const loginRateLimiter = rateLimit({
     windowMs: loginRateLimitWindowMs,
@@ -115,6 +129,7 @@ app.use(express.static(staticAssetsPath));
 app.use('/login', loginRateLimiter);
 app.use('/esqueci-senha', loginRateLimiter);
 app.use('/redefinir-senha', loginRateLimiter);
+app.use('/api/', apiRateLimiter);
 
 app.use((req, res, next) => {
     const startedAt = Date.now();
@@ -156,6 +171,7 @@ app.use(gruposRoutes);
 app.use(ebdRoutes);
 app.use(criancasRoutes);
 app.use(dashboardRoutes);
+app.use(auditRoutes);
 
 /* ------------------------------------------------------------------ */
 /*  ROTA DE BOOTSTRAP — cria o primeiro super-admin se não existir     */

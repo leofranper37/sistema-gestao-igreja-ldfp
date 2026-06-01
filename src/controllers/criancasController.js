@@ -1,5 +1,6 @@
 'use strict';
 const { pool } = require('../config/db');
+const { audit } = require('../services/auditService');
 
 function fmtDate(d) {
     if (!d) return null;
@@ -98,6 +99,7 @@ async function createCrianca(req, res) {
         ]
     );
 
+    audit('crianca.create', req, { id: result.insertId, nome: String(nome).trim() });
     return res.status(201).json({ id: result.insertId, message: 'Criança cadastrada com sucesso.' });
 }
 
@@ -151,6 +153,7 @@ async function updateCrianca(req, res) {
     );
 
     if (!result.affectedRows) return res.status(404).json({ message: 'Criança não encontrada.' });
+    audit('crianca.update', req, { id });
     return res.json({ message: 'Criança atualizada com sucesso.' });
 }
 
@@ -165,6 +168,7 @@ async function deleteCrianca(req, res) {
     );
 
     if (!result.affectedRows) return res.status(404).json({ message: 'Criança não encontrada.' });
+    audit('crianca.delete', req, { id });
     return res.json({ message: 'Criança removida com sucesso.' });
 }
 

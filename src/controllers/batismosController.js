@@ -1,5 +1,6 @@
 'use strict';
 const { pool } = require('../config/db');
+const { audit } = require('../services/auditService');
 
 // MySQL DATE fields come as JS Date objects when dateStrings is not set
 function fmtDate(d) {
@@ -108,6 +109,7 @@ async function createBatismo(req, res) {
     ]);
 
     const [[novo]] = await pool.query('SELECT * FROM batismos WHERE id = ?', [result.insertId]);
+    audit('batismo.create', req, { id: result.insertId, descricao: String(descricao).trim() });
     return res.status(201).json({ ...formatRow(novo), candidatos: [] });
 }
 
@@ -154,6 +156,7 @@ async function updateBatismo(req, res) {
     const [candidatos] = await pool.query(
         'SELECT * FROM batismo_candidatos WHERE batismo_id = ? ORDER BY id ASC', [id]
     );
+    audit('batismo.update', req, { id });
     return res.json({ ...formatRow(bat), candidatos });
 }
 
@@ -170,6 +173,7 @@ async function deleteBatismo(req, res) {
 
     await pool.query('DELETE FROM batismo_candidatos WHERE batismo_id = ?', [id]);
     await pool.query('DELETE FROM batismos WHERE id = ? AND igreja_id = ?', [id, igrejaId]);
+    audit('batismo.delete', req, { id });
     return res.json({ message: 'Batismo excluído com sucesso.' });
 }
 
@@ -203,6 +207,7 @@ async function addCandidato(req, res) {
     const [[cand]] = await pool.query(
         'SELECT * FROM batismo_candidatos WHERE id = ?', [result.insertId]
     );
+    audit('batismo.addCandidato', req, { batismoId, candidatoId: result.insertId, nome: String(nome).trim() });
     return res.status(201).json(cand);
 }
 
@@ -253,6 +258,7 @@ async function deleteCandidato(req, res) {
     if (!cand) return res.status(404).json({ message: 'Candidato não encontrado.' });
 
     await pool.query('DELETE FROM batismo_candidatos WHERE id = ?', [cid]);
+    audit('batismo.deleteCandidato', req, { batismoId, candidatoId: cid });
     return res.json({ message: 'Candidato removido.' });
 }
 

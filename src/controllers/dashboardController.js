@@ -17,7 +17,8 @@ async function getStats(req, res) {
             rAniversariantes,
             rRecentes,
             rMembrosTrend,
-            rDizimosTrend
+            rDizimosTrend,
+            rAnivLista
         ] = await Promise.all([
             pool.query(
                 'SELECT COUNT(*) AS total FROM membros WHERE igreja_id = ?',
@@ -70,6 +71,14 @@ async function getStats(req, res) {
                  GROUP BY competencia
                  ORDER BY competencia ASC`,
                 [igrejaId]
+            ),
+            pool.query(
+                `SELECT id, nome, foto_url, nascimento
+                 FROM membros
+                 WHERE igreja_id = ? AND MONTH(nascimento) = MONTH(CURDATE()) AND nascimento IS NOT NULL
+                 ORDER BY DAY(nascimento) ASC
+                 LIMIT 10`,
+                [igrejaId]
             )
         ]);
 
@@ -84,6 +93,7 @@ async function getStats(req, res) {
         const [recentesRows]       = rRecentes;
         const [membrosTrend]       = rMembrosTrend;
         const [dizimosTrend]       = rDizimosTrend;
+        const [anivListaRows]      = rAnivLista;
 
         res.json({
             totais: {
@@ -97,6 +107,7 @@ async function getStats(req, res) {
                 aniversariantes: Number(anivRow.total)       || 0
             },
             recentes: recentesRows || [],
+            aniversariantesMes: anivListaRows || [],
             graficos: {
                 membrosPorMes: (membrosTrend || []).map(r => ({
                     mes:   r.mes,

@@ -8,10 +8,10 @@
 ## 🗓️ Última atualização: 01/06/2026
 
 ## ✅ Último commit enviado
-- **Hash:** `70f29ea`
+- **Hash:** `3e0ec95`
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `feat: Item 1 — Batismos migração localStorage→API (backend+frontend+relatorio)`
+- **Mensagem:** `feat: Item 2 — Escalas de Serviço (backend completo + frontend fix + relatorio)`
 
 ---
 
@@ -38,6 +38,7 @@
 | **Multi-Congregação (painel)** | `GET /congregacoes/painel` (retorna filiais + limite plano + disponível); reescrita de `public/congregacoes.html` — KPI cards, barra de uso do plano, card-grid para cada filial, CRUD modal conectado à API real | `2375419` |
 | **Relatório por membro** | `GET /api/membros/:id/relatorio` — perfil, histórico de dízimos/ofertas, KPIs, gráfico mensal CSS, export CSV; `public/relatorio-membro.html`; botão "Relatório" em `membros.html` | `14f297e` |
 | **Batismos — API completa** | `CRIAR_TABELAS_BATISMOS.sql` (tabelas `batismos` + `batismo_candidatos`); `batismosController.js` (8 endpoints CRUD); `batismosRoutes.js`; migração completa `batismos.html` + `batismo_novo.html` (localStorage→API); relatorio-membro exibe candidaturas; select inline de status no painel de candidatos | `70f29ea` |
+| **Escalas de Serviço — API completa** | `CRIAR_TABELAS_ESCALAS.sql` (6 tabelas); `escalasController.js` (20 endpoints: dashboard, eventos recorrentes, instâncias, grupos, funções, matriz, atribuições, conflitos, membros); `escalasRoutes.js`; fix `escalas.html` → `/api/escalas/membros`; relatorio-membro exibe histórico de escalas | `3e0ec95` |
 
 ---
 
@@ -58,8 +59,8 @@ cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
 | # | Módulo | Status |
 |---|--------|--------|
 | 1 | **Batismos** — backend + migração localStorage→API | ✅ Concluído `70f29ea` |
-| 2 | **Escalas de Serviço** — backend + migração escalas.html | ⏳ Próximo |
-| 3 | Grupos & Células | ⏳ Pendente |
+| 2 | **Escalas de Serviço** — backend + migração escalas.html | ✅ Concluído `3e0ec95` |
+| 3 | Grupos & Células | ⏳ Próximo |
 | 4 | EBD (Escola Bíblica Dominical) | ⏳ Pendente |
 | 5 | Crianças | ⏳ Pendente |
 | 6 | Dashboard com gráficos reais | ⏳ Pendente |
@@ -68,7 +69,9 @@ cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
 | 9 | Health check endpoint detalhado | ⏳ Pendente |
 
 ### ⚠️ Ação necessária no cPanel
-Executar `CRIAR_TABELAS_BATISMOS.sql` no phpMyAdmin (`ldfp8965_sistema_gestao`) antes de usar o módulo de batismos.
+Executar no phpMyAdmin (`ldfp8965_sistema_gestao`) antes de usar os módulos:
+- `CRIAR_TABELAS_BATISMOS.sql` — módulo de batismos
+- `CRIAR_TABELAS_ESCALAS.sql` — módulo de escalas de serviço
 
 ---
 

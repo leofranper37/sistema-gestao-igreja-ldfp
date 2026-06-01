@@ -113,7 +113,9 @@
                         <div class="grid-3">
                             <div class="field">
                                 <label for="turmaAluno">Turma</label>
-                                <input type="text" id="turmaAluno" placeholder="Nome da turma" required>
+                                <select id="turmaAluno" required>
+                                    <option value="">Selecione a turma...</option>
+                                </select>
                             </div>
                             <div class="field">
                                 <label for="estagioAluno">Estagio</label>
@@ -260,152 +262,119 @@
     <script>
         requireAuthSession();
 
-        const STORAGE_KEY = 'ldfpEbdStudents';
-        const form = document.getElementById('studentForm');
+        const form      = document.getElementById('studentForm');
         const statusMsg = document.getElementById('statusMsg');
-        const formHead = document.getElementById('formHead');
+        const formHead  = document.getElementById('formHead');
         const btnSalvar = document.getElementById('btnSalvar');
 
-        const params = new URLSearchParams(window.location.search);
+        const params    = new URLSearchParams(window.location.search);
         const editingId = params.get('edit');
 
-        function readStudents() {
-            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        }
+        const setStatus = (msg, err = false) => {
+            statusMsg.textContent = msg;
+            statusMsg.className   = 'status' + (err ? ' error' : '');
+        };
 
-        function writeStudents(list) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-        }
-
-        function makeId() {
-            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-                return window.crypto.randomUUID();
+        async function loadTurmas() {
+            try {
+                const res    = await fetch('/api/ebd/turmas');
+                const turmas = await res.json();
+                const sel    = document.getElementById('turmaAluno');
+                sel.innerHTML = '<option value="">Selecione a turma...</option>' +
+                    turmas.map(t => `<option value="${t.id}">${t.nome}</option>`).join('');
+            } catch (e) {
+                console.error('loadTurmas:', e);
             }
-            return String(Date.now());
         }
 
-        function loadEditData() {
+        async function loadEditData() {
             if (!editingId) return;
+            try {
+                const res  = await fetch(`/api/ebd/alunos/${editingId}`);
+                const item = await res.json();
+                if (!res.ok) { setStatus(item.error || 'Aluno não encontrado.', true); return; }
 
-            const item = readStudents().find((entry) => String(entry.id) === String(editingId));
-            if (!item) {
-                statusMsg.textContent = 'Aluno nao encontrado para edicao.';
-                statusMsg.classList.add('error');
-                return;
+                document.getElementById('nomeAluno').value       = item.nome || '';
+                document.getElementById('estagioAluno').value    = item.estagio || '';
+                document.getElementById('turmaAluno').value      = item.turmaId || '';
+                document.getElementById('matriculaAluno').value  = item.matricula || '';
+                document.getElementById('sexoAluno').value       = item.sexo || '';
+                document.getElementById('nascimentoAluno').value = item.nascimento || '';
+                document.getElementById('estadoCivilAluno').value= item.estadoCivil || '';
+                document.getElementById('profissaoAluno').value  = item.profissao || '';
+                document.getElementById('emailAluno').value      = item.email || '';
+                document.getElementById('telefoneAluno').value   = item.telefone || '';
+                document.getElementById('celularAluno').value    = item.celular || '';
+                document.getElementById('cepAluno').value        = item.cep || '';
+                document.getElementById('enderecoAluno').value   = item.endereco || '';
+                document.getElementById('bairroAluno').value     = item.bairro || '';
+                document.getElementById('cidadeAluno').value     = item.cidade || '';
+                document.getElementById('estadoAluno').value     = item.estado || '';
+                formHead.textContent  = 'Editar Aluno';
+                btnSalvar.textContent = 'Atualizar';
+            } catch (e) {
+                setStatus('Erro ao carregar aluno.', true);
             }
-
-            document.getElementById('nomeAluno').value = item.nome || '';
-            document.getElementById('estagioAluno').value = item.estagio || '';
-            document.getElementById('turmaAluno').value = item.turma || '';
-            document.getElementById('matriculaAluno').value = item.matricula || '';
-            document.getElementById('sexoAluno').value = item.sexo || '';
-            document.getElementById('nascimentoAluno').value = item.nascimento || '';
-            document.getElementById('estadoCivilAluno').value = item.estadoCivil || '';
-            document.getElementById('profissaoAluno').value = item.profissao || '';
-            document.getElementById('emailAluno').value = item.email || '';
-            document.getElementById('telefoneAluno').value = item.telefone || '';
-            document.getElementById('celularAluno').value = item.celular || '';
-            document.getElementById('cepAluno').value = item.cep || '';
-            document.getElementById('enderecoAluno').value = item.endereco || '';
-            document.getElementById('bairroAluno').value = item.bairro || '';
-            document.getElementById('cidadeAluno').value = item.cidade || '';
-            document.getElementById('estadoAluno').value = item.estado || '';
-            formHead.textContent = 'Editar Aluno';
-            btnSalvar.textContent = 'Atualizar';
         }
 
         document.getElementById('btnImportarPessoa').addEventListener('click', () => {
-            statusMsg.textContent = 'Importacao rapida disponivel em breve. Preencha os campos manualmente.';
-            statusMsg.classList.remove('error');
+            setStatus('Importação rápida disponível em breve. Preencha os campos manualmente.');
         });
 
         document.getElementById('btnVoltar').addEventListener('click', () => {
             window.location.href = 'ebd_alunos.html';
         });
 
-        form.addEventListener('submit', (event) => {
+        form.addEventListener('submit', async (event) => {
             event.preventDefault();
+            btnSalvar.disabled = true;
+            setStatus('');
 
-            const nome = document.getElementById('nomeAluno').value.trim();
-            const estagio = document.getElementById('estagioAluno').value.trim();
-            const turma = document.getElementById('turmaAluno').value.trim();
-            const matricula = document.getElementById('matriculaAluno').value.trim();
-            const sexo = document.getElementById('sexoAluno').value.trim();
-            const nascimento = document.getElementById('nascimentoAluno').value;
+            const nome        = document.getElementById('nomeAluno').value.trim();
+            const turmaId     = document.getElementById('turmaAluno').value;
+            const estagio     = document.getElementById('estagioAluno').value.trim();
+            const matricula   = document.getElementById('matriculaAluno').value.trim();
+            const sexo        = document.getElementById('sexoAluno').value.trim();
+            const nascimento  = document.getElementById('nascimentoAluno').value;
             const estadoCivil = document.getElementById('estadoCivilAluno').value.trim();
-            const profissao = document.getElementById('profissaoAluno').value.trim();
-            const email = document.getElementById('emailAluno').value.trim();
-            const telefone = document.getElementById('telefoneAluno').value.trim();
-            const celular = document.getElementById('celularAluno').value.trim();
-            const cep = document.getElementById('cepAluno').value.trim();
-            const endereco = document.getElementById('enderecoAluno').value.trim();
-            const bairro = document.getElementById('bairroAluno').value.trim();
-            const cidade = document.getElementById('cidadeAluno').value.trim();
-            const estado = document.getElementById('estadoAluno').value.trim();
+            const profissao   = document.getElementById('profissaoAluno').value.trim();
+            const email       = document.getElementById('emailAluno').value.trim();
+            const telefone    = document.getElementById('telefoneAluno').value.trim();
+            const celular     = document.getElementById('celularAluno').value.trim();
+            const cep         = document.getElementById('cepAluno').value.trim();
+            const endereco    = document.getElementById('enderecoAluno').value.trim();
+            const bairro      = document.getElementById('bairroAluno').value.trim();
+            const cidade      = document.getElementById('cidadeAluno').value.trim();
+            const estado      = document.getElementById('estadoAluno').value.trim();
 
-            if (!nome || !turma) {
-                statusMsg.textContent = 'Informe pelo menos Nome e Turma.';
-                statusMsg.classList.add('error');
-                return;
-            }
+            if (!nome) { setStatus('Informe pelo menos o Nome.', true); btnSalvar.disabled = false; return; }
 
-            const students = readStudents();
+            const payload = {
+                nome, turmaId: turmaId ? parseInt(turmaId) : null, estagio, matricula,
+                sexo, nascimento: nascimento || null, estadoCivil, profissao,
+                email, telefone, celular, cep, endereco, bairro, cidade, estado
+            };
+            const url    = editingId ? `/api/ebd/alunos/${editingId}` : '/api/ebd/alunos';
+            const method = editingId ? 'PUT' : 'POST';
 
-            if (editingId) {
-                const index = students.findIndex((entry) => String(entry.id) === String(editingId));
-                if (index >= 0) {
-                    students[index] = {
-                        ...students[index],
-                        nome,
-                        estagio,
-                        turma,
-                        matricula,
-                        sexo,
-                        nascimento,
-                        estadoCivil,
-                        profissao,
-                        email,
-                        telefone,
-                        celular,
-                        cep,
-                        endereco,
-                        bairro,
-                        cidade,
-                        estado,
-                        updatedAt: new Date().toISOString()
-                    };
-                }
-                statusMsg.textContent = 'Aluno atualizado com sucesso!';
-            } else {
-                students.push({
-                    id: makeId(),
-                    nome,
-                    estagio,
-                    turma,
-                    matricula,
-                    sexo,
-                    nascimento,
-                    estadoCivil,
-                    profissao,
-                    email,
-                    telefone,
-                    celular,
-                    cep,
-                    endereco,
-                    bairro,
-                    cidade,
-                    estado,
-                    createdAt: new Date().toISOString()
+            try {
+                const res  = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-                statusMsg.textContent = 'Aluno salvo com sucesso!';
-                form.reset();
+                const json = await res.json();
+                if (!res.ok) { setStatus(json.error || 'Erro ao salvar.', true); return; }
+                setStatus(editingId ? 'Aluno atualizado com sucesso!' : 'Aluno salvo com sucesso!');
+                if (!editingId) form.reset();
+            } catch (e) {
+                setStatus('Erro de comunicação.', true);
+            } finally {
+                btnSalvar.disabled = false;
             }
-
-            statusMsg.classList.remove('error');
-            writeStudents(students);
         });
 
-        loadEditData();
+        (async () => { await loadTurmas(); await loadEditData(); })();
     </script>
 </body>
 </html>

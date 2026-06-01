@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -785,31 +785,22 @@
 <script>
     requireAuthSession?.();
 
-    /* ── Storage ── */
-    const STORAGE_TURMAS   = 'ldfpEbdClasses';
-    const STORAGE_STUDENTS = 'ldfpEbdStudents';
-
-    const readTurmas   = () => JSON.parse(localStorage.getItem(STORAGE_TURMAS)   || '[]');
-    const writeTurmas  = (d) => localStorage.setItem(STORAGE_TURMAS, JSON.stringify(d));
-    const readStudents = () => JSON.parse(localStorage.getItem(STORAGE_STUDENTS) || '[]');
-
-    const makeId = () => (window.crypto?.randomUUID?.() || String(Date.now()));
-
     /* ── Estado ── */
-    let turmas      = readTurmas();
-    let selecionado = null;
+    let turmas      = [];
+    let selecionado = null; // id numérico
     let filtroTexto = '';
     let licoes      = [];
 
-    /* ── Helpers ── */
     const $ = (id) => document.getElementById(id);
 
+    /* ── Status ── */
     const setStatus = (msg, err = false) => {
         const el = $('statusMsg');
         el.textContent = msg;
         el.className = 'status-msg ' + (msg ? (err ? 'err' : 'ok') : '');
     };
 
+    /* ── Cores hero ── */
     const heroColors = {
         'Berçário':    'linear-gradient(135deg,#ec4899,#f43f5e)',
         'Maternal':    'linear-gradient(135deg,#f97316,#fbbf24)',
@@ -835,12 +826,11 @@
             return;
         }
         hero.style.background = heroColors[t.estagio] || 'linear-gradient(135deg,#7c3aed,#4f46e5)';
-        $('heroNome').textContent = t.nomeTurma || 'Sem nome';
+        $('heroNome').textContent = t.nome || 'Sem nome';
         $('heroNome').className = 'hero-name';
         $('heroSub').textContent = [t.estagio, t.professor ? '· Prof. ' + t.professor : '', t.ano ? '· ' + t.ano : ''].filter(Boolean).join(' ');
-        const alunos = readStudents().filter(a => (a.turma || '').toLowerCase() === (t.nomeTurma || '').toLowerCase());
-        $('heroAlunos').textContent = alunos.length;
-        $('heroLicoes').textContent = (t.licoes || []).length;
+        $('heroAlunos').textContent = t.totalAlunos || 0;
+        $('heroLicoes').textContent = Array.isArray(t.licoes) ? t.licoes.length : 0;
     };
 
     /* ── Renderizar lista ── */
@@ -848,7 +838,7 @@
         const list  = $('turmaList');
         const count = $('turmasCount');
         const filtradas = turmas.filter(t =>
-            (t.nomeTurma + ' ' + (t.professor || '')).toLowerCase().includes(filtroTexto)
+            (t.nome + ' ' + (t.professor || '')).toLowerCase().includes(filtroTexto)
         );
         count.textContent = filtradas.length;
 
@@ -856,26 +846,22 @@
             list.innerHTML = `<div class="empty-list"><i class="fa-solid fa-people-group"></i>Nenhuma turma encontrada.</div>`;
             return;
         }
-
         list.innerHTML = filtradas.map(t => {
             const ativo = selecionado === t.id ? 'is-active' : '';
             const badge = t.situacao === 'Inativo' ? 'badge-inativo' : 'badge-ativo';
-            const sit   = t.situacao || 'Ativo';
             return `
                 <div class="turma-item ${ativo}" data-id="${t.id}">
-                    <div class="t-icon" style="background:${heroColors[t.estagio] ? 'transparent' : '#7c3aed'};
-                         background-image:${heroColors[t.estagio] || 'none'};">
+                    <div class="t-icon" style="background-image:${heroColors[t.estagio] || 'none'};background:${heroColors[t.estagio] ? 'transparent' : '#7c3aed'};">
                         <i class="fa-solid fa-people-group"></i>
                     </div>
                     <div class="t-info">
-                        <div class="t-name">${t.nomeTurma || '-'}</div>
+                        <div class="t-name">${t.nome || '-'}</div>
                         <div class="t-sub">${t.estagio || 'Sem estágio'}${t.professor ? ' · ' + t.professor : ''}</div>
                     </div>
-                    <span class="t-badge ${badge}">${sit}</span>
+                    <span class="t-badge ${badge}">${t.situacao || 'Ativo'}</span>
                 </div>
             `;
         }).join('');
-
         list.querySelectorAll('.turma-item').forEach(el => {
             el.addEventListener('click', () => selecionarTurma(el.dataset.id));
         });
@@ -886,67 +872,67 @@
         const form = document.forms.turmaForm;
         const rev  = document.forms.revistaForm;
         if (!t) {
-            form.reset();
-            rev.reset();
-            licoes = [];
-            renderLicoes();
-            return;
+            form.reset(); rev.reset();
+            licoes = []; renderLicoes(); return;
         }
-        form.nomeTurma.value       = t.nomeTurma       || '';
-        form.ano.value             = t.ano             || '';
-        form.estagio.value         = t.estagio         || '';
-        form.situacao.value        = t.situacao        || 'Ativo';
-        form.professor.value       = t.professor       || '';
-        form.segundoProfessor.value= t.segundoProfessor|| '';
-        form.telefoneProfessor.value= t.telefoneProfessor || '';
-        form.emailProfessor.value  = t.emailProfessor  || '';
-        form.diaSemana.value       = t.diaSemana       || '';
-        form.horario.value         = t.horario         || '';
-        form.sala.value            = t.sala            || '';
+        form.nomeTurma.value        = t.nome             || '';
+        form.ano.value              = t.ano              || '';
+        form.estagio.value          = t.estagio          || '';
+        form.situacao.value         = t.situacao         || 'Ativo';
+        form.professor.value        = t.professor        || '';
+        form.segundoProfessor.value = t.segundoProfessor || '';
+        form.telefoneProfessor.value= t.telefoneProfessor|| '';
+        form.emailProfessor.value   = t.emailProfessor   || '';
+        form.diaSemana.value        = t.diaSemana        || '';
+        form.horario.value          = t.horario          || '';
+        form.sala.value             = t.sala             || '';
 
-        rev.revistaTitulo.value    = t.revistaTitulo   || '';
-        rev.revistaEditora.value   = t.revistaEditora  || '';
-        rev.revistaTrimestre.value = t.revistaTrimestre|| '';
-        rev.revistaFaixa.value     = t.revistaFaixa    || '';
-        rev.revistaInicio.value    = t.revistaInicio   || '';
-        rev.revistaFim.value       = t.revistaFim      || '';
+        const ri = t.revistaInfo || {};
+        rev.revistaTitulo.value    = ri.revistaTitulo    || '';
+        rev.revistaEditora.value   = ri.revistaEditora   || '';
+        rev.revistaTrimestre.value = ri.revistaTrimestre || '';
+        rev.revistaFaixa.value     = ri.revistaFaixa     || '';
+        rev.revistaInicio.value    = ri.revistaInicio    || '';
+        rev.revistaFim.value       = ri.revistaFim       || '';
 
         licoes = Array.isArray(t.licoes) ? JSON.parse(JSON.stringify(t.licoes)) : [];
         renderLicoes();
     };
 
     /* ── Selecionar turma ── */
-    const selecionarTurma = (id) => {
-        selecionado = id;
-        const t = turmas.find(x => x.id === id);
+    const selecionarTurma = async (idStr) => {
+        selecionado = Number(idStr);
+        const t = turmas.find(x => x.id === selecionado);
         updateHero(t);
         preencherForm(t);
         setStatus('');
         renderLista();
-        renderAlunosTurma(t);
+        await renderAlunosTurma(t);
     };
 
-    /* ── Alunos da turma ── */
-    const renderAlunosTurma = (t) => {
+    /* ── Alunos da turma (via API) ── */
+    const renderAlunosTurma = async (t) => {
         const tbody = $('alunosTurmaBody');
         if (!t) {
             tbody.innerHTML = `<tr><td colspan="3" class="empty-table">Selecione uma turma.</td></tr>`;
             return;
         }
-        const alunos = readStudents().filter(a =>
-            (a.turma || '').toLowerCase() === (t.nomeTurma || '').toLowerCase()
-        );
-        if (!alunos.length) {
-            tbody.innerHTML = `<tr><td colspan="3" class="empty-table">Nenhum aluno nesta turma.</td></tr>`;
-            return;
+        try {
+            const alunos = await fetch(`/api/ebd/alunos?turma_id=${t.id}`).then(r => r.json());
+            if (!alunos.length) {
+                tbody.innerHTML = `<tr><td colspan="3" class="empty-table">Nenhum aluno nesta turma.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = alunos.map(a => `
+                <tr>
+                    <td>${a.nome || '-'}</td>
+                    <td>${a.estagio || '-'}</td>
+                    <td>${a.situacao || 'Ativo'}</td>
+                </tr>
+            `).join('');
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="3" class="empty-table">Erro ao carregar alunos.</td></tr>`;
         }
-        tbody.innerHTML = alunos.map(a => `
-            <tr>
-                <td>${a.nome || '-'}</td>
-                <td>${a.estagio || '-'}</td>
-                <td>${a.situacao || 'Ativo'}</td>
-            </tr>
-        `).join('');
     };
 
     /* ── Lições ── */
@@ -973,31 +959,25 @@
                 </button>
             </div>
         `).join('');
-
         wrap.querySelectorAll('.btn-remove-licao').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const idx = Number(btn.dataset.rm);
-                licoes.splice(idx, 1);
-                renderLicoes();
-            });
+            btn.addEventListener('click', () => { licoes.splice(Number(btn.dataset.rm), 1); renderLicoes(); });
         });
     };
 
-    const coletarLicoes = () => {
-        return Array.from($('licoesWrap').querySelectorAll('.licao-row')).map((row, i) => ({
+    const coletarLicoes = () =>
+        Array.from($('licoesWrap').querySelectorAll('.licao-row')).map((row, i) => ({
             numero: i + 1,
             titulo: row.querySelector('.l-titulo').value.trim(),
             data:   row.querySelector('.l-data').value,
             status: row.querySelector('.l-status').value,
         }));
-    };
 
-    /* ── Coletar dados do form ── */
+    /* ── Coletar payload ── */
     const getPayload = () => {
         const form = document.forms.turmaForm;
         const rev  = document.forms.revistaForm;
         return {
-            nomeTurma:        form.nomeTurma.value.trim(),
+            nome:             form.nomeTurma.value.trim(),
             ano:              form.ano.value.trim(),
             estagio:          form.estagio.value,
             situacao:         form.situacao.value || 'Ativo',
@@ -1008,49 +988,65 @@
             diaSemana:        form.diaSemana.value,
             horario:          form.horario.value,
             sala:             form.sala.value.trim(),
-            revistaTitulo:    rev.revistaTitulo.value.trim(),
-            revistaEditora:   rev.revistaEditora.value.trim(),
-            revistaTrimestre: rev.revistaTrimestre.value.trim(),
-            revistaFaixa:     rev.revistaFaixa.value.trim(),
-            revistaInicio:    rev.revistaInicio.value,
-            revistaFim:       rev.revistaFim.value,
-            licoes:           coletarLicoes(),
+            revistaInfo: {
+                revistaTitulo:   rev.revistaTitulo.value.trim(),
+                revistaEditora:  rev.revistaEditora.value.trim(),
+                revistaTrimestre:rev.revistaTrimestre.value.trim(),
+                revistaFaixa:    rev.revistaFaixa.value.trim(),
+                revistaInicio:   rev.revistaInicio.value,
+                revistaFim:      rev.revistaFim.value,
+            },
+            licoes: coletarLicoes(),
         };
     };
 
     /* ── Salvar ── */
-    const salvar = () => {
+    const salvar = async () => {
         setStatus('');
         const payload = getPayload();
-        if (!payload.nomeTurma) { setStatus('Informe o nome da turma.', true); return; }
+        if (!payload.nome) { setStatus('Informe o nome da turma.', true); return; }
 
-        if (selecionado) {
-            const idx = turmas.findIndex(t => t.id === selecionado);
-            if (idx >= 0) turmas[idx] = { ...turmas[idx], ...payload };
-        } else {
-            const nova = { id: makeId(), ...payload };
-            turmas.push(nova);
-            selecionado = nova.id;
+        const url    = selecionado ? `/api/ebd/turmas/${selecionado}` : '/api/ebd/turmas';
+        const method = selecionado ? 'PUT' : 'POST';
+        try {
+            const res  = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+            if (!res.ok) { setStatus(json.error || 'Erro ao salvar.', true); return; }
+            if (!selecionado) selecionado = json.id;
+            setStatus('Turma salva com sucesso!');
+            await carregarDados();
+            const t = turmas.find(x => x.id === selecionado);
+            updateHero(t);
+            renderLista();
+            await renderAlunosTurma(t);
+        } catch (e) {
+            setStatus('Erro de comunicação.', true);
         }
-        writeTurmas(turmas);
-        setStatus('Turma salva com sucesso!');
-        const t = turmas.find(x => x.id === selecionado);
-        updateHero(t);
-        renderLista();
-        renderAlunosTurma(t);
     };
 
     /* ── Excluir ── */
-    const excluir = () => {
+    const excluir = async () => {
         if (!selecionado) { setStatus('Selecione uma turma para excluir.', true); return; }
         const t = turmas.find(x => x.id === selecionado);
-        if (!confirm(`Excluir a turma "${t?.nomeTurma}"? Esta ação não pode ser desfeita.`)) return;
-        turmas = turmas.filter(x => x.id !== selecionado);
-        writeTurmas(turmas);
-        selecionado = null;
-        limpar();
-        setStatus('Turma excluída.');
-        renderLista();
+        if (!confirm(`Excluir a turma "${t?.nome}"? Esta ação não pode ser desfeita.`)) return;
+        try {
+            const res = await fetch(`/api/ebd/turmas/${selecionado}`, { method: 'DELETE' });
+            const json = await res.json();
+            if (!res.ok) { setStatus(json.error || 'Erro ao excluir.', true); return; }
+            selecionado = null;
+            await carregarDados();
+            preencherForm(null);
+            updateHero(null);
+            renderLista();
+            renderAlunosTurma(null);
+            setStatus('Turma excluída.');
+        } catch (e) {
+            setStatus('Erro de comunicação.', true);
+        }
     };
 
     /* ── Limpar ── */
@@ -1063,6 +1059,16 @@
         renderAlunosTurma(null);
     };
 
+    /* ── Carregar turmas da API ── */
+    const carregarDados = async () => {
+        try {
+            const data = await fetch('/api/ebd/turmas').then(r => r.json());
+            turmas = Array.isArray(data) ? data : [];
+        } catch (e) {
+            turmas = [];
+        }
+    };
+
     /* ── Eventos ── */
     $('btnNovaTurma').addEventListener('click', limpar);
     $('btnLimpar').addEventListener('click', limpar);
@@ -1070,7 +1076,7 @@
     $('btnSalvarHero').addEventListener('click', salvar);
     $('btnExcluir').addEventListener('click', excluir);
     $('btnExcluirHero').addEventListener('click', excluir);
-    $('btnRecarregar').addEventListener('click', () => { turmas = readTurmas(); renderLista(); });
+    $('btnRecarregar').addEventListener('click', async () => { await carregarDados(); renderLista(); });
     $('btnSalvarRevista').addEventListener('click', salvar);
 
     $('btnAddLicao').addEventListener('click', () => {
@@ -1092,14 +1098,12 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
-            $( btn.dataset.tab )?.classList.add('active');
+            $(btn.dataset.tab)?.classList.add('active');
         });
     });
 
     /* ── Init ── */
-    renderLista();
-    updateHero(null);
-    renderAlunosTurma(null);
+    (async () => { await carregarDados(); renderLista(); })();
 </script>
 </body>
 </html>

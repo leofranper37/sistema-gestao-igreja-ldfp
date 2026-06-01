@@ -153,58 +153,46 @@
     <script>
         requireAuthSession();
 
-        const STORAGE_GRADES = 'ldfpEbdGrades';
-        const STORAGE_CLASSES = 'ldfpEbdClasses';
-        const STORAGE_STUDENTS = 'ldfpEbdStudents';
-
-        const form = document.getElementById('gradeForm');
-        const statusMsg = document.getElementById('statusMsg');
-        const formHead = document.getElementById('formHead');
-        const btnSalvar = document.getElementById('btnSalvar');
+        const form        = document.getElementById('gradeForm');
+        const statusMsg   = document.getElementById('statusMsg');
+        const formHead    = document.getElementById('formHead');
+        const btnSalvar   = document.getElementById('btnSalvar');
         const turmaSelect = document.getElementById('turmaGrade');
         const studentsBox = document.getElementById('studentsBox');
 
-        const params = new URLSearchParams(window.location.search);
+        const params    = new URLSearchParams(window.location.search);
         const editingId = params.get('edit');
 
-        let selectedStudents = [];
+        let selectedStudents = []; // [{ id, nome, estagio, presente }]
 
-        function readStorage(key) {
-            return JSON.parse(localStorage.getItem(key) || '[]');
-        }
+        const setStatus = (msg, err = false) => {
+            statusMsg.textContent = msg;
+            statusMsg.className   = 'status' + (err ? ' error' : '');
+        };
 
-        function writeGrades(list) {
-            localStorage.setItem(STORAGE_GRADES, JSON.stringify(list));
-        }
-
-        function makeId() {
-            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-                return window.crypto.randomUUID();
+        async function loadTurmas() {
+            try {
+                const turmas = await fetch('/api/ebd/turmas').then(r => r.json());
+                turmaSelect.innerHTML = '<option value="">Selecione...</option>' +
+                    turmas.map(t => `<option value="${t.id}">${t.nome}</option>`).join('');
+            } catch (e) {
+                console.error('loadTurmas:', e);
             }
-            return String(Date.now());
         }
 
-        function fillClassOptions() {
-            const classes = readStorage(STORAGE_CLASSES);
-            turmaSelect.innerHTML = '<option value="">Selecione...</option>' + classes.map((item) => {
-                return `<option value="${item.nomeTurma}">${item.nomeTurma}</option>`;
-            }).join('');
-        }
-
-        function loadStudentsByClass(className) {
-            const students = readStorage(STORAGE_STUDENTS).filter((item) => (item.turma || '') === className);
-            if (!students.length) {
-                studentsBox.innerHTML = '<p class="muted">Nenhum aluno encontrado para esta turma.</p>';
-                selectedStudents = [];
-                return;
+        async function loadStudentsByTurma(turmaId) {
+            try {
+                const alunos = await fetch(`/api/ebd/alunos?turma_id=${turmaId}`).then(r => r.json());
+                if (!alunos.length) {
+                    studentsBox.innerHTML = '<p class="muted">Nenhum aluno encontrado para esta turma.</p>';
+                    selectedStudents = [];
+                    return;
+                }
+                selectedStudents = alunos.map(a => ({ id: a.id, nome: a.nome, estagio: a.estagio, presente: true }));
+                renderStudentRows();
+            } catch (e) {
+                studentsBox.innerHTML = '<p class="muted">Erro ao carregar alunos.</p>';
             }
-
-            selectedStudents = students.map((item) => ({
-                nome: item.nome,
-                presente: true
-            }));
-
-            renderStudentRows();
         }
 
         function renderStudentRows() {
@@ -212,7 +200,6 @@
                 studentsBox.innerHTML = '<p class="muted">Nenhum aluno encontrado para esta turma.</p>';
                 return;
             }
-
             studentsBox.innerHTML = selectedStudents.map((item, index) => {
                 const checked = item.presente ? 'checked' : '';
                 return `
@@ -222,109 +209,103 @@
                     </div>
                 `;
             }).join('');
-
-            studentsBox.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
-                checkbox.addEventListener('change', () => {
-                    const idx = Number(checkbox.getAttribute('data-index'));
+            studentsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const idx = Number(cb.getAttribute('data-index'));
                     if (Number.isFinite(idx) && selectedStudents[idx]) {
-                        selectedStudents[idx].presente = checkbox.checked;
+                        selectedStudents[idx].presente = cb.checked;
                     }
                 });
             });
         }
 
-        function loadEditData() {
+        async function loadEditData() {
             if (!editingId) return;
+            try {
+                const res = await fetch(`/api/ebd/apontamentos/${editingId}`);
+                const apt = await res.json();
+                if (!res.ok) { setStatus(apt.error || 'Apontamento não encontrado.', true); return; }
 
-            const item = readStorage(STORAGE_GRADES).find((entry) => String(entry.id) === String(editingId));
-            if (!item) {
-                statusMsg.textContent = 'Apontamento nao encontrado para edicao.';
-                statusMsg.classList.add('error');
-                return;
+                document.getElementById('dataGrade').value      = apt.data || '';
+                document.getElementById('ofertaGrade').value    = apt.oferta || 0;
+                document.getElementById('visitantesGrade').value= apt.visitantes || 0;
+                turmaSelect.value = String(apt.turmaId || '');
+
+                selectedStudents = Array.isArray(apt.alunos) ? apt.alunos : [];
+                renderStudentRows();
+                formHead.textContent  = 'Editar Apontamento';
+                btnSalvar.textContent = 'Atualizar';
+            } catch (e) {
+                setStatus('Erro ao carregar apontamento.', true);
             }
-
-            document.getElementById('dataGrade').value = item.data || '';
-            document.getElementById('ofertaGrade').value = item.oferta || 0;
-            document.getElementById('visitantesGrade').value = item.visitantes || 0;
-            turmaSelect.value = item.turma || '';
-
-            selectedStudents = Array.isArray(item.alunos) ? item.alunos : [];
-            renderStudentRows();
-
-            formHead.textContent = 'Editar Apontamento';
-            btnSalvar.textContent = 'Atualizar';
         }
 
-        turmaSelect.addEventListener('change', () => {
-            const className = turmaSelect.value;
-            if (!className) {
+        turmaSelect.addEventListener('change', async () => {
+            const turmaId = turmaSelect.value;
+            if (!turmaId) {
                 studentsBox.innerHTML = '<p class="muted">Selecione a turma para carregar os alunos.</p>';
                 selectedStudents = [];
                 return;
             }
-
-            if (!editingId) {
-                loadStudentsByClass(className);
-            }
+            if (!editingId) await loadStudentsByTurma(turmaId);
         });
 
         document.getElementById('btnVoltar').addEventListener('click', () => {
             window.location.href = 'ebd_grades.html';
         });
 
-        form.addEventListener('submit', (event) => {
+        form.addEventListener('submit', async (event) => {
             event.preventDefault();
+            btnSalvar.disabled = true;
+            setStatus('');
 
-            const turma = turmaSelect.value.trim();
-            const data = document.getElementById('dataGrade').value;
-            const oferta = document.getElementById('ofertaGrade').value;
-            const visitantes = document.getElementById('visitantesGrade').value;
+            const turmaId   = turmaSelect.value;
+            const data      = document.getElementById('dataGrade').value;
+            const oferta    = document.getElementById('ofertaGrade').value;
+            const visitantes= document.getElementById('visitantesGrade').value;
 
-            if (!turma || !data) {
-                statusMsg.textContent = 'Informe Turma e Data.';
-                statusMsg.classList.add('error');
+            if (!turmaId || !data) {
+                setStatus('Informe Turma e Data.', true);
+                btnSalvar.disabled = false;
                 return;
             }
 
-            const grades = readStorage(STORAGE_GRADES);
+            const payload = {
+                turmaId: parseInt(turmaId),
+                data,
+                oferta: parseFloat(oferta) || 0,
+                visitantes: parseInt(visitantes) || 0,
+                alunos: selectedStudents
+            };
+            const url    = editingId ? `/api/ebd/apontamentos/${editingId}` : '/api/ebd/apontamentos';
+            const method = editingId ? 'PUT' : 'POST';
 
-            if (editingId) {
-                const index = grades.findIndex((entry) => String(entry.id) === String(editingId));
-                if (index >= 0) {
-                    grades[index] = {
-                        ...grades[index],
-                        turma,
-                        data,
-                        oferta,
-                        visitantes,
-                        alunos: selectedStudents,
-                        updatedAt: new Date().toISOString()
-                    };
-                }
-                statusMsg.textContent = 'Apontamento atualizado com sucesso!';
-            } else {
-                grades.push({
-                    id: makeId(),
-                    turma,
-                    data,
-                    oferta,
-                    visitantes,
-                    alunos: selectedStudents,
-                    createdAt: new Date().toISOString()
+            try {
+                const res  = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-                statusMsg.textContent = 'Apontamento salvo com sucesso!';
-                form.reset();
-                studentsBox.innerHTML = '<p class="muted">Selecione a turma para carregar os alunos.</p>';
-                selectedStudents = [];
+                const json = await res.json();
+                if (!res.ok) { setStatus(json.error || 'Erro ao salvar.', true); return; }
+                setStatus(editingId ? 'Apontamento atualizado!' : 'Apontamento salvo com sucesso!');
+                if (!editingId) {
+                    form.reset();
+                    studentsBox.innerHTML = '<p class="muted">Selecione a turma para carregar os alunos.</p>';
+                    selectedStudents = [];
+                }
+            } catch (e) {
+                setStatus('Erro de comunicação.', true);
+            } finally {
+                btnSalvar.disabled = false;
             }
-
-            statusMsg.classList.remove('error');
-            writeGrades(grades);
         });
 
-        fillClassOptions();
-        document.getElementById('dataGrade').value = new Date().toISOString().slice(0, 10);
-        loadEditData();
+        (async () => {
+            await loadTurmas();
+            document.getElementById('dataGrade').value = new Date().toISOString().slice(0, 10);
+            await loadEditData();
+        })();
     </script>
 </body>
 </html>

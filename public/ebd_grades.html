@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -745,24 +745,15 @@
 <script>
     requireAuthSession();
 
-    const STORAGE_GRADES   = 'ldfpEbdGrades';
-    const STORAGE_CLASSES  = 'ldfpEbdClasses';
-    const STORAGE_STUDENTS = 'ldfpEbdStudents';
-
     const $ = id => document.getElementById(id);
 
-    /* ── Storage ── */
-    const readGrades   = () => JSON.parse(localStorage.getItem(STORAGE_GRADES)   || '[]');
-    const readClasses  = () => JSON.parse(localStorage.getItem(STORAGE_CLASSES)  || '[]');
-    const readStudents = () => JSON.parse(localStorage.getItem(STORAGE_STUDENTS) || '[]');
-    const writeGrades  = list => localStorage.setItem(STORAGE_GRADES, JSON.stringify(list));
-    const makeId       = () => crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-
-    let grades     = readGrades();
-    let selecionado = null;
-    let alunosApontamento = [];
-    let filtroTexto = '';
-    let filtroTurma = '';
+    /* ── Estado ── */
+    let grades            = [];
+    let turmasList        = [];
+    let selecionado       = null; // id numérico
+    let alunosApontamento = []; // [{id, nome, estagio, presente}]
+    let filtroTexto       = '';
+    let filtroTurma       = '';
 
     /* ── Status ── */
     const setStatus = (msg, err = false) => {
@@ -771,19 +762,15 @@
         bar.className = 'status-bar' + (msg ? ' show ' + (err ? 'err' : 'ok') : '');
     };
 
-    /* ── Iniciais ── */
     const initials = nome => (nome || '?').split(' ').slice(0,2).map(p => p[0]).join('').toUpperCase();
 
-    /* ── Preencher select de turmas ── */
+    /* ── Preencher selects de turmas ── */
     const preencherSelectTurmas = () => {
-        const classes = readClasses();
-        const sel = $('selectTurma');
-        sel.innerHTML = '<option value="">Selecione...</option>' +
-            classes.map(c => `<option value="${c.nomeTurma}">${c.nomeTurma}</option>`).join('');
-
+        const sel    = $('selectTurma');
         const filter = $('filterTurma');
-        filter.innerHTML = '<option value="">Todas as turmas</option>' +
-            classes.map(c => `<option value="${c.nomeTurma}">${c.nomeTurma}</option>`).join('');
+        const opts   = turmasList.map(t => `<option value="${t.id}">${t.nome}</option>`).join('');
+        sel.innerHTML    = '<option value="">Selecione...</option>' + opts;
+        filter.innerHTML = '<option value="">Todas as turmas</option>' + opts;
     };
 
     /* ── Update hero ── */
@@ -801,7 +788,7 @@
         const presentes = alunos.filter(a => a.presente).length;
         const ausentes  = alunos.length - presentes;
 
-        $('heroNome').textContent = apt.turma || 'Turma';
+        $('heroNome').textContent = apt.turmaNome || 'Turma';
         $('heroNome').className   = 'hero-name';
         $('heroSub').textContent  = `${apt.data || '-'} · Lição ${apt.licaoNumero || '-'}${apt.licaoTitulo ? ' · ' + apt.licaoTitulo : ''}`;
         $('heroPresentes').textContent  = presentes;
@@ -811,254 +798,149 @@
 
     /* ── Renderizar lista ── */
     const renderLista = () => {
-        const list  = $('aptList');
-        const count = $('aptCount');
+        const el = $('gradeList');
+        const filtered = grades.filter(g => {
+            const txt = ((g.turmaNome || '') + ' ' + (g.data || '')).toLowerCase();
+            if (filtroTexto && !txt.includes(filtroTexto)) return false;
+            if (filtroTurma && String(g.turmaId || '') !== filtroTurma) return false;
+            return true;
+        });
+        $('aptCount').textContent = filtered.length;
 
-        const filtrados = grades.filter(g => {
-            const txt = ((g.turma || '') + ' ' + (g.data || '')).toLowerCase();
-            const okTxt   = txt.includes(filtroTexto);
-            const okTurma = !filtroTurma || (g.turma || '') === filtroTurma;
-            return okTxt && okTurma;
-        }).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
-
-        count.textContent = filtrados.length;
-
-        if (!filtrados.length) {
-            list.innerHTML = `<div class="empty-list">
-                <i class="fa-solid fa-clipboard-list"></i>
-                Nenhum apontamento encontrado.
-            </div>`;
+        if (!filtered.length) {
+            el.innerHTML = `<div class="empty-list"><i class="fa-solid fa-list-check"></i>Nenhum apontamento encontrado.</div>`;
             return;
         }
 
-        list.innerHTML = filtrados.map(g => {
+        el.innerHTML = filtered.map(g => {
+            const ativo = selecionado === g.id ? 'is-active' : '';
             const alunos    = Array.isArray(g.alunos) ? g.alunos : [];
             const presentes = alunos.filter(a => a.presente).length;
-            const ativo     = selecionado === g.id ? 'is-active' : '';
-            const dataFmt   = g.data ? new Date(g.data + 'T12:00:00').toLocaleDateString('pt-BR') : '-';
             return `
-                <div class="apt-item ${ativo}" data-id="${g.id}">
-                    <div class="apt-icon"><i class="fa-solid fa-clipboard-check"></i></div>
-                    <div class="apt-info">
-                        <div class="apt-name">${g.turma || '-'}</div>
-                        <div class="apt-sub">${dataFmt}${g.licaoNumero ? ' · Lição ' + g.licaoNumero : ''}</div>
+                <div class="grade-item ${ativo}" data-id="${g.id}">
+                    <div class="g-info">
+                        <div class="g-nome">${g.turmaNome || '-'}</div>
+                        <div class="g-sub">${g.data || '-'} · ${presentes} presente(s)</div>
                     </div>
-                    <span class="apt-badge">${presentes} pres.</span>
                 </div>
             `;
         }).join('');
-
-        list.querySelectorAll('.apt-item').forEach(el => {
-            el.addEventListener('click', () => selecionarApt(el.dataset.id));
+        el.querySelectorAll('.grade-item').forEach(item => {
+            item.addEventListener('click', () => selecionarApt(Number(item.dataset.id)));
         });
     };
 
     /* ── Preencher form ── */
-    const preencherForm = apt => {
-        const form = document.querySelector('form') || { reset: () => {} };
-        ['turma','data','licaoNumero','licaoTitulo','professorPresente',
-         'visitantes','oferta','biblias','revistas','obs'].forEach(name => {
-            const el = document.querySelector(`[name="${name}"]`);
-            if (!el) return;
-            el.value = apt ? (apt[name] ?? '') : (name === 'visitantes' || name === 'oferta' || name === 'biblias' || name === 'revistas' ? '0' : '');
-        });
+    const preencherForm = (apt) => {
+        if (!apt) {
+            const form = document.forms.gradeForm;
+            if (form) form.reset();
+            $('selectTurma').value = '';
+            return;
+        }
+        $('selectTurma').value                    = apt.turmaId || '';
+        document.getElementById('dataApt').value  = apt.data || '';
+        document.getElementById('licaoNum').value = apt.licaoNumero || '';
+        document.getElementById('licaoTit').value = apt.licaoTitulo || '';
+        document.getElementById('profPre').value  = apt.professorPresente || '';
+        document.getElementById('visitantes').value = apt.visitantes || 0;
+        document.getElementById('oferta').value   = apt.oferta || 0;
+        document.getElementById('biblias').value  = apt.biblias || 0;
+        document.getElementById('revistas').value = apt.revistas || 0;
+        document.getElementById('obsApt').value   = apt.obs || '';
     };
 
     /* ── Carregar presença ── */
-    const carregarPresenca = apt => {
-        const wrap = $('presencaList');
+    const carregarPresenca = async (apt) => {
         if (!apt) {
-            wrap.innerHTML = `<div style="padding:28px;text-align:center;color:var(--muted);font-size:13px;">
-                Selecione um apontamento para gerenciar a presença.
-            </div>`;
             alunosApontamento = [];
-            atualizarStatsPresenca();
+            renderPresenca();
             return;
         }
-
-        /* Pegar alunos da turma ou os já gravados */
-        const alunosTurma = readStudents().filter(a =>
-            (a.turma || '').toLowerCase() === (apt.turma || '').toLowerCase()
-        );
-
-        /* Mesclar com dados salvos */
-        alunosApontamento = alunosTurma.map(a => {
-            const saved = Array.isArray(apt.alunos)
-                ? apt.alunos.find(x => x.nome === a.nome)
-                : null;
-            return { nome: a.nome, estagio: a.estagio || '', presente: saved ? saved.presente : true };
-        });
-
-        /* Adicionar alunos que estavam no apontamento mas não na turma mais */
-        if (Array.isArray(apt.alunos)) {
-            apt.alunos.forEach(x => {
-                if (!alunosApontamento.find(a => a.nome === x.nome)) {
-                    alunosApontamento.push({ ...x });
-                }
-            });
+        // Se é apontamento existente, usa alunos já carregados via API (apt.alunos)
+        if (apt.alunos && apt.alunos.length) {
+            alunosApontamento = apt.alunos.map(a => ({ ...a }));
+            renderPresenca();
+            return;
         }
-
+        // Novo apontamento: carrega alunos da turma
+        const turmaId = apt.turmaId || $('selectTurma').value;
+        if (!turmaId) { alunosApontamento = []; renderPresenca(); return; }
+        try {
+            const data = await fetch(`/api/ebd/alunos?turma_id=${turmaId}`).then(r => r.json());
+            alunosApontamento = Array.isArray(data) ? data.map(a => ({ ...a, presente: true })) : [];
+        } catch (e) {
+            alunosApontamento = [];
+        }
         renderPresenca();
     };
 
+    /* ── Renderizar presença ── */
     const renderPresenca = () => {
-        const wrap = $('presencaList');
+        const wrap = $('presencaWrap');
         if (!alunosApontamento.length) {
-            wrap.innerHTML = `<div style="padding:28px;text-align:center;color:var(--muted);font-size:13px;">
-                Nenhum aluno vinculado a esta turma.
-            </div>`;
-            atualizarStatsPresenca();
+            wrap.innerHTML = `<p class="muted">Nenhum aluno encontrado. Selecione uma turma com alunos cadastrados.</p>`;
             return;
         }
-
         wrap.innerHTML = alunosApontamento.map((a, i) => `
-            <div class="aluno-row" data-idx="${i}">
-                <div class="aluno-avatar">${initials(a.nome)}</div>
-                <div style="flex:1;min-width:0;">
-                    <div class="aluno-nome">${a.nome || '-'}</div>
-                    <div class="aluno-estagio">${a.estagio || ''}</div>
+            <div class="presenca-row">
+                <div class="p-ava">${initials(a.nome)}</div>
+                <div class="p-info">
+                    <div class="p-name">${a.nome || '-'}</div>
+                    <div class="p-sub">${a.estagio || '-'}</div>
                 </div>
-                <div class="presenca-toggle">
-                    <button type="button" class="toggle-btn ${a.presente ? 'presente' : ''}" data-tipo="presente" data-idx="${i}">
-                        <i class="fa-solid fa-check"></i> Presente
-                    </button>
-                    <button type="button" class="toggle-btn ${!a.presente ? 'ausente' : ''}" data-tipo="ausente" data-idx="${i}">
-                        <i class="fa-solid fa-xmark"></i> Ausente
-                    </button>
-                </div>
+                <label class="p-toggle">
+                    <input type="checkbox" data-idx="${i}" ${a.presente ? 'checked' : ''}>
+                    <span>${a.presente ? 'Presente' : 'Ausente'}</span>
+                </label>
             </div>
         `).join('');
-
-        wrap.querySelectorAll('.toggle-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const idx  = Number(btn.dataset.idx);
-                const tipo = btn.dataset.tipo;
-                alunosApontamento[idx].presente = tipo === 'presente';
-                renderPresenca();
+        wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const idx = Number(cb.dataset.idx);
+                if (alunosApontamento[idx]) {
+                    alunosApontamento[idx].presente = cb.checked;
+                    cb.nextElementSibling.textContent = cb.checked ? 'Presente' : 'Ausente';
+                }
             });
         });
-
-        atualizarStatsPresenca();
     };
 
-    const atualizarStatsPresenca = () => {
-        const total     = alunosApontamento.length;
-        const presentes = alunosApontamento.filter(a => a.presente).length;
-        const ausentes  = total - presentes;
-        $('pTotal').textContent     = total;
-        $('pPresentes').textContent = presentes;
-        $('pAusentes').textContent  = ausentes;
-    };
-
-    /* ── Resumo ── */
-    const renderResumo = apt => {
-        const wrap = $('resumoContent');
-        if (!apt) {
-            wrap.innerHTML = `<span style="color:var(--muted);font-size:13px;">Selecione um apontamento para ver o resumo.</span>`;
-            return;
-        }
+    /* ── Renderizar resumo ── */
+    const renderResumo = (apt) => {
+        const wrap = $('resumoWrap');
+        if (!apt) { wrap.innerHTML = `<p class="muted">Selecione um apontamento para ver o resumo.</p>`; return; }
         const alunos    = Array.isArray(apt.alunos) ? apt.alunos : [];
         const presentes = alunos.filter(a => a.presente).length;
         const ausentes  = alunos.length - presentes;
-        const pct       = alunos.length ? Math.round(presentes / alunos.length * 100) : 0;
-        const dataFmt   = apt.data ? new Date(apt.data + 'T12:00:00').toLocaleDateString('pt-BR') : '-';
-
         wrap.innerHTML = `
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
-                <div style="background:#e0e7ff;border-radius:10px;padding:14px;text-align:center;">
-                    <div style="font-size:26px;font-weight:800;color:var(--indigo);">${presentes}</div>
-                    <div style="font-size:11px;color:var(--muted);">Presentes</div>
-                </div>
-                <div style="background:#fee2e2;border-radius:10px;padding:14px;text-align:center;">
-                    <div style="font-size:26px;font-weight:800;color:var(--red);">${ausentes}</div>
-                    <div style="font-size:11px;color:var(--muted);">Ausentes</div>
-                </div>
-                <div style="background:#d1fae5;border-radius:10px;padding:14px;text-align:center;">
-                    <div style="font-size:26px;font-weight:800;color:var(--green);">${apt.visitantes || 0}</div>
-                    <div style="font-size:11px;color:var(--muted);">Visitantes</div>
-                </div>
-            </div>
-            <div style="background:#f8fafc;border-radius:10px;padding:14px;font-size:13px;color:var(--text);display:grid;gap:8px;">
-                <div><b>Turma:</b> ${apt.turma || '-'}</div>
-                <div><b>Data:</b> ${dataFmt}</div>
-                <div><b>Lição:</b> ${apt.licaoNumero ? 'Nº ' + apt.licaoNumero : '-'}${apt.licaoTitulo ? ' · ' + apt.licaoTitulo : ''}</div>
-                <div><b>Professor:</b> ${apt.professorPresente || '-'}</div>
-                <div><b>Oferta:</b> R$ ${parseFloat(apt.oferta || 0).toFixed(2)}</div>
-                <div><b>Bíblias:</b> ${apt.biblias || 0} &nbsp;|&nbsp; <b>Revistas:</b> ${apt.revistas || 0}</div>
-                <div><b>Freq. da turma:</b> ${pct}% de presença</div>
-                ${apt.obs ? `<div><b>Obs:</b> ${apt.obs}</div>` : ''}
+            <div class="resumo-grid">
+                <div class="r-item"><span>Turma</span><strong>${apt.turmaNome || '-'}</strong></div>
+                <div class="r-item"><span>Data</span><strong>${apt.data || '-'}</strong></div>
+                <div class="r-item"><span>Lição</span><strong>${apt.licaoNumero ? 'Nº ' + apt.licaoNumero : '-'}</strong></div>
+                <div class="r-item"><span>Presentes</span><strong>${presentes}</strong></div>
+                <div class="r-item"><span>Ausentes</span><strong>${ausentes}</strong></div>
+                <div class="r-item"><span>Visitantes</span><strong>${apt.visitantes || 0}</strong></div>
+                <div class="r-item"><span>Oferta</span><strong>R$ ${parseFloat(apt.oferta || 0).toFixed(2)}</strong></div>
+                <div class="r-item"><span>Bíblias</span><strong>${apt.biblias || 0}</strong></div>
+                <div class="r-item"><span>Revistas</span><strong>${apt.revistas || 0}</strong></div>
             </div>
         `;
     };
 
     /* ── Selecionar apontamento ── */
-    const selecionarApt = id => {
+    const selecionarApt = async (id) => {
         selecionado = id;
-        const apt = grades.find(g => g.id === id);
-        updateHero(apt);
-        preencherForm(apt);
-        carregarPresenca(apt);
-        renderResumo(apt);
         setStatus('');
-        renderLista();
-    };
-
-    /* ── Coletar form ── */
-    const getPayload = () => {
-        const get = name => {
-            const el = document.querySelector(`[name="${name}"]`);
-            return el ? el.value.trim() : '';
-        };
-        return {
-            turma:             get('turma'),
-            data:              get('data'),
-            licaoNumero:       get('licaoNumero'),
-            licaoTitulo:       get('licaoTitulo'),
-            professorPresente: get('professorPresente'),
-            visitantes:        Number(get('visitantes')) || 0,
-            oferta:            get('oferta'),
-            biblias:           Number(get('biblias')) || 0,
-            revistas:          Number(get('revistas')) || 0,
-            obs:               get('obs'),
-            alunos:            alunosApontamento,
-        };
-    };
-
-    /* ── Salvar ── */
-    const salvar = () => {
-        setStatus('');
-        const payload = getPayload();
-        if (!payload.turma || !payload.data) {
-            setStatus('Informe a turma e a data.', true);
-            return;
+        try {
+            const apt = await fetch(`/api/ebd/apontamentos/${id}`).then(r => r.json());
+            updateHero(apt);
+            preencherForm(apt);
+            await carregarPresenca(apt);
+            renderResumo(apt);
+        } catch (e) {
+            setStatus('Erro ao carregar apontamento.', true);
         }
-
-        if (selecionado) {
-            const idx = grades.findIndex(g => g.id === selecionado);
-            if (idx >= 0) grades[idx] = { ...grades[idx], ...payload };
-        } else {
-            const novo = { id: makeId(), ...payload };
-            grades.push(novo);
-            selecionado = novo.id;
-        }
-        writeGrades(grades);
-        setStatus('Apontamento salvo com sucesso!');
-        const apt = grades.find(g => g.id === selecionado);
-        updateHero(apt);
-        renderResumo(apt);
-        renderLista();
-    };
-
-    /* ── Excluir ── */
-    const excluir = () => {
-        if (!selecionado) { setStatus('Selecione um apontamento para excluir.', true); return; }
-        const apt = grades.find(g => g.id === selecionado);
-        if (!confirm(`Excluir o apontamento de "${apt?.turma}" em ${apt?.data}?`)) return;
-        grades = grades.filter(g => g.id !== selecionado);
-        writeGrades(grades);
-        selecionado = null;
-        limpar();
-        setStatus('Apontamento excluído.');
         renderLista();
     };
 
@@ -1067,26 +949,107 @@
         selecionado = null;
         preencherForm(null);
         updateHero(null);
-        carregarPresenca(null);
+        alunosApontamento = [];
+        renderPresenca();
         renderResumo(null);
         setStatus('');
         renderLista();
+        document.getElementById('dataApt').value = new Date().toISOString().slice(0, 10);
+    };
+
+    /* ── Coletar payload ── */
+    const getPayload = () => ({
+        turmaId:          parseInt($('selectTurma').value) || null,
+        data:             document.getElementById('dataApt').value,
+        licaoNumero:      parseInt(document.getElementById('licaoNum').value) || null,
+        licaoTitulo:      document.getElementById('licaoTit').value.trim(),
+        professorPresente:document.getElementById('profPre').value.trim(),
+        visitantes:       parseInt(document.getElementById('visitantes').value) || 0,
+        oferta:           parseFloat(document.getElementById('oferta').value) || 0,
+        biblias:          parseInt(document.getElementById('biblias').value) || 0,
+        revistas:         parseInt(document.getElementById('revistas').value) || 0,
+        obs:              document.getElementById('obsApt').value.trim(),
+        alunos:           alunosApontamento,
+    });
+
+    /* ── Salvar ── */
+    const salvar = async () => {
+        const payload = getPayload();
+        if (!payload.turmaId || !payload.data) {
+            setStatus('Informe Turma e Data.', true);
+            return;
+        }
+        const url    = selecionado ? `/api/ebd/apontamentos/${selecionado}` : '/api/ebd/apontamentos';
+        const method = selecionado ? 'PUT' : 'POST';
+        try {
+            const res  = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+            if (!res.ok) { setStatus(json.error || 'Erro ao salvar.', true); return; }
+            if (!selecionado) selecionado = json.id;
+            setStatus('Apontamento salvo com sucesso!');
+            await carregarGrades();
+            renderLista();
+            const apt = grades.find(g => g.id === selecionado);
+            if (apt) { updateHero(apt); renderResumo(apt); }
+        } catch (e) {
+            setStatus('Erro de comunicação.', true);
+        }
+    };
+
+    /* ── Excluir ── */
+    const excluir = async () => {
+        if (!selecionado) { setStatus('Selecione um apontamento para excluir.', true); return; }
+        const apt = grades.find(g => g.id === selecionado);
+        if (!confirm(`Excluir o apontamento de "${apt?.turmaNome || ''}" em ${apt?.data || ''}?`)) return;
+        try {
+            const res = await fetch(`/api/ebd/apontamentos/${selecionado}`, { method: 'DELETE' });
+            const json = await res.json();
+            if (!res.ok) { setStatus(json.error || 'Erro ao excluir.', true); return; }
+            selecionado = null;
+            await carregarGrades();
+            limpar();
+            setStatus('Apontamento excluído.');
+        } catch (e) {
+            setStatus('Erro de comunicação.', true);
+        }
+    };
+
+    /* ── Carregar dados ── */
+    const carregarGrades = async () => {
+        try {
+            const data = await fetch('/api/ebd/apontamentos').then(r => r.json());
+            grades = Array.isArray(data) ? data : [];
+        } catch (e) { grades = []; }
+    };
+
+    const carregarTurmas = async () => {
+        try {
+            const data = await fetch('/api/ebd/turmas').then(r => r.json());
+            turmasList = Array.isArray(data) ? data : [];
+        } catch (e) { turmasList = []; }
     };
 
     /* ── Eventos ── */
-    $('btnNovoApontamento').addEventListener('click', limpar);
+    $('btnNovoApt').addEventListener('click', limpar);
     $('btnLimpar').addEventListener('click', limpar);
     $('btnSalvar').addEventListener('click', salvar);
     $('btnSalvarHero').addEventListener('click', salvar);
     $('btnExcluir').addEventListener('click', excluir);
     $('btnExcluirHero').addEventListener('click', excluir);
-    $('btnRecarregar').addEventListener('click', () => { grades = readGrades(); renderLista(); });
+    $('btnRecarregar').addEventListener('click', async () => {
+        await carregarGrades();
+        renderLista();
+    });
 
-    $('btnTodosPresentes').addEventListener('click', () => {
+    $('btnMarcarTodos').addEventListener('click', () => {
         alunosApontamento.forEach(a => a.presente = true);
         renderPresenca();
     });
-    $('btnTodosAusentes').addEventListener('click', () => {
+    $('btnDesmarcarTodos').addEventListener('click', () => {
         alunosApontamento.forEach(a => a.presente = false);
         renderPresenca();
     });
@@ -1100,12 +1063,10 @@
         renderLista();
     });
 
-    /* Turma selecionada no form carrega alunos automaticamente */
-    $('selectTurma').addEventListener('change', () => {
-        const turma = $('selectTurma').value;
-        if (!turma || selecionado) return;
-        const fakeApt = { turma, alunos: [] };
-        carregarPresenca(fakeApt);
+    $('selectTurma').addEventListener('change', async () => {
+        const turmaId = $('selectTurma').value;
+        if (!turmaId || selecionado) return;
+        await carregarPresenca({ turmaId });
     });
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1118,11 +1079,16 @@
     });
 
     /* ── Init ── */
-    preencherSelectTurmas();
-    renderLista();
-    updateHero(null);
-    carregarPresenca(null);
-    renderResumo(null);
+    (async () => {
+        await carregarTurmas();
+        await carregarGrades();
+        preencherSelectTurmas();
+        renderLista();
+        updateHero(null);
+        carregarPresenca(null);
+        renderResumo(null);
+        document.getElementById('dataApt').value = new Date().toISOString().slice(0, 10);
+    })();
 </script>
 </body>
 </html>

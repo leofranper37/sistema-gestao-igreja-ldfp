@@ -150,101 +150,75 @@
     <script>
         requireAuthSession();
 
-        const STORAGE_KEY = 'ldfpEbdClasses';
-        const form = document.getElementById('classForm');
+        const form      = document.getElementById('classForm');
         const statusMsg = document.getElementById('statusMsg');
-        const formHead = document.getElementById('formHead');
+        const formHead  = document.getElementById('formHead');
         const btnSalvar = document.getElementById('btnSalvar');
 
-        const params = new URLSearchParams(window.location.search);
+        const params    = new URLSearchParams(window.location.search);
         const editingId = params.get('edit');
 
-        function readClasses() {
-            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        }
+        const setStatus = (msg, err = false) => {
+            statusMsg.textContent = msg;
+            statusMsg.className   = 'status' + (err ? ' error' : '');
+        };
 
-        function writeClasses(list) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-        }
-
-        function makeId() {
-            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-                return window.crypto.randomUUID();
-            }
-            return String(Date.now());
-        }
-
-        function loadEditData() {
+        async function loadEditData() {
             if (!editingId) return;
+            try {
+                const res  = await fetch(`/api/ebd/turmas/${editingId}`);
+                const item = await res.json();
+                if (!res.ok) { setStatus(item.error || 'Turma não encontrada.', true); return; }
 
-            const item = readClasses().find((entry) => String(entry.id) === String(editingId));
-            if (!item) {
-                statusMsg.textContent = 'Turma nao encontrada para edicao.';
-                statusMsg.classList.add('error');
-                return;
+                document.getElementById('nomeTurma').value          = item.nome || '';
+                document.getElementById('anoTurma').value           = item.ano || '';
+                document.getElementById('estagioTurma').value       = item.estagio || '';
+                document.getElementById('professorTurma').value     = item.professor || '';
+                document.getElementById('segundoProfessorTurma').value = item.segundoProfessor || '';
+
+                formHead.textContent   = 'Editar Turma';
+                btnSalvar.textContent  = 'Atualizar';
+            } catch (e) {
+                setStatus('Erro ao carregar turma.', true);
             }
-
-            document.getElementById('nomeTurma').value = item.nomeTurma || '';
-            document.getElementById('anoTurma').value = item.ano || '';
-            document.getElementById('estagioTurma').value = item.estagio || '';
-            document.getElementById('professorTurma').value = item.professor || '';
-            document.getElementById('segundoProfessorTurma').value = item.segundoProfessor || '';
-
-            formHead.textContent = 'Editar Turma';
-            btnSalvar.textContent = 'Atualizar';
         }
 
         document.getElementById('btnVoltar').addEventListener('click', () => {
             window.location.href = 'ebd_turmas.html';
         });
 
-        form.addEventListener('submit', (event) => {
+        form.addEventListener('submit', async (event) => {
             event.preventDefault();
+            btnSalvar.disabled = true;
+            setStatus('');
 
-            const nomeTurma = document.getElementById('nomeTurma').value.trim();
-            const ano = document.getElementById('anoTurma').value.trim();
-            const estagio = document.getElementById('estagioTurma').value.trim();
-            const professor = document.getElementById('professorTurma').value.trim();
+            const nome             = document.getElementById('nomeTurma').value.trim();
+            const ano              = document.getElementById('anoTurma').value.trim();
+            const estagio          = document.getElementById('estagioTurma').value.trim();
+            const professor        = document.getElementById('professorTurma').value.trim();
             const segundoProfessor = document.getElementById('segundoProfessorTurma').value.trim();
 
-            if (!nomeTurma) {
-                statusMsg.textContent = 'Informe o nome da turma.';
-                statusMsg.classList.add('error');
-                return;
-            }
+            if (!nome) { setStatus('Informe o nome da turma.', true); btnSalvar.disabled = false; return; }
 
-            const classes = readClasses();
+            const payload = { nome, ano, estagio, professor, segundoProfessor };
+            const url    = editingId ? `/api/ebd/turmas/${editingId}` : '/api/ebd/turmas';
+            const method = editingId ? 'PUT' : 'POST';
 
-            if (editingId) {
-                const index = classes.findIndex((entry) => String(entry.id) === String(editingId));
-                if (index >= 0) {
-                    classes[index] = {
-                        ...classes[index],
-                        nomeTurma,
-                        ano,
-                        estagio,
-                        professor,
-                        segundoProfessor,
-                        updatedAt: new Date().toISOString()
-                    };
-                }
-                statusMsg.textContent = 'Turma atualizada com sucesso!';
-            } else {
-                classes.push({
-                    id: makeId(),
-                    nomeTurma,
-                    ano,
-                    estagio,
-                    professor,
-                    segundoProfessor,
-                    createdAt: new Date().toISOString()
+            try {
+                const res  = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-                statusMsg.textContent = 'Turma salva com sucesso!';
-                form.reset();
+                const json = await res.json();
+                if (!res.ok) { setStatus(json.error || 'Erro ao salvar.', true); return; }
+                setStatus(editingId ? 'Turma atualizada com sucesso!' : 'Turma salva com sucesso!');
+                if (!editingId) form.reset();
+            } catch (e) {
+                setStatus('Erro de comunicação.', true);
+            } finally {
+                btnSalvar.disabled = false;
             }
-
-            statusMsg.classList.remove('error');
-            writeClasses(classes);
         });
 
         loadEditData();

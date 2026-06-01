@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -584,7 +584,9 @@
                         </div>
                         <div class="f">
                             <label>Turma / Classe</label>
-                            <input type="text" name="turma" placeholder="Nome da turma">
+                            <select name="turmaId">
+                                <option value="">Selecione a turma...</option>
+                            </select>
                         </div>
                         <div class="f">
                             <label>Situação</label>
@@ -719,19 +721,11 @@
 <script>
     requireAuthSession();
 
-    const STORAGE_KEY = 'ldfpEbdStudents'; // mantém compatível com o que você já tinha
-
     const $ = (id) => document.getElementById(id);
 
-    const readStudents = () => {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-        catch { return []; }
-    };
-    const writeStudents = (list) =>
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-
-    /* Estado */
-    let alunos = readStudents();
+    /* ── Estado ── */
+    let alunos        = [];
+    let turmasList    = [];
     let filtroTexto   = '';
     let filtroTurma   = '';
     let filtroSituacao= '';
@@ -757,6 +751,7 @@
         el.className = 'form-status' + (isError ? ' error' : '');
     };
 
+    /* ── Hero ── */
     const updateHero = (aluno) => {
         const nameEl = $('heroName');
         const subEl  = $('heroSub');
@@ -767,277 +762,249 @@
             nameEl.textContent = 'Nenhum aluno selecionado';
             nameEl.className = 'hero-name ph';
             subEl.textContent = 'Selecione um aluno ou clique em "Novo Aluno" para cadastrar';
-            tagsEl.innerHTML = `
-                <span class="hero-tag">
-                    <i class="fa-solid fa-church" style="margin-right:4px;"></i>LDFP
-                </span>
-            `;
+            tagsEl.innerHTML = `<span class="hero-tag"><i class="fa-solid fa-church" style="margin-right:4px;"></i>LDFP</span>`;
             avaEl.textContent = 'EBD';
             return;
         }
 
-        const nome = aluno.nome || '-';
-        const estagio = aluno.estagio || '';
-        const turma   = aluno.turma || '';
+        const nome     = aluno.nome || '-';
+        const estagio  = aluno.estagio || '';
+        const turmaNome= aluno.turmaNome || '';
         const situacao = aluno.situacao || 'Ativo';
 
         nameEl.textContent = nome;
         nameEl.className = 'hero-name';
-        subEl.textContent = `${estagio || 'Sem estágio definido'}${turma ? ' · ' + turma : ''}`;
+        subEl.textContent = `${estagio || 'Sem estágio definido'}${turmaNome ? ' · ' + turmaNome : ''}`;
 
-        let sitLabel = situacao;
         let icon = 'fa-solid fa-circle';
         if (situacao === 'Ativo') icon = 'fa-solid fa-circle-check';
         if (situacao === 'Transferido' || situacao === 'Egresso') icon = 'fa-solid fa-right-left';
 
         tagsEl.innerHTML = `
-            ${turma ? `<span class="hero-tag"><i class="fa-solid fa-users-line" style="margin-right:4px;"></i>${turma}</span>` : ''}
+            ${turmaNome ? `<span class="hero-tag"><i class="fa-solid fa-users-line" style="margin-right:4px;"></i>${turmaNome}</span>` : ''}
             ${estagio ? `<span class="hero-tag">${estagio}</span>` : ''}
-            <span class="hero-tag"><i class="${icon}" style="margin-right:4px;"></i>${sitLabel}</span>
+            <span class="hero-tag"><i class="${icon}" style="margin-right:4px;"></i>${situacao}</span>
         `;
-
         avaEl.textContent = initials(nome);
     };
 
+    /* ── Preencher form ── */
     const preencherForm = (aluno) => {
         const form = document.forms.alunoForm;
         if (!form) return;
 
-        form.nome.value         = aluno?.nome || '';
-        form.estagio.value      = aluno?.estagio || '';
-        form.turma.value        = aluno?.turma || '';
-        form.situacao.value     = aluno?.situacao || 'Ativo';
-        form.nascimento.value   = aluno?.nascimento || '';
-        form.responsavel.value  = aluno?.responsavel || '';
-        form.telefone.value     = aluno?.telefone || '';
-        form.obs.value          = aluno?.obs || '';
+        form.nome.value          = aluno?.nome          || '';
+        form.estagio.value       = aluno?.estagio       || '';
+        form.turmaId.value       = aluno?.turmaId       || '';
+        form.situacao.value      = aluno?.situacao      || 'Ativo';
+        form.nascimento.value    = aluno?.nascimento    || '';
+        form.responsavel.value   = aluno?.responsavel   || '';
+        form.telefone.value      = aluno?.telefone      || '';
+        form.obs.value           = aluno?.obs           || '';
 
-        // Revista / lição (por enquanto guardadas no próprio aluno)
-        form.revistaTitulo.value   = aluno?.revistaTitulo || '';
-        form.revistaTurma.value    = aluno?.revistaTurma || aluno?.turma || '';
-        form.revistaFaixa.value    = aluno?.revistaFaixa || '';
-        form.revistaProfessor.value= aluno?.revistaProfessor || '';
-        form.revistaInicio.value   = aluno?.revistaInicio || '';
-        form.revistaFim.value      = aluno?.revistaFim || '';
-        form.licaoNumero.value     = aluno?.licaoNumero || '';
-        form.licaoTitulo.value     = aluno?.licaoTitulo || '';
-        form.licaoData.value       = aluno?.licaoData || '';
-        form.licaoStatus.value     = aluno?.licaoStatus || 'planejada';
+        const ri = aluno?.revistaInfo || {};
+        form.revistaTitulo.value   = ri.revistaTitulo    || '';
+        form.revistaTurma.value    = ri.revistaTurma     || aluno?.turmaNome || '';
+        form.revistaFaixa.value    = ri.revistaFaixa     || '';
+        form.revistaProfessor.value= ri.revistaProfessor || '';
+        form.revistaInicio.value   = ri.revistaInicio    || '';
+        form.revistaFim.value      = ri.revistaFim       || '';
+        form.licaoNumero.value     = ri.licaoNumero      || '';
+        form.licaoTitulo.value     = ri.licaoTitulo      || '';
+        form.licaoData.value       = ri.licaoData        || '';
+        form.licaoStatus.value     = ri.licaoStatus      || 'planejada';
     };
 
+    /* ── Coletar form ── */
     const obterFormData = () => {
         const form = document.forms.alunoForm;
-        const data = {
-            id: selecionadoId || String(Date.now()),
-            nome: form.nome.value.trim(),
-            estagio: form.estagio.value.trim(),
-            turma: form.turma.value.trim(),
-            situacao: form.situacao.value || 'Ativo',
-            nascimento: form.nascimento.value || '',
-            responsavel: form.responsavel.value.trim(),
-            telefone: form.telefone.value.trim(),
-            obs: form.obs.value.trim(),
-
-            revistaTitulo: form.revistaTitulo.value.trim(),
-            revistaTurma: form.revistaTurma.value.trim(),
-            revistaFaixa: form.revistaFaixa.value.trim(),
-            revistaProfessor: form.revistaProfessor.value.trim(),
-            revistaInicio: form.revistaInicio.value || '',
-            revistaFim: form.revistaFim.value || '',
-            licaoNumero: form.licaoNumero.value.trim(),
-            licaoTitulo: form.licaoTitulo.value.trim(),
-            licaoData: form.licaoData.value || '',
-            licaoStatus: form.licaoStatus.value || 'planejada',
-
-            presencas: (alunos.find(a => a.id === selecionadoId)?.presencas) || []
+        return {
+            nome:       form.nome.value.trim(),
+            estagio:    form.estagio.value.trim(),
+            turmaId:    form.turmaId.value ? parseInt(form.turmaId.value) : null,
+            situacao:   form.situacao.value || 'Ativo',
+            nascimento: form.nascimento.value || null,
+            responsavel:form.responsavel.value.trim(),
+            telefone:   form.telefone.value.trim(),
+            obs:        form.obs.value.trim(),
+            revistaInfo: {
+                revistaTitulo:   form.revistaTitulo.value.trim(),
+                revistaTurma:    form.revistaTurma.value.trim(),
+                revistaFaixa:    form.revistaFaixa.value.trim(),
+                revistaProfessor:form.revistaProfessor.value.trim(),
+                revistaInicio:   form.revistaInicio.value || '',
+                revistaFim:      form.revistaFim.value || '',
+                licaoNumero:     form.licaoNumero.value.trim(),
+                licaoTitulo:     form.licaoTitulo.value.trim(),
+                licaoData:       form.licaoData.value || '',
+                licaoStatus:     form.licaoStatus.value || 'planejada',
+            }
         };
-        return data;
     };
 
+    /* ── Renderizar lista ── */
     const renderLista = () => {
-        const listEl = $('studentList');
+        const listEl  = $('studentList');
         const countEl = $('alunosCount');
 
-        let filtrados = alunos.filter(a => {
-            const textoBase = (
-                (a.nome || '') + ' ' +
-                (a.estagio || '') + ' ' +
-                (a.turma || '')
-            ).toLowerCase();
-
-            if (filtroTexto && !textoBase.includes(filtroTexto)) return false;
-            if (filtroTurma && String(a.turma || '').toLowerCase() !== filtroTurma) return false;
+        const filtrados = alunos.filter(a => {
+            const textoBase = ((a.nome || '') + ' ' + (a.estagio || '') + ' ' + (a.turmaNome || '')).toLowerCase();
+            if (filtroTexto   && !textoBase.includes(filtroTexto)) return false;
+            if (filtroTurma   && String(a.turmaId || '') !== filtroTurma) return false;
             if (filtroSituacao && String(a.situacao || '') !== filtroSituacao) return false;
             return true;
         });
 
         countEl.textContent = filtrados.length;
-
         if (!filtrados.length) {
-            listEl.innerHTML = `
-                <div class="empty-list">
-                    <i class="fa-solid fa-child-reaching"></i>
-                    Nenhum aluno encontrado com os filtros atuais.
-                </div>
-            `;
+            listEl.innerHTML = `<div class="empty-list"><i class="fa-solid fa-child-reaching"></i>Nenhum aluno encontrado.</div>`;
             return;
         }
-
         listEl.innerHTML = filtrados.map(a => {
-            const id = a.id;
-            const ativo = selecionadoId === id ? 'is-active' : '';
-            const badge = badgeClass(a.situacao || 'Ativo');
-            const turma = a.turma || 'Sem turma';
-
+            const ativo = selecionadoId === a.id ? 'is-active' : '';
+            const badge = badgeClass(a.situacao);
             return `
-                <div class="student-item ${ativo}" data-id="${id}">
+                <div class="student-item ${ativo}" data-id="${a.id}">
                     <div class="s-avatar">${initials(a.nome)}</div>
                     <div class="s-info">
                         <div class="s-name">${a.nome || '-'}</div>
-                        <div class="s-sub">${turma}${a.estagio ? ' · ' + a.estagio : ''}</div>
+                        <div class="s-sub">${a.turmaNome || 'Sem turma'}${a.estagio ? ' · ' + a.estagio : ''}</div>
                     </div>
                     <span class="s-badge ${badge}">${a.situacao || 'Ativo'}</span>
                 </div>
             `;
         }).join('');
-
         listEl.querySelectorAll('.student-item').forEach(el => {
-            el.addEventListener('click', () => {
-                const id = el.getAttribute('data-id');
-                selecionarAluno(id);
-            });
+            el.addEventListener('click', () => selecionarAluno(Number(el.dataset.id)));
         });
     };
 
+    /* ── Preencher filtro turma ── */
     const preencherFiltroTurma = () => {
         const sel = $('filterTurma');
-        const turmas = Array.from(new Set(alunos.map(a => (a.turma || '').trim()).filter(Boolean)));
         sel.innerHTML = '<option value="">Todas as turmas</option>' +
-            turmas.map(t => `<option value="${t.toLowerCase()}">${t}</option>`).join('');
+            turmasList.map(t => `<option value="${t.id}">${t.nome}</option>`).join('');
     };
 
-    const selecionarAluno = (id) => {
+    /* ── Preencher select turma no form ── */
+    const preencherSelectTurmaForm = () => {
+        const sel = document.forms.alunoForm?.turmaId;
+        if (!sel) return;
+        sel.innerHTML = '<option value="">Selecione a turma...</option>' +
+            turmasList.map(t => `<option value="${t.id}">${t.nome}</option>`).join('');
+    };
+
+    /* ── Selecionar aluno ── */
+    const selecionarAluno = async (id) => {
         selecionadoId = id;
-        const aluno = alunos.find(a => a.id === id);
-        updateHero(aluno);
-        preencherForm(aluno);
-        setStatus('');
-        renderLista();
-        renderPresencas(aluno);
+        try {
+            const aluno = await fetch(`/api/ebd/alunos/${id}`).then(r => r.json());
+            updateHero(aluno);
+            preencherForm(aluno);
+            setStatus('');
+            renderLista();
+            renderPresencas(aluno);
+        } catch (e) {
+            setStatus('Erro ao carregar aluno.', true);
+        }
     };
 
+    /* ── Limpar ── */
     const limparForm = () => {
         selecionadoId = null;
         const form = document.forms.alunoForm;
         form.reset();
         form.situacao.value = 'Ativo';
         form.licaoStatus.value = 'planejada';
+        preencherSelectTurmaForm();
         updateHero(null);
         setStatus('');
         renderLista();
         renderPresencas(null);
     };
 
-    const salvarAluno = () => {
+    /* ── Salvar aluno ── */
+    const salvarAluno = async () => {
         const data = obterFormData();
-        if (!data.nome) {
-            setStatus('Informe o nome do aluno.', true);
-            return;
-        }
+        if (!data.nome) { setStatus('Informe o nome do aluno.', true); return; }
 
-        const idx = alunos.findIndex(a => a.id === data.id);
-        if (idx >= 0) {
-            alunos[idx] = data;
-        } else {
-            alunos.push(data);
+        const url    = selecionadoId ? `/api/ebd/alunos/${selecionadoId}` : '/api/ebd/alunos';
+        const method = selecionadoId ? 'PUT' : 'POST';
+        try {
+            const res  = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            if (!res.ok) { setStatus(json.error || 'Erro ao salvar.', true); return; }
+            if (!selecionadoId) selecionadoId = json.id;
+            setStatus('Dados do aluno salvos com sucesso.');
+            await carregarAlunos();
+            renderLista();
+            const atualizado = alunos.find(a => a.id === selecionadoId);
+            if (atualizado) updateHero(atualizado);
+        } catch (e) {
+            setStatus('Erro de comunicação.', true);
         }
-        writeStudents(alunos);
-        preencherFiltroTurma();
-        selecionadoId = data.id;
-        updateHero(data);
-        setStatus('Dados do aluno salvos com sucesso.');
-        renderLista();
-        renderPresencas(data);
     };
 
-    const excluirAluno = () => {
-        if (!selecionadoId) {
-            setStatus('Selecione um aluno para excluir.', true);
-            return;
-        }
+    /* ── Excluir aluno ── */
+    const excluirAluno = async () => {
+        if (!selecionadoId) { setStatus('Selecione um aluno para excluir.', true); return; }
         const aluno = alunos.find(a => a.id === selecionadoId);
         if (!confirm(`Excluir o aluno "${aluno?.nome || ''}" da EBD?`)) return;
-
-        alunos = alunos.filter(a => a.id !== selecionadoId);
-        writeStudents(alunos);
-        limparForm();
-        preencherFiltroTurma();
-        setStatus('Aluno excluído.', false);
+        try {
+            const res = await fetch(`/api/ebd/alunos/${selecionadoId}`, { method: 'DELETE' });
+            const json = await res.json();
+            if (!res.ok) { setStatus(json.error || 'Erro ao excluir.', true); return; }
+            selecionadoId = null;
+            await carregarAlunos();
+            limparForm();
+            setStatus('Aluno excluído.');
+        } catch (e) {
+            setStatus('Erro de comunicação.', true);
+        }
     };
 
-    /* Presença (simplificado, em cima do aluno) */
+    /* ── Presença ── */
     const renderPresencas = (aluno) => {
         const tbody = $('presencaBody');
         if (!aluno || !Array.isArray(aluno.presencas) || !aluno.presencas.length) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="3" class="empty-table">
-                        Nenhum registro de presença ainda. Clique em “Presença hoje” no topo para registrar rapidamente.
-                    </td>
-                </tr>
-            `;
+            tbody.innerHTML = `<tr><td colspan="3" class="empty-table">Nenhum registro de presença ainda.</td></tr>`;
             return;
         }
-
-        tbody.innerHTML = aluno.presencas
-            .sort((a,b) => (a.data || '').localeCompare(b.data || ''))
-            .map(p => `
-                <tr>
-                    <td>${p.data || '-'}</td>
-                    <td>${p.licao || '-'}</td>
-                    <td>${p.status || 'Presente'}</td>
-                </tr>
-            `).join('');
+        tbody.innerHTML = aluno.presencas.map(p => `
+            <tr>
+                <td>${p.data || '-'}</td>
+                <td>${p.apontamentoId || '-'}</td>
+                <td>${p.presente ? 'Presente' : 'Ausente'}</td>
+            </tr>
+        `).join('');
     };
 
-    const marcarPresencaHoje = () => {
-        if (!selecionadoId) {
-            setStatus('Selecione um aluno para registrar presença.', true);
-            return;
-        }
-        const aluno = alunos.find(a => a.id === selecionadoId);
-        if (!aluno) return;
-
-        const hoje = new Date();
-        const yyyy = hoje.getFullYear();
-        const mm   = String(hoje.getMonth()+1).padStart(2,'0');
-        const dd   = String(hoje.getDate()).padStart(2,'0');
-        const data = `${yyyy}-${mm}-${dd}`;
-
-        const form = document.forms.alunoForm;
-        const liNum = form.licaoNumero.value.trim();
-        const liTit = form.licaoTitulo.value.trim();
-
-        aluno.presencas = aluno.presencas || [];
-        aluno.presencas.push({
-            data,
-            licao: liNum ? `Lição ${liNum}${liTit ? ' - ' + liTit : ''}` : (liTit || 'Lição não informada'),
-            status: 'Presente'
-        });
-
-        writeStudents(alunos);
-        renderPresencas(aluno);
-        setStatus('Presença de hoje registrada para este aluno.');
+    /* ── Carregar dados ── */
+    const carregarAlunos = async () => {
+        try {
+            const data = await fetch('/api/ebd/alunos').then(r => r.json());
+            alunos = Array.isArray(data) ? data : [];
+        } catch (e) { alunos = []; }
     };
 
-    /* Eventos UI */
+    const carregarTurmas = async () => {
+        try {
+            const data = await fetch('/api/ebd/turmas').then(r => r.json());
+            turmasList = Array.isArray(data) ? data : [];
+        } catch (e) { turmasList = []; }
+    };
+
+    /* ── Eventos ── */
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
-            const tabId = btn.dataset.tab;
-            if (tabId) document.getElementById(tabId)?.classList.add('active');
+            document.getElementById(btn.dataset.tab)?.classList.add('active');
         });
     });
 
@@ -1045,19 +1012,17 @@
     $('btnLimparAluno').addEventListener('click', limparForm);
     $('btnSalvarAluno').addEventListener('click', salvarAluno);
     $('btnExcluirAluno').addEventListener('click', excluirAluno);
-    $('btnAtualizar').addEventListener('click', () => {
-        alunos = readStudents();
-        preencherFiltroTurma();
+    $('btnAtualizar').addEventListener('click', async () => {
+        await carregarAlunos();
         renderLista();
     });
 
-    $('btnMarcarPresencaRapida').addEventListener('click', marcarPresencaHoje);
+    $('btnMarcarPresencaRapida').addEventListener('click', () => {
+        setStatus('Use a tela de Apontamentos (EBD Grades) para registrar presença.', false);
+    });
 
     $('btnIrParaMembro').addEventListener('click', () => {
-        if (!selecionadoId) {
-            setStatus('Selecione um aluno para abrir a ficha de membro.', true);
-            return;
-        }
+        if (!selecionadoId) { setStatus('Selecione um aluno para abrir a ficha de membro.', true); return; }
         alert('Integração futura: abrir a ficha do membro correspondente em membros.html');
     });
 
@@ -1074,9 +1039,14 @@
         renderLista();
     });
 
-    /* Inicialização */
-    preencherFiltroTurma();
-    renderLista();
+    /* ── Init ── */
+    (async () => {
+        await carregarTurmas();
+        await carregarAlunos();
+        preencherFiltroTurma();
+        preencherSelectTurmaForm();
+        renderLista();
+    })();
 </script>
 </body>
 </html>

@@ -8,10 +8,10 @@
 ## 🗓️ Última atualização: 01/06/2026
 
 ## ✅ Último commit enviado
-- **Hash:** `3e0ec95`
+- **Hash:** `e2666d4`
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `feat: Item 2 — Escalas de Serviço (backend completo + frontend fix + relatorio)`
+- **Mensagem:** `feat: Item 3 — Grupos & Células + Congregados`
 
 ---
 
@@ -37,6 +37,7 @@
 | **Web Push Notifications** | `src/routes/pushRoutes.js` — VAPID auto-gerado via `sistema_config`, endpoints subscribe/unsubscribe/send; `push_subscriptions` no DB; banner "Ativar notificações" em `app_membro_v2.html`; `public/admin-push.html` | `9c4c8d1` |
 | **Multi-Congregação (painel)** | `GET /congregacoes/painel` (retorna filiais + limite plano + disponível); reescrita de `public/congregacoes.html` — KPI cards, barra de uso do plano, card-grid para cada filial, CRUD modal conectado à API real | `2375419` |
 | **Relatório por membro** | `GET /api/membros/:id/relatorio` — perfil, histórico de dízimos/ofertas, KPIs, gráfico mensal CSS, export CSV; `public/relatorio-membro.html`; botão "Relatório" em `membros.html` | `14f297e` |
+| **Grupos & Células — API completa** | `CRIAR_TABELAS_GRUPOS.sql` (4 tabelas: grupos, grupo_membros, grupo_reunioes, congregados); `gruposController.js` (14 endpoints CRUD); `gruposRoutes.js`; fix `grupos.html` + `congregados.html` → `/api/*`; relatorio-membro exibe grupos do membro | `e2666d4` |
 | **Batismos — API completa** | `CRIAR_TABELAS_BATISMOS.sql` (tabelas `batismos` + `batismo_candidatos`); `batismosController.js` (8 endpoints CRUD); `batismosRoutes.js`; migração completa `batismos.html` + `batismo_novo.html` (localStorage→API); relatorio-membro exibe candidaturas; select inline de status no painel de candidatos | `70f29ea` |
 | **Escalas de Serviço — API completa** | `CRIAR_TABELAS_ESCALAS.sql` (6 tabelas); `escalasController.js` (20 endpoints: dashboard, eventos recorrentes, instâncias, grupos, funções, matriz, atribuições, conflitos, membros); `escalasRoutes.js`; fix `escalas.html` → `/api/escalas/membros`; relatorio-membro exibe histórico de escalas | `3e0ec95` |
 
@@ -60,8 +61,8 @@ cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
 |---|--------|--------|
 | 1 | **Batismos** — backend + migração localStorage→API | ✅ Concluído `70f29ea` |
 | 2 | **Escalas de Serviço** — backend + migração escalas.html | ✅ Concluído `3e0ec95` |
-| 3 | Grupos & Células | ⏳ Próximo |
-| 4 | EBD (Escola Bíblica Dominical) | ⏳ Pendente |
+| 3 | Grupos & Células | ✅ Concluído `e2666d4` |
+| 4 | EBD (Escola Bíblica Dominical) | ⏳ Próximo |
 | 5 | Crianças | ⏳ Pendente |
 | 6 | Dashboard com gráficos reais | ⏳ Pendente |
 | 7 | Configurações da Igreja | ⏳ Pendente |
@@ -72,6 +73,7 @@ cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
 Executar no phpMyAdmin (`ldfp8965_sistema_gestao`) antes de usar os módulos:
 - `CRIAR_TABELAS_BATISMOS.sql` — módulo de batismos
 - `CRIAR_TABELAS_ESCALAS.sql` — módulo de escalas de serviço
+- `CRIAR_TABELAS_GRUPOS.sql` — módulo de grupos & células + congregados
 
 ---
 

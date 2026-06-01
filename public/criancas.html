@@ -217,7 +217,7 @@
                 const search = mapField('searchCrianca').value.trim();
                 if (search) query.set('search', search);
 
-                const res = await fetch(`/criancas?${query.toString()}`);
+                const res = await fetch(`/api/criancas?${query.toString()}`);
                 const lista = await res.json().catch(() => []);
 
                 if (!res.ok) {
@@ -296,7 +296,7 @@
             btn.textContent = 'Salvando...';
 
             try {
-                const resp = await fetch(id ? `/criancas/${id}` : '/criancas', {
+                const resp = await fetch(id ? `/api/criancas/${id}` : '/api/criancas', {
                     method: id ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dados)
@@ -326,7 +326,7 @@
 
             setStatus('pageStatus', '', false);
             try {
-                const resp = await fetch(`/criancas/${id}`, { method: 'DELETE' });
+                const resp = await fetch(`/api/criancas/${id}`, { method: 'DELETE' });
                 const payload = await resp.json().catch(() => ({}));
 
                 if (!resp.ok) {

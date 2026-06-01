@@ -8,10 +8,10 @@
 ## 🗓️ Última atualização: 01/06/2026
 
 ## ✅ Último commit enviado
-- **Hash:** `95d1c6d`
+- **Hash:** `2308c18`
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `feat: relatorio financeiro CSV + tela novidades membros`
+- **Mensagem:** `feat: onboarding guiado 3 passos (igreja/logo -> membros -> caixa)`
 
 ---
 
@@ -33,13 +33,13 @@
 | Link Métricas SaaS no sidebar | Adicionado em `super-admin.html`, `admin-igrejas.html`, `admin-assinaturas.html`, `admin-modulos.html` | `fed8ef9` |
 | Relatório financeiro exportável | `GET /api/saas/relatorio-financeiro?mes=YYYY-MM[&formato=csv]` + `public/admin-relatorio-financeiro.html` — KPIs + tabela + botão Exportar CSV; link adicionado no sidebar de todas as páginas admin | `95d1c6d` |
 | Tela de novidades para membros | Painel `#panel-novidades` + botão na bottom-nav + `loadNovidades()` em `app_membro_v2.html`; consome `GET /api/novidades` pública | `95d1c6d` |
+| Sistema de onboarding guiado | `public/onboarding.html` — wizard 3 passos (Igreja/Logo → Membros → Caixa); 3 rotas em `accountRoutes.js`; redirect automático no `dashboard.html` para novos admins | `2308c18` |
 
 ---
 
 ## ⚙️ Servidor (cPanel) — estado atual
 
 - **Último `git pull` no servidor:** pendente (rodar o comando abaixo)
-- **AÇÃO NECESSÁRIA AO RETOMAR:** fazer `git pull` + `touch tmp/restart.txt`
 
 ```bash
 cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
@@ -49,7 +49,9 @@ cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
 
 ## 🏗️ Backlog — próximas funcionalidades (em ordem de prioridade)
 
-- [ ] **Item 4 — Sistema de onboarding guiado** — wizard para nova igreja: nome/logo -> membros -> caixa
+- [ ] **Item 5 — Notificações push para membros** — integrar Web Push API ou WhatsApp Business
+- [ ] **Item 6 — Relatório por membro** — histórico de dízimos, batismo, escala, grupos
+- [ ] **Item 7 — Multi-congregáção** — painel para igrejas com múltiplas filiais
 
 ---
 

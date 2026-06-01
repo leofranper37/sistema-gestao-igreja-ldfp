@@ -8,10 +8,10 @@
 ## 🗓️ Última atualização: 31/05/2026
 
 ## ✅ Último commit enviado
-- **Hash:** `8ed84bd`
+- **Hash:** `58fe7c4`
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `fix: restringir acesso paginas admin a super-admin + migration tabelas saas_modulos`
+- **Mensagem:** `docs: adiciona ONDE_PAREI.md para continuidade entre sessoes`
 
 ---
 
@@ -27,29 +27,25 @@
 
 ---
 
-## ❌ Pendente no servidor (cPanel)
+## ✅ Pendente no servidor (cPanel) — TUDO CONCLUÍDO EM 31/05/2026
 
-### 1. Atualizar código no servidor
+### ✅ 1. Código atualizado no servidor
 ```bash
 cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
 ```
 
-### 2. Rodar SQL no phpMyAdmin
-- Banco: `ldfp8965_sistema_gestao`
-- Arquivo: `CRIAR_TABELAS_MODULOS.sql` (raiz do projeto)
-- Aba SQL do phpMyAdmin → colar e executar
+### ✅ 2. Tabelas criadas + 15 módulos inseridos no banco
+- `saas_modulos`, `saas_plano_modulos`, `igreja_modulos` criadas
+- 15 módulos inseridos via phpMyAdmin
 
-### 3. Cron job de backup automático
-- Local: cPanel → Cron Jobs
-```
-0 3 * * * cd /home/ldfp8965/ldfp.com.br && node scripts/backup-por-igreja.js >> /home/ldfp8965/backups/backup.log 2>&1
-```
+### ✅ 3. Cron job de backup automático
+- Configurado no cPanel: todo dia às 03:00h
+- Comando: `cd /home/ldfp8965/ldfp.com.br && node scripts/backup-por-igreja.js >> /home/ldfp8965/backups/backup.log 2>&1`
 
-### 4. Webhook Mercado Pago
-- URL para registrar no painel MP:
-```
-https://ldfp.com.br/api/pagamentos/webhook/mercado-pago
-```
+### ✅ 4. Webhook Mercado Pago
+- URL registrada: `https://ldfp.com.br/api/pagamentos/webhook/mercado-pago`
+- Evento: Pagamentos
+- **Pendente**: adicionar `MP_WEBHOOK_SECRET=<valor>` no `.env` do servidor
 
 ---
 

@@ -119,6 +119,32 @@ async function statusAssinatura(req, res) {
 
 // POST /api/pagamentos/webhook/mercado-pago  — notificação do MP
 async function webhookMercadoPago(req, res) {
+    // Valida assinatura secreta do Mercado Pago (MP_WEBHOOK_SECRET)
+    const secret = process.env.MP_WEBHOOK_SECRET;
+    if (secret) {
+        try {
+            const crypto = require('crypto');
+            const xSignature = req.headers['x-signature'] || '';
+            const xRequestId = req.headers['x-request-id'] || '';
+            const dataId = req.query['data.id'] || req.body?.data?.id || '';
+
+            // Extrai ts e v1 do header x-signature (formato: ts=...;v1=...)
+            const parts = Object.fromEntries(xSignature.split(';').map(p => p.split('=')));
+            const ts = parts['ts'] || '';
+            const v1 = parts['v1'] || '';
+
+            const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+            const expected = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
+
+            if (v1 && v1 !== expected) {
+                return res.sendStatus(401);
+            }
+        } catch (_) {
+            // Se falhar a validação por erro interno, deixa passar mas loga
+            console.warn('[webhook/mp] Falha na validação de assinatura');
+        }
+    }
+
     // Responde 200 imediatamente para o MP (prazo máximo ~5s)
     res.sendStatus(200);
 

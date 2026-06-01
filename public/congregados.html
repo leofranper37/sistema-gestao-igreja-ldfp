@@ -383,7 +383,7 @@
                 const search = mapField('searchCongregado').value.trim();
                 if (search) query.set('search', search);
 
-                const res = await fetch(`/congregados?${query.toString()}`);
+                const res = await fetch(`/api/congregados?${query.toString()}`);
                 const lista = await res.json().catch(() => []);
 
                 if (!res.ok) {
@@ -465,7 +465,7 @@
             btn.textContent = 'Salvando...';
 
             try {
-                const resp = await fetch(id ? `/congregados/${id}` : '/congregados', {
+                const resp = await fetch(id ? `/api/congregados/${id}` : '/api/congregados', {
                     method: id ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dados)
@@ -495,7 +495,7 @@
 
             setStatus('pageStatus', '', false);
             try {
-                const resp = await fetch(`/congregados/${id}`, { method: 'DELETE' });
+                const resp = await fetch(`/api/congregados/${id}`, { method: 'DELETE' });
                 const payload = await resp.json().catch(() => ({}));
 
                 if (!resp.ok) {

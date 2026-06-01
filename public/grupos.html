@@ -956,7 +956,7 @@
         $('groupList').innerHTML = `<div class="empty-list"><i class="fa-solid fa-spinner fa-spin"></i>Carregando...</div>`;
         const churchId = getUser()?.churchId || 1;
         try {
-            const resp = await fetch(`/grupos?churchId=${encodeURIComponent(churchId)}`);
+            const resp = await fetch('/api/grupos');
             const data = await resp.json().catch(() => []);
             if (!resp.ok) throw new Error(extractError(data, 'Erro ao carregar grupos.'));
             loadedGroups   = Array.isArray(data) ? data : (data.groups || data.data || []);
@@ -976,7 +976,7 @@
         }
         tbody.innerHTML = `<tr><td colspan="4" class="empty-table"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</td></tr>`;
         try {
-            const resp = await fetch(`/grupos/${selectedId}/membros`);
+            const resp = await fetch(`/api/grupos/${selectedId}/membros`);
             const data = await resp.json().catch(() => []);
             if (!resp.ok || !data.length) {
                 tbody.innerHTML = `<tr><td colspan="4" class="empty-table">Nenhum membro neste grupo.</td></tr>`;
@@ -1004,7 +1004,7 @@
         }
         tbody.innerHTML = `<tr><td colspan="4" class="empty-table"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</td></tr>`;
         try {
-            const resp = await fetch(`/grupos/${selectedId}/reunioes`);
+            const resp = await fetch(`/api/grupos/${selectedId}/reunioes`);
             const data = await resp.json().catch(() => []);
             if (!resp.ok || !data.length) {
                 tbody.innerHTML = `<tr><td colspan="4" class="empty-table">Nenhuma reunião registrada.</td></tr>`;
@@ -1056,7 +1056,7 @@
         saveBtns.forEach(b => { if (b) { b.disabled = true; b.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...'; }});
 
         try {
-            const url    = selectedId ? `/grupos/${selectedId}` : '/grupos';
+            const url    = selectedId ? `/api/grupos/${selectedId}` : '/api/grupos';
             const method = selectedId ? 'PUT' : 'POST';
             const resp   = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
             const data   = await resp.json().catch(() => ({}));
@@ -1078,7 +1078,7 @@
         const nome  = found?.nome || found?.name || `ID ${selectedId}`;
         if (!confirm(`Excluir o grupo "${nome}"? Esta ação não pode ser desfeita.`)) return;
         try {
-            const resp = await fetch(`/grupos/${selectedId}`, { method: 'DELETE' });
+            const resp = await fetch(`/api/grupos/${selectedId}`, { method: 'DELETE' });
             const data = await resp.json().catch(() => ({}));
             if (!resp.ok) throw new Error(extractError(data, 'Erro ao excluir.'));
             selectedId = null;

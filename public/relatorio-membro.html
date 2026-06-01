@@ -393,15 +393,26 @@
                 </div>
             </div>
 
-            <!-- Grupos / Células — módulo não integrado ainda -->
+            <!-- Grupos / Células -->
             <div class="sect-header" id="gruposSect" style="display:none;">
                 <i class="fa-solid fa-people-group" style="color:#f59e0b;"></i>
                 <h3>Grupos & Células</h3>
                 <div class="sect-sep-line"></div>
             </div>
-            <div class="coming-soon" id="gruposInfo" style="display:none;">
-                <i class="fa-solid fa-people-group"></i>
-                Módulo de grupos em integração — dados serão exibidos em breve.
+            <div id="gruposInfo" style="display:none;">
+                <table class="data-table" id="gruposTable">
+                    <thead>
+                        <tr>
+                            <th>Grupo / Célula</th>
+                            <th>Categoria</th>
+                            <th>Função</th>
+                            <th>Membro desde</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gruposTbody">
+                        <tr><td colspan="4" class="empty-table">Nenhum grupo vinculado.</td></tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- Erro -->
@@ -571,9 +582,21 @@
                 </tr>`).join('');
         }
 
+        function renderGrupos(items) {
+            if (!items || !items.length) return;
+            $('gruposSect').style.display = '';
+            $('gruposInfo').style.display = '';
+            $('gruposTbody').innerHTML = items.map(g => `
+                <tr>
+                    <td>${escHtml(g.nome || '\u2014')}</td>
+                    <td>${escHtml(g.categoria || '\u2014')}</td>
+                    <td>${escHtml(g.funcao || '\u2014')}</td>
+                    <td>${escHtml(fmtDate(g.desde) || '\u2014')}</td>
+                </tr>`).join('');
+        }
+
         function showSections() {
-            ['gruposSect','gruposInfo']
-                .forEach(id => $(id).style.display = '');
+            // seções exibidas dinamicamente por cada render* quando houver dados
         }
 
         /* ─── Export CSV ──────────────────────────────────────── */
@@ -617,7 +640,7 @@
                     throw new Error(d.message || `Erro ${resp.status}`);
                 }
                 const data = await resp.json();
-                const { membro, dizimos, batismos, escalas } = data;
+                const { membro, dizimos, batismos, escalas, grupos } = data;
 
                 renderProfile(membro);
                 renderKPIs(dizimos.totais);
@@ -625,7 +648,7 @@
                 renderDizimos(dizimos.items);
                 renderBatismos(batismos || []);
                 renderEscalas(escalas || []);
-                showSections();
+                renderGrupos(grupos || []);
 
                 // Atualiza título da aba
                 document.title = `Relatório — ${membro.nome}`;

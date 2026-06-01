@@ -27,6 +27,7 @@ const pushRoutes = require('./routes/pushRoutes');
 const relatorioMembroRoutes = require('./routes/relatorioMembroRoutes');
 const batismosRoutes = require('./routes/batismosRoutes');
 const escalasRoutes  = require('./routes/escalasRoutes');
+const gruposRoutes   = require('./routes/gruposRoutes');
 
 const app = express();
 
@@ -148,6 +149,7 @@ app.use(pushRoutes);
 app.use(relatorioMembroRoutes);
 app.use(batismosRoutes);
 app.use(escalasRoutes);
+app.use(gruposRoutes);
 
 /* ------------------------------------------------------------------ */
 /*  ROTA DE BOOTSTRAP — cria o primeiro super-admin se não existir     */

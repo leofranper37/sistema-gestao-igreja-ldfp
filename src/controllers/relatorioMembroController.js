@@ -107,6 +107,27 @@ async function getRelatorioMembro(req, res) {
         // tabelas ainda não existem — ignora silenciosamente
     }
 
+    // 6. Grupos & Células em que o membro participa
+    let gruposRows = [];
+    try {
+        const [grows] = await pool.query(
+            `SELECT g.nome, g.categoria, gm.funcao, gm.desde
+             FROM grupo_membros gm
+             JOIN grupos g ON g.id = gm.grupo_id
+             WHERE gm.membro_id = ? AND gm.igreja_id = ?
+             ORDER BY g.nome`,
+            [membroId, igrejaId]
+        );
+        const fmtD3 = d => {
+            if (!d) return null;
+            if (d instanceof Date) return d.toISOString().slice(0, 10);
+            return String(d).slice(0, 10);
+        };
+        gruposRows = grows.map(r => ({ ...r, desde: fmtD3(r.desde) }));
+    } catch (_) {
+        // tabelas ainda não existem — ignora silenciosamente
+    }
+
     return res.json({
         membro,
         dizimos: {
@@ -120,7 +141,8 @@ async function getRelatorioMembro(req, res) {
             resumo_mensal: resumoMensal
         },
         batismos: batismosRows,
-        escalas: escalasRows
+        escalas: escalasRows,
+        grupos: gruposRows
     });
 }
 

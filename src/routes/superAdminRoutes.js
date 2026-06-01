@@ -2,6 +2,7 @@ const express = require('express');
 const { requireAuth, authorize } = require('../middlewares/auth');
 const {
     getSuperAdminOverview,
+    getSaasMetricas,
     getSaasFaturamento,
     getSaasIgrejas,
     getSaasIgrejaContrato,
@@ -51,6 +52,9 @@ const isSuperAdmin = [requireAuth, authorize(['super-admin'])];
 
 // Dashboard
 router.get('/super-admin/overview', ...isSuperAdmin, getSuperAdminOverview);
+
+// Métricas SaaS
+router.get('/api/saas/metricas', ...isSuperAdmin, getSaasMetricas);
 
 // Faturamento MRR
 router.get('/api/saas/faturamento', ...isSuperAdmin, getSaasFaturamento);

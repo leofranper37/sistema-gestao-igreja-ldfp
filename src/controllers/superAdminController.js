@@ -883,9 +883,87 @@ async function postFactoryPublish(req, res) {
     }
 }
 
+// ── Métricas SaaS ────────────────────────────────────────────────────────────
+
+async function getSaasMetricas(req, res) {
+    try {
+        // 1. KPIs gerais
+        const [igrejas] = await pool.query(
+            `SELECT status_assinatura, mensalidade_valor, plano, created_at, trial_ends_at FROM igrejas`
+        );
+        const now = new Date();
+        const total = igrejas.length;
+        const ativas = igrejas.filter(r => r.status_assinatura === 'ativa').length;
+        const suspensas = igrejas.filter(r => r.status_assinatura === 'suspensa' || r.status_assinatura === 'cancelada').length;
+        const trial = igrejas.filter(r => r.status_assinatura === 'trial').length;
+        const mrr = igrejas.filter(r => r.status_assinatura === 'ativa').reduce((s, r) => s + fmt(r.mensalidade_valor), 0);
+        const arpu = ativas > 0 ? mrr / ativas : 0;
+        const churnRate = total > 0 ? (suspensas / total) * 100 : 0;
+
+        // Trials expirando em 7 dias
+        const trialExpirando = igrejas.filter(r => {
+            if (r.status_assinatura !== 'trial' || !r.trial_ends_at) return false;
+            const d = new Date(r.trial_ends_at);
+            if (Number.isNaN(d.getTime())) return false;
+            const diff = Math.ceil((d - now) / 86400000);
+            return diff >= 0 && diff <= 7;
+        }).length;
+
+        // 2. Distribuição por plano
+        const planoCounts = {};
+        for (const ig of igrejas) {
+            if (ig.status_assinatura === 'ativa') {
+                planoCounts[ig.plano || 'sem plano'] = (planoCounts[ig.plano || 'sem plano'] || 0) + 1;
+            }
+        }
+        const distribuicaoPlanos = Object.entries(planoCounts)
+            .map(([plano, count]) => ({ plano, count }))
+            .sort((a, b) => b.count - a.count);
+
+        // 3. Crescimento mensal (últimos 6 meses) — novas igrejas criadas
+        const meses = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const mesStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            const novas = igrejas.filter(ig => {
+                if (!ig.created_at) return false;
+                const c = new Date(ig.created_at);
+                return `${c.getFullYear()}-${String(c.getMonth() + 1).padStart(2, '0')}` === mesStr;
+            }).length;
+            meses.push({ mes: mesStr, novas });
+        }
+
+        // 4. Receita mensal (últimos 6 meses) — payment_links pagos
+        let receitaMensal = [];
+        try {
+            const [rowsFat] = await pool.query(
+                `SELECT DATE_FORMAT(paid_at, '%Y-%m') AS mes, COALESCE(SUM(valor),0) AS total
+                 FROM payment_links
+                 WHERE status = 'pago' AND paid_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+                 GROUP BY mes ORDER BY mes ASC`
+            );
+            receitaMensal = rowsFat || [];
+        } catch (_) {}
+
+        // Preenche meses sem receita com zero
+        const receitaMap = Object.fromEntries((receitaMensal).map(r => [r.mes, Number(r.total)]));
+        const receitaCompleta = meses.map(m => ({ mes: m.mes, total: receitaMap[m.mes] || 0 }));
+
+        res.json({
+            kpis: { mrr, ativas, total, trial, suspensas, arpu, churnRate, trialExpirando },
+            distribuicaoPlanos,
+            crescimentoMensal: meses,
+            receitaMensal: receitaCompleta,
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 module.exports = {
     listPlanosPublico,
     getSuperAdminOverview,
+    getSaasMetricas,
     getSaasFaturamento,
     getSaasIgrejas,
     getSaasIgrejaContrato,

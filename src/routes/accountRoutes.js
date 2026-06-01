@@ -104,6 +104,116 @@ router.post('/api/church/onboarding/complete', requireAuth, async (req, res) => 
         return res.status(500).json({ error: err.message });
     }
 });
+// ── Configurações da Igreja ───────────────────────────────────────────────────
+
+/** GET /api/church/config — retorna nome + config_personalizada_json + app_config */
+router.get('/api/church/config', requireAuth, async (req, res) => {
+    try {
+        const igrejaId = req.auth?.igrejaId;
+        if (!igrejaId) return res.status(401).json({ error: 'Sem contexto de igreja.' });
+
+        const [[igRow]] = await pool.query(
+            'SELECT nome, config_personalizada_json FROM igrejas WHERE id = ? LIMIT 1',
+            [igrejaId]
+        );
+
+        const [[cfgRow]] = await pool.query(
+            'SELECT logo_url, whatsapp FROM app_config WHERE igreja_id = ? LIMIT 1',
+            [igrejaId]
+        ).catch(() => [[null]]);
+
+        let cfg = {};
+        try { cfg = JSON.parse(igRow?.config_personalizada_json || '{}'); } catch (_) {}
+
+        return res.json({
+            nome:     igRow?.nome    || '',
+            logo_url: cfgRow?.logo_url  || cfg.logo_url  || '',
+            whatsapp: cfgRow?.whatsapp  || cfg.whatsapp  || '',
+            config:   cfg
+        });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/** PATCH /api/church/config — salva nome + campos de config_personalizada_json */
+router.patch('/api/church/config', requireAuth, async (req, res) => {
+    const { authorize } = require('../middlewares/auth');
+    const igrejaId = req.auth?.igrejaId;
+    if (!igrejaId) return res.status(401).json({ error: 'Sem contexto de igreja.' });
+
+    // Apenas admin pode alterar configurações da igreja
+    const role = String(req.auth?.role || '').toLowerCase();
+    if (!['admin', 'super-admin', 'super_admin', 'superadmin', 'master', 'owner'].includes(role)) {
+        return res.status(403).json({ error: 'Sem permissão.' });
+    }
+
+    try {
+        const {
+            nome, logo_url, whatsapp,
+            // campos que vão em config_personalizada_json
+            cnpj, endereco, numero, bairro, cidade, estado, telefone, email,
+            pastor, site, numeracao_ficha, msg_boas_vindas
+        } = req.body || {};
+
+        // Lê config atual para fazer merge
+        const [[igRow]] = await pool.query(
+            'SELECT config_personalizada_json FROM igrejas WHERE id = ? LIMIT 1',
+            [igrejaId]
+        );
+        let cfg = {};
+        try { cfg = JSON.parse(igRow?.config_personalizada_json || '{}'); } catch (_) {}
+
+        // Merge dos campos fornecidos
+        const campos = { cnpj, endereco, numero, bairro, cidade, estado, telefone, email, pastor, site, numeracao_ficha, msg_boas_vindas };
+        for (const [k, v] of Object.entries(campos)) {
+            if (v !== undefined && v !== null) cfg[k] = String(v).trim();
+        }
+        if (logo_url !== undefined) cfg.logo_url = String(logo_url || '').trim();
+        if (whatsapp  !== undefined) cfg.whatsapp  = String(whatsapp  || '').trim();
+
+        const igrejaSets = ['config_personalizada_json = ?'];
+        const igrejaVals = [JSON.stringify(cfg)];
+        if (nome && String(nome).trim()) {
+            igrejaSets.push('nome = ?');
+            igrejaVals.push(String(nome).trim());
+        }
+        igrejaVals.push(igrejaId);
+        await pool.query(`UPDATE igrejas SET ${igrejaSets.join(', ')} WHERE id = ?`, igrejaVals);
+
+        // Atualiza app_config (logo + whatsapp)
+        if (logo_url !== undefined || whatsapp !== undefined) {
+            const logoVal = logo_url !== undefined ? String(logo_url || '').trim() : null;
+            const wppVal  = whatsapp  !== undefined ? String(whatsapp  || '').trim() : null;
+
+            const [[existing]] = await pool.query(
+                'SELECT id FROM app_config WHERE igreja_id = ? LIMIT 1', [igrejaId]
+            ).catch(() => [[null]]);
+
+            if (existing?.id) {
+                const sets = [];
+                const vals = [];
+                if (logoVal !== null) { sets.push('logo_url = ?'); vals.push(logoVal); }
+                if (wppVal  !== null) { sets.push('whatsapp = ?');  vals.push(wppVal);  }
+                if (sets.length) {
+                    sets.push('updated_at = CURRENT_TIMESTAMP');
+                    vals.push(igrejaId);
+                    await pool.query(`UPDATE app_config SET ${sets.join(', ')} WHERE igreja_id = ?`, vals).catch(() => {});
+                }
+            } else {
+                await pool.query(
+                    'INSERT INTO app_config (igreja_id, logo_url, whatsapp, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)',
+                    [igrejaId, logoVal || null, wppVal || null]
+                ).catch(() => {});
+            }
+        }
+
+        return res.json({ ok: true });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 router.post('/api/reset-request', async (req, res) => {

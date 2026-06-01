@@ -289,7 +289,8 @@
 
             <div class="config-container">
                 <div class="tabs-header">
-                    <div class="tab-link active" onclick="abrirAba(event, 'globais')">Geral</div>
+                    <div class="tab-link active" onclick="abrirAba(event, 'igreja')">Igreja</div>
+                    <div class="tab-link" onclick="abrirAba(event, 'globais')">Geral</div>
                     <div class="tab-link" onclick="abrirAba(event, 'usuario')">Usuário</div>
                     <div class="tab-link" onclick="abrirAba(event, 'contabilidade')">Contabilidade</div>
                     <div class="tab-link" onclick="abrirAba(event, 'cartas')">Cartas</div>
@@ -297,7 +298,92 @@
                 </div>
 
                 <div class="config-body">
-                    <div id="globais" class="tab-content active">
+                    <!-- ── Aba: Igreja ── -->
+                    <div id="igreja" class="tab-content active">
+                        <div style="max-width: 780px;">
+                            <div class="settings-group">
+                                <div class="group-title">Identidade da Igreja</div>
+                                <div class="row-flex">
+                                    <div style="flex:2">
+                                        <label class="form-label">Nome da Igreja *</label>
+                                        <input id="cfg_nome" type="text" class="form-select" placeholder="Nome oficial">
+                                    </div>
+                                    <div style="flex:1">
+                                        <label class="form-label">CNPJ</label>
+                                        <input id="cfg_cnpj" type="text" class="form-select" placeholder="00.000.000/0001-00">
+                                    </div>
+                                </div>
+                                <div class="row-flex">
+                                    <div>
+                                        <label class="form-label">Pastor / Responsável</label>
+                                        <input id="cfg_pastor" type="text" class="form-select" placeholder="Nome do pastor">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Telefone</label>
+                                        <input id="cfg_telefone" type="text" class="form-select" placeholder="(00) 0000-0000">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">WhatsApp</label>
+                                        <input id="cfg_whatsapp" type="text" class="form-select" placeholder="(00) 90000-0000">
+                                    </div>
+                                </div>
+                                <div class="row-flex">
+                                    <div>
+                                        <label class="form-label">E-mail</label>
+                                        <input id="cfg_email" type="email" class="form-select" placeholder="contato@igreja.com.br">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Site</label>
+                                        <input id="cfg_site" type="url" class="form-select" placeholder="https://www.suaigreja.com.br">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-group">
+                                <div class="group-title">Endereço</div>
+                                <div class="row-flex">
+                                    <div style="flex:3">
+                                        <label class="form-label">Logradouro</label>
+                                        <input id="cfg_endereco" type="text" class="form-select" placeholder="Rua, Avenida...">
+                                    </div>
+                                    <div style="flex:1">
+                                        <label class="form-label">Número</label>
+                                        <input id="cfg_numero" type="text" class="form-select" placeholder="Nº">
+                                    </div>
+                                </div>
+                                <div class="row-flex">
+                                    <div>
+                                        <label class="form-label">Bairro</label>
+                                        <input id="cfg_bairro" type="text" class="form-select" placeholder="Bairro">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Cidade</label>
+                                        <input id="cfg_cidade" type="text" class="form-select" placeholder="Cidade">
+                                    </div>
+                                    <div style="max-width:100px">
+                                        <label class="form-label">UF</label>
+                                        <input id="cfg_estado" type="text" class="form-select" placeholder="UF" maxlength="2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-group">
+                                <div class="group-title">Logo</div>
+                                <label class="form-label">URL da Logo</label>
+                                <input id="cfg_logo_url" type="url" class="form-select" placeholder="https://...">
+                                <div id="logoPreview" style="margin-top:10px;display:none;">
+                                    <img id="logoImg" src="" alt="Logo" style="max-height:80px;border-radius:8px;border:1px solid #e2e8f0;">
+                                </div>
+                            </div>
+
+                            <div id="cfgIgrejaMsg" style="display:none;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;"></div>
+                            <button class="btn-salvar" onclick="salvarIgreja()">
+                                <i class="fa-solid fa-floppy-disk" style="margin-right:6px;"></i>Salvar Dados da Igreja
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="globais" class="tab-content">
                         <div class="settings-column-compact">
                             <div class="settings-group">
                                 <div class="group-title">Cadastro de Membros</div>
@@ -499,8 +585,115 @@ Foi batizado em nome do Pai, do Filho e do Espírito Santo.</div>
             evt.currentTarget.classList.add('active');
         }
 
-        function salvarConfig() {
-            alert('Configurações salvas com sucesso!');
+        // ── Helpers de mensagem ──────────────────────────────────────
+        function showMsg(elId, texto, tipo) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.textContent = texto;
+            el.style.display = 'block';
+            el.style.background = tipo === 'ok' ? '#f0fdf4' : '#fef2f2';
+            el.style.color      = tipo === 'ok' ? '#166534' : '#991b1b';
+            el.style.border     = `1px solid ${tipo === 'ok' ? '#86efac' : '#fca5a5'}`;
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+
+        // ── Carregamento inicial ──────────────────────────────────────
+        async function carregarConfig() {
+            try {
+                const r = await fetch('/api/church/config');
+                if (!r.ok) return;
+                const d = await r.json();
+
+                // Aba Igreja
+                const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+                set('cfg_nome',      d.nome);
+                set('cfg_whatsapp',  d.whatsapp);
+                set('cfg_logo_url',  d.logo_url);
+                const cfg = d.config || {};
+                set('cfg_cnpj',      cfg.cnpj);
+                set('cfg_pastor',    cfg.pastor);
+                set('cfg_telefone',  cfg.telefone);
+                set('cfg_email',     cfg.email);
+                set('cfg_site',      cfg.site);
+                set('cfg_endereco',  cfg.endereco);
+                set('cfg_numero',    cfg.numero);
+                set('cfg_bairro',    cfg.bairro);
+                set('cfg_cidade',    cfg.cidade);
+                set('cfg_estado',    cfg.estado);
+                atualizarLogo();
+
+                // Aba Geral — numeração
+                const numFicha = cfg.numeracao_ficha || 'por_congregacao';
+                const radios = document.querySelectorAll('[name="numeracao_ficha"]');
+                radios.forEach(r => { r.checked = (r.value === numFicha); });
+            } catch (_) {}
+        }
+
+        function atualizarLogo() {
+            const url = (document.getElementById('cfg_logo_url') || {}).value || '';
+            const preview = document.getElementById('logoPreview');
+            const img = document.getElementById('logoImg');
+            if (preview && img) {
+                if (url) { img.src = url; preview.style.display = 'block'; }
+                else { preview.style.display = 'none'; }
+            }
+        }
+
+        // ── Salvar aba Igreja ────────────────────────────────────────
+        async function salvarIgreja() {
+            const val = (id) => (document.getElementById(id) || {}).value || '';
+            const body = {
+                nome:      val('cfg_nome'),
+                whatsapp:  val('cfg_whatsapp'),
+                logo_url:  val('cfg_logo_url'),
+                cnpj:      val('cfg_cnpj'),
+                pastor:    val('cfg_pastor'),
+                telefone:  val('cfg_telefone'),
+                email:     val('cfg_email'),
+                site:      val('cfg_site'),
+                endereco:  val('cfg_endereco'),
+                numero:    val('cfg_numero'),
+                bairro:    val('cfg_bairro'),
+                cidade:    val('cfg_cidade'),
+                estado:    val('cfg_estado')
+            };
+            try {
+                const r = await fetch('/api/church/config', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const d = await r.json();
+                if (r.ok && d.ok) {
+                    showMsg('cfgIgrejaMsg', '✓ Dados da igreja salvos com sucesso!', 'ok');
+                    atualizarLogo();
+                } else {
+                    showMsg('cfgIgrejaMsg', d.error || 'Erro ao salvar.', 'erro');
+                }
+            } catch (_) {
+                showMsg('cfgIgrejaMsg', 'Erro de rede. Tente novamente.', 'erro');
+            }
+        }
+
+        // ── Salvar aba Geral ─────────────────────────────────────────
+        async function salvarConfig() {
+            const numFichaEl = document.querySelector('[name="numeracao_ficha"]:checked');
+            const numeracao_ficha = numFichaEl ? numFichaEl.value : 'por_congregacao';
+            try {
+                const r = await fetch('/api/church/config', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ numeracao_ficha })
+                });
+                const d = await r.json();
+                if (r.ok && d.ok) {
+                    alert('Configurações salvas com sucesso!');
+                } else {
+                    alert('Erro: ' + (d.error || 'Não foi possível salvar.'));
+                }
+            } catch (_) {
+                alert('Erro de rede. Tente novamente.');
+            }
         }
 
         function ativarItemMenu(el) {
@@ -530,6 +723,10 @@ Foi batizado em nome do Pai, do Filho e do Espírito Santo.</div>
             if (!editor) return;
             editor.textContent = modelosCertificado[tipo] || ('Texto do certificado ' + tipo);
         }
+
+        // Inicializar
+        carregarConfig();
+        document.getElementById('cfg_logo_url')?.addEventListener('input', atualizarLogo);
     </script>
     <script src="speed-insights.js" defer></script>
 </body>

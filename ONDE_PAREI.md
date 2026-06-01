@@ -31,9 +31,10 @@
 | Backend métricas SaaS | `GET /api/saas/metricas` — MRR, churn, ARPU, crescimento, receita mensal | `d4b704f` |
 | Página admin-metricas.html | `public/admin-metricas.html` — KPIs + 3 gráficos de barras CSS | `fed8ef9` |
 | Link Métricas SaaS no sidebar | Adicionado em `super-admin.html`, `admin-igrejas.html`, `admin-assinaturas.html`, `admin-modulos.html` | `fed8ef9` |
-| Relatório financeiro exportável | `GET /api/saas/relatorio-financeiro?mes=YYYY-MM[&formato=csv]` + `public/admin-relatorio-financeiro.html` — KPIs + tabela + botão Exportar CSV; link adicionado no sidebar de todas as páginas admin | `95d1c6d` |
-| Tela de novidades para membros | Painel `#panel-novidades` + botão na bottom-nav + `loadNovidades()` em `app_membro_v2.html`; consome `GET /api/novidades` pública | `95d1c6d` |
-| Sistema de onboarding guiado | `public/onboarding.html` — wizard 3 passos (Igreja/Logo → Membros → Caixa); 3 rotas em `accountRoutes.js`; redirect automático no `dashboard.html` para novos admins | `2308c18` |
+| Relatório financeiro exportável | `GET /api/saas/relatorio-financeiro?mes=YYYY-MM[&formato=csv]` + `public/admin-relatorio-financeiro.html` — KPIs + tabela + botão Exportar CSV | `95d1c6d` |
+| Tela de novidades para membros | Painel `#panel-novidades` + botão na bottom-nav + `loadNovidades()` em `app_membro_v2.html` | `95d1c6d` |
+| Sistema de onboarding guiado | `public/onboarding.html` — wizard 3 passos; 3 rotas em `accountRoutes.js`; redirect automático no `dashboard.html` | `2308c18` |
+| **Web Push Notifications** | `src/routes/pushRoutes.js` — VAPID auto-gerado via `sistema_config`, endpoints subscribe/unsubscribe/send; `push_subscriptions` no DB; banner "Ativar notificações" em `app_membro_v2.html`; `public/admin-push.html` | pendente |
 
 ---
 
@@ -49,7 +50,6 @@ cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
 
 ## 🏗️ Backlog — próximas funcionalidades (em ordem de prioridade)
 
-- [ ] **Item 5 — Notificações push para membros** — integrar Web Push API ou WhatsApp Business
 - [ ] **Item 6 — Relatório por membro** — histórico de dízimos, batismo, escala, grupos
 - [ ] **Item 7 — Multi-congregáção** — painel para igrejas com múltiplas filiais
 

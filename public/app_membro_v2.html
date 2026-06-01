@@ -605,6 +605,25 @@
     .novidade-footer { margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
     .novidade-data { font-size:11px; color:var(--muted); }
     .novidade-tags { font-size:11px; color:var(--accent); }
+
+    /* PUSH NOTIFICATION BANNER */
+    .push-banner {
+      display:flex; align-items:center; gap:12px;
+      background:linear-gradient(135deg,#111827 80%,#1c1917 100%);
+      border:1px solid #374151; border-radius:var(--radius-md);
+      padding:14px 16px; margin-bottom:16px;
+    }
+    .push-banner-icon { font-size:22px; color:var(--accent); flex-shrink:0; }
+    .push-banner-text { flex:1; }
+    .push-banner-text strong { display:block; font-size:13px; color:var(--text); margin-bottom:2px; }
+    .push-banner-text span { font-size:11px; color:var(--muted); }
+    .push-toggle-btn {
+      flex-shrink:0; padding:7px 14px; border-radius:20px; font-size:12px; font-weight:700;
+      border:none; cursor:pointer; transition:background .2s;
+    }
+    .push-toggle-btn.ativar  { background:var(--accent); color:#fff; }
+    .push-toggle-btn.desativar { background:#374151; color:#9ca3af; }
+    .push-toggle-btn:disabled { opacity:.55; cursor:default; }
   </style>
 </head>
 <body>
@@ -820,6 +839,15 @@
       <div class="panel-title">
         <h1>Novidades</h1>
         <p>Atualizações e comunicados da sua igreja.</p>
+      </div>
+      <!-- Banner de notificações push -->
+      <div id="pushBanner" class="push-banner" style="display:none">
+        <div class="push-banner-icon"><i class="fa-solid fa-bell"></i></div>
+        <div class="push-banner-text">
+          <strong id="pushBannerTitle">Ativar notificações</strong>
+          <span id="pushBannerSub">Receba avisos da sua igreja em tempo real.</span>
+        </div>
+        <button id="pushToggleBtn" class="push-toggle-btn ativar" onclick="togglePush()">Ativar</button>
       </div>
       <div id="listaNovidades">
         <div class="event-empty">
@@ -1398,6 +1426,111 @@
     window.location.href = 'app_login.html';
   });
 
+  // ── Push Notifications ────────────────────────────────────────────────────────
+  const PUSH_SUB_KEY = 'ldfp_push_subscribed';
+
+  function getIgrejaIdForPush() {
+    try {
+      const u = JSON.parse(localStorage.getItem('app_member_user') || 'null');
+      return u?.igrejaId || u?.igreja_id || 1;
+    } catch (_) { return 1; }
+  }
+
+  async function initPushNotifications() {
+    const banner = document.getElementById('pushBanner');
+    if (!banner) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return; // browser sem suporte
+
+    banner.style.display = 'flex';
+    const btn = document.getElementById('pushToggleBtn');
+    const titleEl = document.getElementById('pushBannerTitle');
+    const subEl = document.getElementById('pushBannerSub');
+
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const existing = await reg.pushManager.getSubscription();
+
+      if (existing) {
+        btn.textContent = 'Desativar';
+        btn.className = 'push-toggle-btn desativar';
+        titleEl.textContent = 'Notificações ativas';
+        subEl.textContent   = 'Você receberá avisos desta igreja.';
+      } else {
+        btn.textContent = 'Ativar';
+        btn.className = 'push-toggle-btn ativar';
+        titleEl.textContent = 'Ativar notificações';
+        subEl.textContent   = 'Receba avisos da sua igreja em tempo real.';
+      }
+    } catch (_) { /* silencioso */ }
+  }
+
+  async function togglePush() {
+    const btn = document.getElementById('pushToggleBtn');
+    if (!btn) return;
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const existing = await reg.pushManager.getSubscription();
+
+      if (existing) {
+        // Desativar
+        await existing.unsubscribe();
+        await fetch('/api/push/subscribe', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: existing.endpoint })
+        });
+        btn.textContent = 'Ativar';
+        btn.className = 'push-toggle-btn ativar';
+        document.getElementById('pushBannerTitle').textContent = 'Ativar notificações';
+        document.getElementById('pushBannerSub').textContent   = 'Receba avisos da sua igreja em tempo real.';
+      } else {
+        // Pedir permissão
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          btn.disabled = false;
+          btn.textContent = 'Ativar';
+          alert('Permissão negada. Habilite notificações nas configurações do navegador.');
+          return;
+        }
+        // Buscar chave VAPID
+        const { publicKey } = await fetch('/api/push/vapid-public-key').then(r => r.json());
+        // Converter chave para Uint8Array
+        const applicationServerKey = urlBase64ToUint8Array(publicKey);
+        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey });
+        const subJson = sub.toJSON();
+        // Salvar no servidor
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            endpoint: subJson.endpoint,
+            keys:     subJson.keys,
+            igrejaId: getIgrejaIdForPush()
+          })
+        });
+        btn.textContent = 'Desativar';
+        btn.className = 'push-toggle-btn desativar';
+        document.getElementById('pushBannerTitle').textContent = 'Notificações ativas';
+        document.getElementById('pushBannerSub').textContent   = 'Você receberá avisos desta igreja.';
+      }
+    } catch (err) {
+      console.error('[push] togglePush error:', err);
+      alert('Não foi possível configurar notificações. Tente novamente.');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+  }
+
   // --- Navegação inferior ---
   const panels = document.querySelectorAll('.panel');
   const bottomItems = document.querySelectorAll('.bottom-item');
@@ -1413,6 +1546,7 @@
     if (id === 'panel-fotos')   loadFotos();
     if (id === 'panel-eventos') loadEventos();
     if (id === 'panel-novidades' && !_novidadesCarregadas) loadNovidades();
+    if (id === 'panel-novidades') initPushNotifications();
   }
 
   bottomItems.forEach(item => {

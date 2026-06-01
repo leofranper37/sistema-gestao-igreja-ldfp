@@ -23,6 +23,7 @@ const realtimeRoutes = require('./routes/realtimeRoutes');
 const systemRoutes = require('./routes/systemRoutes');
 const superAdminRoutes = require('./routes/superAdminRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const pushRoutes = require('./routes/pushRoutes');
 
 const app = express();
 
@@ -140,6 +141,7 @@ app.use(realtimeRoutes);
 app.use(systemRoutes);
 app.use(superAdminRoutes);
 app.use(paymentRoutes);
+app.use(pushRoutes);
 
 /* ------------------------------------------------------------------ */
 /*  ROTA DE BOOTSTRAP — cria o primeiro super-admin se não existir     */

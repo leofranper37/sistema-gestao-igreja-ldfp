@@ -763,6 +763,16 @@ async function initializeDatabase() {
             resolved_at DATETIME
         )`);
 
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            igreja_id INT NOT NULL,
+            endpoint TEXT NOT NULL,
+            p256dh TEXT NOT NULL,
+            auth_key TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_push_endpoint (endpoint(512))
+        )`);
+
         console.log('✅ Tabelas principais verificadas/criadas no MySQL.');
         return;
     }

@@ -8,10 +8,10 @@
 ## 🗓️ Última atualização: 01/06/2026
 
 ## ✅ Último commit enviado
-- **Hash:** `14f297e`
+- **Hash:** `70f29ea`
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `feat: Item 6 - Relatório por membro`
+- **Mensagem:** `feat: Item 1 — Batismos migração localStorage→API (backend+frontend+relatorio)`
 
 ---
 
@@ -37,6 +37,7 @@
 | **Web Push Notifications** | `src/routes/pushRoutes.js` — VAPID auto-gerado via `sistema_config`, endpoints subscribe/unsubscribe/send; `push_subscriptions` no DB; banner "Ativar notificações" em `app_membro_v2.html`; `public/admin-push.html` | `9c4c8d1` |
 | **Multi-Congregação (painel)** | `GET /congregacoes/painel` (retorna filiais + limite plano + disponível); reescrita de `public/congregacoes.html` — KPI cards, barra de uso do plano, card-grid para cada filial, CRUD modal conectado à API real | `2375419` |
 | **Relatório por membro** | `GET /api/membros/:id/relatorio` — perfil, histórico de dízimos/ofertas, KPIs, gráfico mensal CSS, export CSV; `public/relatorio-membro.html`; botão "Relatório" em `membros.html` | `14f297e` |
+| **Batismos — API completa** | `CRIAR_TABELAS_BATISMOS.sql` (tabelas `batismos` + `batismo_candidatos`); `batismosController.js` (8 endpoints CRUD); `batismosRoutes.js`; migração completa `batismos.html` + `batismo_novo.html` (localStorage→API); relatorio-membro exibe candidaturas; select inline de status no painel de candidatos | `70f29ea` |
 
 ---
 
@@ -52,7 +53,22 @@ cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
 
 ## 🏗️ Backlog — próximas funcionalidades (em ordem de prioridade)
 
-*(backlog concluído — próximo item a definir)*
+## 📋 Backlog ativo (9 itens)
+
+| # | Módulo | Status |
+|---|--------|--------|
+| 1 | **Batismos** — backend + migração localStorage→API | ✅ Concluído `70f29ea` |
+| 2 | **Escalas de Serviço** — backend + migração escalas.html | ⏳ Próximo |
+| 3 | Grupos & Células | ⏳ Pendente |
+| 4 | EBD (Escola Bíblica Dominical) | ⏳ Pendente |
+| 5 | Crianças | ⏳ Pendente |
+| 6 | Dashboard com gráficos reais | ⏳ Pendente |
+| 7 | Configurações da Igreja | ⏳ Pendente |
+| 8 | Rate limiting + logs de auditoria | ⏳ Pendente |
+| 9 | Health check endpoint detalhado | ⏳ Pendente |
+
+### ⚠️ Ação necessária no cPanel
+Executar `CRIAR_TABELAS_BATISMOS.sql` no phpMyAdmin (`ldfp8965_sistema_gestao`) antes de usar o módulo de batismos.
 
 ---
 

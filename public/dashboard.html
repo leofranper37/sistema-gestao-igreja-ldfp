@@ -424,6 +424,20 @@
     <script>
         requireAuthSession();
 
+        // Onboarding: redireciona admin que nunca configurou a conta
+        (async function checkOnboarding() {
+            const auth = window.getStoredAuth ? window.getStoredAuth() : null;
+            const role = String(auth?.user?.role || auth?.role || '').toLowerCase();
+            const superRoles = ['super-admin','super_admin','superadmin','master','owner','root'];
+            if (superRoles.includes(role) || role !== 'admin') return;
+            try {
+                const r = await fetch('/api/church/onboarding/status');
+                if (!r.ok) return;
+                const d = await r.json();
+                if (!d.completo) location.href = 'onboarding.html';
+            } catch (_) {}
+        })();
+
         function parseDate(dateValue) {
             if (!dateValue) return null;
             const parsed = new Date(dateValue);

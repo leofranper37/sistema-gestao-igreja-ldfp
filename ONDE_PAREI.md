@@ -8,10 +8,10 @@
 ## 🗓️ Última atualização: 01/06/2026
 
 ## ✅ Último commit enviado
-- **Hash:** `e2666d4`
+- **Hash:** `5d50b83`
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `feat: Item 3 — Grupos & Células + Congregados`
+- **Mensagem:** `fix: botão Painel Admin agora lê role do JWT, não do localStorage (evita cache obsoleto)`
 
 ---
 
@@ -40,6 +40,14 @@
 | **Grupos & Células — API completa** | `CRIAR_TABELAS_GRUPOS.sql` (4 tabelas: grupos, grupo_membros, grupo_reunioes, congregados); `gruposController.js` (14 endpoints CRUD); `gruposRoutes.js`; fix `grupos.html` + `congregados.html` → `/api/*`; relatorio-membro exibe grupos do membro | `e2666d4` |
 | **Batismos — API completa** | `CRIAR_TABELAS_BATISMOS.sql` (tabelas `batismos` + `batismo_candidatos`); `batismosController.js` (8 endpoints CRUD); `batismosRoutes.js`; migração completa `batismos.html` + `batismo_novo.html` (localStorage→API); relatorio-membro exibe candidaturas; select inline de status no painel de candidatos | `70f29ea` |
 | **Escalas de Serviço — API completa** | `CRIAR_TABELAS_ESCALAS.sql` (6 tabelas); `escalasController.js` (20 endpoints: dashboard, eventos recorrentes, instâncias, grupos, funções, matriz, atribuições, conflitos, membros); `escalasRoutes.js`; fix `escalas.html` → `/api/escalas/membros`; relatorio-membro exibe histórico de escalas | `3e0ec95` |
+| **EBD — API completa** | Tabelas `ebd_turmas`, `ebd_alunos`, `ebd_grades`; `ebdController.js` (CRUD completo); `ebdRoutes.js`; migração de `ebd_turmas.html`, `ebd_alunos.html`, `ebd_grades.html` | `9e03649` |
+| **Crianças — API completa** | Tabela `criancas`; `criancasController.js` (CRUD + audit logs); `criancasRoutes.js`; migração de `criancas.html`; auditoria de create/update/delete | `bed1f05` |
+| **Dashboard com gráficos reais** | `dashboardController.js` — 12 queries paralelas (totais, recentes, gráficos, aniversariantesMes); `dashboardRoutes.js`; Chart.js 4.4 em `dashboard.html` | `f894552` |
+| **Configurações da Igreja** | `configuracoes.html` — logo upload, nome, endereço, telefone, CNPJ, redes sociais; rota `PUT /api/church/configuracoes`; `configuracoes.html` migrado | `11926e7` |
+| **Rate limiting + Audit logs** | `express-rate-limit`: loginRateLimiter (10 req/15min) + apiRateLimiter (300 req/15min); `auditService.js` (fire-and-forget via setImmediate, tabela `audit_logs` LONGTEXT); `auditRoutes.js` (GET /api/audit-logs, paginado); audit em batismos e crianças; compatível MySQL 5.6 | `9cf023b` |
+| **Health check detalhado** | `GET /api/health` retorna status, uptime, memória (heapUsed/heapTotal/rss/external), database (status, responseTimeMs, version), node (version, env); `getDbHealth()` em `systemModel.js` | `831def1` |
+| **Dashboard moderno** | Hero de saudação dinâmico (nome do usuário, data, emoji por horário); stat-cards redesenhados (ícone gradiente + valor 900-weight); seção "Aniversariantes do Mês" (scroll horizontal com foto/iniciais); members-grid com cards de foto; modal de credencial do membro (foto, e-mail, cidade, data cadastro, link ficha) | `d9adedb` |
+| **Fix botão Painel Admin** | `showAdminButton` agora lê role do payload JWT (não do localStorage) — elimina risco de cache obsoleto mostrar o botão para usuários admin comuns; também removido fallback `auth?.role` de `checkOnboarding` | `5d50b83` |
 
 ---
 
@@ -53,27 +61,33 @@ cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
 
 ---
 
-## 🏗️ Backlog — próximas funcionalidades (em ordem de prioridade)
+## 🏗️ Backlog — próximas funcionalidades sugeridas
 
-## 📋 Backlog ativo (9 itens)
+Todos os 9 itens originais foram concluídos. Possíveis próximos passos:
 
-| # | Módulo | Status |
-|---|--------|--------|
-| 1 | **Batismos** — backend + migração localStorage→API | ✅ Concluído `70f29ea` |
-| 2 | **Escalas de Serviço** — backend + migração escalas.html | ✅ Concluído `3e0ec95` |
-| 3 | Grupos & Células | ✅ Concluído `e2666d4` |
-| 4 | EBD (Escola Bíblica Dominical) | ⏳ Próximo |
-| 5 | Crianças | ⏳ Pendente |
-| 6 | Dashboard com gráficos reais | ⏳ Pendente |
-| 7 | Configurações da Igreja | ⏳ Pendente |
-| 8 | Rate limiting + logs de auditoria | ⏳ Pendente |
-| 9 | Health check endpoint detalhado | ⏳ Pendente |
+| # | Módulo | Descrição | Status |
+|---|--------|-----------|--------|
+| 1 | **Batismos** | backend + migração localStorage→API | ✅ `70f29ea` |
+| 2 | **Escalas de Serviço** | backend + migração escalas.html | ✅ `3e0ec95` |
+| 3 | **Grupos & Células** | API completa + congregados | ✅ `e2666d4` |
+| 4 | **EBD** | Escola Bíblica Dominical | ✅ `9e03649` |
+| 5 | **Crianças** | API completa + audit | ✅ `bed1f05` |
+| 6 | **Dashboard gráficos** | Chart.js + dados reais | ✅ `f894552` |
+| 7 | **Configurações da Igreja** | Logo, dados, redes sociais | ✅ `11926e7` |
+| 8 | **Rate limiting + Audit logs** | Segurança + rastreabilidade | ✅ `9cf023b` |
+| 9 | **Health check detalhado** | Monitoramento de saúde | ✅ `831def1` |
+| 10 | **Dashboard moderno** | Hero, fotos, modal credencial | ✅ `d9adedb` |
+| — | Notificações push (Firebase/VAPID) | Alertas para membros via app | ⏳ Futuro |
+| — | Módulo de Visitantes completo | Acompanhamento, follow-up automático | ⏳ Futuro |
+| — | Relatório de presença em cultos | Checkin por QR Code, exportação Excel | ⏳ Futuro |
+| — | Portal do Membro | Acesso próprio, atualização de dados | ⏳ Futuro |
+| — | Integração PIX automática | Dízimo via QR Code PIX | ⏳ Futuro |
 
-### ⚠️ Ação necessária no cPanel
-Executar no phpMyAdmin (`ldfp8965_sistema_gestao`) antes de usar os módulos:
-- `CRIAR_TABELAS_BATISMOS.sql` — módulo de batismos
-- `CRIAR_TABELAS_ESCALAS.sql` — módulo de escalas de serviço
-- `CRIAR_TABELAS_GRUPOS.sql` — módulo de grupos & células + congregados
+### ⚠️ SQLs pendentes no cPanel (phpMyAdmin)
+Executar em `ldfp8965_sistema_gestao` se ainda não foram aplicados:
+- `CRIAR_TABELAS_BATISMOS.sql`
+- `CRIAR_TABELAS_ESCALAS.sql`
+- `CRIAR_TABELAS_GRUPOS.sql`
 
 ---
 
@@ -91,14 +105,19 @@ Executar no phpMyAdmin (`ldfp8965_sistema_gestao`) antes de usar os módulos:
 
 ## 🧠 Contexto técnico importante
 
+- **MySQL 5.6 no cPanel:** NUNCA usar tipo `JSON` — usar `LONGTEXT`. NUNCA usar `JSON_SET` no SQL — fazer merge no JavaScript. `pool.query()` retorna `[rows, fields]`.
 - **Arquivo servido do painel super-admin:** `public/super-admin.html` (NÃO o `super-admin.html` da raiz)
-- **Arquivos da raiz NÃO são servidos:** `super-admin.html` e `ldfp-master.js` da raiz são ignorados pelo servidor
+- **Arquivos da raiz NÃO são servidos:** `super-admin.html` e `ldfp-master.js` da raiz são ignorados
 - **Servidor serve arquivos estáticos de:** `public/` via `express.static`
 - **Auth:** JWT com campo `role`. Roles super-admin válidos: `super-admin`, `super_admin`, `superadmin`, `master`, `owner`, `root`
 - **DB:** `pool.query()` em `src/config/db.js` — suporta MySQL (produção cPanel) e PostgreSQL (Neon)
 - **session.js:** intercepta `window.fetch` globalmente, adiciona `Authorization: Bearer token`
-- **Padrão sidebar admin:** cada página `admin-*.html` tem sidebar próprio com links diretos `href` (não SPA)
-- **Role guard padrão nas páginas admin:**
+- **`req.auth`:** `id`, `igrejaId`, `email`, `role` — definidos em `src/middlewares/auth.js`
+- **Audit service:** `src/services/auditService.js` — `audit(action, req, details)` — fire-and-forget via `setImmediate`; cria tabela `audit_logs` automaticamente se não existir
+- **Rate limiting:** `loginRateLimiter` (10 req/15min) em rotas de auth; `apiRateLimiter` (300 req/15min) em `/api/`
+- **Dashboard controller:** 12 queries paralelas com `Promise.all`; retorna `totais`, `recentes` (com `foto_url`), `graficos`, `aniversariantesMes`
+- **Botão Painel Admin no dashboard:** lê role do payload JWT (não localStorage) — apenas `super-admin` vê
+- **Padrão role guard nas páginas admin:**
   ```javascript
   const raw = sessionStorage.getItem('user') || localStorage.getItem('user');
   const p = raw ? JSON.parse(raw) : (window.getStoredAuth?.()?.user || null);

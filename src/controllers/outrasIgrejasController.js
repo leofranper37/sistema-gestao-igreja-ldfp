@@ -66,9 +66,27 @@ async function deleteOutrasIgreja(req, res) {
     res.json({ message: 'Igreja removida com sucesso.' });
 }
 
+async function getPainelCongregacoes(req, res) {
+    const igrejaId = getIgrejaId(req);
+    const limite = Number(req.auth?.maxCongregacoes || 0);
+    const plano = req.auth?.plano || 'hebrom';
+
+    const filiais = await outrasIgrejasService.listOutrasIgrejas({ igrejaId, search: null });
+    const total = filiais.length;
+
+    res.json({
+        plano,
+        limite,
+        total,
+        disponivel: limite > 0 ? Math.max(0, limite - total) : null,
+        filiais
+    });
+}
+
 module.exports = {
     createOutrasIgreja,
     deleteOutrasIgreja,
+    getPainelCongregacoes,
     listOutrasIgrejas,
     updateOutrasIgreja
 };

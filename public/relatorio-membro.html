@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Relatório do Membro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap { padding: 24px 30px 48px; }
+
+        /* ── Back link ── */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0ea5e9;
+            text-decoration: none;
+            margin-bottom: 18px;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        /* ── Profile card ── */
+        .profile-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(15,23,42,.06);
+            padding: 24px 28px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .profile-info { flex: 1; min-width: 200px; }
+        .profile-name {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+        .profile-sub {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+        .profile-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+        .pbadge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid transparent;
+        }
+        .pbadge-ativo   { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+        .pbadge-inativo { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        .pbadge-outro   { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+        .pbadge-blue    { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+
+        .profile-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 8px 16px;
+            margin-top: 12px;
+        }
+        .profile-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #475569;
+        }
+        .profile-meta-item i { width: 14px; color: #94a3b8; }
+
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        /* ── Botões ── */
+        .btn-primary {
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            white-space: nowrap;
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        /* ── Section header ── */
+        .sect-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            margin-top: 28px;
+        }
+        .sect-header h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+        }
+        .sect-sep-line { flex: 1; height: 1px; background: #e2e8f0; }
+
+        /* ── KPI bar ── */
+        .kpi-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+        .kpi-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 18px;
+            box-shadow: 0 4px 12px rgba(15,23,42,.05);
+        }
+        .kpi-card .kpi-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 700;
+            letter-spacing: .5px;
+            margin-bottom: 6px;
+        }
+        .kpi-card .kpi-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1;
+        }
+        .kpi-card .kpi-sub { font-size: 11px; color: #64748b; margin-top: 3px; }
+        .kpi-card.c-blue  { border-top: 3px solid #0ea5e9; }
+        .kpi-card.c-green { border-top: 3px solid #10b981; }
+        .kpi-card.c-yell  { border-top: 3px solid #f59e0b; }
+        .kpi-card.c-purp  { border-top: 3px solid #8b5cf6; }
+
+        /* ── Gráfico de barras mensal (CSS-only) ── */
+        .bar-chart-wrap {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(15,23,42,.05);
+            margin-bottom: 22px;
+            overflow-x: auto;
+        }
+        .bar-chart-title { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
+        .bar-chart { display: flex; align-items: flex-end; gap: 12px; min-height: 100px; }
+        .bar-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 44px;
+        }
+        .bar-fill {
+            width: 28px;
+            border-radius: 6px 6px 0 0;
+            background: linear-gradient(180deg, #0ea5e9 0%, #10b981 100%);
+            transition: height .3s;
+            min-height: 4px;
+        }
+        .bar-label { font-size: 10px; color: #64748b; text-align: center; font-weight: 600; }
+        .bar-val   { font-size: 10px; color: #0f172a; font-weight: 700; text-align: center; }
+
+        /* ── Tabela histórico ── */
+        .table-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(15,23,42,.05);
+            overflow: hidden;
+            margin-bottom: 22px;
+        }
+        .table-card table { width: 100%; border-collapse: collapse; }
+        .table-card th, .table-card td {
+            padding: 11px 14px;
+            border-bottom: 1px solid #eef2f7;
+            text-align: left;
+            font-size: 13px;
+            color: #334155;
+        }
+        .table-card th {
+            background: #f8fafc;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 700;
+        }
+        .table-card tr:last-child td { border-bottom: none; }
+        .td-comp { font-weight: 700; color: #0f172a; }
+        .td-val  { font-weight: 800; color: #047857; }
+        .tipo-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-transform: capitalize;
+        }
+        .tipo-dizimo { background: #dbeafe; color: #1d4ed8; }
+        .tipo-oferta { background: #d1fae5; color: #065f46; }
+        .tipo-outro  { background: #f1f5f9; color: #475569; }
+
+        /* ── Empty / Coming-soon ── */
+        .coming-soon {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 32px 20px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 22px;
+        }
+        .coming-soon i { font-size: 32px; margin-bottom: 10px; display: block; }
+
+        .empty-history {
+            text-align: center;
+            padding: 32px 20px;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        .empty-history i { font-size: 28px; margin-bottom: 8px; display: block; }
+
+        /* ── Skeleton ── */
+        .skel { background: #f1f5f9; border-radius: 12px; animation: pulse 1.4s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+        @media(max-width:640px) {
+            .page-wrap { padding: 14px; }
+            .profile-card { flex-direction: column; }
+            .profile-actions { flex-direction: row; }
+        }
+
+        @media print {
+            .back-link, .profile-actions, .btn-primary, .btn-secondary { display: none !important; }
+        }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Relatório do Membro" data-shell-breadcrumb="LDFP / Membros / Relatório" data-shell-active="membros.html" data-shell-chip="Ficha completa" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <a class="back-link" href="membros.html"><i class="fa-solid fa-arrow-left"></i> Voltar para Membros</a>
+
+            <!-- Profile card (skeleton inicial) -->
+            <div id="profileWrap">
+                <div class="skel" style="height:130px;margin-bottom:22px;border-radius:16px;"></div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="kpi-bar" id="kpiBar" style="display:none;">
+                <div class="kpi-card c-blue">
+                    <div class="kpi-label">Total Contribuído</div>
+                    <div class="kpi-value" id="kpiTotal">—</div>
+                    <div class="kpi-sub">em dízimos e ofertas</div>
+                </div>
+                <div class="kpi-card c-green">
+                    <div class="kpi-label">Contribuições</div>
+                    <div class="kpi-value" id="kpiCount">—</div>
+                    <div class="kpi-sub">lançamentos registrados</div>
+                </div>
+                <div class="kpi-card c-yell">
+                    <div class="kpi-label">Competências</div>
+                    <div class="kpi-value" id="kpiMeses">—</div>
+                    <div class="kpi-sub">meses distintos</div>
+                </div>
+                <div class="kpi-card c-purp">
+                    <div class="kpi-label">Última Contribuição</div>
+                    <div class="kpi-value" id="kpiUltima">—</div>
+                    <div class="kpi-sub">competência</div>
+                </div>
+            </div>
+
+            <!-- Gráfico mensal -->
+            <div id="barChartWrap" style="display:none;" class="bar-chart-wrap">
+                <div class="bar-chart-title"><i class="fa-solid fa-chart-bar" style="color:#0ea5e9;margin-right:6px;"></i>Histórico Mensal (12 últimos meses)</div>
+                <div class="bar-chart" id="barChart"></div>
+            </div>
+
+            <!-- Seção Dízimos / Histórico -->
+            <div id="dizimosSect" style="display:none;">
+                <div class="sect-header">
+                    <i class="fa-solid fa-hand-holding-dollar" style="color:#10b981;"></i>
+                    <h3>Dízimos & Ofertas</h3>
+                    <div class="sect-sep-line"></div>
+                    <button class="btn-primary" id="btnExportCsv" type="button" style="font-size:12px;padding:7px 12px;">
+                        <i class="fa-solid fa-file-csv"></i> Exportar CSV
+                    </button>
+                </div>
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Competência</th>
+                                <th>Valor</th>
+                                <th>Tipo</th>
+                                <th>Observação</th>
+                                <th>Data Lançamento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dizimosBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Batismos — módulo não integrado ainda -->
+            <div class="sect-header" id="batismosSect" style="display:none;">
+                <i class="fa-solid fa-water" style="color:#0ea5e9;"></i>
+                <h3>Batismos</h3>
+                <div class="sect-sep-line"></div>
+            </div>
+            <div class="coming-soon" id="batismosInfo" style="display:none;">
+                <i class="fa-solid fa-water"></i>
+                Módulo de batismos em integração — dados serão exibidos em breve.
+            </div>
+
+            <!-- Escalas — módulo não integrado ainda -->
+            <div class="sect-header" id="escalasSect" style="display:none;">
+                <i class="fa-solid fa-calendar-check" style="color:#8b5cf6;"></i>
+                <h3>Escalas de Serviço</h3>
+                <div class="sect-sep-line"></div>
+            </div>
+            <div class="coming-soon" id="escalasInfo" style="display:none;">
+                <i class="fa-solid fa-calendar-check"></i>
+                Módulo de escalas em integração — dados serão exibidos em breve.
+            </div>
+
+            <!-- Grupos / Células — módulo não integrado ainda -->
+            <div class="sect-header" id="gruposSect" style="display:none;">
+                <i class="fa-solid fa-people-group" style="color:#f59e0b;"></i>
+                <h3>Grupos & Células</h3>
+                <div class="sect-sep-line"></div>
+            </div>
+            <div class="coming-soon" id="gruposInfo" style="display:none;">
+                <i class="fa-solid fa-people-group"></i>
+                Módulo de grupos em integração — dados serão exibidos em breve.
+            </div>
+
+            <!-- Erro -->
+            <div id="errorState" style="display:none;text-align:center;padding:60px 20px;color:#b91c1c;">
+                <i class="fa-solid fa-circle-exclamation" style="font-size:48px;color:#fca5a5;margin-bottom:12px;display:block;"></i>
+                <p id="errorMsg" style="font-size:15px;">Erro ao carregar relatório.</p>
+                <a href="membros.html" class="btn-secondary" style="margin-top:16px;display:inline-flex;">Voltar</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        /* ─── Helpers ─────────────────────────────────────────── */
+        const qs = p => new URLSearchParams(window.location.search).get(p);
+        const $ = id => document.getElementById(id);
+
+        function escHtml(s) {
+            return String(s || '')
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function fmt(val) {
+            return Number(val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function fmtDate(str) {
+            if (!str) return '—';
+            const d = new Date(str);
+            if (isNaN(d)) return str;
+            return d.toLocaleDateString('pt-BR');
+        }
+
+        function fmtComp(comp) {
+            // YYYY-MM → Mês/Ano
+            if (!comp) return '—';
+            const [y, m] = comp.split('-');
+            if (!y || !m) return comp;
+            const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+            return `${meses[Number(m) - 1] || m}/${y}`;
+        }
+
+        function avatarColor(nome) {
+            const colors = ['#0ea5e9','#10b981','#8b5cf6','#f59e0b','#ef4444','#ec4899','#14b8a6','#f97316'];
+            let h = 0;
+            for (let i = 0; i < (nome||'').length; i++) h = (h * 31 + nome.charCodeAt(i)) % colors.length;
+            return colors[h];
+        }
+
+        function initials(nome) {
+            const parts = (nome || '').trim().split(/\s+/).filter(Boolean);
+            if (!parts.length) return '?';
+            return parts.length === 1 ? parts[0].slice(0,2).toUpperCase() : (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+        }
+
+        /* ─── Render ──────────────────────────────────────────── */
+        function renderProfile(m) {
+            const cor = avatarColor(m.nome || '');
+            const ini = initials(m.nome || '');
+            const sit = (m.situacao || 'Ativo');
+            const sitClass = sit.toLowerCase() === 'ativo' ? 'pbadge-ativo'
+                           : sit.toLowerCase() === 'inativo' ? 'pbadge-inativo' : 'pbadge-outro';
+
+            const metaItems = [
+                m.email       ? `<div class="profile-meta-item"><i class="fa-solid fa-envelope"></i><span>${escHtml(m.email)}</span></div>` : '',
+                m.celular||m.telefone ? `<div class="profile-meta-item"><i class="fa-solid fa-phone"></i><span>${escHtml(m.celular||m.telefone)}</span></div>` : '',
+                m.cidade      ? `<div class="profile-meta-item"><i class="fa-solid fa-location-dot"></i><span>${escHtml(m.cidade)}${m.estado ? '/'+escHtml(m.estado) : ''}</span></div>` : '',
+                m.data_nascimento||m.nascimento ? `<div class="profile-meta-item"><i class="fa-solid fa-cake-candles"></i><span>${escHtml(m.data_nascimento||m.nascimento)}</span></div>` : '',
+                m.profissao   ? `<div class="profile-meta-item"><i class="fa-solid fa-briefcase"></i><span>${escHtml(m.profissao)}</span></div>` : '',
+                m.estado_civil ? `<div class="profile-meta-item"><i class="fa-solid fa-ring"></i><span>${escHtml(m.estado_civil)}</span></div>` : '',
+            ].filter(Boolean).join('');
+
+            $('profileWrap').innerHTML = `
+                <div class="profile-card">
+                    <div class="profile-avatar" style="background:${cor};">${ini}</div>
+                    <div class="profile-info">
+                        <div class="profile-name">${escHtml(m.nome)}</div>
+                        <div class="profile-sub">${escHtml(m.cargo || 'Membro')}</div>
+                        <div class="profile-badges">
+                            <span class="pbadge ${sitClass}">${escHtml(sit)}</span>
+                            ${m.cargo ? `<span class="pbadge pbadge-blue">${escHtml(m.cargo)}</span>` : ''}
+                        </div>
+                        ${metaItems ? `<div class="profile-meta">${metaItems}</div>` : ''}
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
+                        <a class="btn-secondary" href="membros.html"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderKPIs(totais) {
+            $('kpiTotal').textContent  = fmt(totais.total_contribuido);
+            $('kpiCount').textContent  = totais.num_contribuicoes;
+            $('kpiMeses').textContent  = totais.competencias_distintas;
+            $('kpiUltima').textContent = fmtComp(totais.ultima_contribuicao);
+            $('kpiBar').style.display  = '';
+        }
+
+        function renderBarChart(resumo) {
+            if (!resumo || !resumo.length) return;
+            // Pegar últimos 12 meses ordenados cronologicamente
+            const slice = resumo.slice(0, 12).reverse();
+            const max = Math.max(...slice.map(r => r.total), 1);
+            const BAR_MAX_PX = 90;
+            $('barChart').innerHTML = slice.map(r => {
+                const h = Math.max(4, Math.round((r.total / max) * BAR_MAX_PX));
+                return `
+                    <div class="bar-col">
+                        <div class="bar-val">${fmt(r.total).replace('R$','').trim()}</div>
+                        <div class="bar-fill" style="height:${h}px;" title="${fmtComp(r.competencia)}: ${fmt(r.total)}"></div>
+                        <div class="bar-label">${fmtComp(r.competencia)}</div>
+                    </div>`;
+            }).join('');
+            $('barChartWrap').style.display = '';
+        }
+
+        function renderDizimos(items) {
+            $('dizimosSect').style.display = '';
+            if (!items.length) {
+                $('dizimosBody').innerHTML = `<tr><td colspan="5"><div class="empty-history"><i class="fa-solid fa-hand-holding-dollar"></i>Nenhum lançamento encontrado para este membro.</div></td></tr>`;
+                return;
+            }
+            $('dizimosBody').innerHTML = items.map(d => {
+                const tipoClass = d.tipo === 'dizimo' ? 'tipo-dizimo'
+                                : d.tipo === 'oferta' ? 'tipo-oferta' : 'tipo-outro';
+                return `
+                    <tr>
+                        <td class="td-comp">${escHtml(fmtComp(d.competencia))}</td>
+                        <td class="td-val">${fmt(d.valor)}</td>
+                        <td><span class="tipo-badge ${tipoClass}">${escHtml(d.tipo)}</span></td>
+                        <td>${escHtml(d.observacao || '—')}</td>
+                        <td>${fmtDate(d.created_at)}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function showSections() {
+            ['batismosSect','batismosInfo','escalasSect','escalasInfo','gruposSect','gruposInfo']
+                .forEach(id => $(`${id}`).style.display = '');
+        }
+
+        /* ─── Export CSV ──────────────────────────────────────── */
+        function exportCsv(membro, items) {
+            const rows = [
+                ['Membro', 'Situação', 'Cargo', 'Competência', 'Valor', 'Tipo', 'Observação', 'Data Lançamento'],
+                ...items.map(d => [
+                    membro.nome,
+                    membro.situacao || 'Ativo',
+                    membro.cargo || '',
+                    d.competencia || '',
+                    Number(d.valor || 0).toFixed(2).replace('.',','),
+                    d.tipo || '',
+                    (d.observacao || '').replace(/,/g,' '),
+                    fmtDate(d.created_at)
+                ])
+            ];
+            const csvContent = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `relatorio-${(membro.nome||'membro').replace(/\s+/g,'_')}.csv`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        /* ─── Load ────────────────────────────────────────────── */
+        async function load() {
+            const membroId = Number(qs('id'));
+            if (!membroId) {
+                $('errorMsg').textContent = 'ID de membro não informado.';
+                $('errorState').style.display = '';
+                $('profileWrap').style.display = 'none';
+                return;
+            }
+
+            try {
+                const resp = await fetch(`/api/membros/${membroId}/relatorio`);
+                if (!resp.ok) {
+                    const d = await resp.json().catch(() => ({}));
+                    throw new Error(d.message || `Erro ${resp.status}`);
+                }
+                const data = await resp.json();
+                const { membro, dizimos } = data;
+
+                renderProfile(membro);
+                renderKPIs(dizimos.totais);
+                renderBarChart(dizimos.resumo_mensal);
+                renderDizimos(dizimos.items);
+                showSections();
+
+                // Atualiza título da aba
+                document.title = `Relatório — ${membro.nome}`;
+
+                $('btnExportCsv').addEventListener('click', () => exportCsv(membro, dizimos.items));
+
+            } catch (err) {
+                $('errorMsg').textContent = err.message || 'Erro ao carregar relatório.';
+                $('errorState').style.display = '';
+                $('profileWrap').innerHTML = '';
+            }
+        }
+
+        load();
+    </script>
+</body>
+</html>

@@ -24,6 +24,7 @@ const systemRoutes = require('./routes/systemRoutes');
 const superAdminRoutes = require('./routes/superAdminRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const pushRoutes = require('./routes/pushRoutes');
+const relatorioMembroRoutes = require('./routes/relatorioMembroRoutes');
 
 const app = express();
 
@@ -142,6 +143,7 @@ app.use(systemRoutes);
 app.use(superAdminRoutes);
 app.use(paymentRoutes);
 app.use(pushRoutes);
+app.use(relatorioMembroRoutes);
 
 /* ------------------------------------------------------------------ */
 /*  ROTA DE BOOTSTRAP — cria o primeiro super-admin se não existir     */

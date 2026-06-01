@@ -686,7 +686,7 @@
         // Onboarding: redireciona admin que nunca configurou a conta
         (async function checkOnboarding() {
             const auth = window.getStoredAuth ? window.getStoredAuth() : null;
-            const role = String(auth?.user?.role || auth?.role || '').toLowerCase();
+            const role = String(auth?.user?.role || '').toLowerCase();
             const superRoles = ['super-admin','super_admin','superadmin','master','owner','root'];
             if (superRoles.includes(role) || role !== 'admin') return;
             try {
@@ -1063,8 +1063,19 @@
 
         // Botão Painel Admin visível apenas para super-admin (SaaS owner)
         (function showAdminButton() {
-            const auth = window.getStoredAuth ? window.getStoredAuth() : null;
-            const role = auth?.user?.role || auth?.role || '';
+            // Lê role diretamente do payload JWT — imune a dados obsoletos no localStorage
+            function getRoleFromJwt() {
+                try {
+                    const tok = window.getStoredAuth?.()?.token
+                        || sessionStorage.getItem('token')
+                        || localStorage.getItem('token')
+                        || '';
+                    if (!tok) return '';
+                    const b64 = tok.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                    return String(JSON.parse(atob(b64)).role || '').toLowerCase();
+                } catch (_) { return ''; }
+            }
+            const role = getRoleFromJwt();
             const superRoles = ['super-admin', 'super_admin', 'superadmin', 'master'];
             if (!superRoles.includes(role)) return;
             const btn = document.createElement('a');

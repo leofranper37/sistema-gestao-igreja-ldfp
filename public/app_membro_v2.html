@@ -745,10 +745,10 @@
         </div>
         <p id="contribVerse">"Trazei todos os dízimos e ofertas à casa do tesouro." (Ml 3:10)</p>
         <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-primary" style="flex:1;">
+          <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="abrirModalPix('Dízimo')">
             <i class="fa-solid fa-coins"></i> Dízimos e Ofertas
           </button>
-          <button class="btn btn-ghost" style="flex:1;">
+          <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="abrirModalPix('Oferta')">
             <i class="fa-solid fa-hand-holding-dollar"></i> Contribuições
           </button>
         </div>
@@ -912,6 +912,60 @@
     </div>
   </div>
 
+  <!-- MODAL PIX -->
+  <div id="pixModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="pixModalTitle">Dízimo / Oferta</h2>
+        <button class="modal-close" onclick="fecharModalPix()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <!-- Passo 1: Informar valor -->
+      <div id="pixStep1">
+        <div class="modal-field">
+          <label>Tipo de Contribuição</label>
+          <select id="pixTipo" class="input input-rounded">
+            <option value="Dízimo">Dízimo</option>
+            <option value="Oferta">Oferta</option>
+            <option value="Missões">Missões</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Descrição (opcional)</label>
+          <input id="pixDescricao" type="text" class="input" placeholder="Ex: Dízimo de Maio">
+        </div>
+        <div class="modal-field">
+          <label>Valor (R$)</label>
+          <input id="pixValor" type="number" step="0.01" min="1" class="input" placeholder="0,00" required>
+        </div>
+        <button type="button" class="btn btn-primary" style="width:100%;margin-top:10px;justify-content:center;" onclick="gerarPix()" id="btnGerarPix">
+          <i class="fa-brands fa-pix"></i> Gerar PIX Agora
+        </button>
+      </div>
+      
+      <!-- Passo 2: Mostrar QR Code -->
+      <div id="pixStep2" style="display:none; text-align:center;">
+        <p style="font-size:13px; color:var(--muted); margin-bottom:12px;">Escaneie o QR Code abaixo ou copie o código Pix Copia e Cola para realizar o pagamento no app do seu banco.</p>
+        <div style="background:#fff; padding:10px; border-radius:12px; display:inline-block; margin-bottom:16px;">
+            <img id="pixQrCodeImg" src="" alt="QR Code PIX" style="width:200px; height:200px; display:block;">
+        </div>
+        
+        <div class="modal-field" style="text-align:left;">
+          <label>Pix Copia e Cola</label>
+          <div style="display:flex; gap:8px;">
+            <input id="pixCopiaCola" type="text" class="input" readonly>
+            <button class="btn btn-primary" onclick="copiarPix()" id="btnCopiarPix">Copiar</button>
+          </div>
+        </div>
+        
+        <button type="button" class="btn btn-ghost" style="width:100%;margin-top:10px;justify-content:center;" onclick="fecharModalPix()">
+          Concluído
+        </button>
+      </div>
+    </div>
+  </div>
+
 <script>
   // --- Auth guard ---
   (function checkLogin() {
@@ -943,6 +997,7 @@
   const modalTitle     = document.getElementById('modalTitle');
   const modalForm      = document.getElementById('modalForm');
   const modalClose     = document.getElementById('modalClose');
+  const pixModal       = document.getElementById('pixModal');
   let _modalTipo = '';
 
   function getCurrentMemberUser() {
@@ -1417,6 +1472,61 @@
       submitBtn.textContent = 'Enviar';
     }
   });
+
+  // --- Integração PIX ---
+  function abrirModalPix(tipo) {
+    document.getElementById('pixStep1').style.display = 'block';
+    document.getElementById('pixStep2').style.display = 'none';
+    document.getElementById('pixValor').value = '';
+    document.getElementById('pixDescricao').value = '';
+    if (tipo) document.getElementById('pixTipo').value = tipo;
+    pixModal.style.display = 'flex';
+  }
+  
+  function fecharModalPix() {
+    pixModal.style.display = 'none';
+  }
+  
+  pixModal.addEventListener('click', e => { if (e.target === pixModal) fecharModalPix(); });
+  
+  async function gerarPix() {
+    const valor = parseFloat(document.getElementById('pixValor').value);
+    const tipo = document.getElementById('pixTipo').value;
+    const descricao = document.getElementById('pixDescricao').value.trim();
+    
+    if (!valor || valor <= 0) return alert('Por favor, insira um valor válido.');
+    
+    const btn = document.getElementById('btnGerarPix');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+    
+    try {
+        const res = await fetch('/api/pix/gerar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('app_member_token') },
+            body: JSON.stringify({ valor, tipo, descricao })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao gerar PIX.');
+        
+        document.getElementById('pixQrCodeImg').src = `data:image/png;base64,${data.qr_code_base64}`;
+        document.getElementById('pixCopiaCola').value = data.qr_code;
+        document.getElementById('pixStep1').style.display = 'none';
+        document.getElementById('pixStep2').style.display = 'block';
+    } catch (e) { alert(e.message); } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-brands fa-pix"></i> Gerar PIX Agora';
+    }
+  }
+  
+  function copiarPix() {
+    const input = document.getElementById('pixCopiaCola');
+    input.select();
+    input.setSelectionRange(0, 99999); 
+    document.execCommand("copy");
+    document.getElementById('btnCopiarPix').textContent = 'Copiado!';
+    setTimeout(() => document.getElementById('btnCopiarPix').textContent = 'Copiar', 2000);
+  }
 
   // --- Logout ---
   btnLogout.addEventListener('click', e => {

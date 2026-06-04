@@ -11,7 +11,7 @@
 - **Hash:** a ser gerado no próximo commit
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `feat: modulo LDFP estudos, webhook github e skeleton loading`
+- **Mensagem:** `feat: integracao PIX automatica para dízimos no app do membro`
 - **Push:** pendente
 
 ---
@@ -50,6 +50,7 @@
 | **Dashboard moderno** | Hero de saudação dinâmico (nome do usuário, data, emoji por horário); stat-cards redesenhados (ícone gradiente + valor 900-weight); seção "Aniversariantes do Mês" (scroll horizontal com foto/iniciais); members-grid com cards de foto; modal de credencial do membro (foto, e-mail, cidade, data cadastro, link ficha) | `d9adedb` |
 | **Skeleton Loading & UI Polish** | Classes `.skeleton-box`, `.skeleton-text`, `.skeleton-title` globais no `style.css`; aplicados no `dashboard.html` e na lista do `criancas.html` para evitar FOUC (piscar) durante fetch assíncrono. | pendente |
 | **Webhook Auto-Deploy** | Rota `POST /webhook` (`webhookRoutes.js` e `app.js`) usando `child_process.exec` para rodar `git pull` e `touch tmp/restart.txt` no servidor cPanel. | pendente |
+| **Integração PIX (QR Code)** | Rota `POST /api/pix/gerar` em `pixRoutes.js` + `pixController.js`. Interface adicionada em modal via `app_membro_v2.html` gerando PIX Copia e Cola via API MercadoPago. | pendente |
 | **LDFP Bíblia & Estudo — Backend** | `CRIAR_TABELAS_ESTUDO.sql` (7 tabelas), `estudoController.js` (CRUD versões, passagens, anotações, favoritos, planos, devocionais), `estudoRoutes.js` protegido por role guard. `seed-biblia.js` importando João Cap. 1 (ARC). Adicionado 'estudo' em `CRIAR_TABELAS_MODULOS.sql`, `enterprise-shell.js` e `roles.js`. | pendente |
 | **LDFP Bíblia & Estudo — Frontend** | `estudo.html` (leitor interativo + devocional do dia), `devocionais.html` (Admin gerenciar devocionais + Send Push via API VAPID), `admin-planos-estudo.html` (Admin gerenciar planos com conversor linha/passo), `planos-estudo.html` e `plano-detalhe.html` (Membro gerencia progresso no plano). | pendente |
 
@@ -57,9 +58,7 @@
 
 ## 🧪 Sessão atual — alterações locais ainda não commitadas
 
-- Módulo de Estudos LDFP (Bíblia, Devocionais e Planos).
-- Implementação de Webhook para o GitHub atualizar o cPanel automaticamente.
-- Skeleton Loadings aplicados no painel e na tela de Crianças.
+- Integração de Dízimos e Ofertas via PIX (QR Code e Copia/Cola) no App do Membro utilizando a API do Mercado Pago.
 
 ---
 
@@ -107,9 +106,7 @@ Todos os 9 itens originais foram concluídos. Possíveis próximos passos:
 | 10 | **Dashboard moderno** | Hero, fotos, modal credencial | ✅ `d9adedb` |
 | — | Notificações push (Firebase/VAPID) | Alertas para membros via app | ⏳ Futuro |
 | — | Módulo de Visitantes completo | Acompanhamento, follow-up automático | ⏳ Futuro |
-| — | Relatório de presença em cultos | Checkin por QR Code, exportação Excel | ⏳ Futuro |
-| — | Portal do Membro | Acesso próprio, atualização de dados | ⏳ Futuro |
-| — | Integração PIX automática | Dízimo via QR Code PIX | ⏳ Futuro |
+| — | **Integração PIX automática** | Dízimo via QR Code PIX (Mercado Pago) no app do membro. | ✅ `sessao-atual` |
 | — | **LDFP Bíblia & Estudo** | App ensino bíblico integrado ao membro — visão + MVP em `docs/LDFP-ESTUDO-VISAO.md` | 📋 Planejamento |
 
 

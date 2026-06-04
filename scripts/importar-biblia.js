@@ -6,41 +6,37 @@
  * e cada capítulo é um Array de Strings (versículos).
  * 
  * Uso: 
- * 1. Coloque o arquivo JSON baixado na pasta scripts/ com o nome "biblia.json"
- * 2. Configure os dados da versão abaixo.
- * 3. Rode: node scripts/importar-biblia.js
+ * 1. Configure a SIGLA da versão abaixo (NVI, ARA, ACF, etc).
+ * 2. Rode: node scripts/importar-biblia.js
  */
 
 require('dotenv').config();
 const { pool } = require('../src/config/db');
-const fs = require('fs');
-const path = require('path');
 
 // ==========================================
 // 1. CONFIGURAÇÕES DA VERSÃO A SER IMPORTADA
 // ==========================================
-const ARQUIVO_JSON = 'biblia.json'; 
+// Escolha uma das siglas da tabela: ACF, ARA, ARC, AS21, JFAA, KJA, KJF, NAA, NBV, NTLH, NVI, NVT, TB
+const SIGLA = 'NVI'; 
 const VERSAO = {
-    codigo: 'nvi',
-    nome: 'Nova Versão Internacional',
+    codigo: SIGLA.toLowerCase(),
+    nome: 'Nova Versão Internacional', // Altere o nome para bater com a sua sigla se quiser
     idioma: 'pt',
     licenca_nota: 'Uso interno'
 };
 // ==========================================
 
 async function run() {
-    const filePath = path.join(__dirname, ARQUIVO_JSON);
-    
-    if (!fs.existsSync(filePath)) {
-        console.error(`❌ Arquivo não encontrado: ${filePath}`);
-        console.error('Por favor, baixe o JSON da Bíblia e coloque na pasta scripts/ com o nome biblia.json');
-        process.exit(1);
-    }
-
-    console.log(`📖 Lendo arquivo ${ARQUIVO_JSON}...`);
-    const bibliaData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
     try {
+        const url = `https://raw.githubusercontent.com/damarals/biblias/master/inst/json/${SIGLA}.json`;
+        
+        console.log(`☁️ Baixando a Bíblia ${SIGLA} diretamente do GitHub...`);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Falha ao baixar. Status: ${response.status}`);
+        
+        const bibliaData = await response.json();
+        console.log(`✔️ Arquivo baixado com sucesso!`);
+
         console.log(`⚙️ Verificando versão '${VERSAO.codigo}' no banco...`);
         
         let versaoId;
@@ -72,9 +68,9 @@ async function run() {
 
         console.log(`⏳ Inserindo ${batch.length} versículos no banco (Isso pode levar alguns segundos)...`);
         
-        // Dividindo em lotes de 2000 para não estourar o limite de payload do MySQL
-        for (let i = 0; i < batch.length; i += 2000) {
-            const chunk = batch.slice(i, i + 2000);
+        // Dividindo em lotes de 1000 para não estourar o limite de payload do MySQL (Packet too large)
+        for (let i = 0; i < batch.length; i += 1000) {
+            const chunk = batch.slice(i, i + 1000);
             // ATENÇÃO: A sintaxe de múltiplas inserções usa array de arrays
             await pool.query('INSERT INTO estudo_passagens (versao_id, livro, livro_ordem, capitulo, versiculo, texto) VALUES ?', [chunk]);
         }

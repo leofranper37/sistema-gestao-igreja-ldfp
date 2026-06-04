@@ -165,14 +165,20 @@ exports.deleteFavorito = async (req, res) => {
 
 // --- Planos ---
 exports.getPlanos = async (req, res) => {
-    const { igrejaId: igreja_id } = req.auth;
+    const { id: user_id, igrejaId: igreja_id } = req.auth;
     try {
         const [rows] = await pool.query(
-            'SELECT id, titulo, descricao, tipo, dias_total, igreja_id FROM estudo_planos WHERE (igreja_id IS NULL OR igreja_id = ?) AND ativo = 1',
-            [igreja_id]
+            `SELECT
+                p.id, p.titulo, p.descricao, p.tipo, p.dias_total, p.igreja_id,
+                prog.passo_atual, prog.concluido
+             FROM estudo_planos p
+             LEFT JOIN estudo_progresso prog ON p.id = prog.plano_id AND prog.user_id = ?
+             WHERE (p.igreja_id IS NULL OR p.igreja_id = ?) AND p.ativo = 1`,
+            [user_id, igreja_id]
         );
         res.json(rows);
     } catch (err) {
+        console.error('[Estudo] Erro getPlanos:', err);
         res.status(500).json({ error: 'Erro ao buscar planos.' });
     }
 };

@@ -89,3 +89,18 @@ CREATE TABLE IF NOT EXISTS `estudo_progresso` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_estudo_prog` (`user_id`, `plano_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 7. Devocionais diários
+CREATE TABLE IF NOT EXISTS `estudo_devocionais` (
+  `id`            INT NOT NULL AUTO_INCREMENT,
+  `igreja_id`     INT DEFAULT NULL,
+  `data_ref`      DATE NOT NULL,
+  `titulo`        VARCHAR(255) NOT NULL,
+  `versiculo_ref` VARCHAR(80) DEFAULT NULL,
+  `corpo`         LONGTEXT NOT NULL,
+  `oracao`        TEXT DEFAULT NULL,
+  `ativo`         TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_estudo_dev_data` (`data_ref`, `igreja_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

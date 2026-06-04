@@ -13,19 +13,12 @@
 
     function cleanupShellDuplicates() {
         const sidebars = document.querySelectorAll('#enterpriseSidebar, aside.enterprise-sidebar, aside.legacy-shell-sidebar');
-        if (sidebars.length > 1) {
-            sidebars.forEach((sb, index) => {
-                if (index > 0) sb.remove(); // Remove todos, exceto o primeiro
-            });
-        }
+        // Botão de pânico: Remove TODOS os sidebars fantasma da tela antes de desenhar o novo
+        sidebars.forEach(sb => sb.remove());
         
-        // Remove cabeçalhos duplicados também
+        // Remove TODOS os cabeçalhos fantasma da tela antes de desenhar o novo
         const headers = document.querySelectorAll('.enterprise-top-header');
-        if (headers.length > 1) {
-            headers.forEach((h, index) => {
-                if (index > 0) h.remove();
-            });
-        }
+        headers.forEach(h => h.remove());
     }
 
     const ROLE_FEATURES = {

@@ -68,4 +68,5 @@ INSERT IGNORE INTO saas_modulos (slug, nome, descricao, icon, feature_key, route
 ('whatsapp',          'Comunicação WhatsApp',  'Envio de mensagens via WhatsApp',                    'fa-whatsapp',               'whatsapp',          'comunicacao_whatsapp.html',1),
 ('autocadastro',      'Auto-cadastro',         'Portal de autocadastro de membros',                  'fa-clipboard-user',         'autocadastro',      'autocadastro.html',      1),
 ('portaria_qr',       'Portaria QR',           'Controle de entrada via QR Code',                    'fa-qrcode',                 'portaria_qr',       'portaria.html',          1),
-('pagamentos',        'Pagamentos',            'Links de pagamento e dízimos online',                'fa-credit-card',            'pagamentos',        'banco.html',             1);
+('pagamentos',        'Pagamentos',            'Links de pagamento e dízimos online',                'fa-credit-card',            'pagamentos',        'banco.html',             1),
+('estudo',            'Bíblia & Estudo',       'Módulo de leitura bíblica, devocionais e planos.',   'fa-book-bible',             'estudo',            'estudo.html',            1);

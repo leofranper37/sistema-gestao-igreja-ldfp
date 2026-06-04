@@ -108,6 +108,7 @@ Todos os 9 itens originais foram concluídos. Possíveis próximos passos:
 | — | Relatório de presença em cultos | Checkin por QR Code, exportação Excel | ⏳ Futuro |
 | — | Portal do Membro | Acesso próprio, atualização de dados | ⏳ Futuro |
 | — | Integração PIX automática | Dízimo via QR Code PIX | ⏳ Futuro |
+| — | **LDFP Bíblia & Estudo** | App ensino bíblico integrado ao membro — visão + MVP em `docs/LDFP-ESTUDO-VISAO.md` | 📋 Planejamento |
 
 
 ## 🔑 Dados de infraestrutura (NÃO commitar segredos novos aqui)

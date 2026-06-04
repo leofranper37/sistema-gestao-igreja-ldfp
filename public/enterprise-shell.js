@@ -12,12 +12,20 @@
     }
 
     function cleanupShellDuplicates() {
-        keepOnlyFirst('#enterpriseSidebar');
-        keepOnlyFirst('aside.enterprise-sidebar');
-        keepOnlyFirst('aside.legacy-shell-sidebar');
-        keepOnlyFirst('.enterprise-top-header');
-        keepOnlyFirst('main.enterprise-main');
-        keepOnlyFirst('main.main-content');
+        const sidebars = document.querySelectorAll('#enterpriseSidebar, aside.enterprise-sidebar, aside.legacy-shell-sidebar');
+        if (sidebars.length > 1) {
+            sidebars.forEach((sb, index) => {
+                if (index > 0) sb.remove(); // Remove todos, exceto o primeiro
+            });
+        }
+        
+        // Remove cabeçalhos duplicados também
+        const headers = document.querySelectorAll('.enterprise-top-header');
+        if (headers.length > 1) {
+            headers.forEach((h, index) => {
+                if (index > 0) h.remove();
+            });
+        }
     }
 
     const ROLE_FEATURES = {
@@ -964,7 +972,6 @@
         }
     }
 
-   // Substitua a sua função initShell atual por esta versão estabilizada:
 async function initShell() {
     cleanupShellDuplicates();
 
@@ -972,17 +979,12 @@ async function initShell() {
     if (window[SHELL_INITIALIZED_KEY] || window[SHELL_INITIALIZING_KEY]) return;
     window[SHELL_INITIALIZING_KEY] = true;
 
-    // 2. Aguarda a sessão estar pronta ANTES de começar a desenhar
-    // Isso evita que o sistema desenhe o menu vazio e depois recarregue
     try {
-        const user = await new Promise((resolve) => {
-            const check = () => {
-                const u = getAuthUser();
-                if (u) resolve(u);
-                else setTimeout(check, 50); // Espera 50ms e tenta de novo
-            };
-            check();
-        });
+        // Garante que o CSS empurre o conteúdo para a direita dando espaço pro menu
+        document.body.classList.add('enterprise-shell-page');
+
+        // Lê a sessão do usuário sincronamente (evita travar a página)
+        const user = getAuthUser();
 
         const main = document.querySelector('main.enterprise-main') || document.querySelector('main.main-content');
         if (!main) return;

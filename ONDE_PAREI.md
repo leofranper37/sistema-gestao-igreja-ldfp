@@ -8,10 +8,10 @@
 ## 🗓️ Última atualização: 04/06/2026
 
 ## ✅ Último commit enviado
-- **Hash:** `8c50fda`
+- **Hash:** `f1c4c8c` (feature: `cbf36a6`)
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `fix: separa login membro do painel admin e melhora admin-retomada`
+- **Mensagem:** `fix: separa login membro do painel admin e melhora admin-retomada` + docs hash
 - **Push:** pendente (`git push origin main`)
 
 ---
@@ -55,7 +55,7 @@
 
 ## 🧪 Sessão atual — alterações locais ainda não commitadas
 
-_Nenhuma — último commit `8c50fda` (aguardando push)._
+_Nenhuma — último commit `cbf36a6` (aguardando push)._
 
 ---
 
@@ -63,12 +63,12 @@ _Nenhuma — último commit `8c50fda` (aguardando push)._
 
 | Etapa | Status |
 |-------|--------|
-| Código em produção (`git pull`) | ⏳ após push → `8c50fda` (hoje em prod: `8516855`) |
+| Código em produção (`git pull`) | ⏳ após push → `cbf36a6` (hoje em prod: `8516855`) |
 | SQL batismos + grupos + congregados | ✅ importados via `mysql` (SSH) |
 | SQL escalas (`escalas_*`) | ✅ já existiam no banco |
 | Restart Node | ✅ `touch tmp/restart.txt` |
 | Health check | ✅ `GET https://ldfp.com.br/health` → `status: ok`, MariaDB `up` |
-| Alterações locais (login membro + retomada) | ✅ commit `8c50fda` — falta `git push` + pull no servidor |
+| Alterações locais (login membro + retomada) | ✅ commit `cbf36a6` — falta `git push` + pull no servidor |
 
 **Tabelas confirmadas em produção:** `batismos`, `batismo_candidatos`, `grupos`, `grupo_membros`, `grupo_reunioes`, `congregados`, `escalas_grupos`, `escalas_funcoes`, `escalas_eventos`, `escalas_evento_funcoes`, `escalas_instancias`, `escalas_atribuicoes`.
 

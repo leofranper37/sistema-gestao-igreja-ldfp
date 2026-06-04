@@ -994,8 +994,22 @@ async function initShell() {
         await loadDynamicFeatures();
         enforcePageFeatureAccess(activePath, user); // Agora o user já está garantido
 
-        // ... resto da renderização (renderSidebar, etc) ...
-        // [Mantenha a renderização como estava abaixo deste ponto]
+        const sidebarHtml = renderSidebar(activePath, user);
+        const headerConfig = {
+            title: body.dataset.shellTitle || 'LDFP',
+            breadcrumb: body.dataset.shellBreadcrumb || 'LDFP',
+            chipText: body.dataset.shellChip || 'Ambiente',
+            roleLabel: body.dataset.shellRole || getUserRole(user)
+        };
+        const headerHtml = renderHeader(headerConfig);
+
+        main.insertAdjacentHTML('beforebegin', sidebarHtml);
+        main.insertAdjacentHTML('beforebegin', headerHtml);
+
+        applyUserLabels();
+        bindMenuToggle();
+        ensureLockStyles();
+        ensureUpgradeModal();
     } finally {
         window[SHELL_INITIALIZING_KEY] = false;
         window[SHELL_INITIALIZED_KEY] = true;

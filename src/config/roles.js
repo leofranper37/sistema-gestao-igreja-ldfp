@@ -81,6 +81,9 @@ const PERMISSIONS = {
     // Dashboard/Relatórios
     'dashboard.acesso': [ROLES.ADMIN, ROLES.SECRETARIA, ROLES.PASTOR, ROLES.OFICIAL],
     'relatorios.acesso': [ROLES.ADMIN, ROLES.SECRETARIA, ROLES.PASTOR],
+
+    // Estudo e Bíblia
+    'estudo.acesso': [ROLES.ADMIN, ROLES.SECRETARIA, ROLES.PASTOR, ROLES.OFICIAL, ROLES.MINISTERIO, ROLES.MIDIA, ROLES.MEMBRO, ROLES.VISITANTE]
 };
 
 /**
@@ -90,31 +93,31 @@ const MENU_FEATURES = {
     [ROLES.ADMIN]: [
         'dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda',
         'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'configuracoes',
-        'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao'
+        'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao', 'estudo'
     ],
     [ROLES.SECRETARIA]: [
         'dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda',
         'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia',
-        'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao'
+        'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao', 'estudo'
     ],
     [ROLES.PASTOR]: [
         'dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda',
-        'missionarios', 'igrejas', 'cargos', 'whatsapp', 'autocadastro', 'app_midia', 'telao'
+        'missionarios', 'igrejas', 'cargos', 'whatsapp', 'autocadastro', 'app_midia', 'telao', 'estudo'
     ],
     [ROLES.OFICIAL]: [
-        'membros', 'visitantes', 'agenda', 'oracoes', 'portaria_qr'
+        'membros', 'visitantes', 'agenda', 'oracoes', 'portaria_qr', 'estudo'
     ],
     [ROLES.MINISTERIO]: [
-        'membros', 'oracoes', 'agenda', 'criancas'
+        'membros', 'oracoes', 'agenda', 'criancas', 'estudo'
     ],
     [ROLES.MIDIA]: [
-        'agenda', 'membros', 'midia', 'app_midia', 'telao'
+        'agenda', 'membros', 'midia', 'app_midia', 'telao', 'estudo'
     ],
     [ROLES.MEMBRO]: [
-        'oracoes', 'agenda'
+        'oracoes', 'agenda', 'estudo'
     ],
     [ROLES.VISITANTE]: [
-        'oracoes', 'agenda'
+        'oracoes', 'agenda', 'estudo'
     ]
 };
 

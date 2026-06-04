@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bíblia & Estudo — LDFP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap { padding: 24px 30px 40px; }
+
+        /* Toolbar de Navegação */
+        .toolbar {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            box-shadow: 0 4px 14px rgba(15,23,42,.03);
+        }
+        .toolbar-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .toolbar-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        .toolbar select {
+            border: 1px solid #cbd5e1;
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: #f8fafc;
+            color: #0f172a;
+            min-width: 120px;
+            cursor: pointer;
+        }
+        .toolbar select:focus { border-color: #0ea5e9; }
+        .btn-ler {
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 18px; /* alinhar com selects */
+        }
+
+        /* Área de Leitura */
+        .reader-container {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 30px rgba(15,23,42,.04);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .chapter-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 24px;
+            text-align: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 16px;
+        }
+        .verse-container {
+            margin-bottom: 8px;
+        }
+        .verse-row {
+            display: flex;
+            gap: 12px;
+            line-height: 1.7;
+            font-size: 18px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .verse-row:hover {
+            background: #f8fafc;
+        }
+        .verse-row.selected {
+            background: #e0f2fe;
+        }
+        .verse-actions {
+            display: none;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 4px 0 12px 36px;
+            gap: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        .verse-actions.active {
+            display: flex;
+        }
+        .verse-action-btn {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+        .verse-action-btn:hover { background: #e2e8f0; color: #0f172a; }
+        .verse-action-btn.fav:hover { color: #f59e0b; border-color: #fcd34d; }
+        .verse-action-btn.anot:hover { color: #0ea5e9; border-color: #7dd3fc; }
+
+        /* Devocional */
+        .devocional-card {
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+            border-radius: 16px;
+            padding: 30px;
+            color: #fff;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(14, 165, 233, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .dev-badge { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; display: inline-block; }
+        .dev-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+        .dev-ref { font-size: 13px; font-weight: 600; opacity: 0.9; margin-bottom: 20px; }
+        .dev-body { font-size: 15px; line-height: 1.7; opacity: 0.95; margin-bottom: 20px; white-space: pre-wrap; }
+        .dev-prayer { background: rgba(0,0,0,0.15); padding: 16px; border-radius: 12px; font-size: 14px; font-style: italic; border-left: 3px solid rgba(255,255,255,0.5); }
+        .dev-bg-icon { position: absolute; right: -20px; bottom: -20px; font-size: 180px; opacity: 0.05; pointer-events: none; }
+
+        .verse-num {
+            font-size: 12px;
+            font-weight: 800;
+            color: #94a3b8;
+            margin-top: 6px;
+            min-width: 24px;
+            text-align: right;
+            user-select: none;
+        }
+        .verse-text {
+            color: #334155;
+        }
+        .loading-state, .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        /* Modal de Anotação */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); 
+            z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-card {
+            background: #fff; border-radius: 16px; padding: 24px; width: 90%; max-width: 480px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .modal-card h3 { margin: 0 0 16px; color: #0f172a; }
+        .modal-card textarea {
+            width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px;
+            font-family: inherit; font-size: 14px; min-height: 120px; margin-bottom: 16px;
+            box-sizing: border-box; outline: none;
+        }
+        .modal-card textarea:focus { border-color: #0ea5e9; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+        .btn-cancel { background: #f1f5f9; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; color: #475569; }
+        .btn-save { background: #0ea5e9; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: #fff;
+            padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(100px); opacity: 0;
+            transition: all 0.3s ease; z-index: 9999;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Bíblia & Estudo" data-shell-breadcrumb="LDFP / Ensino / Bíblia" data-shell-active="estudo.html" data-shell-chip="Beta">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            
+            <!-- Devocional de Hoje -->
+            <div id="devocionalHojeWrap"></div>
+
+            <!-- Navegação da Bíblia -->
+            <div class="toolbar">
+                <div class="toolbar-group">
+                    <label>Versão</label>
+                    <select id="selVersao"><option value="">Carregando...</option></select>
+                </div>
+                <div class="toolbar-group">
+                    <label>Livro</label>
+                    <select id="selLivro"></select>
+                </div>
+                <div class="toolbar-group">
+                    <label>Capítulo</label>
+                    <select id="selCapitulo"></select>
+                </div>
+                <button class="btn-ler" onclick="carregarTexto()"><i class="fa-solid fa-book-open"></i> Ler</button>
+            </div>
+
+            <!-- Texto Bíblico -->
+            <div class="reader-container" id="readerContainer">
+                <div class="empty-state">
+                    <i class="fa-solid fa-book-bible fa-3x" style="color: #cbd5e1; margin-bottom: 16px;"></i>
+                    <h3>Selecione um texto acima para começar a leitura.</h3>
+                    <p>Dica: O livro de <strong>João, Capítulo 1</strong> já está disponível como exemplo.</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal Anotação -->
+    <div class="modal-overlay" id="modalAnotacao">
+        <div class="modal-card">
+            <h3>Nova Anotação <span id="anotacaoRef" style="color: #64748b; font-size: 14px; font-weight: normal; margin-left: 8px;"></span></h3>
+            <textarea id="anotacaoTexto" placeholder="Escreva o que o Senhor falou com você através deste versículo..."></textarea>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="fecharAnotacao()">Cancelar</button>
+                <button class="btn-save" onclick="salvarAnotacao()">Salvar Anotação</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="estudoToast" class="toast"></div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        // Lista padrão dos 66 livros para popular o dropdown
+        const livros = ["Gênesis", "Êxodo", "Levítico", "Números", "Deuteronômio", "Josué", "Juízes", "Rute", "1 Samuel", "2 Samuel", "1 Reis", "2 Reis", "1 Crônicas", "2 Crônicas", "Esdras", "Neemias", "Ester", "Jó", "Salmos", "Provérbios", "Eclesiastes", "Cânticos", "Isaías", "Jeremias", "Lamentações", "Ezequiel", "Daniel", "Oseias", "Joel", "Amós", "Obadias", "Jonas", "Miqueias", "Naum", "Habacuque", "Sofonias", "Ageu", "Zacarias", "Malaquias", "Mateus", "Marcos", "Lucas", "João", "Atos", "Romanos", "1 Coríntios", "2 Coríntios", "Gálatas", "Efésios", "Filipenses", "Colossenses", "1 Tessalonicenses", "2 Tessalonicenses", "1 Timóteo", "2 Timóteo", "Tito", "Filemom", "Hebreus", "Tiago", "1 Pedro", "2 Pedro", "1 João", "2 João", "3 João", "Judas", "Apocalipse"];
+        
+        const selVersao = document.getElementById('selVersao');
+        const selLivro = document.getElementById('selLivro');
+        const selCapitulo = document.getElementById('selCapitulo');
+        const reader = document.getElementById('readerContainer');
+        
+        let versoesMap = {}; // Armazena o mapeamento codigo -> id do banco
+        let versiculoAnotacaoAtual = null; // Controla o modal
+
+        // Inicializa Dropdowns
+        function initDropdowns() {
+            selLivro.innerHTML = livros.map(l => `<option value="${l}">${l}</option>`).join('');
+            selLivro.value = "João"; // Forçamos João como default para o nosso teste MVP
+            
+            // Preenche 150 capítulos genéricos (Na versão final, limitaríamos pela qtd exata do livro)
+            let capsHTML = '';
+            for(let i = 1; i <= 150; i++) capsHTML += `<option value="${i}">${i}</option>`;
+            selCapitulo.innerHTML = capsHTML;
+        }
+
+        // Exibe um alerta visual amigável (Toast)
+        function showToast(msg) {
+            const toast = document.getElementById('estudoToast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Carrega Versões da API
+        async function carregarVersoes() {
+            try {
+                const res = await fetch('/api/estudo/versoes');
+                const versoes = await res.json();
+                if(versoes.length > 0) {
+                    versoesMap = {};
+                    selVersao.innerHTML = versoes.map(v => {
+                        versoesMap[v.codigo] = v.id;
+                        return `<option value="${v.codigo}">${v.nome} (${v.codigo.toUpperCase()})</option>`;
+                    }).join('');
+                } else {
+                    selVersao.innerHTML = `<option value="">Nenhuma versão encontrada</option>`;
+                }
+            } catch (err) {
+                selVersao.innerHTML = `<option value="">Erro ao carregar</option>`;
+            }
+        }
+
+        // Busca a passagem selecionada
+        async function carregarTexto() {
+            const versao = selVersao.value;
+            const livro = selLivro.value;
+            const capitulo = selCapitulo.value;
+
+            if (!versao) return alert('Por favor, selecione uma versão bíblica.');
+
+            reader.innerHTML = `<div class="loading-state"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px">Carregando passagens...</p></div>`;
+
+            try {
+                // session.js injeta o Bearer token automaticamente no fetch
+                const res = await fetch(`/api/estudo/passagens?versao=${versao}&livro=${encodeURIComponent(livro)}&capitulo=${capitulo}`);
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error || 'Erro ao buscar texto.');
+
+                if (data.length === 0) {
+                    reader.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-solid fa-folder-open fa-3x" style="color: #cbd5e1; margin-bottom: 16px;"></i>
+                            <h3>Nenhum texto encontrado</h3>
+                            <p>Não há versículos cadastrados para <strong>${livro} ${capitulo}</strong> na versão selecionada.</p>
+                        </div>`;
+                    return;
+                }
+
+                let html = `<div class="chapter-title">${livro} ${capitulo}</div>`;
+                data.forEach(v => {
+                    html += `
+                        <div class="verse-container">
+                            <div class="verse-row" onclick="toggleVerseActions(this)">
+                                <div class="verse-num">${v.versiculo}</div>
+                                <div class="verse-text">${v.texto}</div>
+                            </div>
+                            <div class="verse-actions" id="actions-${v.versiculo}">
+                                <button class="verse-action-btn fav" onclick="favoritarVersiculo(${v.versiculo})"><i class="fa-regular fa-star"></i> Favoritar</button>
+                                <button class="verse-action-btn anot" onclick="abrirAnotacao(${v.versiculo})"><i class="fa-solid fa-pen"></i> Anotar</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                reader.innerHTML = html;
+
+            } catch (err) {
+                reader.innerHTML = `<div class="empty-state" style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation fa-2x" style="margin-bottom:10px"></i><p>${err.message}</p></div>`;
+            }
+        }
+
+        // Abre/Fecha as opções do versículo
+        function toggleVerseActions(row) {
+            const actionsDiv = row.nextElementSibling;
+            const isActive = actionsDiv.classList.contains('active');
+            
+            // Reseta todos os outros abertos na tela
+            document.querySelectorAll('.verse-actions').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.verse-row').forEach(el => el.classList.remove('selected'));
+            
+            // Se não estava ativo, abre
+            if (!isActive) {
+                actionsDiv.classList.add('active');
+                row.classList.add('selected');
+            }
+        }
+
+        // Integração: Favoritar
+        async function favoritarVersiculo(versiculo) {
+            try {
+                const res = await fetch('/api/estudo/favoritos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        versao_id: versoesMap[selVersao.value],
+                        livro: selLivro.value,
+                        capitulo: selCapitulo.value,
+                        versiculo: versiculo
+                    })
+                });
+                if (!res.ok) throw new Error('Erro ao favoritar.');
+                showToast('⭐ Versículo salvo nos favoritos!');
+                document.querySelectorAll('.verse-actions').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.verse-row').forEach(el => el.classList.remove('selected'));
+            } catch (err) {
+                showToast('Erro: ' + err.message);
+            }
+        }
+
+        // Integração: Anotações
+        function abrirAnotacao(versiculo) {
+            versiculoAnotacaoAtual = versiculo;
+            document.getElementById('anotacaoRef').textContent = `— ${selLivro.value} ${selCapitulo.value}:${versiculo}`;
+            document.getElementById('anotacaoTexto').value = '';
+            document.getElementById('modalAnotacao').classList.add('open');
+        }
+
+        function fecharAnotacao() {
+            document.getElementById('modalAnotacao').classList.remove('open');
+            versiculoAnotacaoAtual = null;
+        }
+
+        async function salvarAnotacao() {
+            const texto = document.getElementById('anotacaoTexto').value.trim();
+            if (!texto) return showToast('Por favor, escreva sua anotação.');
+
+            const payload = {
+                versao_id: versoesMap[selVersao.value], livro: selLivro.value,
+                capitulo: selCapitulo.value, versiculo_ini: versiculoAnotacaoAtual, texto: texto
+            };
+
+            try {
+                const res = await fetch('/api/estudo/anotacoes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Erro ao salvar anotação.');
+                
+                showToast('✅ Anotação salva com sucesso!');
+                fecharAnotacao();
+                document.querySelectorAll('.verse-actions').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.verse-row').forEach(el => el.classList.remove('selected'));
+            } catch (err) {
+                showToast('Erro: ' + err.message);
+            }
+        }
+
+        // Devocional de Hoje
+        async function carregarDevocionalHoje() {
+            try {
+                const res = await fetch('/api/estudo/devocional/hoje');
+                const dev = await res.json();
+                if (dev) {
+                    document.getElementById('devocionalHojeWrap').innerHTML = `
+                        <div class="devocional-card">
+                            <i class="fa-solid fa-sun dev-bg-icon"></i>
+                            <div class="dev-badge">Devocional do Dia</div>
+                            <div class="dev-title">${dev.titulo}</div>
+                            ${dev.versiculo_ref ? `<div class="dev-ref"><i class="fa-solid fa-book-bible"></i> ${dev.versiculo_ref}</div>` : ''}
+                            <div class="dev-body">${dev.corpo}</div>
+                            ${dev.oracao ? `<div class="dev-prayer"><strong>Oração:</strong><br>${dev.oracao}</div>` : ''}
+                        </div>
+                    `;
+                }
+            } catch (e) { console.error('Erro devocional', e); }
+        }
+
+        // Boot
+        initDropdowns();
+        carregarDevocionalHoje();
+        carregarVersoes().then(() => carregarTexto());
+    </script>
+</body>
+</html>

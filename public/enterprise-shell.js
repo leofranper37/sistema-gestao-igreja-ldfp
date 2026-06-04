@@ -21,15 +21,15 @@
     }
 
     const ROLE_FEATURES = {
-        super_admin: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'configuracoes', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao', 'planos'],
-        admin: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'configuracoes', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao'],
-        secretaria: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao'],
-        pastor: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'cargos', 'whatsapp', 'autocadastro', 'app_midia', 'telao'],
-        oficial: ['membros', 'visitantes', 'agenda', 'oracoes', 'portaria_qr'],
-        ministerio: ['membros', 'oracoes', 'agenda', 'criancas'],
-        midia: ['agenda', 'membros', 'midia', 'app_midia', 'telao'],
-        membro: ['oracoes', 'agenda'],
-        visitante: ['oracoes', 'agenda']
+        super_admin: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'configuracoes', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao', 'planos', 'estudo'],
+        admin: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'configuracoes', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao', 'estudo'],
+        secretaria: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao', 'estudo'],
+        pastor: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'cargos', 'whatsapp', 'autocadastro', 'app_midia', 'telao', 'estudo'],
+        oficial: ['membros', 'visitantes', 'agenda', 'oracoes', 'portaria_qr', 'estudo'],
+        ministerio: ['membros', 'oracoes', 'agenda', 'criancas', 'estudo'],
+        midia: ['agenda', 'membros', 'midia', 'app_midia', 'telao', 'estudo'],
+        membro: ['oracoes', 'agenda', 'estudo'],
+        visitante: ['oracoes', 'agenda', 'estudo']
     };
 
     const ROLE_ALIASES = {
@@ -113,7 +113,11 @@
         'planos_lista.html': 'planos',
         'planos_editar.html': 'planos',
         'app_membro.html': 'app_membro',
-        'dashboard_membro.html': 'app_membro'
+        'dashboard_membro.html': 'app_membro',
+        'estudo.html': 'estudo',
+        'planos-estudo.html': 'estudo',
+        'plano-detalhe.html': 'estudo',
+        'devocionais.html': 'estudo'
     };
 
     let dynamicFeatureAllowList = null;
@@ -751,6 +755,12 @@
                     ], activePath, true, user)}
 
                     ${renderSecretariaGroup(activePath, user)}
+
+                    ${renderLegacyGroup('Ensino', 'fa-solid fa-graduation-cap', [
+                        ['estudo.html', 'fa-solid fa-book-bible', 'Bíblia & Estudo', 'estudo'],
+                        ['planos-estudo.html', 'fa-solid fa-map-signs', 'Planos de Leitura', 'estudo'],
+                        ['devocionais.html', 'fa-solid fa-book-open-reader', 'Devocionais', 'estudo']
+                    ], activePath, false, user)}
 
                     ${renderTesourariaGroup(activePath, user)}
 

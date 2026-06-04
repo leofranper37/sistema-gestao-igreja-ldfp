@@ -12,5 +12,6 @@
   },
   "files.associations": {
     "*.html": "html"
-  }
+  },
+  "claudeCodeChat.permissions.yoloMode": true
 }

@@ -144,6 +144,33 @@
             return `${d}/${m}/${y}`;
         }
         
+        function escHtml(str) {
+            return String(str || '').replace(/[&<>'"]/g, match => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            })[match]);
+        }
+
+        async function notificarDevocional(titulo) {
+            if (!confirm(`Deseja enviar uma notificação push para a igreja sobre o devocional "${titulo}"?`)) return;
+            
+            try {
+                const res = await fetch('/api/push/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        titulo: 'Devocional de Hoje',
+                        corpo: titulo,
+                        url: '/estudo.html'
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.erro || 'Erro ao enviar notificação.');
+                showToast(`Notificação enviada para ${data.enviados} membro(s).`);
+            } catch (err) {
+                showToast(err.message);
+            }
+        }
+
         async function loadDevocionais() {
             try {
                 const res = await fetch('/api/estudo/admin/devocionais');
@@ -162,6 +189,7 @@
                         <td>${d.versiculo_ref || '-'}</td>
                         <td><span class="badge ${d.ativo ? 'ativo' : 'inativo'}">${d.ativo ? 'Ativo' : 'Rascunho'}</span></td>
                         <td style="text-align:right">
+                            <button class="btn-icon" style="background:#eff6ff;color:#0ea5e9" onclick="notificarDevocional('${escHtml(d.titulo)}')" title="Enviar Notificação Push"><i class="fa-solid fa-bell"></i></button>
                             <button class="btn-icon btn-edit" onclick="editarDevocional(${d.id})" title="Editar"><i class="fa-solid fa-pen"></i></button>
                             <button class="btn-icon btn-del" onclick="excluirDevocional(${d.id})" title="Excluir"><i class="fa-solid fa-trash"></i></button>
                         </td>

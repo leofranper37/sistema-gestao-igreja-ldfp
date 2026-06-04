@@ -35,4 +35,11 @@ router.post('/admin/devocionais', ...adminAuth, estudoController.createDevociona
 router.put('/admin/devocionais/:id', ...adminAuth, estudoController.updateDevocional);
 router.delete('/admin/devocionais/:id', ...adminAuth, estudoController.deleteDevocional);
 
+// Planos Admin
+router.get('/admin/planos', ...adminAuth, estudoController.listAdminPlanos);
+router.get('/admin/planos/:id', ...adminAuth, estudoController.getAdminPlano);
+router.post('/admin/planos', ...adminAuth, estudoController.createAdminPlano);
+router.put('/admin/planos/:id', ...adminAuth, estudoController.updateAdminPlano);
+router.delete('/admin/planos/:id', ...adminAuth, estudoController.deleteAdminPlano);
+
 module.exports = router;

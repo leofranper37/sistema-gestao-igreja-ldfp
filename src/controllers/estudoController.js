@@ -333,3 +333,72 @@ exports.deleteDevocional = async (req, res) => {
         res.status(500).json({ error: 'Erro ao remover devocional.' });
     }
 };
+
+// --- Planos Admin ---
+exports.listAdminPlanos = async (req, res) => {
+    const { igrejaId: igreja_id } = req.auth;
+    try {
+        const [rows] = await pool.query(
+            'SELECT id, titulo, tipo, dias_total, ativo, igreja_id, created_at FROM estudo_planos WHERE (igreja_id = ? OR igreja_id IS NULL) ORDER BY created_at DESC',
+            [igreja_id]
+        );
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao listar planos.' });
+    }
+};
+
+exports.getAdminPlano = async (req, res) => {
+    const { igrejaId: igreja_id } = req.auth;
+    const { id } = req.params;
+    try {
+        const [rows] = await pool.query('SELECT * FROM estudo_planos WHERE id=? AND (igreja_id = ? OR igreja_id IS NULL)', [id, igreja_id]);
+        if (!rows.length) return res.status(404).json({ error: 'Plano não encontrado.' });
+        const plano = rows[0];
+        try { plano.passos = JSON.parse(plano.passos_json); } catch(e) { plano.passos = []; }
+        delete plano.passos_json;
+        res.json(plano);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao buscar plano.' });
+    }
+};
+
+exports.createAdminPlano = async (req, res) => {
+    const { igrejaId: igreja_id } = req.auth;
+    const { titulo, descricao, tipo, passos, ativo } = req.body;
+    if (!titulo || !passos || !Array.isArray(passos)) return res.status(400).json({ error: 'Título e passos são obrigatórios.' });
+    try {
+        const [result] = await pool.query(
+            `INSERT INTO estudo_planos (igreja_id, titulo, descricao, tipo, passos_json, dias_total, ativo) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [igreja_id, titulo, descricao || null, tipo || 'leitura', JSON.stringify(passos), passos.length, ativo !== undefined ? ativo : 1]
+        );
+        res.status(201).json({ id: result.insertId, message: 'Plano criado.' });
+    } catch (err) { res.status(500).json({ error: 'Erro ao criar plano.' }); }
+};
+
+exports.updateAdminPlano = async (req, res) => {
+    const { igrejaId: igreja_id } = req.auth;
+    const { id } = req.params;
+    const { titulo, descricao, tipo, passos, ativo } = req.body;
+    if (!titulo || !passos || !Array.isArray(passos)) return res.status(400).json({ error: 'Título e passos são obrigatórios.' });
+    try {
+        const [check] = await pool.query('SELECT igreja_id FROM estudo_planos WHERE id = ?', [id]);
+        if (!check.length) return res.status(404).json({ error: 'Plano não encontrado.' });
+        if (check[0].igreja_id !== igreja_id) return res.status(403).json({ error: 'Não é possível editar um plano global.' });
+        await pool.query(`UPDATE estudo_planos SET titulo=?, descricao=?, tipo=?, passos_json=?, dias_total=?, ativo=? WHERE id=? AND igreja_id=?`, [titulo, descricao || null, tipo || 'leitura', JSON.stringify(passos), passos.length, ativo !== undefined ? ativo : 1, id, igreja_id]);
+        res.json({ message: 'Plano atualizado.' });
+    } catch (err) { res.status(500).json({ error: 'Erro ao atualizar plano.' }); }
+};
+
+exports.deleteAdminPlano = async (req, res) => {
+    const { igrejaId: igreja_id } = req.auth;
+    const { id } = req.params;
+    try {
+        const [check] = await pool.query('SELECT igreja_id FROM estudo_planos WHERE id = ?', [id]);
+        if (!check.length) return res.status(404).json({ error: 'Plano não encontrado.' });
+        if (check[0].igreja_id !== igreja_id) return res.status(403).json({ error: 'Não é possível excluir um plano global.' });
+        await pool.query('DELETE FROM estudo_planos WHERE id=? AND igreja_id=?', [id, igreja_id]);
+        await pool.query('DELETE FROM estudo_progresso WHERE plano_id=?', [id]);
+        res.json({ message: 'Plano removido.' });
+    } catch (err) { res.status(500).json({ error: 'Erro ao remover plano.' }); }
+};

@@ -117,6 +117,7 @@
         'estudo.html': 'estudo',
         'planos-estudo.html': 'estudo',
         'plano-detalhe.html': 'estudo',
+        'admin-planos-estudo.html': 'estudo',
         'devocionais.html': 'estudo'
     };
 
@@ -759,6 +760,7 @@
                     ${renderLegacyGroup('Ensino', 'fa-solid fa-graduation-cap', [
                         ['estudo.html', 'fa-solid fa-book-bible', 'Bíblia & Estudo', 'estudo'],
                         ['planos-estudo.html', 'fa-solid fa-map-signs', 'Planos de Leitura', 'estudo'],
+                        ['admin-planos-estudo.html', 'fa-solid fa-list-check', 'Gestão de Planos', 'estudo'],
                         ['devocionais.html', 'fa-solid fa-book-open-reader', 'Devocionais', 'estudo']
                     ], activePath, false, user)}
 

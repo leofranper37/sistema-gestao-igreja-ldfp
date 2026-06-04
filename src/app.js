@@ -33,6 +33,7 @@ const criancasRoutes   = require('./routes/criancasRoutes');
 const dashboardRoutes  = require('./routes/dashboardRoutes');
 const auditRoutes      = require('./routes/auditRoutes');
 const estudoRoutes     = require('./routes/estudoRoutes');
+const webhookRoutes    = require('./routes/webhookRoutes');
 
 const app = express();
 
@@ -174,6 +175,7 @@ app.use(criancasRoutes);
 app.use(dashboardRoutes);
 app.use(auditRoutes);
 app.use('/api/estudo', estudoRoutes);
+app.use('/webhook', webhookRoutes);
 
 /* ------------------------------------------------------------------ */
 /*  ROTA DE BOOTSTRAP — cria o primeiro super-admin se não existir     */

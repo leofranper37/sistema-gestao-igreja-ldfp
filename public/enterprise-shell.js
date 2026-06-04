@@ -12,13 +12,12 @@
     }
 
     function cleanupShellDuplicates() {
-        const sidebars = document.querySelectorAll('#enterpriseSidebar, aside.enterprise-sidebar, aside.legacy-shell-sidebar');
-        // Botão de pânico: Remove TODOS os sidebars fantasma da tela antes de desenhar o novo
-        sidebars.forEach(sb => sb.remove());
-        
-        // Remove TODOS os cabeçalhos fantasma da tela antes de desenhar o novo
-        const headers = document.querySelectorAll('.enterprise-top-header');
-        headers.forEach(h => h.remove());
+        keepOnlyFirst('#enterpriseSidebar');
+        keepOnlyFirst('aside.enterprise-sidebar');
+        keepOnlyFirst('aside.legacy-shell-sidebar');
+        keepOnlyFirst('.enterprise-top-header');
+        keepOnlyFirst('main.enterprise-main');
+        keepOnlyFirst('main.main-content');
     }
 
     const ROLE_FEATURES = {
@@ -966,49 +965,43 @@
     }
 
 async function initShell() {
-    cleanupShellDuplicates();
+    if (window[SHELL_INITIALIZED_KEY]) return;
+    window[SHELL_INITIALIZED_KEY] = true;
 
-    // 1. Verificação de trava dupla
-    if (window[SHELL_INITIALIZED_KEY] || window[SHELL_INITIALIZING_KEY]) return;
-    window[SHELL_INITIALIZING_KEY] = true;
+    const main = document.querySelector('main.enterprise-main') || document.querySelector('main.main-content');
+    if (!main) return;
 
-    try {
-        // Garante que o CSS empurre o conteúdo para a direita dando espaço pro menu
-        document.body.classList.add('enterprise-shell-page');
-
-        // Lê a sessão do usuário sincronamente (evita travar a página)
-        const user = getAuthUser();
-
-        const main = document.querySelector('main.enterprise-main') || document.querySelector('main.main-content');
-        if (!main) return;
-
-        const body = document.body;
-        const currentPath = `${window.location.pathname.split('/').pop() || 'dashboard.html'}${window.location.search || ''}`;
-        const activePath = body.dataset.shellActive || currentPath;
-        
-        await loadDynamicFeatures();
-        enforcePageFeatureAccess(activePath, user); // Agora o user já está garantido
-
-        const sidebarHtml = renderSidebar(activePath, user);
-        const headerConfig = {
-            title: body.dataset.shellTitle || 'LDFP',
-            breadcrumb: body.dataset.shellBreadcrumb || 'LDFP',
-            chipText: body.dataset.shellChip || 'Ambiente',
-            roleLabel: body.dataset.shellRole || getUserRole(user)
-        };
-        const headerHtml = renderHeader(headerConfig);
-
-        main.insertAdjacentHTML('beforebegin', sidebarHtml);
-        main.insertAdjacentHTML('beforebegin', headerHtml);
-
-        applyUserLabels();
-        bindMenuToggle();
-        ensureLockStyles();
-        ensureUpgradeModal();
-    } finally {
-        window[SHELL_INITIALIZING_KEY] = false;
-        window[SHELL_INITIALIZED_KEY] = true;
+    let user = getAuthUser();
+    if (!user) {
+        // Pequeno delay natural (que causa a "piscada") aguardando os dados
+        await new Promise(resolve => setTimeout(resolve, 500));
+        user = getAuthUser();
     }
+
+    const body = document.body;
+    const currentPath = `${window.location.pathname.split('/').pop() || 'dashboard.html'}${window.location.search || ''}`;
+    const activePath = body.dataset.shellActive || currentPath;
+    
+    await loadDynamicFeatures();
+    enforcePageFeatureAccess(activePath, user);
+
+    const sidebarHtml = renderSidebar(activePath, user);
+    const headerConfig = {
+        title: body.dataset.shellTitle || 'LDFP',
+        breadcrumb: body.dataset.shellBreadcrumb || 'LDFP',
+        chipText: body.dataset.shellChip || 'Ambiente',
+        roleLabel: body.dataset.shellRole || getUserRole(user)
+    };
+    const headerHtml = renderHeader(headerConfig);
+
+    main.insertAdjacentHTML('beforebegin', sidebarHtml);
+    main.insertAdjacentHTML('beforebegin', headerHtml);
+
+    applyUserLabels();
+    bindMenuToggle();
+    ensureLockStyles();
+    ensureUpgradeModal();
+    cleanupShellDuplicates();
 }
 
     if (document.readyState === 'loading') {

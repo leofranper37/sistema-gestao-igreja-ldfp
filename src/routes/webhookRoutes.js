@@ -9,8 +9,12 @@ router.post('/', (req, res) => {
     
     exec(cmd, (error, stdout, stderr) => {
         if (error) {
-            console.error(`Erro no webhook: ${error.message}`);
-            return res.status(500).json({ error: 'Erro ao atualizar o servidor' });
+            console.error(`Erro no webhook: ${error.message}\nStderr: ${stderr}`);
+            return res.status(500).json({ 
+                error: 'Erro ao atualizar o servidor',
+                details: error.message,
+                stderr: stderr
+            });
         }
         console.log(`Atualização concluída: ${stdout}`);
         res.status(200).json({ message: 'Servidor atualizado com sucesso via GitHub!' });

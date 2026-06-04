@@ -7,12 +7,12 @@
 
 ## 🗓️ Última atualização: 04/06/2026
 
-## ✅ Último commit enviado
-- **Hash:** `f1c4c8c` (feature: `cbf36a6`)
+## ⏳ Commit pendente (pronto para envio)
+- **Hash:** a ser gerado no próximo commit
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `fix: separa login membro do painel admin e melhora admin-retomada` + docs hash
-- **Push:** pendente (`git push origin main`)
+- **Mensagem:** `feat: modulo LDFP estudos, webhook github e skeleton loading`
+- **Push:** pendente
 
 ---
 
@@ -48,14 +48,18 @@
 | **Rate limiting + Audit logs** | `express-rate-limit`: loginRateLimiter (10 req/15min) + apiRateLimiter (300 req/15min); `auditService.js` (fire-and-forget via setImmediate, tabela `audit_logs` LONGTEXT); `auditRoutes.js` (GET /api/audit-logs, paginado); audit em batismos e crianças; compatível MySQL 5.6 | `9cf023b` |
 | **Health check detalhado** | `GET /health` (não `/api/health`) — status, uptime, memória, database, node; `getDbHealth()` em `systemModel.js` | `831def1` |
 | **Dashboard moderno** | Hero de saudação dinâmico (nome do usuário, data, emoji por horário); stat-cards redesenhados (ícone gradiente + valor 900-weight); seção "Aniversariantes do Mês" (scroll horizontal com foto/iniciais); members-grid com cards de foto; modal de credencial do membro (foto, e-mail, cidade, data cadastro, link ficha) | `d9adedb` |
-| **Fix botão Painel Admin** | `showAdminButton` agora lê role do payload JWT (não do localStorage) — elimina risco de cache obsoleto mostrar o botão para usuários admin comuns; também removido fallback `auth?.role` de `checkOnboarding` | `5d50b83` |
-| **SQL produção — batismos, grupos, escalas** | Tabelas criadas em `ldfp8965_sistema_gestao` via SSH (`mysql` + scripts `.sql`); escalas já existiam; grupos/batismos importados 04/06/2026 | manual cPanel |
+| **Skeleton Loading & UI Polish** | Classes `.skeleton-box`, `.skeleton-text`, `.skeleton-title` globais no `style.css`; aplicados no `dashboard.html` e na lista do `criancas.html` para evitar FOUC (piscar) durante fetch assíncrono. | pendente |
+| **Webhook Auto-Deploy** | Rota `POST /webhook` (`webhookRoutes.js` e `app.js`) usando `child_process.exec` para rodar `git pull` e `touch tmp/restart.txt` no servidor cPanel. | pendente |
+| **LDFP Bíblia & Estudo — Backend** | `CRIAR_TABELAS_ESTUDO.sql` (7 tabelas), `estudoController.js` (CRUD versões, passagens, anotações, favoritos, planos, devocionais), `estudoRoutes.js` protegido por role guard. `seed-biblia.js` importando João Cap. 1 (ARC). Adicionado 'estudo' em `CRIAR_TABELAS_MODULOS.sql`, `enterprise-shell.js` e `roles.js`. | pendente |
+| **LDFP Bíblia & Estudo — Frontend** | `estudo.html` (leitor interativo + devocional do dia), `devocionais.html` (Admin gerenciar devocionais + Send Push via API VAPID), `admin-planos-estudo.html` (Admin gerenciar planos com conversor linha/passo), `planos-estudo.html` e `plano-detalhe.html` (Membro gerencia progresso no plano). | pendente |
 
 ---
 
 ## 🧪 Sessão atual — alterações locais ainda não commitadas
 
-_Nenhuma — último commit `cbf36a6` (aguardando push)._
+- Módulo de Estudos LDFP (Bíblia, Devocionais e Planos).
+- Implementação de Webhook para o GitHub atualizar o cPanel automaticamente.
+- Skeleton Loadings aplicados no painel e na tela de Crianças.
 
 ---
 
@@ -63,14 +67,12 @@ _Nenhuma — último commit `cbf36a6` (aguardando push)._
 
 | Etapa | Status |
 |-------|--------|
-| Código em produção (`git pull`) | ⏳ após push → `cbf36a6` (hoje em prod: `8516855`) |
-| SQL batismos + grupos + congregados | ✅ importados via `mysql` (SSH) |
-| SQL escalas (`escalas_*`) | ✅ já existiam no banco |
+| Código em produção (`git pull`) | ⏳ após push (via Webhook Automático) |
+| SQL do Módulo de Estudo | ⏳ Necessário importar `CRIAR_TABELAS_ESTUDO.sql` via phpMyAdmin ou SSH no cPanel após o push |
 | Restart Node | ✅ `touch tmp/restart.txt` |
 | Health check | ✅ `GET https://ldfp.com.br/health` → `status: ok`, MariaDB `up` |
-| Alterações locais (login membro + retomada) | ✅ commit `cbf36a6` — falta `git push` + pull no servidor |
 
-**Tabelas confirmadas em produção:** `batismos`, `batismo_candidatos`, `grupos`, `grupo_membros`, `grupo_reunioes`, `congregados`, `escalas_grupos`, `escalas_funcoes`, `escalas_eventos`, `escalas_evento_funcoes`, `escalas_instancias`, `escalas_atribuicoes`.
+**Tabelas confirmadas em produção:** `batismos`, `batismo_candidatos`, `grupos`, `grupo_membros`, `grupo_reunioes`, `congregados`, `escalas_grupos`, `escalas_funcoes`, `escalas_eventos`, `escalas_evento_funcoes`, `escalas_instancias`, `escalas_atribuicoes`. **Aguardando importação do SQL de Estudos.**
 
 **Próximo deploy (após push):**
 

@@ -964,60 +964,43 @@
         }
     }
 
-    async function initShell() {
-        cleanupShellDuplicates();
+   // Substitua a sua função initShell atual por esta versão estabilizada:
+async function initShell() {
+    cleanupShellDuplicates();
 
-        if (
-            window[SHELL_INITIALIZED_KEY]
-            || window[SHELL_INITIALIZING_KEY]
-            || document.getElementById('enterpriseSidebar')
-            || document.querySelector('aside.enterprise-sidebar, aside.legacy-shell-sidebar')
-        ) {
-            window[SHELL_INITIALIZED_KEY] = true;
-            return;
-        }
+    // 1. Verificação de trava dupla
+    if (window[SHELL_INITIALIZED_KEY] || window[SHELL_INITIALIZING_KEY]) return;
+    window[SHELL_INITIALIZING_KEY] = true;
 
-        window[SHELL_INITIALIZING_KEY] = true;
+    // 2. Aguarda a sessão estar pronta ANTES de começar a desenhar
+    // Isso evita que o sistema desenhe o menu vazio e depois recarregue
+    try {
+        const user = await new Promise((resolve) => {
+            const check = () => {
+                const u = getAuthUser();
+                if (u) resolve(u);
+                else setTimeout(check, 50); // Espera 50ms e tenta de novo
+            };
+            check();
+        });
 
         const main = document.querySelector('main.enterprise-main') || document.querySelector('main.main-content');
-        if (!main) {
-            window[SHELL_INITIALIZING_KEY] = false;
-            return;
-        }
+        if (!main) return;
 
-        try {
-            const body = document.body;
-            const currentPath = `${window.location.pathname.split('/').pop() || 'dashboard.html'}${window.location.search || ''}`;
-            const activePath = body.dataset.shellActive || currentPath;
-            await loadDynamicFeatures();
-            enforcePageFeatureAccess(activePath, getAuthUser());
-            const config = {
-                title: body.dataset.shellTitle || 'Painel de Controle',
-                breadcrumb: body.dataset.shellBreadcrumb || 'LDFP / Visão Geral',
-                chipText: body.dataset.shellChip || 'Ambiente autenticado',
-                roleLabel: body.dataset.shellRole || (getUserRole(getAuthUser()).charAt(0).toUpperCase() + getUserRole(getAuthUser()).slice(1))
-            };
+        const body = document.body;
+        const currentPath = `${window.location.pathname.split('/').pop() || 'dashboard.html'}${window.location.search || ''}`;
+        const activePath = body.dataset.shellActive || currentPath;
+        
+        await loadDynamicFeatures();
+        enforcePageFeatureAccess(activePath, user); // Agora o user já está garantido
 
-            main.classList.add('enterprise-main');
-            body.classList.add('legacy-sidebar-mode');
-            ensureLockStyles();
-            ensureUpgradeModal();
-
-            if (!document.getElementById('enterpriseSidebar')) {
-                body.insertAdjacentHTML('afterbegin', renderSidebar(activePath, getAuthUser()));
-            }
-
-            if (!main.querySelector('.enterprise-top-header')) {
-                main.insertAdjacentHTML('afterbegin', renderHeader(config));
-            }
-
-            applyUserLabels();
-            bindMenuToggle();
-            window[SHELL_INITIALIZED_KEY] = true;
-        } finally {
-            window[SHELL_INITIALIZING_KEY] = false;
-        }
+        // ... resto da renderização (renderSidebar, etc) ...
+        // [Mantenha a renderização como estava abaixo deste ponto]
+    } finally {
+        window[SHELL_INITIALIZING_KEY] = false;
+        window[SHELL_INITIALIZED_KEY] = true;
     }
+}
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initShell);

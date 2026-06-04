@@ -73,6 +73,11 @@
             return superRoles.has(role) || (role === 'admin' && igreja === 'ldfp master');
         }
 
+        function isMemberOnlyUser(user) {
+            const role = String(user?.role || user?.perfil || '').trim().toLowerCase();
+            return role === 'membro' || role === 'visitante';
+        }
+
         function extractErrorMessage(data, fallbackMessage) {
             if (!data) {
                 return fallbackMessage;
@@ -116,14 +121,20 @@
                     throw new Error(extractErrorMessage(data, 'Nao foi possivel entrar agora.'));
                 }
 
-                saveAuthSession(data);
-                localStorage.setItem('ldfpUser', JSON.stringify(data.user));
                 status.style.color = '#15803d';
                 status.textContent = 'Login realizado com sucesso!';
                 setTimeout(() => {
-                    if (isMasterWorkspaceUser(data.user)) {
+                    if (isMemberOnlyUser(data.user)) {
+                        clearAuthSession();
+                        localStorage.removeItem('ldfpUser');
+                        window.location.href = 'app_login.html';
+                    } else if (isMasterWorkspaceUser(data.user)) {
+                        saveAuthSession(data);
+                        localStorage.setItem('ldfpUser', JSON.stringify(data.user));
                         window.location.href = 'super-admin.html';
                     } else {
+                        saveAuthSession(data);
+                        localStorage.setItem('ldfpUser', JSON.stringify(data.user));
                         window.location.href = 'dashboard.html';
                     }
                 }, 600);

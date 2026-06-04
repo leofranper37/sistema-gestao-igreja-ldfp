@@ -5,13 +5,14 @@
 
 ---
 
-## 🗓️ Última atualização: 01/06/2026
+## 🗓️ Última atualização: 04/06/2026
 
 ## ✅ Último commit enviado
-- **Hash:** `5d50b83`
+- **Hash:** `8c50fda`
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `fix: botão Painel Admin agora lê role do JWT, não do localStorage (evita cache obsoleto)`
+- **Mensagem:** `fix: separa login membro do painel admin e melhora admin-retomada`
+- **Push:** pendente (`git push origin main`)
 
 ---
 
@@ -45,19 +46,44 @@
 | **Dashboard com gráficos reais** | `dashboardController.js` — 12 queries paralelas (totais, recentes, gráficos, aniversariantesMes); `dashboardRoutes.js`; Chart.js 4.4 em `dashboard.html` | `f894552` |
 | **Configurações da Igreja** | `configuracoes.html` — logo upload, nome, endereço, telefone, CNPJ, redes sociais; rota `PUT /api/church/configuracoes`; `configuracoes.html` migrado | `11926e7` |
 | **Rate limiting + Audit logs** | `express-rate-limit`: loginRateLimiter (10 req/15min) + apiRateLimiter (300 req/15min); `auditService.js` (fire-and-forget via setImmediate, tabela `audit_logs` LONGTEXT); `auditRoutes.js` (GET /api/audit-logs, paginado); audit em batismos e crianças; compatível MySQL 5.6 | `9cf023b` |
-| **Health check detalhado** | `GET /api/health` retorna status, uptime, memória (heapUsed/heapTotal/rss/external), database (status, responseTimeMs, version), node (version, env); `getDbHealth()` em `systemModel.js` | `831def1` |
+| **Health check detalhado** | `GET /health` (não `/api/health`) — status, uptime, memória, database, node; `getDbHealth()` em `systemModel.js` | `831def1` |
 | **Dashboard moderno** | Hero de saudação dinâmico (nome do usuário, data, emoji por horário); stat-cards redesenhados (ícone gradiente + valor 900-weight); seção "Aniversariantes do Mês" (scroll horizontal com foto/iniciais); members-grid com cards de foto; modal de credencial do membro (foto, e-mail, cidade, data cadastro, link ficha) | `d9adedb` |
 | **Fix botão Painel Admin** | `showAdminButton` agora lê role do payload JWT (não do localStorage) — elimina risco de cache obsoleto mostrar o botão para usuários admin comuns; também removido fallback `auth?.role` de `checkOnboarding` | `5d50b83` |
+| **SQL produção — batismos, grupos, escalas** | Tabelas criadas em `ldfp8965_sistema_gestao` via SSH (`mysql` + scripts `.sql`); escalas já existiam; grupos/batismos importados 04/06/2026 | manual cPanel |
 
 ---
 
-## ⚙️ Servidor (cPanel) — estado atual
+## 🧪 Sessão atual — alterações locais ainda não commitadas
 
-- **Último `git pull` no servidor:** pendente (rodar o comando abaixo)
+_Nenhuma — último commit `8c50fda` (aguardando push)._
+
+---
+
+## ⚙️ Servidor (cPanel) — estado em 04/06/2026
+
+| Etapa | Status |
+|-------|--------|
+| Código em produção (`git pull`) | ⏳ após push → `8c50fda` (hoje em prod: `8516855`) |
+| SQL batismos + grupos + congregados | ✅ importados via `mysql` (SSH) |
+| SQL escalas (`escalas_*`) | ✅ já existiam no banco |
+| Restart Node | ✅ `touch tmp/restart.txt` |
+| Health check | ✅ `GET https://ldfp.com.br/health` → `status: ok`, MariaDB `up` |
+| Alterações locais (login membro + retomada) | ✅ commit `8c50fda` — falta `git push` + pull no servidor |
+
+**Tabelas confirmadas em produção:** `batismos`, `batismo_candidatos`, `grupos`, `grupo_membros`, `grupo_reunioes`, `congregados`, `escalas_grupos`, `escalas_funcoes`, `escalas_eventos`, `escalas_evento_funcoes`, `escalas_instancias`, `escalas_atribuicoes`.
+
+**Próximo deploy (após push):**
+
+```powershell
+cd d:\sistema-gestao-igreja-main
+git push origin main
+```
 
 ```bash
-cd /home/ldfp8965/ldfp.com.br && git pull && touch tmp/restart.txt
+cd /home/ldfp8965/ldfp.com.br && git pull origin main && touch tmp/restart.txt
 ```
+
+**Pendência de segurança:** trocar senha MySQL (exposta no terminal durante o deploy) e atualizar `.env` + Restart no Setup Node.js App.
 
 ---
 
@@ -83,13 +109,6 @@ Todos os 9 itens originais foram concluídos. Possíveis próximos passos:
 | — | Portal do Membro | Acesso próprio, atualização de dados | ⏳ Futuro |
 | — | Integração PIX automática | Dízimo via QR Code PIX | ⏳ Futuro |
 
-### ⚠️ SQLs pendentes no cPanel (phpMyAdmin)
-Executar em `ldfp8965_sistema_gestao` se ainda não foram aplicados:
-- `CRIAR_TABELAS_BATISMOS.sql`
-- `CRIAR_TABELAS_ESCALAS.sql`
-- `CRIAR_TABELAS_GRUPOS.sql`
-
----
 
 ## 🔑 Dados de infraestrutura (NÃO commitar segredos novos aqui)
 
@@ -115,6 +134,8 @@ Executar em `ldfp8965_sistema_gestao` se ainda não foram aplicados:
 - **`req.auth`:** `id`, `igrejaId`, `email`, `role` — definidos em `src/middlewares/auth.js`
 - **Audit service:** `src/services/auditService.js` — `audit(action, req, details)` — fire-and-forget via `setImmediate`; cria tabela `audit_logs` automaticamente se não existir
 - **Rate limiting:** `loginRateLimiter` (10 req/15min) em rotas de auth; `apiRateLimiter` (300 req/15min) em `/api/`
+- **Health em produção:** `curl -s https://ldfp.com.br/health` — Node v20, MariaDB 10.11
+- **MySQL no SSH:** usar `ldfp8965_Leo` + banco `ldfp8965_sistema_gestao` (credenciais do `.env`); `npm` no SSH costuma não existir — usar **Setup Node.js App** no cPanel
 - **Dashboard controller:** 12 queries paralelas com `Promise.all`; retorna `totais`, `recentes` (com `foto_url`), `graficos`, `aniversariantesMes`
 - **Botão Painel Admin no dashboard:** lê role do payload JWT (não localStorage) — apenas `super-admin` vê
 - **Padrão role guard nas páginas admin:**

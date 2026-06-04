@@ -243,7 +243,9 @@
     <script src="session.js?v=20260501"></script>
     <script src="enterprise-shell.js?v=20260501"></script>
     <script>
-        requireAuthSession();
+        if (!requireAuthSession()) {
+            throw new Error('Sessao administrativa nao autorizada.');
+        }
 
         const ROLE_ACTIONS = {
             admin: [
@@ -275,12 +277,10 @@
                 { label: 'Dashboard',  href: 'dashboard.html',           icon: 'fa-regular fa-eye' }
             ],
             membro: [
-                { label: 'Orações',  href: 'oracoes.html',  icon: 'fa-solid fa-hands-praying' },
-                { label: 'Agenda',   href: 'agenda.html',   icon: 'fa-solid fa-calendar' }
+                { label: 'App do Membro', href: 'app_membro_v2.html', icon: 'fa-solid fa-mobile-screen-button' }
             ],
             visitante: [
-                { label: 'Pedidos de Oração', href: 'oracoes.html', icon: 'fa-solid fa-hands-praying' },
-                { label: 'Agenda',            href: 'agenda.html',  icon: 'fa-solid fa-calendar' }
+                { label: 'App do Membro', href: 'app_login.html', icon: 'fa-solid fa-mobile-screen-button' }
             ]
         };
 

@@ -51,6 +51,18 @@
       errorBox.style.display = 'none';
     }
 
+    function normalizeRole(role) {
+      return String(role || '').trim().toLowerCase();
+    }
+
+    function isSuperAdminRole(role) {
+      return ['super-admin','super_admin','superadmin','master','owner','root'].includes(normalizeRole(role));
+    }
+
+    function isMemberOnlyRole(role) {
+      return ['membro','visitante'].includes(normalizeRole(role));
+    }
+
     async function doLogin() {
       hideError();
       const email    = document.getElementById('email').value.trim();
@@ -74,9 +86,17 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Credenciais inválidas');
 
+        if (isMemberOnlyRole(data.user?.role)) {
+          localStorage.removeItem('ldfpAuth');
+          localStorage.removeItem('token');
+          sessionStorage.removeItem('token');
+          window.location.href = 'app_login.html';
+          return;
+        }
+
         saveAuth(data);
 
-        if (['super-admin','super_admin','superadmin','master'].includes(data.user.role)) {
+        if (isSuperAdminRole(data.user.role)) {
           window.location.href = 'super-admin.html';
         } else {
           window.location.href = 'dashboard.html';
@@ -96,9 +116,16 @@
     // Se já estiver logado, redirecionar
     const auth = getAuth();
     if (auth?.token && auth?.user) {
-      window.location.href = auth.user.role === 'super-admin'
+      if (isMemberOnlyRole(auth.user.role)) {
+        localStorage.removeItem('ldfpAuth');
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        window.location.href = 'app_login.html';
+      } else {
+        window.location.href = isSuperAdminRole(auth.user.role)
         ? 'super-admin.html'
         : 'dashboard.html';
+      }
     }
   </script>
 </body>

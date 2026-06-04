@@ -681,7 +681,9 @@
     <script src="pwa.js"></script>
     <script src="enterprise-shell.js?v=20260501"></script>
     <script>
-        requireAuthSession();
+        if (!requireAuthSession()) {
+            throw new Error('Sessao administrativa nao autorizada.');
+        }
 
         // Onboarding: redireciona admin que nunca configurou a conta
         (async function checkOnboarding() {

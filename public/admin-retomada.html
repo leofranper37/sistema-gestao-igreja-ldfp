@@ -21,14 +21,17 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
 .topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
 .topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
 .workspace{padding:24px;display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+.full-width{grid-column:1 / -1}
 .card{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 2px 12px rgba(2,6,23,.03)}
 .card-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .card-header h3{font-size:15px;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:8px}
 .card-body{padding:16px 18px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .form-row{margin-bottom:12px}
 .form-row label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:6px}
 .form-row input,.form-row textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px}
 .form-row textarea{min-height:108px;resize:vertical}
+.form-row textarea[readonly]{background:#f8fafc;color:#334155}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .btn{padding:9px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:7px}
 .btn-outline{background:#fff;border:1px solid var(--border);color:var(--text)}
@@ -41,9 +44,11 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
 .list{margin:8px 0 0 0;padding-left:18px}
 .list li{margin-bottom:6px;font-size:13px;color:#475569}
 .mono{font-family:Consolas,'Courier New',monospace;font-size:12px;background:#f8fafc;padding:3px 7px;border-radius:6px;border:1px solid #e2e8f0}
+.note-list{margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.7}
+.note-list li{margin-bottom:4px}
 .toast{position:fixed;right:24px;bottom:24px;background:#10b981;color:#fff;padding:12px 18px;border-radius:8px;opacity:0;transform:translateY(8px);transition:.2s}
 .toast.show{opacity:1;transform:translateY(0)}
-@media(max-width:980px){.workspace{grid-template-columns:1fr}}
+@media(max-width:980px){.workspace{grid-template-columns:1fr}.split{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -136,6 +141,31 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
         </div>
       </div>
     </section>
+
+    <section class="card full-width">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-terminal"></i> Trabalhar com Codex</h3>
+        <div class="actions">
+          <button class="btn btn-outline" onclick="generateCodexPrompt()"><i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Pedido</button>
+          <button class="btn btn-primary" onclick="copyCodexPrompt()"><i class="fa-solid fa-copy"></i> Copiar Pedido</button>
+        </div>
+      </div>
+      <div class="card-body split">
+        <div class="form-row" style="margin-bottom:0">
+          <label>Pedido para Codex</label>
+          <textarea id="codexPrompt" readonly placeholder="O pedido será montado com o foco atual, próximos passos e contexto do painel."></textarea>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:6px">Sessão de Trabalho</label>
+          <ul class="note-list">
+            <li>Defina o objetivo e os próximos passos.</li>
+            <li>Salve o foco antes de abrir uma nova conversa.</li>
+            <li>Copie o pedido gerado e envie ao Codex.</li>
+            <li>Ao terminar, registre um checkpoint no painel.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
   </div>
 </main>
 <div class="toast" id="toast"></div>
@@ -161,7 +191,7 @@ async function loadState() {
     document.getElementById('stateFile').textContent = currentState.filePath || '.ldfp-resume/state.json';
 
     document.getElementById('currentObjective').value = currentState.focus?.currentObjective || '';
-    document.getElementById('nextSteps').value = (currentState.focus?.nextSteps || []).join('\n');
+    document.getElementById('nextSteps').value = normalizeSteps(currentState.focus?.nextSteps).join('\n');
     document.getElementById('productionUrl').value = currentState.environment?.productionUrl || 'https://www.ldfp.com.br';
     // Se a URL salva for de um codespace antigo (expirado), usa o github.dev permanente
     const savedIde = currentState.environment?.cloudIdeUrl || '';
@@ -191,8 +221,8 @@ async function saveFocus() {
   try {
     const body = {
       focus: {
-        currentObjective: document.getElementById('currentObjective').value,
-        nextSteps: document.getElementById('nextSteps').value
+        currentObjective: document.getElementById('currentObjective').value.trim(),
+        nextSteps: normalizeSteps(document.getElementById('nextSteps').value)
       },
       environment: {
         productionUrl: document.getElementById('productionUrl').value,
@@ -248,6 +278,65 @@ function openProd() {
   toast('Sistema aberto ✓', true);
 }
 
+function normalizeSteps(value) {
+  if (Array.isArray(value)) {
+    return value.map(v => String(v || '').trim()).filter(Boolean);
+  }
+  return String(value || '')
+    .split(/\r?\n|\\n/)
+    .map(v => v.trim())
+    .filter(Boolean);
+}
+
+function buildCodexPrompt() {
+  const objective = document.getElementById('currentObjective').value.trim() || 'Continuar evolução do Sistema Gestão Igreja LDFP pelo painel admin.';
+  const steps = normalizeSteps(document.getElementById('nextSteps').value);
+  const productionUrl = document.getElementById('productionUrl').value.trim() || 'https://www.ldfp.com.br';
+  const branch = currentState?.git?.branch || document.getElementById('branchNow').textContent || 'main';
+  const commit = currentState?.git?.shortHead || document.getElementById('headNow').textContent || '-';
+  const checkpoints = Array.isArray(currentState?.checkpoints) ? currentState.checkpoints.slice(0, 3) : [];
+  const checkpointLines = checkpoints.length
+    ? checkpoints.map(cp => `- ${cp.note || 'Checkpoint'} (${cp.git?.shortHead || '-'})`).join('\n')
+    : '- Nenhum checkpoint recente.';
+
+  return [
+    'Quero trabalhar no meu sistema atraves do Painel Admin Retomada Inteligente.',
+    '',
+    `Objetivo atual: ${objective}`,
+    '',
+    'Proximos passos:',
+    steps.length ? steps.map((step, index) => `${index + 1}. ${step}`).join('\n') : '1. Analisar o painel admin e sugerir/implementar o proximo avanço com segurança.',
+    '',
+    `Ambiente de producao: ${productionUrl}`,
+    `Branch atual: ${branch}`,
+    `Commit atual: ${commit}`,
+    '',
+    'Ultimos checkpoints:',
+    checkpointLines,
+    '',
+    'Use o contexto do ONDE_PAREI.md, faça as alterações necessárias no repositório, rode as validações possíveis e atualize o ONDE_PAREI.md ao final.'
+  ].join('\n');
+}
+
+function generateCodexPrompt() {
+  document.getElementById('codexPrompt').value = buildCodexPrompt();
+  toast('Pedido gerado', true);
+}
+
+async function copyCodexPrompt() {
+  const field = document.getElementById('codexPrompt');
+  if (!field.value.trim()) field.value = buildCodexPrompt();
+  try {
+    await navigator.clipboard.writeText(field.value);
+    toast('Pedido copiado', true);
+  } catch (_) {
+    field.focus();
+    field.select();
+    document.execCommand('copy');
+    toast('Pedido copiado', true);
+  }
+}
+
 function esc(s) {
   return String(s || '').replace(/[&<>\"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 }
@@ -265,7 +354,8 @@ function toast(msg, ok) {
   if (!t) { location.href = 'login.html'; return; }
   try {
     const p = JSON.parse(atob(t.split('.')[1]));
-    if (!['super-admin','super_admin','superadmin','master'].includes(p.role)) location.href = 'login.html';
+    const role = String(p.role || '').toLowerCase();
+    if (!['super-admin','super_admin','superadmin','master','owner','root'].includes(role)) location.href = 'login.html';
   } catch (_) {}
 })();
 

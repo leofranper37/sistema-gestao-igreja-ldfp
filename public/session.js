@@ -97,6 +97,32 @@
         }
     }
 
+    function normalizeRole(role) {
+        return String(role || '').trim().toLowerCase();
+    }
+
+    function getRoleFromToken(token) {
+        try {
+            if (!token || !token.includes('.')) {
+                return '';
+            }
+
+            const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            return normalizeRole(JSON.parse(atob(payload)).role);
+        } catch (error) {
+            return '';
+        }
+    }
+
+    function getCurrentRole() {
+        const auth = getStoredAuth();
+        return normalizeRole(auth?.user?.role || auth?.user?.perfil || getRoleFromToken(auth?.token));
+    }
+
+    function isMemberOnlyRole(role) {
+        return ['membro', 'visitante'].includes(normalizeRole(role));
+    }
+
     function saveAuthSession(payload) {
         if (!payload || !payload.token || !payload.user) {
             return;
@@ -141,6 +167,12 @@
         }
     }
 
+    function redirectToMemberApp() {
+        if (!/\/app_(?:login|membro(?:_v2)?)\.html$/i.test(window.location.pathname)) {
+            window.location.href = 'app_login.html';
+        }
+    }
+
     function attachLogoutHandlers() {
         document.querySelectorAll('a[href="index.html"]').forEach((anchor) => {
             if (anchor.dataset.logoutBound === 'true') {
@@ -161,6 +193,12 @@
     function requireAuthSession() {
         if (!getAuthToken()) {
             redirectToLogin();
+            return false;
+        }
+
+        if (isMemberOnlyRole(getCurrentRole())) {
+            clearAuthSession();
+            redirectToMemberApp();
             return false;
         }
 
@@ -192,6 +230,8 @@
 
     window.getStoredAuth = getStoredAuth;
     window.getAuthToken = getAuthToken;
+    window.getCurrentRole = getCurrentRole;
+    window.isMemberOnlyRole = isMemberOnlyRole;
     window.saveAuthSession = saveAuthSession;
     window.clearAuthSession = clearAuthSession;
     window.requireAuthSession = requireAuthSession;

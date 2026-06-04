@@ -147,6 +147,11 @@
 
     <form id="loginForm">
       <div class="input-group">
+        <label for="igrejaNome">Igreja <span style="color:var(--muted);font-size:12px;">(opcional)</span></label>
+        <input type="text" id="igrejaNome" class="input-field"
+               placeholder="Nome da igreja, se solicitado">
+      </div>
+      <div class="input-group">
         <label for="cpf">CPF</label>
         <input type="text" id="cpf" class="input-field"
                placeholder="Seu CPF (somente números)"
@@ -162,7 +167,7 @@
 
       <button type="submit" class="btn btn-primary" id="loginButton">Entrar</button>
 
-      <a href="#" class="link-forgot">Esqueceu a senha?</a>
+      <a href="#" class="link-forgot" id="toggleFirstAccess">Primeiro acesso? Criar senha do App</a>
       <div id="message" class="error-message"></div>
     </form>
   </div>

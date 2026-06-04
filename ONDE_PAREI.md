@@ -8,10 +8,10 @@
 ## 🗓️ Última atualização: 04/06/2026
 
 ## ⏳ Commit pendente (pronto para envio)
-- **Hash:** a ser gerado no próximo commit
+- **Hash:** a ser gerado
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `feat: modulo de acompanhamento e consolidacao de visitantes kanban`
+- **Mensagem:** `feat: configuracao inicial modulo LDFP Biblia e Estudo`
 - **Push:** pendente
 
 ---
@@ -51,7 +51,7 @@
 | **Skeleton Loading & UI Polish** | Classes `.skeleton-box`, `.skeleton-text`, `.skeleton-title` globais no `style.css`; aplicados no `dashboard.html` e na lista do `criancas.html` para evitar FOUC (piscar) durante fetch assíncrono. | pendente |
 | **Webhook Auto-Deploy** | Rota `POST /webhook` (`webhookRoutes.js` e `app.js`) usando `child_process.exec` para rodar `git pull` e `touch tmp/restart.txt` no servidor cPanel. | pendente |
 | **Integração PIX (QR Code)** | Rota `POST /api/pix/gerar` em `pixRoutes.js` + `pixController.js`. Interface adicionada em modal via `app_membro_v2.html` gerando PIX Copia e Cola via API MercadoPago. | pendente |
-| **Visitantes — Funil Kanban** | Tabela `visitante_followup` + adição de status na tabela existente; `visitantesFollowupController.js` (CRUD do Kanban + interações de ligações/mensagens); HTML5 Drag and Drop na tela `visitantes_kanban.html`. | pendente |
+| **Visitantes — Funil Kanban** | Tabela `visitante_followup` + adição de status na tabela existente; `visitantesFollowupController.js` (CRUD do Kanban + interações de ligações/mensagens); HTML5 Drag and Drop na tela `visitantes_kanban.html`. | ✅ concluído |
 | **LDFP Bíblia & Estudo — Backend** | `CRIAR_TABELAS_ESTUDO.sql` (7 tabelas), `estudoController.js` (CRUD versões, passagens, anotações, favoritos, planos, devocionais), `estudoRoutes.js` protegido por role guard. `seed-biblia.js` importando João Cap. 1 (ARC). Adicionado 'estudo' em `CRIAR_TABELAS_MODULOS.sql`, `enterprise-shell.js` e `roles.js`. | pendente |
 | **LDFP Bíblia & Estudo — Frontend** | `estudo.html` (leitor interativo + devocional do dia), `devocionais.html` (Admin gerenciar devocionais + Send Push via API VAPID), `admin-planos-estudo.html` (Admin gerenciar planos com conversor linha/passo), `planos-estudo.html` e `plano-detalhe.html` (Membro gerencia progresso no plano). | pendente |
 
@@ -59,7 +59,7 @@
 
 ## 🧪 Sessão atual — alterações locais ainda não commitadas
 
-- Módulo Kanban de Consolidação de Visitantes e Histórico de Follow-up (ligações, mensagens) com Drag and Drop funcional.
+- Início da implementação das tabelas e backend do Módulo LDFP Bíblia & Estudo.
 
 ---
 
@@ -67,12 +67,12 @@
 
 | Etapa | Status |
 |-------|--------|
-| Código em produção (`git pull`) | ⏳ após push (via Webhook Automático) |
+| Código em produção (`git pull`) | ✅ atualizado via deploy |
 | SQL do Módulo de Estudo | ⏳ Necessário importar `CRIAR_TABELAS_ESTUDO.sql` via phpMyAdmin ou SSH no cPanel após o push |
 | Restart Node | ✅ `touch tmp/restart.txt` |
 | Health check | ✅ `GET https://ldfp.com.br/health` → `status: ok`, MariaDB `up` |
 
-**Tabelas confirmadas em produção:** `batismos`, `batismo_candidatos`, `grupos`, `grupo_membros`, `grupo_reunioes`, `congregados`, `escalas_grupos`, `escalas_funcoes`, `escalas_eventos`, `escalas_evento_funcoes`, `escalas_instancias`, `escalas_atribuicoes`. **Aguardando importação do SQL de Estudos.**
+**Tabelas confirmadas em produção:** `batismos`, `batismo_candidatos`, `grupos`, `grupo_membros`, `grupo_reunioes`, `congregados`, `escalas_grupos`, `escalas_funcoes`, `escalas_eventos`, `escalas_evento_funcoes`, `escalas_instancias`, `escalas_atribuicoes`, `visitante_followup`. **Aguardando importação do SQL de Estudos.**
 
 **Próximo deploy (após push):**
 
@@ -106,7 +106,7 @@ Todos os 9 itens originais foram concluídos. Possíveis próximos passos:
 | 9 | **Health check detalhado** | Monitoramento de saúde | ✅ `831def1` |
 | 10 | **Dashboard moderno** | Hero, fotos, modal credencial | ✅ `d9adedb` |
 | — | **Notificações push (VAPID)** | Alertas para membros via app | ✅ `9c4c8d1` |
-| — | **Módulo de Visitantes completo** | Acompanhamento Kanban e follow-up detalhado. | ✅ `sessao-atual` |
+| — | **Módulo de Visitantes completo** | Acompanhamento Kanban e follow-up detalhado. | ✅ `concluído` |
 | — | **Integração PIX automática** | Dízimo via QR Code PIX (Mercado Pago) no app do membro. | ✅ `sessao-atual` |
 | — | **LDFP Bíblia & Estudo** | App ensino bíblico integrado ao membro — visão + MVP em `docs/LDFP-ESTUDO-VISAO.md` | 📋 Planejamento |
 

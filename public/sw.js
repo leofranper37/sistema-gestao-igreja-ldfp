@@ -250,4 +250,11 @@ async function syncVisitantes() {
     }
 }
 
+// Escutar mensagens da página e forçar atualização sem travar o canal prematuramente
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
 console.log('[Service Worker] Loaded');

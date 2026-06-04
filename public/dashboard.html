@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0f766e">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="Sistema de gestão completo para igrejas com suporte mobile">
     <title>LDFP - Visão Geral</title>
@@ -690,19 +690,27 @@
             throw new Error('Sessao administrativa nao autorizada.');
         }
 
-        // Onboarding: redireciona admin que nunca configurou a conta
-        (async function checkOnboarding() {
-            const auth = window.getStoredAuth ? window.getStoredAuth() : null;
-            const role = String(auth?.user?.role || '').toLowerCase();
-            const superRoles = ['super-admin','super_admin','superadmin','master','owner','root'];
-            if (superRoles.includes(role) || role !== 'admin') return;
-            try {
-                const r = await fetch('/api/church/onboarding/status');
-                if (!r.ok) return;
-                const d = await r.json();
-                if (!d.completo) location.href = 'onboarding.html';
-            } catch (_) {}
-        })();
+        // ── Helpers de Cache e Fetch ─────────────────────────────────────
+        async function fetchWithSessionCache(url) {
+            const cacheKey = `req_cache_${url}`;
+            const cachedData = sessionStorage.getItem(cacheKey);
+            if (cachedData) return JSON.parse(cachedData);
+            
+            const tok = sessionStorage.getItem('token') || localStorage.getItem('token');
+            const response = await fetch(url, { headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok } });
+            if (!response.ok) throw new Error(`Erro na rota ${url}: ${response.status}`);
+            
+            const data = await response.json();
+            sessionStorage.setItem(cacheKey, JSON.stringify(data));
+            return data;
+        }
+
+        async function fetchSemCache(url) {
+            const tok = sessionStorage.getItem('token') || localStorage.getItem('token');
+            const response = await fetch(url, { headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok } });
+            if (!response.ok) throw new Error(`Erro na rota ${url}: ${response.status}`);
+            return response.json();
+        }
 
         function parseDate(dateValue) {
             if (!dateValue) return null;
@@ -973,49 +981,57 @@
         }
         renderHero();
 
-        async function carregarDashboard() {
-            const stats = await fetchJson('/api/dashboard/stats', null);
+        // ── Carregamento Paralelo (Evitar Erro 429) ──────────────────────
+        async function initDashboard() {
+            try {
+                const auth = window.getStoredAuth ? window.getStoredAuth() : null;
+                const role = String(auth?.user?.role || '').toLowerCase();
+                const superRoles = ['super-admin','super_admin','superadmin','master','owner','root'];
+                const isAdmin = role === 'admin';
 
-            if (!stats || !stats.totais) {
+                const promStats = fetchSemCache('/api/dashboard/stats').catch(() => null);
+                const promPlano = fetchSemCache('/api/pagamentos/status').catch(() => null);
+                
+                const promOnboard = (!superRoles.includes(role) && isAdmin) 
+                    ? fetchWithSessionCache('/api/church/onboarding/status').catch(() => null)
+                    : Promise.resolve(null);
+
+                const [stats, pagamentosStatus, onboardingStatus] = await Promise.all([
+                    promStats, promPlano, promOnboard
+                ]);
+
+                if (onboardingStatus && !onboardingStatus.completo) {
+                    location.href = 'onboarding.html';
+                    return;
+                }
+
+                if (stats && stats.totais) {
+                    const t = stats.totais;
+                    document.getElementById('totalMembros').textContent         = t.membros;
+                    document.getElementById('totalAniversariantes').textContent = t.aniversariantes;
+                    document.getElementById('totalVisitantes').textContent      = t.visitantes;
+                    document.getElementById('totalCriancas').textContent        = t.criancas;
+                    document.getElementById('totalOracoes').textContent         = t.oracoes;
+                    document.getElementById('totalEventos').textContent         = t.eventos;
+                    document.getElementById('totalMissionarios').textContent    = t.missionarios;
+                    document.getElementById('totalOutrasIgrejas').textContent   = t.outrasIgrejas;
+
+                    renderRecentMembers(stats.recentes || []);
+                    renderAniversariantesMes(stats.aniversariantesMes || []);
+                    renderCharts(stats.graficos || {});
+                } else {
+                    throw new Error('Falha ao obter stats');
+                }
+
+                if (pagamentosStatus) renderPlanBanner(pagamentosStatus);
+
+            } catch (error) {
+                console.error("Erro no dashboard:", error);
                 const target = document.getElementById('recentMembersGrid');
                 if (target) target.innerHTML = '<div class="recent-empty">Não foi possível carregar os dados agora.</div>';
                 const aniv = document.getElementById('anivScroll');
                 if (aniv) aniv.innerHTML = '';
-                return;
             }
-
-            const t = stats.totais;
-            document.getElementById('totalMembros').textContent         = t.membros;
-            document.getElementById('totalAniversariantes').textContent = t.aniversariantes;
-            document.getElementById('totalVisitantes').textContent      = t.visitantes;
-            document.getElementById('totalCriancas').textContent        = t.criancas;
-            document.getElementById('totalOracoes').textContent         = t.oracoes;
-            document.getElementById('totalEventos').textContent         = t.eventos;
-            document.getElementById('totalMissionarios').textContent    = t.missionarios;
-            document.getElementById('totalOutrasIgrejas').textContent   = t.outrasIgrejas;
-
-            renderRecentMembers(stats.recentes || []);
-            renderAniversariantesMes(stats.aniversariantesMes || []);
-            renderCharts(stats.graficos || {});
-        }
-
-        carregarDashboard().catch(() => {
-            const target = document.getElementById('recentMembersGrid');
-            if (target) {
-                target.innerHTML = '<div class="recent-empty">Não foi possível carregar os dados agora.</div>';
-            }
-        });
-
-        // ── Banner de status do plano ──────────────────────────────────
-        async function carregarStatusPlano() {
-            try {
-                const tok = sessionStorage.getItem('token') || localStorage.getItem('token');
-                if (!tok) return;
-                const r = await fetch('/api/pagamentos/status', { headers: { Authorization: 'Bearer ' + tok } });
-                if (!r.ok) return;
-                const data = await r.json();
-                renderPlanBanner(data);
-            } catch (_) {}
         }
 
         function renderPlanBanner(data) {
@@ -1066,7 +1082,7 @@
             banner.style.display = '';
         }
 
-        carregarStatusPlano();
+        initDashboard();
 
         // Botão Painel Admin visível apenas para super-admin (SaaS owner)
         (function showAdminButton() {

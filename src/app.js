@@ -39,6 +39,9 @@ const visitantesFollowupRoutes = require('./routes/visitantesFollowupRoutes');
 
 const app = express();
 
+// Essencial em cPanel ou Cloudflare para o Rate Limit ver os IPs reais e não disparar Erro 429 globalmente
+app.set('trust proxy', 1);
+
 const maintenanceModeEnabled = process.env.MAINTENANCE_MODE === 'true' || false;
 const setupRouteEnabled = process.env.ENABLE_SETUP_ROUTE === 'true'
     || (process.env.NODE_ENV !== 'production' && process.env.ENABLE_SETUP_ROUTE !== 'false');

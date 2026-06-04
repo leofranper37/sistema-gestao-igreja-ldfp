@@ -302,7 +302,15 @@
             const livro = selLivro.value;
             const capitulo = selCapitulo.value;
 
-            if (!versao) return alert('Por favor, selecione uma versão bíblica.');
+            if (!versao) {
+                reader.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-book-bible fa-3x" style="color: #cbd5e1; margin-bottom: 16px;"></i>
+                        <h3>Nenhuma versão disponível</h3>
+                        <p>O sistema não encontrou nenhuma versão bíblica cadastrada.</p>
+                    </div>`;
+                return;
+            }
 
             reader.innerHTML = `<div class="loading-state"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px">Carregando passagens...</p></div>`;
 

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acompanhamento de Visitantes — LDFP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap { padding: 24px 30px 40px; height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-shrink: 0; }
+        .page-header h2 { margin: 0; font-size: 24px; color: #0f172a; display: flex; align-items: center; gap: 10px; }
+        .page-header p { color: #64748b; font-size: 13px; margin-top: 4px; }
+        
+        /* Board Kanban */
+        .kanban-board {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            align-items: flex-start;
+        }
+        .kanban-col {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            min-width: 320px;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
+            flex-shrink: 0;
+        }
+        .kanban-col-header {
+            padding: 16px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #1e293b;
+            border-bottom: 2px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .col-count { background: rgba(0,0,0,0.08); padding: 2px 10px; border-radius: 20px; font-size: 11px; }
+        
+        .kanban-col[data-status="Novo"] .kanban-col-header { border-bottom-color: #0ea5e9; }
+        .kanban-col[data-status="Em Contato"] .kanban-col-header { border-bottom-color: #f59e0b; }
+        .kanban-col[data-status="Em Célula"] .kanban-col-header { border-bottom-color: #8b5cf6; }
+        .kanban-col[data-status="Membro"] .kanban-col-header { border-bottom-color: #10b981; }
+        
+        .kanban-cards {
+            padding: 12px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 100px;
+        }
+        
+        .kanban-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 6px rgba(15,23,42,.04);
+            cursor: grab;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .kanban-card:active { cursor: grabbing; }
+        .kanban-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(15,23,42,.08); }
+        
+        .k-card-title { font-weight: 700; color: #0f172a; font-size: 14px; margin-bottom: 4px; }
+        .k-card-sub { font-size: 11px; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
+        
+        .k-card-actions {
+            display: flex;
+            gap: 6px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 10px;
+        }
+        .k-btn {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+            padding: 4px 10px; font-size: 11px; font-weight: 600; color: #475569; cursor: pointer;
+        }
+        .k-btn:hover { background: #e2e8f0; color: #0ea5e9; }
+        
+        /* Dragging Classes */
+        .drag-over { background: #e0f2fe; border: 2px dashed #0ea5e9; }
+        .dragging { opacity: 0.5; }
+        
+        /* Modal Follow-up */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-overlay.open { display: flex; }
+        .modal-card { background: #fff; border-radius: 16px; padding: 24px; width: 90%; max-width: 500px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-header h3 { margin: 0; font-size: 18px; color: #0f172a; }
+        .btn-close { background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; }
+        
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 6px; text-transform: uppercase; }
+        .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-family: inherit; box-sizing: border-box; }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .btn-salvar { background: #0ea5e9; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 700; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
+        
+        .history-list { margin-top: 20px; max-height: 250px; overflow-y: auto; padding-right: 5px; }
+        .history-item { background: #f8fafc; border-left: 3px solid #0ea5e9; padding: 12px; border-radius: 0 8px 8px 0; margin-bottom: 10px; font-size: 13px; }
+        .history-meta { font-size: 11px; color: #64748b; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .history-meta strong { color: #0f172a; }
+        
+        #toast { position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; transform: translateY(100px); opacity: 0; transition: 0.3s; z-index: 2000; }
+        #toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body class="theme-petroleo" data-shell-title="Acompanhamento" data-shell-breadcrumb="LDFP / Secretaria / Visitantes / Acompanhamento" data-shell-active="visitantes_kanban.html">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <div class="page-header">
+                <div>
+                    <h2><i class="fa-solid fa-shoe-prints" style="color:#0ea5e9;"></i> Acompanhamento (Funil)</h2>
+                    <p>Arraste os visitantes entre as colunas para atualizar a fase de consolidação.</p>
+                </div>
+                <button class="btn-salvar" onclick="location.href='visitantes.html'"><i class="fa-solid fa-list"></i> Ver em Lista</button>
+            </div>
+
+            <div class="kanban-board">
+                <!-- Colunas Geradas Dinamicamente -->
+                <div class="kanban-col" data-status="Novo" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="kanban-col-header">Novos Visitantes <span class="col-count" id="count-Novo">0</span></div>
+                    <div class="kanban-cards" id="col-Novo"></div>
+                </div>
+                
+                <div class="kanban-col" data-status="Em Contato" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="kanban-col-header">Em Contato <span class="col-count" id="count-Em Contato">0</span></div>
+                    <div class="kanban-cards" id="col-Em Contato"></div>
+                </div>
+                
+                <div class="kanban-col" data-status="Em Célula" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="kanban-col-header">Em Célula/Curso <span class="col-count" id="count-Em Célula">0</span></div>
+                    <div class="kanban-cards" id="col-Em Célula"></div>
+                </div>
+                
+                <div class="kanban-col" data-status="Membro" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="kanban-col-header">Consolidado (Membro) <span class="col-count" id="count-Membro">0</span></div>
+                    <div class="kanban-cards" id="col-Membro"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Follow-up -->
+    <div class="modal-overlay" id="modalFollowup">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-phone" style="color:#0ea5e9;margin-right:8px;"></i> Histórico de Contato</h3>
+                <button class="btn-close" onclick="fecharModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div style="background:#f1f5f9;padding:12px;border-radius:8px;margin-bottom:16px;">
+                <strong style="color:#0f172a;display:block;" id="visNome">Visitante</strong>
+                <span style="font-size:12px;color:#64748b;" id="visTel"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Novo Registro</label>
+                <select id="tipoContato">
+                    <option value="WhatsApp">WhatsApp / Mensagem</option>
+                    <option value="Ligação">Ligação Telefônica</option>
+                    <option value="Visita">Visita Presencial</option>
+                    <option value="Email">E-mail</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <textarea id="obsContato" placeholder="Descreva como foi o contato... (Ex: Ligamos e ele gostou do culto. Marcamos de buscar para a célula na quinta)."></textarea>
+            </div>
+            <div style="text-align:right;">
+                <button class="btn-salvar" onclick="salvarFollowup()"><i class="fa-solid fa-check"></i> Registrar Contato</button>
+            </div>
+            
+            <div style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:16px;">
+                <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">Histórico Anterior</span>
+                <div class="history-list" id="historyList">
+                    <div style="text-align:center;padding:20px;color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast"></div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+        
+        let visitantes = [];
+        let visitanteAtual = null;
+        
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        // Drag & Drop HTML5
+        function allowDrop(ev) {
+            ev.preventDefault();
+            const col = ev.currentTarget;
+            col.classList.add('drag-over');
+        }
+        
+        function drag(ev) {
+            ev.dataTransfer.setData("card_id", ev.target.id);
+            ev.dataTransfer.setData("db_id", ev.target.dataset.id);
+            ev.target.classList.add('dragging');
+        }
+        
+        // Limpar os efeitos de drag nos outros elementos ao sair
+        document.querySelectorAll('.kanban-col').forEach(col => {
+            col.addEventListener('dragleave', (ev) => {
+                ev.currentTarget.classList.remove('drag-over');
+            });
+            col.addEventListener('drop', (ev) => {
+                ev.currentTarget.classList.remove('drag-over');
+            });
+        });
+
+        async function drop(ev) {
+            ev.preventDefault();
+            const col = ev.currentTarget;
+            col.classList.remove('drag-over');
+            
+            const cardId = ev.dataTransfer.getData("card_id");
+            const dbId = ev.dataTransfer.getData("db_id");
+            const newStatus = col.dataset.status;
+            
+            const cardEl = document.getElementById(cardId);
+            cardEl.classList.remove('dragging');
+            
+            const targetList = col.querySelector('.kanban-cards');
+            targetList.appendChild(cardEl);
+            
+            atualizarContadores();
+            
+            // Chama API para persistir
+            try {
+                await fetch(`/api/visitantes-followup/${dbId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                showToast('Status atualizado para: ' + newStatus);
+            } catch (err) {
+                showToast('Erro ao atualizar status.');
+            }
+        }
+        
+        function atualizarContadores() {
+            document.querySelectorAll('.kanban-col').forEach(col => {
+                const count = col.querySelectorAll('.kanban-card').length;
+                col.querySelector('.col-count').textContent = count;
+            });
+        }
+
+        async function carregarKanban() {
+            try {
+                const res = await fetch('/api/visitantes-followup');
+                visitantes = await res.json();
+                
+                // Limpa as listas
+                document.querySelectorAll('.kanban-cards').forEach(el => el.innerHTML = '');
+                
+                visitantes.forEach(v => {
+                    const status = v.status_consolidacao || 'Novo';
+                    const col = document.getElementById(`col-${status}`) || document.getElementById('col-Novo');
+                    
+                    const dataCriacao = new Date(v.created_at).toLocaleDateString('pt-BR');
+                    
+                    const card = document.createElement('div');
+                    card.className = 'kanban-card';
+                    card.id = `card-${v.id}`;
+                    card.draggable = true;
+                    card.dataset.id = v.id;
+                    card.ondragstart = drag;
+                    card.ondragend = (e) => e.target.classList.remove('dragging');
+                    
+                    card.innerHTML = `
+                        <div class="k-card-title">${v.nome}</div>
+                        <div class="k-card-sub"><i class="fa-solid fa-phone"></i> ${v.telefone || 'Sem telefone'}</div>
+                        <div class="k-card-sub"><i class="fa-regular fa-calendar"></i> Visitou em: ${dataCriacao}</div>
+                        <div class="k-card-actions">
+                            <button class="k-btn" onclick="abrirFollowup(${v.id}, '${v.nome}', '${v.telefone || ''}')"><i class="fa-solid fa-clock-rotate-left"></i> Contatos</button>
+                            ${v.telefone ? `<a class="k-btn" href="https://wa.me/55${v.telefone.replace(/\D/g,'')}" target="_blank"><i class="fa-brands fa-whatsapp" style="color:#10b981;"></i></a>` : ''}
+                        </div>
+                    `;
+                    col.appendChild(card);
+                });
+                
+                atualizarContadores();
+            } catch (err) {
+                showToast('Erro ao carregar os dados.');
+            }
+        }
+        
+        // Follow-up
+        async function abrirFollowup(id, nome, telefone) {
+            visitanteAtual = id;
+            document.getElementById('visNome').textContent = nome;
+            document.getElementById('visTel').textContent = telefone ? `Telefone: ${telefone}` : 'Telefone não informado';
+            document.getElementById('obsContato').value = '';
+            document.getElementById('modalFollowup').classList.add('open');
+            
+            const list = document.getElementById('historyList');
+            list.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i></div>';
+            
+            try {
+                const res = await fetch(`/api/visitantes-followup/${id}/logs`);
+                const logs = await res.json();
+                
+                if (!logs.length) {
+                    list.innerHTML = '<div style="color:#64748b;font-size:12px;text-align:center;padding:10px;">Nenhum contato registrado ainda.</div>';
+                    return;
+                }
+                
+                list.innerHTML = logs.map(l => `
+                    <div class="history-item">
+                        <div class="history-meta">
+                            <strong><i class="fa-solid fa-tag"></i> ${l.tipo_contato}</strong>
+                            <span>${new Date(l.data_contato).toLocaleString('pt-BR')}</span>
+                        </div>
+                        ${l.observacao}
+                        <div style="font-size:10px;color:#94a3b8;margin-top:6px;text-align:right;">Por: ${l.responsavel_nome || 'Líder'}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                list.innerHTML = '<div style="color:#ef4444;font-size:12px;">Erro ao carregar o histórico.</div>';
+            }
+        }
+        
+        function fecharModal() {
+            document.getElementById('modalFollowup').classList.remove('open');
+        }
+        
+        async function salvarFollowup() {
+            const tipo = document.getElementById('tipoContato').value;
+            const obs = document.getElementById('obsContato').value.trim();
+            
+            if (!obs) return alert('Por favor, digite a observação do contato.');
+            
+            try {
+                const res = await fetch(`/api/visitantes-followup/${visitanteAtual}/logs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tipo_contato: tipo, observacao: obs })
+                });
+                
+                if (!res.ok) throw new Error('Erro ao salvar.');
+                
+                showToast('Contato registrado com sucesso!');
+                abrirFollowup(visitanteAtual, document.getElementById('visNome').textContent, document.getElementById('visTel').textContent.replace('Telefone: ', '')); // Recarrega o histórico
+                
+            } catch (err) {
+                showToast('Erro ao salvar o contato.');
+            }
+        }
+
+        carregarKanban();
+    </script>
+</body>
+</html>

@@ -210,7 +210,11 @@
 
         async function carregarLista() {
             const tbody = document.querySelector('#tabelaCriancas tbody');
-            tbody.innerHTML = '<tr><td colspan="6" style="color:#64748b;">Carregando crianças...</td></tr>';
+            tbody.innerHTML = `
+                <tr><td colspan="6"><div class="skeleton-box skeleton-text" style="height: 20px; width: 100%;"></div></td></tr>
+                <tr><td colspan="6"><div class="skeleton-box skeleton-text" style="height: 20px; width: 100%;"></div></td></tr>
+                <tr><td colspan="6"><div class="skeleton-box skeleton-text" style="height: 20px; width: 100%;"></div></td></tr>
+            `;
 
             try {
                 const query = new URLSearchParams();

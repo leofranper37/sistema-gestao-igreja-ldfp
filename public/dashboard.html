@@ -549,7 +549,7 @@
                         <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                         <div class="stat-body">
                             <div class="stat-label">Total de Membros</div>
-                            <div class="stat-value" id="totalMembros">0</div>
+                            <div class="stat-value" id="totalMembros"><div class="skeleton-box skeleton-title" style="width: 60px;"></div></div>
                             <div class="stat-footer"><i class="fa-solid fa-arrow-right" style="font-size:9px"></i> Visualizar membros</div>
                         </div>
                     </div>
@@ -557,7 +557,7 @@
                         <div class="stat-icon"><i class="fa-solid fa-cake-candles"></i></div>
                         <div class="stat-body">
                             <div class="stat-label">Aniversariantes</div>
-                            <div class="stat-value" id="totalAniversariantes">0</div>
+                            <div class="stat-value" id="totalAniversariantes"><div class="skeleton-box skeleton-title" style="width: 40px;"></div></div>
                             <div class="stat-footer"><i class="fa-solid fa-arrow-right" style="font-size:9px"></i> Ver este mês</div>
                         </div>
                     </div>
@@ -565,7 +565,7 @@
                         <div class="stat-icon"><i class="fa-solid fa-person-walking"></i></div>
                         <div class="stat-body">
                             <div class="stat-label">Visitantes</div>
-                            <div class="stat-value" id="totalVisitantes">0</div>
+                            <div class="stat-value" id="totalVisitantes"><div class="skeleton-box skeleton-title" style="width: 40px;"></div></div>
                             <div class="stat-footer"><i class="fa-solid fa-arrow-right" style="font-size:9px"></i> Gerenciar visitantes</div>
                         </div>
                     </div>
@@ -573,7 +573,7 @@
                         <div class="stat-icon"><i class="fa-solid fa-child"></i></div>
                         <div class="stat-body">
                             <div class="stat-label">Crianças EBD</div>
-                            <div class="stat-value" id="totalCriancas">0</div>
+                            <div class="stat-value" id="totalCriancas"><div class="skeleton-box skeleton-title" style="width: 40px;"></div></div>
                             <div class="stat-footer"><i class="fa-solid fa-arrow-right" style="font-size:9px"></i> Turmas e alunos</div>
                         </div>
                     </div>
@@ -586,7 +586,7 @@
                         <div class="stat-icon"><i class="fa-solid fa-hands-praying"></i></div>
                         <div class="stat-body">
                             <div class="stat-label">Pedidos de Oração</div>
-                            <div class="stat-value" id="totalOracoes">0</div>
+                            <div class="stat-value" id="totalOracoes"><div class="skeleton-box skeleton-title" style="width: 40px;"></div></div>
                             <div class="stat-footer"><i class="fa-solid fa-arrow-right" style="font-size:9px"></i> Acompanhar mural</div>
                         </div>
                     </div>
@@ -594,7 +594,7 @@
                         <div class="stat-icon"><i class="fa-solid fa-calendar-days"></i></div>
                         <div class="stat-body">
                             <div class="stat-label">Eventos Agendados</div>
-                            <div class="stat-value" id="totalEventos">0</div>
+                            <div class="stat-value" id="totalEventos"><div class="skeleton-box skeleton-title" style="width: 40px;"></div></div>
                             <div class="stat-footer"><i class="fa-solid fa-arrow-right" style="font-size:9px"></i> Ver agenda completa</div>
                         </div>
                     </div>
@@ -607,7 +607,7 @@
                         <div class="stat-icon"><i class="fa-solid fa-person-hiking"></i></div>
                         <div class="stat-body">
                             <div class="stat-label">Missionários</div>
-                            <div class="stat-value" id="totalMissionarios">0</div>
+                            <div class="stat-value" id="totalMissionarios"><div class="skeleton-box skeleton-title" style="width: 40px;"></div></div>
                             <div class="stat-footer"><i class="fa-solid fa-arrow-right" style="font-size:9px"></i> Contatos e informações</div>
                         </div>
                     </div>
@@ -615,7 +615,7 @@
                         <div class="stat-icon"><i class="fa-solid fa-gopuram"></i></div>
                         <div class="stat-body">
                             <div class="stat-label">Outras Igrejas</div>
-                            <div class="stat-value" id="totalOutrasIgrejas">0</div>
+                            <div class="stat-value" id="totalOutrasIgrejas"><div class="skeleton-box skeleton-title" style="width: 40px;"></div></div>
                             <div class="stat-footer"><i class="fa-solid fa-arrow-right" style="font-size:9px"></i> Comunhão e rede</div>
                         </div>
                     </div>
@@ -624,7 +624,10 @@
                 <!-- Seção: Aniversariantes do Mês -->
                 <div class="section-title"><i class="fa-solid fa-cake-candles" style="color:#f59e0b"></i>Aniversariantes do Mês</div>
                 <div id="anivScroll" class="aniv-scroll">
-                    <span class="aniv-empty"><i class="fa-solid fa-spinner fa-spin"></i> Carregando…</span>
+                    <div class="aniv-item skeleton-box" style="min-width: 88px; height: 110px; border: none;"></div>
+                    <div class="aniv-item skeleton-box" style="min-width: 88px; height: 110px; border: none;"></div>
+                    <div class="aniv-item skeleton-box" style="min-width: 88px; height: 110px; border: none;"></div>
+                    <div class="aniv-item skeleton-box" style="min-width: 88px; height: 110px; border: none;"></div>
                 </div>
 
                 <!-- Seção: Membros Recentes -->
@@ -634,10 +637,12 @@
                         <a href="lista_membros.html" class="view-all-link">Ver todos</a>
                     </div>
                     <div id="recentMembersGrid" class="members-grid">
-                        <div class="recent-empty">
-                            <i class="fa-solid fa-spinner fa-spin" style="margin-right:8px"></i>
-                            Carregando membros…
-                        </div>
+                        <div class="member-card skeleton-box" style="height: 74px; border: none;"></div>
+                        <div class="member-card skeleton-box" style="height: 74px; border: none;"></div>
+                        <div class="member-card skeleton-box" style="height: 74px; border: none;"></div>
+                        <div class="member-card skeleton-box" style="height: 74px; border: none;"></div>
+                        <div class="member-card skeleton-box" style="height: 74px; border: none;"></div>
+                        <div class="member-card skeleton-box" style="height: 74px; border: none;"></div>
                     </div>
                 </div>
 

@@ -206,6 +206,52 @@
         return true;
     }
 
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await window.fetch(url, options);
+                if (response.status === 429) {
+                    const retryAfter = response.headers.get('Retry-After');
+                    const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : delay * Math.pow(2, i);
+                    console.warn(`Requisição para ${url} recebeu 429. Tentando novamente em ${waitTime / 1000}s...`);
+                    await sleep(waitTime);
+                    continue;
+                }
+                if (!response.ok && response.status !== 401) {
+                    throw new Error(`Erro na rota ${url}: ${response.status} ${response.statusText}`);
+                }
+                return response;
+            } catch (error) {
+                if (i === retries - 1) {
+                    throw error;
+                }
+                console.error(`Erro na requisição para ${url} (tentativa ${i + 1}/${retries}):`, error);
+                await sleep(delay * Math.pow(2, i));
+            }
+        }
+        throw new Error(`Falha na requisição para ${url} após ${retries} tentativas.`);
+    }
+
+    async function fetchWithSessionCache(url) {
+        const cacheKey = `req_cache_${url}`;
+        const cachedData = sessionStorage.getItem(cacheKey);
+        if (cachedData) return JSON.parse(cachedData);
+
+        const response = await fetchWithRetry(url);
+        const data = await response.json();
+        sessionStorage.setItem(cacheKey, JSON.stringify(data));
+        return data;
+    }
+
+    async function fetchSemCache(url) {
+        const response = await fetchWithRetry(url);
+        return response.json();
+    }
+
     window.fetch = async function (input, init = {}) {
         const requestUrl = typeof input === 'string' ? input : input?.url || '';
         const nextInit = { ...init };
@@ -235,6 +281,9 @@
     window.saveAuthSession = saveAuthSession;
     window.clearAuthSession = clearAuthSession;
     window.requireAuthSession = requireAuthSession;
+    window.fetchWithRetry = fetchWithRetry;
+    window.fetchWithSessionCache = fetchWithSessionCache;
+    window.fetchSemCache = fetchSemCache;
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', startLayoutGuard);

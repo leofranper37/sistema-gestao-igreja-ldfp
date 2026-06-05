@@ -464,7 +464,7 @@
                     plano: formData.plano
                 };
 
-                const resp = await fetch('/api/cadastro-igreja', {
+            const resp = await fetch('/criar-conta', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -472,14 +472,24 @@
 
                 const result = await resp.json().catch(() => ({}));
                 if (!resp.ok) {
-                    throw new Error(result.error || 'Erro ao cadastrar igreja. Verifique os dados e tente novamente.');
+                throw new Error(result.error || result.message || 'Erro ao cadastrar igreja. Verifique os dados e tente novamente.');
                 }
 
+            // Se já for Super Admin, não subscreve a sessão (para não deslogar do painel master)
+            let isSuperAdmin = false;
+            try {
+                const raw = localStorage.getItem('ldfpAuth') || sessionStorage.getItem('ldfpAuth');
+                const role = raw ? JSON.parse(raw)?.user?.role : '';
+                isSuperAdmin = ['super-admin', 'super_admin', 'superadmin', 'master', 'owner', 'root'].includes(String(role).toLowerCase());
+            } catch (e) {}
+
+            if (!isSuperAdmin) {
                 if (window.saveAuthSession && result.token && result.user) {
                     window.saveAuthSession(result);
                 }
                 if (result.user) {
                     localStorage.setItem('ldfpUser', JSON.stringify(result.user));
+                }
                 }
 
                 statusMessage.textContent = 'Igreja cadastrada com sucesso! Redirecionando para o painel...';
@@ -487,7 +497,11 @@
                 statusMessage.style.display = 'block';
 
                 setTimeout(() => {
-                    window.location.href = 'dashboard.html';
+                if (isSuperAdmin) {
+                    window.location.href = 'admin-igrejas.html'; // Volta para a lista de clientes
+                } else {
+                    window.location.href = 'dashboard.html'; // Vai para o painel da nova igreja
+                }
                 }, 1200);
             } catch (error) {
                 statusMessage.textContent = error.message || 'Erro inesperado ao salvar.';

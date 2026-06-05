@@ -16,7 +16,7 @@
     <style>
         /* ── Base ──────────────────────────────────────────── */
         .dashboard-wrap {
-            padding: 0 0 48px;
+            padding: 0 0 100px;
             background: #f1f5f9;
             min-height: 100vh;
         }
@@ -404,7 +404,7 @@
         .btn-upgrade:hover { opacity:.88; }
 
         /* ── Aniversariantes do Mês ─────────────────────────── */
-        .aniv-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; -ms-overflow-style: none; scrollbar-width: none; }
+        .aniv-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; -ms-overflow-style: none; scrollbar-width: none; }
         .aniv-scroll::-webkit-scrollbar { display: none; }
         .aniv-item {
             display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -518,7 +518,7 @@
         @media(max-width:480px)  { .dash-grid { grid-template-columns: 1fr; } .stat-value { font-size: 28px; } }
     </style>
 </head>
-<body class="theme-petroleo" data-shell-title="Visão Geral" data-shell-breadcrumb="LDFP / Visão Geral" data-shell-active="dashboard.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Visão Geral" data-shell-breadcrumb="LDFP / Visão Geral" data-shell-active="dashboard.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
     <main class="main-content enterprise-main">
         <div class="dashboard-wrap">
 
@@ -731,13 +731,20 @@
             'linear-gradient(135deg,#b45309,#fbbf24)',
             'linear-gradient(135deg,#0e7490,#22d3ee)',
         ];
-        function avatarColor(id) { return AVATAR_COLORS[(Number(id) || 0) % AVATAR_COLORS.length]; }
+        function avatarColor(val) {
+            let hash = 0;
+            const str = String(val || '');
+            for (let i = 0; i < str.length; i++) {
+                hash = (hash * 31 + str.charCodeAt(i)) % AVATAR_COLORS.length;
+            }
+            return AVATAR_COLORS[Math.abs(hash)] || AVATAR_COLORS[0];
+        }
         function initials(name)  { return String(name || '?').trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase(); }
 
         function buildAvatarEl(member, size, className) {
-            const name  = member.nome || member.full_name || '';
-            const photo = member.foto_url || '';
-            const id    = member.id || 0;
+            const name  = member.nome || member.full_name || 'Sem nome';
+            const photo = member.foto_url || member.fotoUrl || '';
+            const id    = member.id || member.membro_id || name;
             const el    = document.createElement('div');
             el.className = className;
             el.style.cssText = `width:${size}px;height:${size}px;`;

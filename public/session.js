@@ -215,10 +215,10 @@
         for (let i = 0; i < retries; i++) {
             try {
                 const response = await originalFetch(input, init);
-                if (response.status === 429) {
+                if (response.status === 429 || response.status === 503) {
                     const retryAfter = response.headers.get('Retry-After');
                     const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : delay * Math.pow(2, i);
-                    console.warn(`Requisição para ${url} recebeu 429. Tentando novamente em ${waitTime / 1000}s...`);
+                    console.warn(`Requisição para ${url} recebeu ${response.status}. Tentando novamente em ${waitTime / 1000}s...`);
                     await sleep(waitTime);
                     continue;
                 }

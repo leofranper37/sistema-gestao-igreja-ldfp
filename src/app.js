@@ -38,7 +38,6 @@ const estudoRoutes     = require('./routes/estudoRoutes');
 const webhookRoutes    = require('./routes/webhookRoutes');
 const pixRoutes        = require('./routes/pixRoutes');
 const visitantesFollowupRoutes = require('./routes/visitantesFollowupRoutes');
-const adminAuthRoutes  = require('./routes/adminAuthRoutes');
 
 const app = express();
 
@@ -162,7 +161,6 @@ app.use(express.static(staticAssetsPath));
 app.use('/login', loginRateLimiter);
 app.use('/esqueci-senha', loginRateLimiter);
 app.use('/redefinir-senha', loginRateLimiter);
-app.use('/api/admin/login', loginRateLimiter);
 app.use('/api/', apiRateLimiter);
 
 app.use((req, res, next) => {
@@ -246,7 +244,6 @@ app.use('/api/estudo', estudoRoutes);
 app.use('/webhook', webhookRoutes);
 app.use('/api/pix', pixRoutes);
 app.use(visitantesFollowupRoutes);
-app.use(adminAuthRoutes);
 
 /* ------------------------------------------------------------------ */
 /*  ROTA DE BOOTSTRAP — cria o primeiro super-admin se não existir     */

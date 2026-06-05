@@ -514,6 +514,37 @@
         .dashboard-title { font-size: 24px; font-weight: 800; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         .dashboard-title i { color: #0f766e; }
 
+        /* ── Skeleton Loading Styles ─────────────────────────── */
+        .skeleton-box, .skeleton-text, .skeleton-title {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+            display: inline-block; /* Garante que width/height funcione */
+            -webkit-mask-image: -webkit-radial-gradient(white, black); /* Fix para bordas em Safari */
+        }
+
+        .skeleton-text {
+            height: 1em; /* Altura de uma linha de texto */
+            width: 100%; /* Largura total */
+            margin-bottom: 0.5em;
+        }
+
+        .skeleton-title {
+            height: 1.2em; /* Altura de um título */
+            width: 70%; /* Largura de um título */
+            margin-bottom: 0.5em;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Opcional: Estilo para o painel de gráfico enquanto carrega */
+        .chart-panel.loading { min-height: 200px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px; }
+        .chart-panel.loading canvas { display: none; }
+
         /* ── Responsive ─────────────────────────────────── */
         @media(max-width:1200px) { .dash-grid { grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); } }
         @media(max-width:768px)  { .dash-grid { grid-template-columns: repeat(2,1fr); } .members-grid { grid-template-columns: 1fr; } }
@@ -650,13 +681,15 @@
                 <!-- Seção: Gráficos -->
                 <div class="section-title" style="margin-top:36px"><i class="fa-solid fa-chart-bar" style="color:#0f766e"></i>Crescimento e Finanças</div>
                 <div class="charts-grid">
-                    <div class="chart-panel">
+                    <div class="chart-panel loading" id="chartPanelMembros">
                         <div class="chart-panel-title"><i class="fa-solid fa-users" style="color:#0284c7"></i> Novos Membros — Últimos 6 Meses</div>
                         <canvas id="chartMembros"></canvas>
+                        <div class="skeleton-text" style="width: 80%; height: 150px; margin-top: 20px;"></div> <!-- Placeholder para o gráfico -->
                     </div>
-                    <div class="chart-panel">
+                    <div class="chart-panel loading" id="chartPanelDizimos">
                         <div class="chart-panel-title"><i class="fa-solid fa-coins" style="color:#059669"></i> Dízimos e Ofertas — Últimos 6 Meses</div>
                         <canvas id="chartDizimos"></canvas>
+                        <div class="skeleton-text" style="width: 80%; height: 150px; margin-top: 20px;"></div> <!-- Placeholder para o gráfico -->
                     </div>
                 </div>
             </div><!-- /dash-inner -->
@@ -1015,14 +1048,22 @@
 
                 if (stats && stats.totais) {
                     const t = stats.totais;
-                    document.getElementById('totalMembros').textContent         = t.membros;
-                    document.getElementById('totalAniversariantes').textContent = t.aniversariantes;
-                    document.getElementById('totalVisitantes').textContent      = t.visitantes;
-                    document.getElementById('totalCriancas').textContent        = t.criancas;
-                    document.getElementById('totalOracoes').textContent         = t.oracoes;
-                    document.getElementById('totalEventos').textContent         = t.eventos;
-                    document.getElementById('totalMissionarios').textContent    = t.missionarios;
-                    document.getElementById('totalOutrasIgrejas').textContent   = t.outrasIgrejas;
+                    // Função auxiliar para preencher e remover esqueleto
+                    function fillStat(id, value) {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.innerHTML = value; // Substitui o esqueleto pelo valor
+                        }
+                    }
+
+                    fillStat('totalMembros', t.membros);
+                    fillStat('totalAniversariantes', t.aniversariantes);
+                    fillStat('totalVisitantes', t.visitantes);
+                    fillStat('totalCriancas', t.criancas);
+                    fillStat('totalOracoes', t.oracoes);
+                    fillStat('totalEventos', t.eventos);
+                    fillStat('totalMissionarios', t.missionarios);
+                    fillStat('totalOutrasIgrejas', t.outrasIgrejas);
 
                     renderRecentMembers(stats.recentes || []);
                     renderAniversariantesMes(stats.aniversariantesMes || []);
@@ -1039,6 +1080,12 @@
                 if (target) target.innerHTML = '<div class="recent-empty">Não foi possível carregar os dados agora.</div>';
                 const aniv = document.getElementById('anivScroll');
                 if (aniv) aniv.innerHTML = '';
+            } finally {
+                // Remover esqueletos dos gráficos após tentar renderizá-los
+                document.getElementById('chartPanelMembros')?.classList.remove('loading');
+                document.getElementById('chartPanelDizimos')?.classList.remove('loading');
+                // Remover placeholders de esqueleto dentro dos painéis de gráfico
+                document.querySelectorAll('.chart-panel .skeleton-text').forEach(el => el.remove());
             }
         }
 

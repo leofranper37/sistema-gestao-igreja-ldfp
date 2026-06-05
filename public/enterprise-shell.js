@@ -933,6 +933,15 @@
 
     async function loadDynamicFeatures() {
         try {
+            const CACHE_KEY = 'ldfp_modulos_me';
+            const cached = sessionStorage.getItem(CACHE_KEY);
+            
+            if (cached) {
+                const payload = JSON.parse(cached);
+                dynamicFeatureAllowList = normalizeFeatureAllowList(Array.isArray(payload?.featureKeys) ? payload.featureKeys : null);
+                return;
+            }
+
             const response = await fetch('/api/modulos/me');
             if (!response.ok) {
                 dynamicFeatureAllowList = null;
@@ -940,6 +949,8 @@
             }
 
             const payload = await response.json();
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+            
             const featureKeys = Array.isArray(payload?.featureKeys) ? payload.featureKeys : null;
             const normalizedFeatures = normalizeFeatureAllowList(featureKeys);
 

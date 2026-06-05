@@ -4,6 +4,7 @@ const fs = require('fs');
 const helmet = require('helmet');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
+const jwt = require('jsonwebtoken');
 
 const config = require('./config');
 const logger = require('./config/logger');
@@ -58,13 +59,30 @@ const loginRateLimitWindowMs = Number.parseInt(process.env.LOGIN_RATE_LIMIT_WIND
 const loginRateLimitMax = Number.parseInt(process.env.LOGIN_RATE_LIMIT_MAX || '', 10) || 10;
 
 const apiRateLimitWindowMs = Number.parseInt(process.env.API_RATE_LIMIT_WINDOW_MS || '', 10) || 15 * 60 * 1000;
-const apiRateLimitMax = Number.parseInt(process.env.API_RATE_LIMIT_MAX || '', 10) || 300;
+const apiRateLimitMax = Number.parseInt(process.env.API_RATE_LIMIT_MAX || '', 10) || 600; // Incrementado
 
 const apiRateLimiter = rateLimit({
     windowMs: apiRateLimitWindowMs,
     limit: apiRateLimitMax,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
+    keyGenerator: (req) => {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            try {
+                const token = authHeader.split(' ')[1];
+                const decoded = jwt.decode(token); // Leitura ultra-rápida sem validar hash aqui
+                if (decoded && decoded.sub) {
+                    return `user_${decoded.sub}`; // Limita POR USUÁRIO em vez de IP
+                }
+            } catch (e) {}
+        }
+        return req.ip; // Fallback para IP caso visitante
+    },
+    handler: (req, res, next, options) => {
+        res.status(options.statusCode).setHeader('Retry-After', Math.ceil(options.windowMs / 1000));
+        res.status(options.statusCode).json(options.message);
+    },
     message: {
         error: 'Muitas requisições. Aguarde alguns minutos e tente novamente.'
     }

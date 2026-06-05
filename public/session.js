@@ -210,19 +210,17 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
+    async function internalFetchWithRetry(input, init, retries = 3, delay = 1000) {
+        const url = typeof input === 'string' ? input : input?.url || '';
         for (let i = 0; i < retries; i++) {
             try {
-                const response = await window.fetch(url, options);
+                const response = await originalFetch(input, init);
                 if (response.status === 429) {
                     const retryAfter = response.headers.get('Retry-After');
                     const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : delay * Math.pow(2, i);
                     console.warn(`Requisição para ${url} recebeu 429. Tentando novamente em ${waitTime / 1000}s...`);
                     await sleep(waitTime);
                     continue;
-                }
-                if (!response.ok && response.status !== 401) {
-                    throw new Error(`Erro na rota ${url}: ${response.status} ${response.statusText}`);
                 }
                 return response;
             } catch (error) {
@@ -234,6 +232,39 @@
             }
         }
         throw new Error(`Falha na requisição para ${url} após ${retries} tentativas.`);
+    }
+
+    window.fetch = async function (input, init = {}) {
+        const requestUrl = typeof input === 'string' ? input : input?.url || '';
+        const nextInit = { ...init };
+        const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined) || undefined);
+        const token = getAuthToken();
+
+        if (token && isSameOriginRequest(requestUrl) && !headers.has('Authorization')) {
+            headers.set('Authorization', `Bearer ${token}`);
+        }
+
+        nextInit.headers = headers;
+
+        // O retry e anexação do token ocorrem de forma integrada e transparente!
+        const response = await internalFetchWithRetry(input, nextInit);
+
+        if (response.status === 401 && !isAuthRoute(requestUrl)) {
+            clearAuthSession();
+            redirectToLogin();
+        }
+
+        return response;
+    };
+
+    // Mantemos as versões legadas que lançam erro nativamente, mas 
+    // elas apenas chamam a nossa window.fetch blindada acima.
+    async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
+        const response = await window.fetch(url, options);
+        if (!response.ok && response.status !== 401) {
+            throw new Error(`Erro na rota ${url}: ${response.status} ${response.statusText}`);
+        }
+        return response;
     }
 
     async function fetchWithSessionCache(url) {
@@ -251,28 +282,6 @@
         const response = await fetchWithRetry(url);
         return response.json();
     }
-
-    window.fetch = async function (input, init = {}) {
-        const requestUrl = typeof input === 'string' ? input : input?.url || '';
-        const nextInit = { ...init };
-        const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined) || undefined);
-        const token = getAuthToken();
-
-        if (token && isSameOriginRequest(requestUrl) && !headers.has('Authorization')) {
-            headers.set('Authorization', `Bearer ${token}`);
-        }
-
-        nextInit.headers = headers;
-
-        const response = await originalFetch(input, nextInit);
-
-        if (response.status === 401 && !isAuthRoute(requestUrl)) {
-            clearAuthSession();
-            redirectToLogin();
-        }
-
-        return response;
-    };
 
     window.getStoredAuth = getStoredAuth;
     window.getAuthToken = getAuthToken;

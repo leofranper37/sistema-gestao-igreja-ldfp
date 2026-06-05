@@ -10,6 +10,7 @@ const config = require('./config');
 const logger = require('./config/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const { createHttpError } = require('./utils/httpError');
+const { requireAuth, authorize } = require('./middlewares/auth');
 const accountRoutes = require('./routes/accountRoutes');
 const agendaRoutes = require('./routes/agendaRoutes');
 const appMembroRoutes = require('./routes/appMembroRoutes');
@@ -42,6 +43,9 @@ const app = express();
 
 // Permite que o Express identifique o IP real do usuário através de múltiplos proxies (Cloudflare + cPanel Nginx) evitando falsos Erros 429
 app.set('trust proxy', true);
+
+// Aggregator em memória para auditoria de endpoints
+const endpointStats = new Map();
 
 const maintenanceModeEnabled = process.env.MAINTENANCE_MODE === 'true' || false;
 const setupRouteEnabled = process.env.ENABLE_SETUP_ROUTE === 'true'
@@ -160,15 +164,39 @@ app.use((req, res, next) => {
     const startedAt = Date.now();
 
     res.on('finish', () => {
+        const durationMs = Date.now() - startedAt;
+
         logger.info('http_request', {
             method: req.method,
             path: req.originalUrl,
             statusCode: res.statusCode,
-            durationMs: Date.now() - startedAt,
+            durationMs,
             userId: req.auth?.id || null,
             igrejaId: req.auth?.igrejaId || null,
             ip: req.ip
         });
+
+        // Rastreamento em memória para auditoria de endpoints (apenas rotas da API)
+        if (req.originalUrl.startsWith('/api/')) {
+            // Remove querystring e normaliza IDs numéricos (ex: /api/membros/123 -> /api/membros/:id)
+            const routePath = req.originalUrl.split('?')[0].replace(/\/\d+/g, '/:id');
+            const key = `${req.method} ${routePath}`;
+            
+            // Proteção contra estouro de memória (evita DDoS em rotas 404 com URLs aleatórias)
+            if (endpointStats.size > 2000 && !endpointStats.has(key)) endpointStats.clear();
+
+            const stat = endpointStats.get(key) || { 
+                method: req.method, path: routePath, hits: 0, 
+                totalDuration: 0, minDuration: durationMs, maxDuration: durationMs 
+            };
+
+            stat.hits += 1;
+            stat.totalDuration += durationMs;
+            if (durationMs < stat.minDuration) stat.minDuration = durationMs;
+            if (durationMs > stat.maxDuration) stat.maxDuration = durationMs;
+
+            endpointStats.set(key, stat);
+        }
     });
 
     next();
@@ -326,6 +354,28 @@ app.post('/api/firstrun/super-admin', express.json(), async (req, res) => {
     } catch (err) {
         return res.status(500).json({ error: 'Erro interno: ' + err.message });
     }
+});
+
+/* ------------------------------------------------------------------ */
+/*  AUDITORIA DE ENDPOINTS — Retorna os endpoints mais acessados       */
+/* ------------------------------------------------------------------ */
+app.get('/api/saas/metricas/endpoints', requireAuth, authorize(['super-admin', 'super_admin', 'superadmin', 'master', 'owner', 'root']), (req, res) => {
+    const stats = Array.from(endpointStats.values())
+        .map(s => ({
+            method: s.method,
+            path: s.path,
+            hits: s.hits,
+            avgDurationMs: Math.round(s.totalDuration / s.hits),
+            minDurationMs: s.minDuration,
+            maxDurationMs: s.maxDuration
+        }))
+        .sort((a, b) => b.hits - a.hits); // Ordena de forma decrescente pelos mais acessados
+
+    res.json({
+        uptimeServidorHrs: (process.uptime() / 3600).toFixed(2),
+        totalEndpointsMonitorados: stats.length,
+        stats
+    });
 });
 
 app.use((req, res, next) => {

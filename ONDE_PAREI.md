@@ -5,14 +5,14 @@
 
 ---
 
-## 🗓️ Última atualização: 04/06/2026
+## 🗓️ Última atualização: 05/06/2026
 
 ## ⏳ Commit pendente (pronto para envio)
 - **Hash:** a ser gerado
 - **Branch:** `main`
 - **Repo:** `leofranper37/sistema-gestao-igreja-ldfp`
-- **Mensagem:** `feat: configuracao inicial modulo LDFP Biblia e Estudo`
-- **Push:** pendente
+- **Mensagem:** `feat: implementacao inicial backend do modulo LDFP Biblia e Estudo`
+- **Push:** a realizar
 
 ---
 
@@ -52,18 +52,18 @@
 | **Webhook Auto-Deploy** | Rota `POST /webhook` (`webhookRoutes.js` e `app.js`) usando `child_process.exec` para rodar `git pull` e `touch tmp/restart.txt` no servidor cPanel. | pendente |
 | **Integração PIX (QR Code)** | Rota `POST /api/pix/gerar` em `pixRoutes.js` + `pixController.js`. Interface adicionada em modal via `app_membro_v2.html` gerando PIX Copia e Cola via API MercadoPago. | pendente |
 | **Visitantes — Funil Kanban** | Tabela `visitante_followup` + adição de status na tabela existente; `visitantesFollowupController.js` (CRUD do Kanban + interações de ligações/mensagens); HTML5 Drag and Drop na tela `visitantes_kanban.html`. | ✅ concluído |
-| **LDFP Bíblia & Estudo — Backend** | `CRIAR_TABELAS_ESTUDO.sql` (7 tabelas), `estudoController.js` (CRUD versões, passagens, anotações, favoritos, planos, devocionais), `estudoRoutes.js` protegido por role guard. `seed-biblia.js` importando João Cap. 1 (ARC). Adicionado 'estudo' em `CRIAR_TABELAS_MODULOS.sql`, `enterprise-shell.js` e `roles.js`. | pendente |
+| **LDFP Bíblia & Estudo (Visão e SQL)** | Elaboração do documento de produto `docs/LDFP-ESTUDO-VISAO.md` e modelagem de banco de dados `CRIAR_TABELAS_ESTUDO.sql` (7 tabelas). | `pendente push` |
 | **LDFP Bíblia & Estudo — Frontend** | `estudo.html` (leitor interativo + devocional do dia), `devocionais.html` (Admin gerenciar devocionais + Send Push via API VAPID), `admin-planos-estudo.html` (Admin gerenciar planos com conversor linha/passo), `planos-estudo.html` e `plano-detalhe.html` (Membro gerencia progresso no plano). | pendente |
 
 ---
 
 ## 🧪 Sessão atual — alterações locais ainda não commitadas
 
-- Início da implementação das tabelas e backend do Módulo LDFP Bíblia & Estudo.
+- Continuação do desenvolvimento da API (Backend) para o módulo LDFP Bíblia & Estudo (`estudoRoutes.js`, `estudoController.js`) e início da integração no Frontend.
 
 ---
 
-## ⚙️ Servidor (cPanel) — estado em 04/06/2026
+## ⚙️ Servidor (cPanel) — estado em 05/06/2026
 
 | Etapa | Status |
 |-------|--------|
@@ -108,7 +108,7 @@ Todos os 9 itens originais foram concluídos. Possíveis próximos passos:
 | — | **Notificações push (VAPID)** | Alertas para membros via app | ✅ `9c4c8d1` |
 | — | **Módulo de Visitantes completo** | Acompanhamento Kanban e follow-up detalhado. | ✅ `concluído` |
 | — | **Integração PIX automática** | Dízimo via QR Code PIX (Mercado Pago) no app do membro. | ✅ `sessao-atual` |
-| — | **LDFP Bíblia & Estudo** | App ensino bíblico integrado ao membro — visão + MVP em `docs/LDFP-ESTUDO-VISAO.md` | 📋 Planejamento |
+| — | **LDFP Bíblia & Estudo** | App ensino bíblico integrado ao membro — visão + MVP em `docs/LDFP-ESTUDO-VISAO.md` | ⏳ Em andamento |
 
 
 ## 🔑 Dados de infraestrutura (NÃO commitar segredos novos aqui)

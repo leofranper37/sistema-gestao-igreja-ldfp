@@ -38,6 +38,7 @@ const estudoRoutes     = require('./routes/estudoRoutes');
 const webhookRoutes    = require('./routes/webhookRoutes');
 const pixRoutes        = require('./routes/pixRoutes');
 const visitantesFollowupRoutes = require('./routes/visitantesFollowupRoutes');
+const adminAuthRoutes  = require('./routes/adminAuthRoutes');
 
 const app = express();
 
@@ -46,6 +47,9 @@ app.set('trust proxy', true);
 
 // Aggregator em memória para auditoria de endpoints
 const endpointStats = new Map();
+
+// Limite em milissegundos para considerar uma requisição lenta e disparar alerta
+const SLOW_RESPONSE_THRESHOLD_MS = 2000;
 
 const maintenanceModeEnabled = process.env.MAINTENANCE_MODE === 'true' || false;
 const setupRouteEnabled = process.env.ENABLE_SETUP_ROUTE === 'true'
@@ -158,6 +162,7 @@ app.use(express.static(staticAssetsPath));
 app.use('/login', loginRateLimiter);
 app.use('/esqueci-senha', loginRateLimiter);
 app.use('/redefinir-senha', loginRateLimiter);
+app.use('/api/admin/login', loginRateLimiter);
 app.use('/api/', apiRateLimiter);
 
 app.use((req, res, next) => {
@@ -165,6 +170,17 @@ app.use((req, res, next) => {
 
     res.on('finish', () => {
         const durationMs = Date.now() - startedAt;
+
+        // Alerta automático de lentidão
+        if (durationMs > SLOW_RESPONSE_THRESHOLD_MS) {
+            logger.warn('ALERTA_LENTIDAO', {
+                method: req.method,
+                path: req.originalUrl,
+                durationMs,
+                limiteMs: SLOW_RESPONSE_THRESHOLD_MS,
+                ip: req.ip
+            });
+        }
 
         logger.info('http_request', {
             method: req.method,
@@ -186,11 +202,12 @@ app.use((req, res, next) => {
             if (endpointStats.size > 2000 && !endpointStats.has(key)) endpointStats.clear();
 
             const stat = endpointStats.get(key) || { 
-                method: req.method, path: routePath, hits: 0, 
+                method: req.method, path: routePath, hits: 0, slowHits: 0,
                 totalDuration: 0, minDuration: durationMs, maxDuration: durationMs 
             };
 
             stat.hits += 1;
+            if (durationMs > SLOW_RESPONSE_THRESHOLD_MS) stat.slowHits += 1;
             stat.totalDuration += durationMs;
             if (durationMs < stat.minDuration) stat.minDuration = durationMs;
             if (durationMs > stat.maxDuration) stat.maxDuration = durationMs;
@@ -229,6 +246,7 @@ app.use('/api/estudo', estudoRoutes);
 app.use('/webhook', webhookRoutes);
 app.use('/api/pix', pixRoutes);
 app.use(visitantesFollowupRoutes);
+app.use(adminAuthRoutes);
 
 /* ------------------------------------------------------------------ */
 /*  ROTA DE BOOTSTRAP — cria o primeiro super-admin se não existir     */
@@ -365,6 +383,7 @@ app.get('/api/saas/metricas/endpoints', requireAuth, authorize(['super-admin', '
             method: s.method,
             path: s.path,
             hits: s.hits,
+            slowHits: s.slowHits,
             avgDurationMs: Math.round(s.totalDuration / s.hits),
             minDurationMs: s.minDuration,
             maxDurationMs: s.maxDuration

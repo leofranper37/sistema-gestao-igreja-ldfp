@@ -77,6 +77,12 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
+    // Ignora requisições que não sejam GET (POST, PUT, PATCH, DELETE) 
+    // para evitar erros de "unsupported method" na API de Cache
+    if (request.method !== 'GET') {
+        return;
+    }
+
     // Skip cross-origin requests and certain paths
     if (url.origin !== location.origin) {
         return;

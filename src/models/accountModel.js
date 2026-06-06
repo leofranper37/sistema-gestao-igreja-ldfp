@@ -39,8 +39,9 @@ async function createChurch(name, planoSlug) {
 
     const [result] = await pool.query(
         `INSERT INTO igrejas (
-            nome, plano, status_assinatura, trial_starts_at, trial_ends_at, max_cadastros, max_congregacoes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            nome, plano, status_assinatura, trial_starts_at, trial_ends_at, max_cadastros, max_congregacoes,
+            modulo_app_membro, modulo_app_midia, modulo_ebd, modulo_agenda_eventos, modulo_escala_culto, modulo_pedidos_oracao, modulo_mural_oracao
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, 1, 1, 1, 1, 1)`,
         [
             name,
             resolvedPlano,

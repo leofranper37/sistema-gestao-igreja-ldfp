@@ -93,7 +93,7 @@ body{background:linear-gradient(135deg,#0f172a 0%,#134e4a 100%);min-height:100vh
         <textarea id="msgBoasVindas" class="field-input" rows="3" placeholder="Seja bem-vindo(a)! Estamos felizes em ter você aqui."></textarea>
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" id="btnStep1" onclick="saveStep1()">
+        <button type="button" class="btn btn-primary" id="btnStep1" onclick="saveStep1()">
           <i class="fa-solid fa-arrow-right"></i> Próximo
         </button>
       </div>
@@ -118,8 +118,8 @@ body{background:linear-gradient(135deg,#0f172a 0%,#134e4a 100%);min-height:100vh
         <input id="membroTel" class="field-input" type="tel" placeholder="(11) 99999-9999">
       </div>
       <div class="btn-row">
-        <button class="btn btn-skip" onclick="skipStep(3)"><i class="fa-solid fa-forward"></i> Pular</button>
-        <button class="btn btn-primary" id="btnStep2" onclick="saveStep2()">
+        <button type="button" class="btn btn-skip" onclick="skipStep(3)"><i class="fa-solid fa-forward"></i> Pular</button>
+        <button type="button" class="btn btn-primary" id="btnStep2" onclick="saveStep2()">
           <i class="fa-solid fa-user-plus"></i> Cadastrar e Avançar
         </button>
       </div>
@@ -144,8 +144,8 @@ body{background:linear-gradient(135deg,#0f172a 0%,#134e4a 100%);min-height:100vh
         <input id="saldoDescricao" class="field-input" type="text" value="Saldo inicial" placeholder="Saldo inicial">
       </div>
       <div class="btn-row">
-        <button class="btn btn-skip" onclick="finishOnboarding()"><i class="fa-solid fa-forward"></i> Pular</button>
-        <button class="btn btn-primary" id="btnStep3" onclick="saveStep3()">
+        <button type="button" class="btn btn-skip" onclick="finishOnboarding()"><i class="fa-solid fa-forward"></i> Pular</button>
+        <button type="button" class="btn btn-primary" id="btnStep3" onclick="saveStep3()">
           <i class="fa-solid fa-check"></i> Salvar e Concluir
         </button>
       </div>
@@ -160,7 +160,7 @@ body{background:linear-gradient(135deg,#0f172a 0%,#134e4a 100%);min-height:100vh
           Sua igreja está configurada.<br>
           Agora você tem acesso completo ao sistema de gestão.
         </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="location.href='dashboard.html'">
+        <button type="button" class="btn btn-primary" style="width:100%;justify-content:center" onclick="location.href='dashboard.html'">
           <i class="fa-solid fa-house"></i> Ir para o Painel
         </button>
       </div>
@@ -297,6 +297,22 @@ body{background:linear-gradient(135deg,#0f172a 0%,#134e4a 100%);min-height:100vh
   async function finishOnboarding() {
     try {
       await fetch('/api/church/onboarding/complete', { method: 'POST' });
+      
+      // Atualiza o cache local para evitar que o dashboard redirecione de volta para o onboarding
+      try {
+        let authObj = null;
+        if (typeof window.getStoredAuth === 'function') {
+            authObj = window.getStoredAuth();
+        } else {
+            const raw = localStorage.getItem('ldfpAuth') || sessionStorage.getItem('ldfpAuth');
+            if (raw) authObj = JSON.parse(raw);
+        }
+        if (authObj && authObj.user) {
+            authObj.user.onboarding_completed = 1;
+            if (localStorage.getItem('ldfpAuth')) localStorage.setItem('ldfpAuth', JSON.stringify(authObj));
+            if (sessionStorage.getItem('ldfpAuth')) sessionStorage.setItem('ldfpAuth', JSON.stringify(authObj));
+        }
+      } catch (e) {}
     } catch (_) {}
     goStep(4);
   }

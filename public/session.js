@@ -250,8 +250,12 @@
         const response = await internalFetchWithRetry(input, nextInit);
 
         if (response.status === 401 && !isAuthRoute(requestUrl)) {
-            clearAuthSession();
-            redirectToLogin();
+            // Verifica se já estamos no login para não criar um loop
+            if (!/\/login\.html$/i.test(window.location.pathname)) {
+                console.error("⛔ Sessão inválida (401). Apagando Token e enviando para o Login.");
+                clearAuthSession();
+                redirectToLogin();
+            }
         }
 
         return response;

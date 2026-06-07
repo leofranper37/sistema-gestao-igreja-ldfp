@@ -1,266 +1,133 @@
 /**
- * Service Worker para LDFP Igreja PWA
- * Handles caching, offline support, and background sync
+ * Service Worker para LDFP Igreja PWA - Versão Corrigida
  */
 
-const CACHE_NAME = 'ldfp-v8';
+const CACHE_NAME = 'ldfp-v9';
 const STATIC_ASSETS = [
-    '/',
-    '/index.html',
-    '/login.html',
-    '/dashboard.html',
-    '/lista_membros.html',
-    '/agenda.html',
-    '/oracoes.html',
-    '/visitantes.html',
-    '/bancos_lancamentos.html',
-    '/portaria.html',
-    '/membros.html',
-    '/app_membro.html',
-    '/app_membro_v2.html',
-    '/app_midia.html',
-    '/dashboard_membro.html',
-    '/planos.html',
-    '/planos-data.json',
-    '/style.css',
-    '/app.css',
-    '/app.js',
-    '/session.js',
-    '/enterprise-shell.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+  '/',
+  '/index.html',
+  '/login.html',
+  '/dashboard.html',
+  '/lista_membros.html',
+  '/agenda.html',
+  '/oracoes.html',
+  '/visitantes.html',
+  '/bancos_lancamentos.html',
+  '/portaria.html',
+  '/membros.html',
+  '/style.css',
+  '/app.css',
+  '/app.js',
+  '/session.js',
+  '/enterprise-shell.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
 ];
 
-const NETWORK_FIRST_PATHS = new Set([
-    '/enterprise-shell.js',
-    '/session.js',
-    '/style.css',
-    '/app.css',
-    '/planos.html',
-    '/planos-data.json'
-]);
-
-// Install event - cache essential assets
+// Install event
 self.addEventListener('install', (event) => {
-    console.log('[Service Worker] Installing...');
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            console.log('[Service Worker] Caching assets');
-            return cache.addAll(STATIC_ASSETS).catch((err) => {
-                console.warn('[Service Worker] Some assets failed to cache:', err);
-                // Continue even if some assets fail
-            });
-        })
-    );
-    self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(STATIC_ASSETS);
+    })
+  );
+  self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate event
 self.addEventListener('activate', (event) => {
-    console.log('[Service Worker] Activating...');
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('[Service Worker] Deleting old cache:', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
         })
-    );
-    self.clients.claim();
+      );
+    })
+  );
+  self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - CORRIGIDO
 self.addEventListener('fetch', (event) => {
-    const { request } = event;
-    const url = new URL(request.url);
+  const { request } = event;
+  const url = new URL(request.url);
 
-    // Ignora requisições que não sejam GET (POST, PUT, PATCH, DELETE) 
-    // para evitar erros de "unsupported method" na API de Cache
-    if (request.method !== 'GET') {
-        return;
-    }
+  // 1. SEGURANÇA: Bloqueia POST/PATCH/PUT/DELETE do Cache (Correção do seu erro)
+  if (request.method !== 'GET') {
+    return; // Deixa o navegador/servidor lidar com a requisição normalmente
+  }
 
-    // Skip cross-origin requests and certain paths
-    if (url.origin !== location.origin) {
-        return;
-    }
+  // 2. API: Sempre busca na rede primeiro
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
-    // Skip api calls for dynamic data, but cache them for offline
-    if (url.pathname.startsWith('/api/') || url.pathname.includes('.json')) {
-        event.respondWith(
-            fetch(request)
-                .then((response) => {
-                    // Cache successful responses
-                    if (response.status === 200) {
-                        const responseClone = response.clone();
-                        caches.open(CACHE_NAME).then((cache) => {
-                            cache.put(request, responseClone);
-                        });
-                    }
-                    return response;
-                })
-                .catch(() => {
-                    // Return cached version if offline
-                    return caches.match(request).then((cached) => {
-                        return cached || new Response(
-                            JSON.stringify({ offline: true, message: 'Dados em cache' }),
-                            { headers: { 'Content-Type': 'application/json' } }
-                        );
-                    });
-                })
-        );
-        return;
-    }
-
-    // Keep shell scripts/styles and HTML always fresh to avoid stale UI bugs.
-    if (request.destination === 'document' || NETWORK_FIRST_PATHS.has(url.pathname)) {
-        event.respondWith(
-            fetch(request)
-                .then((response) => {
-                    if (response && response.status === 200) {
-                        const responseClone = response.clone();
-                        caches.open(CACHE_NAME).then((cache) => {
-                            cache.put(request, responseClone);
-                        });
-                    }
-                    return response;
-                })
-                .catch(() => {
-                    return caches.match(request).then((cached) => {
-                        if (cached) {
-                            return cached;
-                        }
-
-                        if (request.destination === 'document') {
-                            return caches.match('/index.html');
-                        }
-
-                        return Response.error();
-                    });
-                })
-        );
-        return;
-    }
-
-    // For HTML and static assets, try cache first, then network
+  // 3. NAVEGAÇÃO (Páginas HTML): Network-first com fallback para cache
+  if (request.mode === 'navigate') {
     event.respondWith(
-        caches.match(request).then((cached) => {
-            if (cached) {
-                return cached;
-            }
-            return fetch(request)
-                .then((response) => {
-                    if (!response || response.status !== 200 || response.type === 'error') {
-                        return response;
-                    }
-                    const responseClone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(request, responseClone);
-                    });
-                    return response;
-                })
-                .catch(() => {
-                    // Offline fallback
-                    if (request.destination === 'document') {
-                        return caches.match('/index.html');
-                    }
-                });
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Em caso de falha de rede (offline), tenta buscar do cache
+          return caches.match(request).then((cachedResponse) => {
+            return cachedResponse || caches.match('/'); // Retorna pro início se não achar
+          });
         })
     );
+    return;
+  }
+
+  // 4. ESTÁTICOS (CSS, JS, Imagens): Cache-first
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      return (
+        cachedResponse ||
+        fetch(request)
+          .then((networkResponse) => {
+            // Faz cache dinâmico apenas de requisições válidas da própria origem (evita estourar limite do cache)
+            if (
+              networkResponse &&
+              networkResponse.status === 200 &&
+              networkResponse.type === 'basic'
+            ) {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(request, responseClone);
+              });
+            }
+            return networkResponse;
+          })
+          .catch(() => {
+            // Tratamento genérico caso o recurso não esteja em cache e não haja rede
+          })
+      );
+    })
+  );
 });
 
 // Handle push notifications
 self.addEventListener('push', (event) => {
-    if (!event.data) {
-        return;
-    }
-
-    try {
-        const data = event.data.json();
-        const options = {
-            body: data.body || 'Nova notificação',
-            icon: '/icons/icon-192x192.png',
-            badge: '/icons/icon-192x192.png',
-            tag: data.tag || 'notification',
-            requireInteraction: data.requireInteraction || false,
-            actions: data.actions || [],
-            data: data.data || {}
-        };
-
-        event.waitUntil(
-            self.registration.showNotification(data.title || 'LDFP Igreja', options)
-        );
-    } catch (error) {
-        console.error('[Service Worker] Push notification error:', error);
-    }
+  if (!event.data) return;
+  const data = event.data.json();
+  const options = {
+    body: data.body || 'Nova notificação',
+    icon: '/icons/icon-192x192.png',
+    badge: '/icons/icon-192x192.png',
+  };
+  event.waitUntil(self.registration.showNotification(data.title || 'LDFP Igreja', options));
 });
 
 // Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
-    event.notification.close();
-
-    if (event.action) {
-        // Handle action button clicks
-        console.log('[Service Worker] Action clicked:', event.action);
-    }
-
-    // Open or focus window
-    event.waitUntil(
-        clients.matchAll({ type: 'window' }).then((clientList) => {
-            // Check if app is already open
-            for (let i = 0; i < clientList.length; i++) {
-                const client = clientList[i];
-                if (client.url === '/' && 'focus' in client) {
-                    return client.focus();
-                }
-            }
-            // Open app if not already open
-            if (clients.openWindow) {
-                const url = event.notification.data.url || '/';
-                return clients.openWindow(url);
-            }
-        })
-    );
+  event.notification.close();
+  event.waitUntil(clients.openWindow('/'));
 });
-
-// Background sync for offline actions
-self.addEventListener('sync', (event) => {
-    if (event.tag === 'sync-oracoes') {
-        event.waitUntil(syncOracoes());
-    } else if (event.tag === 'sync-visitantes') {
-        event.waitUntil(syncVisitantes());
-    }
-});
-
-async function syncOracoes() {
-    try {
-        const cache = await caches.open(CACHE_NAME);
-        const requests = await cache.keys();
-        // Aqui você implementaria a sincronização de dados pendentes
-        console.log('[Service Worker] Syncing orações...');
-    } catch (error) {
-        console.error('[Service Worker] Sync error:', error);
-        throw error;
-    }
-}
-
-async function syncVisitantes() {
-    try {
-        console.log('[Service Worker] Syncing visitantes...');
-    } catch (error) {
-        console.error('[Service Worker] Sync error:', error);
-        throw error;
-    }
-}
-
-// Escutar mensagens da página e forçar atualização sem travar o canal prematuramente
-self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-    }
-});
-
-console.log('[Service Worker] Loaded');

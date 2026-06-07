@@ -438,8 +438,15 @@ async function initializeDatabase() {
             naturalidade VARCHAR(120) NULL,
             data_nascimento VARCHAR(30) NULL,
             situacao VARCHAR(30) DEFAULT 'Ativo',
+            observacoes TEXT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
+
+        try { await activePgPool.query(`ALTER TABLE membros ADD COLUMN observacoes TEXT`); } catch(_){}
+        try { await activePgPool.query(`ALTER TABLE membros ADD COLUMN cargo VARCHAR(120) NULL`); } catch(_){}
+        try { await activePgPool.query(`ALTER TABLE membros ADD COLUMN foto_url VARCHAR(500) NULL`); } catch(_){}
+        try { await activePgPool.query(`ALTER TABLE membros ADD COLUMN acesso_app_midia SMALLINT NOT NULL DEFAULT 0`); } catch(_){}
+        try { await activePgPool.query(`ALTER TABLE membros ADD COLUMN gerenciar_midias SMALLINT NOT NULL DEFAULT 0`); } catch(_){}
 
         await activePgPool.query(`CREATE INDEX IF NOT EXISTS idx_membros_igreja ON membros (igreja_id)`);
 
@@ -603,6 +610,7 @@ async function initializeDatabase() {
         try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN foto_url VARCHAR(500) NULL`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN acesso_app_midia TINYINT(1) NOT NULL DEFAULT 0`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN gerenciar_midias TINYINT(1) NOT NULL DEFAULT 0`); } catch(_){}
+        try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN observacoes TEXT NULL`); } catch(_){}
 
         await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS usuarios (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -869,6 +877,7 @@ async function initializeDatabase() {
             safeAlter('ALTER TABLE membros ADD COLUMN rg TEXT');
             safeAlter('ALTER TABLE membros ADD COLUMN nacionalidade TEXT');
             safeAlter('ALTER TABLE membros ADD COLUMN naturalidade TEXT');
+            safeAlter('ALTER TABLE membros ADD COLUMN observacoes TEXT');
             safeAlter('ALTER TABLE membros ADD COLUMN created_at TEXT DEFAULT CURRENT_TIMESTAMP');
 
             db.run(`CREATE INDEX IF NOT EXISTS idx_membros_igreja ON membros (igreja_id)`);

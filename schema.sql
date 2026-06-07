@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS membros (
   naturalidade VARCHAR(120) NULL,
   data_nascimento VARCHAR(30) NULL,
   situacao VARCHAR(30) DEFAULT 'Ativo',
+  observacoes TEXT NULL,
   app_senha VARCHAR(255) NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_membros_igreja (igreja_id)

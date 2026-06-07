@@ -437,8 +437,8 @@ async function createMembro(payload) {
             igreja_id,
             nome, email, telefone, cargo, apelido, nascimento, sexo, estado_civil, profissao,
             cep, endereco, numero, bairro, cidade, estado, celular, cpf, rg, nacionalidade, naturalidade,
-            foto_url, acesso_app_midia, gerenciar_midias
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            foto_url, acesso_app_midia, gerenciar_midias, situacao, observacoes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
             payload.igrejaId,
             payload.nome,
@@ -463,9 +463,33 @@ async function createMembro(payload) {
             payload.naturalidade,
             payload.fotoUrl,
             payload.acesso_app_midia ? 1 : 0,
-            payload.gerenciar_midias ? 1 : 0
+            payload.gerenciar_midias ? 1 : 0,
+            payload.situacao,
+            payload.observacoes
         ]
     );
+}
+
+async function updateMembro(id, payload) {
+    await ensureSystemTables();
+    await pool.query(
+        `UPDATE membros SET
+            nome = ?, email = ?, telefone = ?, cargo = ?, apelido = ?, nascimento = ?, sexo = ?, estado_civil = ?, profissao = ?,
+            cep = ?, endereco = ?, numero = ?, bairro = ?, cidade = ?, estado = ?, celular = ?, cpf = ?, rg = ?, nacionalidade = ?, naturalidade = ?,
+            foto_url = ?, acesso_app_midia = ?, gerenciar_midias = ?, situacao = ?, observacoes = ?
+         WHERE id = ? AND igreja_id = ?`,
+        [
+            payload.nome, payload.email, payload.telefone, payload.cargo, payload.apelido, payload.nascimento, payload.sexo, payload.estadoCivil, payload.profissao,
+            payload.cep, payload.endereco, payload.numero, payload.bairro, payload.cidade, payload.estado, payload.celular, payload.cpf, payload.rg, payload.nacionalidade, payload.naturalidade,
+            payload.fotoUrl, payload.acesso_app_midia ? 1 : 0, payload.gerenciar_midias ? 1 : 0, payload.situacao, payload.observacoes,
+            id, payload.igrejaId
+        ]
+    );
+}
+
+async function deleteMembro(id, igrejaId) {
+    await ensureSystemTables();
+    await pool.query('DELETE FROM membros WHERE id = ? AND igreja_id = ?', [id, igrejaId]);
 }
 
 async function listVisitantes({ igrejaId, search }) {
@@ -956,6 +980,8 @@ module.exports = {
     createCrianca,
     createCongregado,
     createMembro,
+    updateMembro,
+    deleteMembro,
     createOracao,
     createVisitante,
     deleteCrianca,

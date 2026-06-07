@@ -83,6 +83,8 @@ async function createMembro(req, res) {
         nacionalidade: payload.nacionalidade || null,
         naturalidade: payload.naturalidade || null,
         fotoUrl: payload.fotoUrl || null,
+        situacao: payload.situacao || 'Ativo',
+        observacoes: payload.observacoes || null,
         acesso_app_midia: parseFlag(payload.acesso_app_midia),
         gerenciar_midias: parseFlag(payload.gerenciar_midias)
     };
@@ -91,6 +93,73 @@ async function createMembro(req, res) {
     audit('membro.create', req, { nome: member.nome, email: member.email });
 
     res.status(201).json({ message: 'Membro salvo com sucesso.' });
+}
+
+async function updateMembro(req, res) {
+    const payload = req.validatedBody;
+    const igrejaId = Number(req.auth.igrejaId || 1);
+    const id = Number(req.params.id);
+
+    if (isNaN(id) || id <= 0) {
+        throw createHttpError(400, 'ID de membro inválido.');
+    }
+
+    const parseFlag = (value) => {
+        if (value === true || value === 1 || value === '1') return 1;
+        if (typeof value === 'string') {
+            const normalized = value.trim().toLowerCase();
+            if (normalized === 'true' || normalized === 'sim') return 1;
+        }
+        return 0;
+    };
+
+    const member = {
+        igrejaId,
+        nome: payload.nome,
+        email: payload.email || null,
+        telefone: payload.telefone || null,
+        cargo: payload.cargo || null,
+        apelido: payload.apelido || null,
+        nascimento: payload.nascimento || null,
+        sexo: payload.sexo || null,
+        estadoCivil: payload.estadoCivil || payload.estado_civil || null,
+        profissao: payload.profissao || null,
+        cep: payload.cep || null,
+        endereco: payload.endereco || null,
+        numero: payload.numero || null,
+        bairro: payload.bairro || null,
+        cidade: payload.cidade || null,
+        estado: payload.estado || null,
+        celular: payload.celular || null,
+        cpf: payload.cpf || null,
+        rg: payload.rg || null,
+        nacionalidade: payload.nacionalidade || null,
+        naturalidade: payload.naturalidade || null,
+        fotoUrl: payload.fotoUrl || null,
+        situacao: payload.situacao || 'Ativo',
+        observacoes: payload.observacoes || null,
+        acesso_app_midia: parseFlag(payload.acesso_app_midia),
+        gerenciar_midias: parseFlag(payload.gerenciar_midias)
+    };
+
+    await systemService.updateMembro(id, member);
+    audit('membro.update', req, { id, nome: member.nome, email: member.email });
+
+    res.json({ message: 'Membro atualizado com sucesso.' });
+}
+
+async function deleteMembro(req, res) {
+    const igrejaId = Number(req.auth.igrejaId || 1);
+    const id = Number(req.params.id);
+
+    if (isNaN(id) || id <= 0) {
+        throw createHttpError(400, 'ID de membro inválido.');
+    }
+
+    await systemService.deleteMembro(id, igrejaId);
+    audit('membro.delete', req, { id });
+
+    res.json({ message: 'Membro excluído com sucesso.' });
 }
 
 async function listVisitantes(req, res) {
@@ -530,6 +599,8 @@ module.exports = {
     createCrianca,
     createCongregado,
     createMembro,
+    updateMembro,
+    deleteMembro,
     createOracao,
     createVisitante,
     deleteCrianca,

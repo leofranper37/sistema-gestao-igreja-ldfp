@@ -12,6 +12,14 @@ async function createMembro(payload) {
     await systemModel.createMembro(payload);
 }
 
+async function updateMembro(id, payload) {
+    await systemModel.updateMembro(id, payload);
+}
+
+async function deleteMembro(id, igrejaId) {
+    await systemModel.deleteMembro(id, igrejaId);
+}
+
 async function listVisitantes({ igrejaId, search }) {
     return systemModel.listVisitantes({ igrejaId, search });
 }
@@ -140,6 +148,8 @@ module.exports = {
     createCrianca,
     createCongregado,
     createMembro,
+    updateMembro,
+    deleteMembro,
     createOracao,
     createVisitante,
     deleteCrianca,

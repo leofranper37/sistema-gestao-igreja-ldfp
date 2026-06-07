@@ -22,6 +22,8 @@ const {
     createCrianca,
     createCongregado,
     createMembro,
+    updateMembro,
+    deleteMembro,
     createOracao,
     createVisitante,
     deleteCrianca,
@@ -49,6 +51,8 @@ router.get('/health', getHealth);
 
 router.get('/membros', requireAuth, authorize(['admin', 'secretaria', 'pastor', 'oficial', 'ministerio']), validateQuery(membroFiltroSchema), listMembros);
 router.post('/membros', requireAuth, authorize(['admin', 'secretaria']), validateBody(membroSchema), createMembro);
+router.put('/membros/:id', requireAuth, authorize(['admin', 'secretaria']), validateBody(membroSchema), updateMembro);
+router.delete('/membros/:id', requireAuth, authorize(['admin', 'secretaria']), deleteMembro);
 router.get('/visitantes', requireAuth, authorize(['admin', 'secretaria', 'pastor', 'oficial']), validateQuery(visitanteFiltroSchema), listVisitantes);
 router.post('/visitantes', requireAuth, authorize(['admin', 'secretaria', 'oficial']), validateBody(visitanteSchema), createVisitante);
 router.put('/visitantes/:id', requireAuth, authorize(['admin', 'secretaria', 'oficial']), validateBody(visitanteSchema), updateVisitante);

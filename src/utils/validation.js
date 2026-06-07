@@ -68,6 +68,8 @@ const membroSchema = Joi.object({
     nacionalidade: Joi.string().trim().max(100).allow('', null),
     naturalidade: Joi.string().trim().max(255).allow('', null),
     fotoUrl: Joi.string().trim().max(255).allow('', null),
+    situacao: Joi.string().trim().max(50).allow('', null),
+    observacoes: Joi.string().trim().allow('', null),
     acesso_app_midia: Joi.alternatives().try(
         Joi.boolean(),
         Joi.number().valid(0, 1),

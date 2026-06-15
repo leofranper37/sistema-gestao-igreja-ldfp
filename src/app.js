@@ -122,7 +122,12 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false
 }));
 
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({
+    limit: '1mb',
+    verify: (req, _res, buf) => {
+        req.rawBody = buf;
+    }
+}));
 app.use(csrfGuard);
 app.use((req, res, next) => {
     if (process.env.NODE_ENV !== 'production') {

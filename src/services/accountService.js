@@ -1,8 +1,11 @@
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
 const config = require('../config');
 const accountModel = require('../models/accountModel');
+const { sendMail } = require('../utils/mailer');
+const { createHttpError } = require('../utils/httpError');
 
 function normalizePlanoSlug(plano) {
     const normalized = String(plano || '').trim().toLowerCase();

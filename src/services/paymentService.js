@@ -114,7 +114,10 @@ async function gerarPix({ igrejaId, nomeIgreja, emailPagador, planoSlug, ciclo }
     const hasMpToken = !!mpToken && !mpToken.startsWith('APP_USR-COLE');
 
     if (!hasMpToken) {
-        const manualPixKey = process.env.PIX_KEY || process.env.PIX_CHAVE || process.env.MP_PIX_KEY || 'leopereita31@gmail.com';
+        const manualPixKey = process.env.PIX_KEY || process.env.PIX_CHAVE || process.env.MP_PIX_KEY;
+        if (!manualPixKey) {
+            throw new Error('Chave PIX não configurada. Defina PIX_KEY no .env/painel de deploy.');
+        }
         const receiverName = process.env.PIX_RECEIVER_NAME || 'LDFP SISTEMA';
         const receiverCity = process.env.PIX_RECEIVER_CITY || 'SAO PAULO';
 
@@ -270,22 +273,32 @@ async function processarWebhook({ mpPaymentId, status, externalReference }) {
     const agora = new Date();
     const proximoVencimento = new Date(agora.getTime() + link.plano_duracao_dias * 24 * 60 * 60 * 1000);
 
-    // Ativa a assinatura da igreja
-    await pool.query(
-        `UPDATE igrejas SET
-            plano = ?,
-            status_assinatura = 'ativa',
-            ultimo_pagamento = NOW(),
-            proximo_vencimento = ?
-         WHERE id = ?`,
-        [link.plano_destino || link.plano_destino, proximoVencimento.toISOString(), link.igreja_id]
-    );
+    const conn = await pool.getConnection();
+    try {
+        await conn.query('BEGIN');
 
-    // Marca o link como pago
-    await pool.query(
-        `UPDATE payment_links SET status = 'pago', paid_at = NOW(), mp_payment_id = ? WHERE id = ?`,
-        [String(mpPaymentId), link.id]
-    );
+        await conn.query(
+            `UPDATE igrejas SET
+                plano = ?,
+                status_assinatura = 'ativa',
+                ultimo_pagamento = NOW(),
+                proximo_vencimento = ?
+             WHERE id = ?`,
+            [link.plano_destino, proximoVencimento.toISOString(), link.igreja_id]
+        );
+
+        await conn.query(
+            `UPDATE payment_links SET status = 'pago', paid_at = NOW(), mp_payment_id = ? WHERE id = ?`,
+            [String(mpPaymentId), link.id]
+        );
+
+        await conn.query('COMMIT');
+    } catch (err) {
+        await conn.query('ROLLBACK').catch(() => {});
+        throw err;
+    } finally {
+        conn.release();
+    }
 
     return { activated: true, igrejaId: link.igreja_id, plano: link.plano_destino };
 }

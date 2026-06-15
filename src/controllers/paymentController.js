@@ -136,7 +136,7 @@ async function webhookMercadoPago(req, res) {
             const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
             const expected = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
 
-            if (v1 && v1 !== expected) {
+            if (!v1 || v1 !== expected) {
                 return res.sendStatus(401);
             }
         } catch (_) {

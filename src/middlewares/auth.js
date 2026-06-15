@@ -4,17 +4,23 @@ const { pool } = require('../config/db');
 const moduleAccessService = require('../services/moduleAccessService');
 const { createHttpError } = require('../utils/httpError');
 
-async function requireAuth(req, res, next) {
+async function resolveToken(req, allowQueryParam = false) {
     const authorization = req.headers.authorization || '';
-    const queryToken = typeof req.query?.token === 'string' ? req.query.token.trim() : '';
+    if (authorization.startsWith('Bearer ')) {
+        return authorization.slice('Bearer '.length).trim();
+    }
+    if (allowQueryParam && typeof req.query?.token === 'string') {
+        return req.query.token.trim();
+    }
+    return null;
+}
 
-    if (!authorization.startsWith('Bearer ') && !queryToken) {
+async function requireAuth(req, res, next) {
+    const token = await resolveToken(req, false);
+
+    if (!token) {
         return next(createHttpError(401, 'Token de acesso não informado.'));
     }
-
-    const token = authorization.startsWith('Bearer ')
-        ? authorization.slice('Bearer '.length).trim()
-        : queryToken;
 
     try {
         const payload = jwt.verify(token, config.security.jwtSecret);
@@ -69,6 +75,24 @@ async function requireAuth(req, res, next) {
     }
 }
 
+async function requireAuthSSE(req, res, next) {
+    const token = await resolveToken(req, true);
+
+    if (!token) {
+        return next(createHttpError(401, 'Token de acesso não informado.'));
+    }
+
+    // Reutiliza o mesmo fluxo de validação substituindo o token resolvido
+    const fakeReq = Object.assign(Object.create(req), req, {
+        headers: { ...req.headers, authorization: `Bearer ${token}` },
+    });
+
+    return requireAuth(fakeReq, res, (err) => {
+        if (!err) req.auth = fakeReq.auth;
+        next(err);
+    });
+}
+
 function authorize(allowedRoles = []) {
     const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
 
@@ -89,4 +113,4 @@ function authorize(allowedRoles = []) {
     };
 }
 
-module.exports = { authorize, requireAuth };
+module.exports = { authorize, requireAuth, requireAuthSSE };

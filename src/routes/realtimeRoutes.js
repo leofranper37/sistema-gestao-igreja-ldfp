@@ -1,10 +1,10 @@
 const express = require('express');
 
-const { requireAuth } = require('../middlewares/auth');
+const { requireAuthSSE } = require('../middlewares/auth');
 const { streamEvents } = require('../controllers/realtimeController');
 
 const router = express.Router();
 
-router.get('/realtime/events', requireAuth, streamEvents);
+router.get('/realtime/events', requireAuthSSE, streamEvents);
 
 module.exports = router;

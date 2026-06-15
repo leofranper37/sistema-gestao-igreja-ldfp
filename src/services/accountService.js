@@ -104,17 +104,22 @@ async function login(payload) {
     return buildAuthResponse(userRecord);
 }
 
+function hashResetToken(rawToken) {
+    return crypto.createHash('sha256').update(rawToken).digest('hex');
+}
+
 async function requestPasswordReset(email) {
     const userRecord = await accountModel.findUserByEmail(email);
     if (!userRecord) return; // silencia: não revela se e-mail existe
 
-    const token = crypto.randomBytes(32).toString('hex');
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = hashResetToken(rawToken);
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
-    await accountModel.createPasswordResetToken(userRecord.id, token, expiresAt);
+    await accountModel.createPasswordResetToken(userRecord.id, tokenHash, expiresAt);
 
     const baseUrl = process.env.APP_BASE_URL || process.env.APP_PUBLIC_BASE_URL || 'https://ldfp.com.br';
-    const link = `${baseUrl}/redefinir_senha.html?token=${token}`;
+    const link = `${baseUrl}/redefinir_senha.html?token=${rawToken}`;
 
     await sendMail({
         to: email,
@@ -134,7 +139,8 @@ async function requestPasswordReset(email) {
 }
 
 async function resetPassword(token, novaSenha) {
-    const record = await accountModel.findPasswordResetToken(token);
+    const tokenHash = hashResetToken(token);
+    const record = await accountModel.findPasswordResetToken(tokenHash);
     if (!record) {
         throw createHttpError(400, 'Token inválido ou já utilizado.');
     }
@@ -146,7 +152,7 @@ async function resetPassword(token, novaSenha) {
 
     const passwordHash = await bcrypt.hash(novaSenha, config.security.passwordSaltRounds);
     await accountModel.updateUserPassword(record.usuario_id, passwordHash);
-    await accountModel.markTokenUsed(token);
+    await accountModel.markTokenUsed(tokenHash);
 }
 
 module.exports = {

@@ -277,6 +277,20 @@ async function processarWebhook({ mpPaymentId, status, externalReference }) {
     try {
         await conn.query('BEGIN');
 
+        // Atomic idempotency guard: only the first concurrent webhook to reach
+        // this UPDATE will get affectedRows = 1. All others find status already
+        // 'pago' and get affectedRows = 0, preventing double-activation.
+        const [markResult] = await conn.query(
+            `UPDATE payment_links SET status = 'pago', paid_at = NOW(), mp_payment_id = ?
+             WHERE id = ? AND status != 'pago'`,
+            [String(mpPaymentId), link.id]
+        );
+
+        if (!markResult.affectedRows) {
+            await conn.query('COMMIT');
+            return { activated: true, reason: 'already_processed' };
+        }
+
         await conn.query(
             `UPDATE igrejas SET
                 plano = ?,
@@ -285,11 +299,6 @@ async function processarWebhook({ mpPaymentId, status, externalReference }) {
                 proximo_vencimento = ?
              WHERE id = ?`,
             [link.plano_destino, proximoVencimento.toISOString(), link.igreja_id]
-        );
-
-        await conn.query(
-            `UPDATE payment_links SET status = 'pago', paid_at = NOW(), mp_payment_id = ? WHERE id = ?`,
-            [String(mpPaymentId), link.id]
         );
 
         await conn.query('COMMIT');

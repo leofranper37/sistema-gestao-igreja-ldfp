@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken');
 const config = require('./config');
 const logger = require('./config/logger');
 const errorHandler = require('./middlewares/errorHandler');
+const csrfGuard = require('./middlewares/csrfGuard');
 const { createHttpError } = require('./utils/httpError');
 const { requireAuth, authorize } = require('./middlewares/auth');
 const accountRoutes = require('./routes/accountRoutes');
@@ -122,6 +123,7 @@ app.use(helmet({
 }));
 
 app.use(express.json({ limit: '1mb' }));
+app.use(csrfGuard);
 app.use((req, res, next) => {
     if (process.env.NODE_ENV !== 'production') {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');

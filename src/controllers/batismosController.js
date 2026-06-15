@@ -171,7 +171,7 @@ async function deleteBatismo(req, res) {
     );
     if (!existing) return res.status(404).json({ message: 'Batismo não encontrado.' });
 
-    await pool.query('DELETE FROM batismo_candidatos WHERE batismo_id = ?', [id]);
+    await pool.query('DELETE FROM batismo_candidatos WHERE batismo_id = ? AND igreja_id = ?', [id, igrejaId]);
     await pool.query('DELETE FROM batismos WHERE id = ? AND igreja_id = ?', [id, igrejaId]);
     audit('batismo.delete', req, { id });
     return res.json({ message: 'Batismo excluído com sucesso.' });
@@ -257,7 +257,7 @@ async function deleteCandidato(req, res) {
     );
     if (!cand) return res.status(404).json({ message: 'Candidato não encontrado.' });
 
-    await pool.query('DELETE FROM batismo_candidatos WHERE id = ?', [cid]);
+    await pool.query('DELETE FROM batismo_candidatos WHERE id = ? AND igreja_id = ?', [cid, igrejaId]);
     audit('batismo.deleteCandidato', req, { batismoId, candidatoId: cid });
     return res.json({ message: 'Candidato removido.' });
 }

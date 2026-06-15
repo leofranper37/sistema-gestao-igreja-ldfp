@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const { pool } = require('../config/db');
 
 // ─── Helpers ─────────────────────────────────────────────
 function fmtDate(d) {
@@ -455,7 +455,7 @@ exports.updateApontamento = async (req, res) => {
             return res.status(404).json({ error: 'Apontamento não encontrado' });
         }
 
-        await conn.query('DELETE FROM ebd_presenca WHERE apontamento_id = ?', [id]);
+        await conn.query('DELETE FROM ebd_presenca WHERE apontamento_id = ? AND igreja_id = ?', [id, churchId]);
         for (const a of alunos) {
             if (!a.id) continue;
             await conn.query(
@@ -480,10 +480,16 @@ exports.deleteApontamento = async (req, res) => {
     const conn = await pool.getConnection();
     try {
         await conn.beginTransaction();
-        await conn.query('DELETE FROM ebd_presenca WHERE apontamento_id = ?', [id]);
-        const [info] = await conn.query('DELETE FROM ebd_apontamentos WHERE id = ? AND igreja_id = ?', [id, churchId]);
+        // Verify ownership before any mutation
+        const [[ap]] = await conn.query(
+            'SELECT id FROM ebd_apontamentos WHERE id = ? AND igreja_id = ? LIMIT 1', [id, churchId]);
+        if (!ap) {
+            await conn.rollback();
+            return res.status(404).json({ error: 'Apontamento não encontrado' });
+        }
+        await conn.query('DELETE FROM ebd_presenca WHERE apontamento_id = ? AND igreja_id = ?', [id, churchId]);
+        await conn.query('DELETE FROM ebd_apontamentos WHERE id = ? AND igreja_id = ?', [id, churchId]);
         await conn.commit();
-        if (!info.affectedRows) return res.status(404).json({ error: 'Apontamento não encontrado' });
         res.json({ ok: true });
     } catch (err) {
         await conn.rollback();

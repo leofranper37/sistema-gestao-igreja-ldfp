@@ -1,0 +1,319 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist de Segurança — LDFP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0c1320;
+    --ink-2:#121b2c;
+    --card:#16223a;
+    --card-hi:#1c2a47;
+    --line:#26344f;
+    --text:#e9eef7;
+    --muted:#8b9bb6;
+    --faint:#6b7c98;
+    --teal:#34d6c0;
+    --teal-dim:#1f6f66;
+    --amber:#f0a84b;
+    --red:#f06a6a;
+    --blue:#6aa8f0;
+    --gold:#d8b25e;
+    --done:#34d6c0;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(52,214,192,.08), transparent 60%),
+      radial-gradient(900px 500px at -5% 10%, rgba(106,168,240,.06), transparent 55%),
+      var(--ink);
+    color:var(--text);
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:40px 22px 80px}
+
+  /* Header */
+  .head{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .eyebrow{font-family:'Space Grotesk';font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);font-weight:600;margin:0 0 8px}
+  h1{font-family:'Space Grotesk';font-weight:700;font-size:clamp(26px,5vw,38px);line-height:1.05;margin:0 0 8px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0;max-width:48ch;font-size:15px}
+
+  /* Shield meter */
+  .shield{position:relative;width:108px;height:108px;flex:0 0 auto}
+  .shield svg{display:block;transform:rotate(-90deg)}
+  .shield .pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:none}
+  .shield .pctnum{font-family:'Space Grotesk';font-weight:700;font-size:24px;line-height:1}
+  .shield .pctlbl{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-top:3px}
+
+  .meta{display:flex;gap:18px;flex-wrap:wrap;margin:18px 0 30px;padding:14px 18px;background:linear-gradient(180deg,var(--ink-2),transparent);border:1px solid var(--line);border-radius:var(--radius)}
+  .meta div{font-size:13px;color:var(--muted)}
+  .meta b{color:var(--text);font-family:'Space Grotesk';font-weight:600}
+  .reset{margin-left:auto;background:none;border:1px solid var(--line);color:var(--faint);font-size:12px;padding:7px 12px;border-radius:8px;cursor:pointer;font-family:inherit}
+  .reset:hover{border-color:var(--red);color:var(--red)}
+
+  /* Tier */
+  .tier{margin-bottom:34px}
+  .tier-h{display:flex;align-items:baseline;gap:12px;margin:0 0 4px}
+  .tier-tag{font-family:'Space Grotesk';font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:4px 9px;border-radius:6px}
+  .t-crit .tier-tag{color:#ffd9b0;background:rgba(240,106,106,.14);border:1px solid rgba(240,106,106,.35)}
+  .t-imp .tier-tag{color:#ffe6c0;background:rgba(240,168,75,.12);border:1px solid rgba(240,168,75,.32)}
+  .t-legal .tier-tag{color:#cfe1ff;background:rgba(106,168,240,.12);border:1px solid rgba(106,168,240,.3)}
+  .t-infra .tier-tag{color:#cdeee8;background:rgba(52,214,192,.1);border:1px solid rgba(52,214,192,.3)}
+  .tier-h h2{font-family:'Space Grotesk';font-weight:600;font-size:18px;margin:0}
+  .tier-note{color:var(--faint);font-size:13px;margin:0 0 14px}
+  .tier-count{margin-left:auto;font-size:12px;color:var(--faint);font-family:'Space Grotesk'}
+
+  /* Item */
+  .item{border:1px solid var(--line);border-radius:var(--radius);margin-bottom:10px;background:var(--card);overflow:hidden;transition:border-color .2s}
+  .item.open{border-color:var(--card-hi)}
+  .item.done{background:linear-gradient(90deg,rgba(52,214,192,.06),var(--card) 60%);border-color:rgba(52,214,192,.22)}
+  .row{display:flex;gap:14px;padding:15px 16px;align-items:flex-start;cursor:pointer}
+  .box{flex:0 0 auto;width:22px;height:22px;border-radius:7px;border:2px solid var(--line);margin-top:1px;display:grid;place-items:center;transition:.18s;background:var(--ink-2)}
+  .box svg{width:13px;height:13px;opacity:0;transform:scale(.5);transition:.18s}
+  .item.done .box{background:var(--done);border-color:var(--done)}
+  .item.done .box svg{opacity:1;transform:scale(1)}
+  .itxt{flex:1;min-width:0}
+  .ititle{font-weight:600;font-size:15px;color:var(--text);transition:.18s}
+  .item.done .ititle{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--teal-dim)}
+  .iwhy{color:var(--muted);font-size:13.5px;margin-top:3px}
+  .chev{flex:0 0 auto;color:var(--faint);font-size:18px;line-height:1;margin-top:2px;transition:transform .2s;user-select:none}
+  .item.open .chev{transform:rotate(90deg)}
+  .badge-done{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);font-family:'Space Grotesk';font-weight:600;border:1px solid var(--teal-dim);border-radius:5px;padding:2px 6px;margin-left:8px;white-space:nowrap;display:none}
+  .item.done .badge-done{display:inline-block}
+
+  .detail{max-height:0;overflow:hidden;transition:max-height .28s ease}
+  .detail-in{padding:0 16px 16px 52px}
+  .cc-label{font-family:'Space Grotesk';font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:6px 0 7px;display:flex;align-items:center;gap:6px}
+  .prompt{background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13px;color:#d4def0;position:relative;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;line-height:1.55}
+  .copy{position:absolute;top:9px;right:9px;background:var(--card-hi);border:1px solid var(--line);color:var(--muted);font-size:11px;padding:5px 9px;border-radius:7px;cursor:pointer;font-family:'Space Grotesk';letter-spacing:.04em}
+  .copy:hover{color:var(--teal);border-color:var(--teal-dim)}
+  .copy.ok{color:var(--teal);border-color:var(--teal)}
+
+  .foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);color:var(--faint);font-size:12.5px;text-align:center}
+  .loading{color:var(--faint);text-align:center;padding:40px;font-size:14px}
+
+  @media (max-width:560px){
+    .detail-in{padding-left:16px}
+    .meta{flex-direction:column;gap:10px}
+    .reset{margin-left:0}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="head">
+    <div style="flex:1;min-width:240px">
+      <p class="eyebrow">LDFP · Antes de comercializar</p>
+      <h1>Checklist de Segurança</h1>
+      <p class="sub">A blindagem do seu sistema, em ordem de prioridade. Marque o que já está feito — seu progresso fica salvo neste navegador.</p>
+    </div>
+    <div class="shield" title="Progresso">
+      <svg width="108" height="108" viewBox="0 0 108 108">
+        <circle cx="54" cy="54" r="48" fill="none" stroke="#26344f" stroke-width="8"/>
+        <circle id="ring" cx="54" cy="54" r="48" fill="none" stroke="#34d6c0" stroke-width="8" stroke-linecap="round" stroke-dasharray="301.6" stroke-dashoffset="301.6"/>
+      </svg>
+      <div class="pct"><span class="pctnum" id="pctnum">0%</span><span class="pctlbl" id="pctcount">0 / 0</span></div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div>Foco do momento: <b>terminar o Tier Crítico</b></div>
+    <div>Dado tratado: <b>religioso + financeiro (LGPD sensível)</b></div>
+    <button class="reset" id="resetBtn">Limpar marcações</button>
+  </div>
+
+  <div id="list"><div class="loading">Carregando seu progresso…</div></div>
+
+  <div class="foot">
+    Não sou advogado — os itens de LGPD apontam o terreno, mas confirme com um profissional antes de vender.<br>
+    Marque cada item conforme o Claude Code concluir a tarefa no seu código.
+  </div>
+</div>
+
+<script>
+const CHECK = `<svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7" stroke="#0c1320" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const DATA = [
+  { tier:"crit", tag:"Tier 1 · Crítico", title:"Crítico — resolver antes da primeira venda",
+    note:"Sem isto, um único bug ou vazamento vira problema legal seu e da igreja.", items:[
+    { id:"c1", t:"Isolamento entre igrejas (multi-tenancy)", w:"Toda consulta ao banco precisa filtrar pelo ID da igreja. É o risco nº 1 de um SaaS: a igreja A enxergar dados da igreja B.",
+      cc:"Audite todas as queries do projeto e garanta que cada uma filtra obrigatoriamente pelo igreja_id da sessão. Liste qualquer consulta que não tenha esse filtro. Depois crie um teste que loga como Igreja A e tenta acessar dados da Igreja B — deve sempre falhar." },
+    { id:"c2", t:"Rotacionar segredos que já foram commitados", w:"A chave PIX, senha de banco ou JWT secret que já apareceram no código continuam no histórico do Git mesmo depois de removidos. Gere segredos novos.", done:false,
+      cc:"Verifique no histórico do Git se alguma chave PIX, senha de banco, JWT secret ou chave de API já foi commitada alguma vez (use git log -p e busca por padrões de segredo). Liste o que encontrar para eu rotacionar cada um manualmente." },
+    { id:"c3", t:"Senhas com hash forte (bcrypt custo 12)", w:"Senhas nunca em texto puro. Você já estava subindo o bcrypt de 10 para 12 — bom equilíbrio para hospedagem compartilhada.",
+      cc:"Confirme que todas as senhas usam bcrypt (ou argon2) com custo 12 no hash e na verificação, e que não há nenhum ponto guardando senha em texto puro ou criptografia reversível." },
+    { id:"c4", t:"JWT seguro: fora da query string, expiração curta", w:"Token em query string vaza em logs e histórico (você já corrigiu). Garanta secret forte no .env e expiração curta + refresh.", done:true,
+      cc:"Revise o fluxo de JWT: o token deve ir só no header Authorization (nunca em query string ou URL), com expiração curta e um secret forte vindo do .env. Mostre onde o token é emitido e validado." },
+    { id:"c5", t:".env fora do Git e segredos só em variáveis de ambiente", w:"Nenhum segredo escrito direto no código. Tudo no .env, e o .env listado no .gitignore.",
+      cc:"Garanta que existe um .gitignore ignorando .env e qualquer arquivo de segredo, e que nenhum segredo (chave, senha, token) está escrito direto no código — todos devem vir de process.env." },
+    { id:"c6", t:"HTTPS forçado em todo o sistema", w:"Seu SSL já está ativo na Napoleon. Falta garantir que todo acesso http seja redirecionado para https.",
+      cc:"Adicione um redirecionamento forçado de http para https em todas as rotas, e o header HSTS. Meu SSL já está ativo no cPanel." , done:true },
+    { id:"c7", t:"2FA obrigatório para contas admin / super-admin", w:"Quem tem acesso a tudo precisa de segundo fator. Se o login do admin vazar, sem 2FA cai o sistema inteiro.",
+      cc:"Implemente autenticação em dois fatores (2FA via app TOTP) obrigatória para contas de administrador e super-admin. Usuários comuns podem ter como opcional." },
+    { id:"c8", t:"Proteção contra força bruta no login", w:"Limitar tentativas de login por IP/conta e bloquear temporariamente após várias falhas.",
+      cc:"Adicione rate limiting e bloqueio temporário no endpoint de login após X tentativas falhas, por IP e por conta, para barrar ataques de força bruta." },
+  ]},
+  { tier:"imp", tag:"Tier 2 · Importante", title:"Importante — fortalece e te protege no dia a dia",
+    note:"Vários destes você já fez. Confirme e marque.", items:[
+    { id:"i1", t:"Controle de acesso por papel (RBAC)", w:"Você já tem authorize(allowedRoles). Garanta que tesoureiro não vê o pastoral, secretário não mexe no financeiro, etc.",
+      cc:"Liste todos os papéis (roles) do sistema e quais rotas/recursos cada um acessa. Verifique se o authorize() está aplicado em TODAS as rotas sensíveis e aponte qualquer rota desprotegida." },
+    { id:"i2", t:"Validação e sanitização de input (SQL injection / XSS)", w:"Use sempre queries parametrizadas e valide tudo que vem do usuário antes de usar ou exibir.",
+      cc:"Verifique se todas as queries usam parâmetros (nada de concatenar string SQL) e se os dados do usuário são validados/sanitizados antes de salvar e antes de exibir. Aponte qualquer ponto vulnerável a SQL injection ou XSS." },
+    { id:"i3", t:"Proteção CSRF", w:"Você já implementou. Confirme que cobre todas as ações que alteram dados.", done:true,
+      cc:"Confirme que a proteção CSRF cobre todas as rotas que alteram dados (POST/PUT/DELETE) e que nenhuma ficou de fora." },
+    { id:"i4", t:"Idempotência em pagamentos", w:"Já feito. Garante que um webhook repetido não gera cobrança/registro duplicado.", done:true,
+      cc:"Confirme que o processamento de pagamento e webhooks é idempotente: receber o mesmo evento duas vezes não pode duplicar cobrança nem registro." },
+    { id:"i5", t:"Assinatura de webhook validada", w:"Já feito. Só aceitar webhooks com assinatura válida do provedor.", done:true,
+      cc:"Confirme que todo webhook recebido tem a assinatura validada antes de ser processado, e que requisições sem assinatura válida são rejeitadas." },
+    { id:"i6", t:"Trilha de auditoria (logs)", w:"Registrar quem acessou/alterou o quê e quando. É exigência prática da LGPD e te salva em disputas.",
+      cc:"Crie uma tabela/serviço de auditoria que registra usuário, ação, recurso afetado, igreja e data/hora nas operações sensíveis (criar/editar/excluir membros, lançamentos financeiros, acessos admin)." },
+    { id:"i7", t:"Backup próprio, criptografado e testado", w:"A Napoleon faz backup diário (JetBackup), mas baixe uma cópia sua, criptografada, fora do servidor — e teste restaurar.",
+      cc:"Crie um script que exporta o banco, criptografa o arquivo e me lembra de baixar para um local externo. Documente o passo a passo de como restaurar esse backup para eu testar." },
+    { id:"i8", t:"Não expor dados demais nas respostas da API", w:"Nunca retornar hash de senha, tokens ou campos internos. A API deve devolver só o necessário.",
+      cc:"Revise as respostas das rotas e garanta que nenhuma devolve hash de senha, tokens, segredos ou campos internos. Cada endpoint deve retornar só os campos necessários." },
+  ]},
+  { tier:"legal", tag:"Tier 3 · LGPD / Legal", title:"LGPD e contratos — obrigatório antes de vender",
+    note:"Dado religioso é sensível pela LGPD. Estes itens são jurídicos, não de código.", items:[
+    { id:"l1", t:"Política de Privacidade publicada", w:"Explica que dados você coleta, por quê, por quanto tempo, e os direitos do titular.",
+      cc:"Crie um rascunho de Política de Privacidade para um SaaS de gestão de igrejas que trata dados pessoais sensíveis (religião), CPF e dados financeiros, conforme a LGPD. Vou revisar com um advogado depois." },
+    { id:"l2", t:"Termos de Uso", w:"Regras de uso do sistema, responsabilidades, limites e cancelamento.",
+      cc:"Crie um rascunho de Termos de Uso para o LDFP cobrindo planos, cobrança, cancelamento, responsabilidades e uso aceitável. Para revisão jurídica posterior." },
+    { id:"l3", t:"Contrato de tratamento de dados com cada igreja", w:"Juridicamente você é o operador e a igreja é a controladora. Essa divisão precisa estar no papel.",
+      cc:"Explique a diferença entre controlador e operador de dados na LGPD para o meu caso (eu hospedo o sistema, a igreja é dona dos dados dos membros) e rascunhe as cláusulas-chave de um contrato de tratamento de dados entre nós." },
+    { id:"l4", t:"Canal para o membro acessar/exportar/excluir dados", w:"O titular tem direito de pedir seus dados ou a exclusão. Precisa existir um caminho para isso.",
+      cc:"Implemente uma forma do titular (membro) solicitar exportação e exclusão dos próprios dados, e da igreja administrar esses pedidos, atendendo aos direitos do titular na LGPD." },
+    { id:"l5", t:"Plano de resposta a incidente de vazamento", w:"O que fazer, quem avisar e em quanto tempo se houver um vazamento. Defina antes de precisar.",
+      cc:"Monte um plano simples de resposta a incidente de segurança/vazamento: passos imediatos, como avaliar o impacto, quem notificar (igrejas, titulares, ANPD) e prazos." },
+  ]},
+  { tier:"infra", tag:"Tier 4 · Infraestrutura", title:"Infraestrutura — quando começar a escalar",
+    note:"Você está em hospedagem compartilhada (Shared IP). Funciona para começar; planeje a saída.", items:[
+    { id:"f1", t:"Migrar para VPS quando crescer", w:"Compartilhado serve para iniciar. Com muitas igrejas e dado sensível concentrado, um VPS (IP dedicado, acesso root, isolamento real) passa a ser o certo. A Napoleon já oferece.",
+      cc:"" },
+    { id:"f2", t:"Firewall de aplicação ativo (Imunify360 / ModSecurity)", w:"A Napoleon oferece. Confirme que está ativo na sua conta cPanel.",
+      cc:"" },
+    { id:"f3", t:"Monitoramento e alertas", w:"Saber rápido quando algo cai, lota ou recebe ataque — uptime e erros.",
+      cc:"Sugira uma forma simples de monitorar uptime e erros do sistema com alerta por e-mail/WhatsApp, viável em hospedagem cPanel." },
+    { id:"f4", t:"Criptografar campos sensíveis no banco (ex: CPF)", w:"Além do HTTPS no transporte, criptografar CPF e afins em repouso reduz o estrago de um vazamento de banco.",
+      cc:"Avalie criptografar em repouso os campos mais sensíveis (CPF) no banco, mantendo a busca viável, e mostre o impacto no código atual." },
+  ]},
+];
+
+const KEY = "ldfp_sec_checklist_v1";
+let state = {};
+const TIER_CLASS = {crit:"t-crit", imp:"t-imp", legal:"t-legal", infra:"t-infra"};
+
+function defaults(){
+  const d={};
+  DATA.forEach(g=>g.items.forEach(i=>{ if(i.done) d[i.id]=true; }));
+  return d;
+}
+
+async function load(){
+  let stored=null;
+  try{ const r=await window.storage.get(KEY); if(r&&r.value) stored=JSON.parse(r.value); }catch(e){ stored=null; }
+  state = stored || defaults();
+  render();
+}
+async function save(){
+  try{ await window.storage.set(KEY, JSON.stringify(state)); }catch(e){}
+}
+
+function totals(){
+  let total=0, done=0;
+  DATA.forEach(g=>g.items.forEach(i=>{ total++; if(state[i.id]) done++; }));
+  return {total, done};
+}
+
+function updateMeter(){
+  const {total,done}=totals();
+  const pct = total? Math.round(done/total*100):0;
+  const C=301.6;
+  document.getElementById("ring").style.strokeDashoffset = C - C*(pct/100);
+  document.getElementById("pctnum").textContent = pct+"%";
+  document.getElementById("pctcount").textContent = done+" / "+total;
+}
+
+function render(){
+  const list=document.getElementById("list");
+  list.innerHTML="";
+  DATA.forEach(g=>{
+    const done=g.items.filter(i=>state[i.id]).length;
+    const tier=document.createElement("section");
+    tier.className="tier "+TIER_CLASS[g.tier];
+    const head=document.createElement("div");
+    head.className="tier-h";
+    head.innerHTML=`<span class="tier-tag">${g.tag}</span><h2>${g.title.split(" — ")[1]||g.title}</h2><span class="tier-count">${done}/${g.items.length}</span>`;
+    tier.appendChild(head);
+    const note=document.createElement("p"); note.className="tier-note"; note.textContent=g.note; tier.appendChild(note);
+
+    g.items.forEach(it=>{
+      const el=document.createElement("div");
+      el.className="item"+(state[it.id]?" done":"");
+      const hasCC = it.cc && it.cc.trim().length;
+      el.innerHTML=`
+        <div class="row">
+          <div class="box" data-check>${CHECK}</div>
+          <div class="itxt">
+            <div class="ititle">${it.t}<span class="badge-done">feito</span></div>
+            <div class="iwhy">${it.w}</div>
+          </div>
+          ${hasCC?'<span class="chev">›</span>':''}
+        </div>
+        ${hasCC?`<div class="detail"><div class="detail-in">
+          <div class="cc-label">▸ Pedir ao Claude Code</div>
+          <div class="prompt"><button class="copy">copiar</button>${it.cc}</div>
+        </div></div>`:''}`;
+
+      // toggle done (clicking checkbox area)
+      el.querySelector("[data-check]").addEventListener("click",(e)=>{
+        e.stopPropagation();
+        state[it.id]=!state[it.id];
+        el.classList.toggle("done");
+        save(); updateMeter(); refreshCounts();
+      });
+      // expand on row click (not on checkbox)
+      if(hasCC){
+        const row=el.querySelector(".row");
+        const detail=el.querySelector(".detail");
+        row.addEventListener("click",(e)=>{
+          if(e.target.closest("[data-check]")) return;
+          const open=el.classList.toggle("open");
+          detail.style.maxHeight = open ? detail.scrollHeight+"px" : "0";
+        });
+        const copyBtn=el.querySelector(".copy");
+        copyBtn.addEventListener("click",(e)=>{
+          e.stopPropagation();
+          navigator.clipboard.writeText(it.cc).then(()=>{
+            copyBtn.textContent="copiado ✓"; copyBtn.classList.add("ok");
+            setTimeout(()=>{copyBtn.textContent="copiar";copyBtn.classList.remove("ok");},1600);
+          });
+        });
+      }
+      tier.appendChild(el);
+    });
+    list.appendChild(tier);
+  });
+  updateMeter();
+}
+
+function refreshCounts(){
+  document.querySelectorAll(".tier").forEach((sec,gi)=>{
+    const g=DATA[gi];
+    const done=g.items.filter(i=>state[i.id]).length;
+    sec.querySelector(".tier-count").textContent=done+"/"+g.items.length;
+  });
+}
+
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  state=defaults(); save();
+  document.querySelectorAll(".item.open").forEach(el=>{el.classList.remove("open");const d=el.querySelector(".detail");if(d)d.style.maxHeight="0";});
+  render(); refreshCounts();
+});
+
+load();
+</script>

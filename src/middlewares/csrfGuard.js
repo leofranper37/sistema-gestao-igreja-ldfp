@@ -15,13 +15,16 @@ function csrfGuard(req, res, next) {
     // External webhooks (Mercado Pago, GitHub deploy) send their own format
     if (EXTERNAL_WEBHOOK_PREFIXES.some(p => req.originalUrl.startsWith(p))) return next();
 
-    // Enforce JSON body — HTML form POSTs from foreign origins use
-    // application/x-www-form-urlencoded or multipart/form-data, not JSON.
-    // A cross-origin fetch with Content-Type: application/json triggers a
-    // CORS preflight, which the server's allowlist already blocks.
-    const ct = req.headers['content-type'] || '';
-    if (!ct.startsWith('application/json') && !ct.startsWith('multipart/form-data')) {
-        return res.status(415).json({ error: 'Content-Type inválido. Use application/json.' });
+    // Content-Type check: only relevant for requests that carry a body.
+    // DELETE rarely has a body, so skip it — the Origin check below still applies.
+    // HTML form POSTs from foreign origins use x-www-form-urlencoded / multipart,
+    // not JSON. A cross-origin fetch with Content-Type: application/json triggers
+    // a CORS preflight, which the server's allowlist already blocks.
+    if (['POST', 'PUT', 'PATCH'].includes(method)) {
+        const ct = req.headers['content-type'] || '';
+        if (!ct.startsWith('application/json') && !ct.startsWith('multipart/form-data')) {
+            return res.status(415).json({ error: 'Content-Type inválido. Use application/json.' });
+        }
     }
 
     // When the Origin header is present and allowedOrigins is configured,

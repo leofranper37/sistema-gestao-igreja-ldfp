@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const { pool } = require('../config/db');
 
 // ───────────────────────────────────────────────
 // Helpers
@@ -211,7 +211,14 @@ exports.deleteEvento = async (req, res) => {
     const conn = await pool.getConnection();
     try {
         await conn.beginTransaction();
-        // Atribuições → Instâncias → Funções evento → Evento
+        // Verify ownership before any mutation — prevents cross-tenant cascade deletion
+        const [[ev]] = await conn.query(
+            'SELECT id FROM escalas_eventos WHERE id = ? AND church_id = ? LIMIT 1', [id, churchId]);
+        if (!ev) {
+            await conn.rollback();
+            return res.status(404).json({ error: 'Evento não encontrado' });
+        }
+        // Cascade in reverse dependency order (ownership confirmed above)
         await conn.query(
             `DELETE a FROM escalas_atribuicoes a
              JOIN escalas_instancias i ON i.id = a.instance_id

@@ -319,20 +319,22 @@ const pool = {
 
         if (activePgPool) {
             const client = await activePgPool.connect();
-            return {
-                query: async (sql, qParams = []) => {
-                    const adapted = adaptSqlForPostgres(pgInsertReturning(sql));
-                    const result = await client.query(adapted, qParams);
-                    const stmt = sql.trim().toUpperCase();
-                    if (stmt.startsWith('SELECT') || stmt.startsWith('WITH')) {
-                        return [result.rows];
-                    }
-                    const insertId = result.rows && result.rows.length > 0 ? result.rows[0].id : null;
-                    return [{ insertId, affectedRows: result.rowCount, changes: result.rowCount }];
-                },
-                release() {
-                    client.release();
+            const pgQuery = async (sql, qParams = []) => {
+                const adapted = adaptSqlForPostgres(pgInsertReturning(sql));
+                const result = await client.query(adapted, qParams);
+                const stmt = sql.trim().toUpperCase();
+                if (stmt.startsWith('SELECT') || stmt.startsWith('WITH')) {
+                    return [result.rows];
                 }
+                const insertId = result.rows && result.rows.length > 0 ? result.rows[0].id : null;
+                return [{ insertId, affectedRows: result.rowCount, changes: result.rowCount }];
+            };
+            return {
+                query: pgQuery,
+                beginTransaction: () => client.query('BEGIN'),
+                commit: () => client.query('COMMIT'),
+                rollback: () => client.query('ROLLBACK'),
+                release() { client.release(); }
             };
         }
 
@@ -345,17 +347,19 @@ const pool = {
                     const [rows] = await connection.query(adaptSqlForMysql(sql), params);
                     return [rows];
                 },
-                release() {
-                    connection.release();
-                }
+                beginTransaction: () => connection.beginTransaction(),
+                commit: () => connection.commit(),
+                rollback: () => connection.rollback(),
+                release() { connection.release(); }
             };
         }
 
         return {
             query: (sql, params = []) => pool.query(sql, params),
-            release() {
-                // No-op for SQLite single connection model.
-            }
+            beginTransaction: () => runAsync('BEGIN'),
+            commit: () => runAsync('COMMIT'),
+            rollback: () => runAsync('ROLLBACK'),
+            release() {}
         };
     },
 

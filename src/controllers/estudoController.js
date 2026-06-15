@@ -89,8 +89,8 @@ exports.saveAnotacao = async (req, res) => {
         if (id) {
             // update
             await pool.query(
-                'UPDATE estudo_anotacoes SET texto = ?, cor_realce = ?, versiculo_fim = ? WHERE id = ? AND user_id = ?',
-                [texto || null, cor_realce || null, versiculo_fim || null, id, user_id]
+                'UPDATE estudo_anotacoes SET texto = ?, cor_realce = ?, versiculo_fim = ? WHERE id = ? AND user_id = ? AND igreja_id = ?',
+                [texto || null, cor_realce || null, versiculo_fim || null, id, user_id, igreja_id]
             );
             res.json({ id, message: 'Anotação atualizada.' });
         } else {

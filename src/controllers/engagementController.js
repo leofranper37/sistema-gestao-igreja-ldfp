@@ -17,7 +17,6 @@ async function loginMembroApp(req, res) {
 
     const cpfLimpo = String(cpf).replace(/\D/g, '');
 
-    // Busca o membro pelo CPF — opcionalmente filtrando por nome de igreja
     let sql = `SELECT m.*, i.nome AS nome_igreja, i.id AS igreja_id_num
                FROM membros m
                INNER JOIN igrejas i ON i.id = m.igreja_id
@@ -28,7 +27,6 @@ async function loginMembroApp(req, res) {
         sql += ` AND LOWER(i.nome) = LOWER($2)`;
         params.push(String(igreja_nome).trim());
     }
-
     sql += ` LIMIT 1`;
 
     const [rows] = await pool.query(sql, params);
@@ -38,14 +36,23 @@ async function loginMembroApp(req, res) {
         throw createHttpError(404, 'Membro não encontrado. Verifique o CPF e o nome da igreja.');
     }
 
-    // Verifica senha (hash bcrypt armazenado no campo app_senha)
-    if (!membro.app_senha) {
-        throw createHttpError(401, 'Este membro ainda não criou uma senha para o App. Use "Primeiro Acesso" para criar.');
-    }
+    let precisaTrocar = false;
 
-    const ok = await bcrypt.compare(String(senha), String(membro.app_senha));
-    if (!ok) {
-        throw createHttpError(401, 'Senha incorreta.');
+    if (!membro.app_senha) {
+        // Sem senha cadastrada — senha padrão são os 6 primeiros dígitos do CPF
+        const senhaDefault = cpfLimpo.substring(0, 6);
+        if (String(senha) !== senhaDefault) {
+            throw createHttpError(401, 'Senha incorreta. No primeiro acesso, use os 6 primeiros dígitos do seu CPF.');
+        }
+        precisaTrocar = true;
+    } else {
+        const ok = await bcrypt.compare(String(senha), String(membro.app_senha));
+        if (!ok) {
+            throw createHttpError(401, 'Senha incorreta.');
+        }
+        if (membro.precisa_trocar_senha) {
+            precisaTrocar = true;
+        }
     }
 
     const payload = {
@@ -63,62 +70,50 @@ async function loginMembroApp(req, res) {
     };
 
     const token = jwt.sign(payload, config.security.jwtSecret, { expiresIn: '30d' });
-    res.json({ token, membro: payload, message: 'Login realizado com sucesso.' });
+    res.json({ token, membro: payload, precisa_trocar: precisaTrocar, message: 'Login realizado com sucesso.' });
 }
 
-async function primeiroAcessoMembroApp(req, res) {
-    const { cpf, senha, igreja_nome } = req.body || {};
-    if (!cpf || !senha) {
-        throw createHttpError(400, 'CPF e senha são obrigatórios.');
-    }
-    if (String(senha).length < 6) {
-        throw createHttpError(400, 'A senha deve ter pelo menos 6 caracteres.');
+async function trocarSenhaMembroApp(req, res) {
+    const { novaSenha } = req.body || {};
+    if (!novaSenha || String(novaSenha).length < 6) {
+        throw createHttpError(400, 'A nova senha deve ter pelo menos 6 caracteres.');
     }
 
-    const cpfLimpo = String(cpf).replace(/\D/g, '');
-
-    let sql = `SELECT m.id, m.nome, m.email, m.cpf, m.cargo, m.foto_url, m.app_senha, m.igreja_id, i.nome AS nome_igreja
-               FROM membros m
-               INNER JOIN igrejas i ON i.id = m.igreja_id
-               WHERE REPLACE(REPLACE(REPLACE(m.cpf, '.', ''), '-', ''), '/', '') = $1`;
-    const params = [cpfLimpo];
-
-    if (igreja_nome) {
-        sql += ` AND LOWER(i.nome) = LOWER($2)`;
-        params.push(String(igreja_nome).trim());
-    }
-    sql += ` LIMIT 1`;
-
-    const [rows] = await pool.query(sql, params);
-    const membro = rows[0];
-
-    if (!membro) {
-        throw createHttpError(404, 'CPF não encontrado. Entre em contato com a secretaria da sua igreja.');
+    if (!req.auth.app_mode) {
+        throw createHttpError(403, 'Rota exclusiva do App de Membros.');
     }
 
-    if (membro.app_senha) {
-        throw createHttpError(409, 'Este CPF já possui senha cadastrada. Use a opção de login.');
+    const membroId = req.auth.membro_id || req.auth.id;
+    const igrejaId = req.auth.igrejaId;
+
+    const hash = await bcrypt.hash(String(novaSenha), config.security.passwordSaltRounds);
+    await pool.query(
+        `UPDATE membros SET app_senha = $1, precisa_trocar_senha = 0 WHERE id = $2 AND igreja_id = $3`,
+        [hash, membroId, igrejaId]
+    );
+
+    res.json({ message: 'Senha atualizada com sucesso.' });
+}
+
+async function resetarSenhaMembroApp(req, res) {
+    const membroId = Number(req.params.id);
+    const igrejaId = req.auth.igrejaId;
+
+    const [rows] = await pool.query(
+        `SELECT id FROM membros WHERE id = $1 AND igreja_id = $2 LIMIT 1`,
+        [membroId, igrejaId]
+    );
+    if (!rows || !rows.length) {
+        throw createHttpError(404, 'Membro não encontrado.');
     }
 
-    const hash = await bcrypt.hash(String(senha), config.security.passwordSaltRounds);
-    await pool.query(`UPDATE membros SET app_senha = $1 WHERE id = $2`, [hash, membro.id]);
+    // Limpa a senha — próximo login usa os 6 primeiros dígitos do CPF
+    await pool.query(
+        `UPDATE membros SET app_senha = NULL, precisa_trocar_senha = 1 WHERE id = $1 AND igreja_id = $2`,
+        [membroId, igrejaId]
+    );
 
-    const payload = {
-        id: membro.id,
-        nome: membro.nome,
-        email: membro.email || '',
-        cargo: membro.cargo || '',
-        foto_url: membro.foto_url || null,
-        igrejaId: membro.igreja_id,
-        nome_igreja: membro.nome_igreja,
-        role: 'membro',
-        membro_id: membro.id,
-        cpf: cpfLimpo,
-        app_mode: true
-    };
-
-    const token = jwt.sign(payload, config.security.jwtSecret, { expiresIn: '30d' });
-    res.json({ token, membro: payload, message: 'Senha criada com sucesso! Bem-vindo ao App da Igreja.' });
+    res.json({ message: 'Senha resetada. O membro deve fazer login com os 6 primeiros dígitos do CPF.' });
 }
 
 async function getMeuPerfilApp(req, res) {
@@ -455,6 +450,7 @@ module.exports = {
     updateMidiaVisitorStatus,
     updateWhatsAppTemplate,
     loginMembroApp,
-    primeiroAcessoMembroApp,
+    trocarSenhaMembroApp,
+    resetarSenhaMembroApp,
     getMeuPerfilApp
 };

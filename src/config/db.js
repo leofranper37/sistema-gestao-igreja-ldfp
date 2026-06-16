@@ -452,6 +452,8 @@ async function initializeDatabase() {
         try { await activePgPool.query(`ALTER TABLE membros ADD COLUMN foto_url VARCHAR(500) NULL`); } catch(_){}
         try { await activePgPool.query(`ALTER TABLE membros ADD COLUMN acesso_app_midia SMALLINT NOT NULL DEFAULT 0`); } catch(_){}
         try { await activePgPool.query(`ALTER TABLE membros ADD COLUMN gerenciar_midias SMALLINT NOT NULL DEFAULT 0`); } catch(_){}
+        try { await activePgPool.query(`ALTER TABLE membros ADD COLUMN app_senha VARCHAR(255) NULL`); } catch(_){}
+        try { await activePgPool.query(`ALTER TABLE membros ADD COLUMN precisa_trocar_senha SMALLINT NOT NULL DEFAULT 0`); } catch(_){}
 
         await activePgPool.query(`CREATE INDEX IF NOT EXISTS idx_membros_igreja ON membros (igreja_id)`);
 
@@ -620,6 +622,8 @@ async function initializeDatabase() {
         try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN acesso_app_midia TINYINT(1) NOT NULL DEFAULT 0`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN gerenciar_midias TINYINT(1) NOT NULL DEFAULT 0`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN observacoes TEXT NULL`); } catch(_){}
+        try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN app_senha VARCHAR(255) NULL`); } catch(_){}
+        try { await activeMysqlPool.query(`ALTER TABLE membros ADD COLUMN precisa_trocar_senha TINYINT(1) NOT NULL DEFAULT 0`); } catch(_){}
 
         await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS usuarios (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -891,6 +895,8 @@ async function initializeDatabase() {
             safeAlter('ALTER TABLE membros ADD COLUMN naturalidade TEXT');
             safeAlter('ALTER TABLE membros ADD COLUMN observacoes TEXT');
             safeAlter('ALTER TABLE membros ADD COLUMN created_at TEXT DEFAULT CURRENT_TIMESTAMP');
+            safeAlter('ALTER TABLE membros ADD COLUMN app_senha TEXT');
+            safeAlter('ALTER TABLE membros ADD COLUMN precisa_trocar_senha INTEGER NOT NULL DEFAULT 0');
 
             db.run(`CREATE INDEX IF NOT EXISTS idx_membros_igreja ON membros (igreja_id)`);
 

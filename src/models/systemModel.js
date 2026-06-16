@@ -457,7 +457,7 @@ async function createMembro(payload) {
             payload.cidade,
             payload.estado,
             payload.celular,
-            payload.cpf,
+            String(payload.cpf || '').replace(/\D/g, '') || null,
             payload.rg,
             payload.nacionalidade,
             payload.naturalidade,
@@ -480,7 +480,7 @@ async function updateMembro(id, payload) {
          WHERE id = ? AND igreja_id = ?`,
         [
             payload.nome, payload.email, payload.telefone, payload.cargo, payload.apelido, payload.nascimento, payload.sexo, payload.estadoCivil, payload.profissao,
-            payload.cep, payload.endereco, payload.numero, payload.bairro, payload.cidade, payload.estado, payload.celular, payload.cpf, payload.rg, payload.nacionalidade, payload.naturalidade,
+            payload.cep, payload.endereco, payload.numero, payload.bairro, payload.cidade, payload.estado, payload.celular, String(payload.cpf || '').replace(/\D/g, '') || null, payload.rg, payload.nacionalidade, payload.naturalidade,
             payload.fotoUrl, payload.acesso_app_midia ? 1 : 0, payload.gerenciar_midias ? 1 : 0, payload.situacao, payload.observacoes,
             id, payload.igrejaId
         ]

@@ -688,6 +688,9 @@
                     <button class="btn btn-white" id="btnRelatorio" style="display:none;">
                         <i class="fa-solid fa-chart-bar"></i> Relatório
                     </button>
+                    <button class="btn btn-white" id="btnResetarSenhaApp" style="display:none;" title="Reseta a senha do App para os 6 primeiros dígitos do CPF">
+                        <i class="fa-solid fa-key"></i> Resetar senha do App
+                    </button>
                     <button class="btn btn-white" id="btnExcluir">
                         <i class="fa-solid fa-trash"></i> Excluir
                     </button>
@@ -1137,6 +1140,7 @@
         const found = loadedMembers.find(r => memberIdOf(r) === selectedId);
         if (found) fillFields(found);
         $('btnRelatorio').style.display = selectedId ? '' : 'none';
+        $('btnResetarSenhaApp').style.display = selectedId ? '' : 'none';
     };
 
     /* ── Renderizar lista ── */
@@ -1325,6 +1329,23 @@
     $('btnSalvarForm').addEventListener('click', salvar);
     $('btnExcluir').addEventListener('click', excluir);
     $('btnExcluirForm').addEventListener('click', excluir);
+    $('btnResetarSenhaApp').addEventListener('click', async () => {
+        if (!selectedId) return;
+        const membro = loadedMembers.find(r => memberIdOf(r) === selectedId);
+        const nome = membro?.nome || membro?.full_name || 'este membro';
+        if (!confirm(`Resetar a senha do App de ${nome}?\n\nO membro deverá fazer login com os 6 primeiros dígitos do CPF e criar uma nova senha.`)) return;
+        try {
+            const resp = await fetch(`/membros/${selectedId}/resetar-senha-app`, { method: 'POST' });
+            const data = await resp.json();
+            if (resp.ok) {
+                alert('Senha resetada com sucesso. O membro deverá usar os 6 primeiros dígitos do CPF no próximo acesso.');
+            } else {
+                alert('Erro: ' + (data?.error || 'Não foi possível resetar a senha.'));
+            }
+        } catch (err) {
+            alert('Erro de conexão ao resetar senha.');
+        }
+    });
     $('btnImprimir').addEventListener('click', () => window.print());
     $('btnLimpar').addEventListener('click', limpar);
     $('btnRelatorio').addEventListener('click', () => {

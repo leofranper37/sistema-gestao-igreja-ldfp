@@ -20,6 +20,7 @@
       --radius-md: 12px;
       --shadow-soft: 0 8px 20px rgba(0,0,0,0.35);
       --error-red: #ef4444;
+      --success-green: #22c55e;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,7 +37,7 @@
       padding: 20px;
     }
 
-    .login-container {
+    .card {
       max-width: 380px;
       width: 100%;
       background: var(--bg-card);
@@ -54,30 +55,11 @@
       filter: drop-shadow(0 0 10px rgba(249,115,22,0.5));
     }
 
-    .login-container h1 {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      color: var(--text);
-    }
+    .card h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .card p { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
 
-    .login-container p {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 25px;
-    }
-
-    .input-group {
-      margin-bottom: 18px;
-      text-align: left;
-    }
-
-    .input-group label {
-      display: block;
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
+    .input-group { margin-bottom: 16px; text-align: left; }
+    .input-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
 
     .input-field {
       width: 100%;
@@ -90,157 +72,215 @@
       outline: none;
       transition: border-color 0.2s;
     }
-
     .input-field:focus { border-color: var(--accent); }
     .input-field::placeholder { color: var(--muted); }
 
     .btn {
       width: 100%;
-      padding: 14px 15px;
+      padding: 14px;
       border-radius: var(--radius-md);
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s, opacity 0.2s;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #111827;
       border: none;
+      transition: background 0.2s, opacity 0.2s;
     }
-
-    .btn-primary:hover { background: #e06a14; }
+    .btn-primary { background: var(--accent); color: #111827; }
+    .btn-primary:hover:not(:disabled) { background: #e06a14; }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .link-forgot {
-      display: block;
-      margin-top: 15px;
+    .msg {
       font-size: 13px;
-      color: var(--accent-soft);
-      text-decoration: none;
-    }
-
-    .link-forgot:hover { text-decoration: underline; }
-
-    .error-message {
-      color: var(--error-red);
-      font-size: 13px;
-      margin-top: 15px;
+      margin-top: 14px;
       display: none;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
     }
+    .msg.error  { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; display: block; }
+    .msg.success{ background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.25); color: #86efac; display: block; }
 
-    .success-message {
-      color: #22c55e;
-      font-size: 13px;
-      margin-top: 15px;
-      display: none;
-    }
+    .hint { display: block; margin-top: 14px; font-size: 13px; color: var(--accent-soft); }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
   </style>
 </head>
 <body>
-  <div class="login-container">
-    <img id="churchLogo" src="" alt="Logo da Igreja" class="login-logo"
-         onerror="this.style.display='none'">
-    <h1>Acesso do Membro</h1>
-    <p>Entre com seu CPF e senha para acessar o aplicativo.</p>
+  <div class="card">
+    <img id="churchLogo" src="" alt="" class="login-logo" onerror="this.style.display='none'">
 
-    <form id="loginForm">
-      <div class="input-group">
-        <label for="igrejaNome">Igreja <span style="color:var(--muted);font-size:12px;">(opcional)</span></label>
-        <input type="text" id="igrejaNome" class="input-field"
-               placeholder="Nome da igreja, se solicitado">
-      </div>
-      <div class="input-group">
-        <label for="cpf">CPF</label>
-        <input type="text" id="cpf" class="input-field"
-               placeholder="Seu CPF (somente números)"
-               required pattern="\d{11}"
-               title="Digite seu CPF com 11 dígitos, somente números."
-               inputmode="numeric" maxlength="11">
-      </div>
-      <div class="input-group">
-        <label for="password">Senha</label>
-        <input type="password" id="password" class="input-field"
-               placeholder="Sua senha" required>
-      </div>
+    <!-- TELA 1: Login -->
+    <div id="screenLogin" class="screen active">
+      <h1>Acesso do Membro</h1>
+      <p>Entre com seu CPF e senha para acessar o aplicativo.</p>
 
-      <button type="submit" class="btn btn-primary" id="loginButton">Entrar</button>
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="igrejaNome">Igreja <span style="font-size:12px;color:var(--muted)">(opcional)</span></label>
+          <input type="text" id="igrejaNome" class="input-field" placeholder="Nome da igreja, se solicitado">
+        </div>
+        <div class="input-group">
+          <label for="cpf">CPF</label>
+          <input type="text" id="cpf" class="input-field" placeholder="Somente números" required
+                 inputmode="numeric" maxlength="11">
+        </div>
+        <div class="input-group">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" class="input-field" placeholder="Sua senha" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="loginBtn">Entrar</button>
+        <span class="hint">Primeiro acesso? Use os 6 primeiros dígitos do CPF como senha.</span>
+        <div id="loginMsg" class="msg"></div>
+      </form>
+    </div>
 
-      <a href="#" class="link-forgot" id="toggleFirstAccess">Primeiro acesso? Criar senha do App</a>
-      <div id="message" class="error-message"></div>
-    </form>
+    <!-- TELA 2: Troca de senha obrigatória -->
+    <div id="screenTrocar" class="screen">
+      <h1>Crie sua senha</h1>
+      <p>Por segurança, defina uma senha pessoal antes de continuar.</p>
+
+      <form id="trocarForm">
+        <div class="input-group">
+          <label for="novaSenha">Nova senha</label>
+          <input type="password" id="novaSenha" class="input-field" placeholder="Mínimo 6 caracteres" required minlength="6">
+        </div>
+        <div class="input-group">
+          <label for="confirmarSenha">Confirmar senha</label>
+          <input type="password" id="confirmarSenha" class="input-field" placeholder="Repita a senha" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="trocarBtn">Salvar senha e entrar</button>
+        <div id="trocarMsg" class="msg"></div>
+      </form>
+    </div>
   </div>
 
   <script>
-    const $ = id => document.getElementById(id);
-    const loginForm = $('loginForm');
-    const cpfInput = $('cpf');
-    const passwordInput = $('password');
-    const loginButton = $('loginButton');
-    const messageDiv = $('message');
-    const churchLogo = $('churchLogo');
+    (function () {
+      const logo = document.getElementById('churchLogo');
+      const logoUrl = localStorage.getItem('church_logo_url');
+      if (logoUrl) logo.src = logoUrl;
 
-    // Carrega logo salva no localStorage
-    const logoUrl = localStorage.getItem('church_logo_url');
-    if (logoUrl) churchLogo.src = logoUrl;
+      let tempToken = null;
 
-    function showMessage(msg, type = 'error') {
-      messageDiv.textContent = msg;
-      messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
-      messageDiv.style.display = 'block';
-    }
-
-    // Simulação de autenticação
-    // Para integrar com o backend real: substitua por fetch('/api/app/login', { method:'POST', ... })
-    function authenticateUser(cpf, password) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (cpf === '11122233344' && password === '111222') {
-            resolve({
-              success: true,
-              user: { id: 'membro123', nome: 'Leonardo', cpf },
-              token: 'fake-jwt-token-123'
-            });
-          } else {
-            reject(new Error('CPF ou senha incorretos.'));
-          }
-        }, 1000);
-      });
-    }
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      messageDiv.style.display = 'none';
-      loginButton.disabled = true;
-      loginButton.textContent = 'Entrando...';
-
-      const cpf = cpfInput.value.replace(/\D/g, '');
-      const password = passwordInput.value;
-
-      if (cpf.length !== 11) {
-        showMessage('CPF deve ter 11 dígitos.');
-        loginButton.disabled = false;
-        loginButton.textContent = 'Entrar';
-        return;
+      function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
       }
 
-      try {
-        const result = await authenticateUser(cpf, password);
-        if (result.success) {
-          localStorage.setItem('app_member_token', result.token);
-          localStorage.setItem('app_member_user', JSON.stringify(result.user));
-          showMessage('Login bem-sucedido! Redirecionando...', 'success');
-          // ▶ Redireciona para o app do membro (layout novo)
-          window.location.href = 'app_membro_v2.html';
+      function showMsg(elId, text, type) {
+        const el = document.getElementById(elId);
+        el.textContent = text;
+        el.className = 'msg ' + type;
+      }
+
+      function clearMsg(elId) {
+        const el = document.getElementById(elId);
+        el.className = 'msg';
+        el.textContent = '';
+      }
+
+      // ── Tela 1: Login ─────────────────────────────────────────────
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearMsg('loginMsg');
+
+        const cpf   = document.getElementById('cpf').value.replace(/\D/g, '');
+        const senha = document.getElementById('senha').value;
+        const igrejaNome = document.getElementById('igrejaNome').value.trim();
+
+        if (cpf.length !== 11) {
+          showMsg('loginMsg', 'CPF deve ter 11 dígitos.', 'error');
+          return;
         }
-      } catch (error) {
-        showMessage(error.message);
-      } finally {
-        loginButton.disabled = false;
-        loginButton.textContent = 'Entrar';
-      }
-    });
+
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = true;
+        btn.textContent = 'Entrando...';
+
+        try {
+          const body = { cpf, senha };
+          if (igrejaNome) body.igreja_nome = igrejaNome;
+
+          const resp = await fetch('/app-membro/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+
+          const data = await resp.json();
+
+          if (!resp.ok) {
+            showMsg('loginMsg', data?.error || data?.message || 'CPF ou senha incorretos.', 'error');
+            return;
+          }
+
+          tempToken = data.token;
+          localStorage.setItem('app_member_token', data.token);
+          localStorage.setItem('app_member_user', JSON.stringify(data.membro));
+
+          if (data.precisa_trocar) {
+            showScreen('screenTrocar');
+          } else {
+            window.location.href = 'app_membro_v2.html';
+          }
+
+        } catch (err) {
+          showMsg('loginMsg', 'Erro de conexão. Tente novamente.', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Entrar';
+        }
+      });
+
+      // ── Tela 2: Trocar senha ───────────────────────────────────────
+      document.getElementById('trocarForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearMsg('trocarMsg');
+
+        const novaSenha     = document.getElementById('novaSenha').value;
+        const confirmarSenha = document.getElementById('confirmarSenha').value;
+
+        if (novaSenha.length < 6) {
+          showMsg('trocarMsg', 'A senha deve ter pelo menos 6 caracteres.', 'error');
+          return;
+        }
+        if (novaSenha !== confirmarSenha) {
+          showMsg('trocarMsg', 'As senhas não coincidem.', 'error');
+          return;
+        }
+
+        const btn = document.getElementById('trocarBtn');
+        btn.disabled = true;
+        btn.textContent = 'Salvando...';
+
+        try {
+          const resp = await fetch('/app-membro/trocar-senha', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + tempToken
+            },
+            body: JSON.stringify({ novaSenha })
+          });
+
+          const data = await resp.json();
+
+          if (!resp.ok) {
+            showMsg('trocarMsg', data?.error || 'Erro ao salvar senha.', 'error');
+            return;
+          }
+
+          showMsg('trocarMsg', 'Senha salva! Redirecionando...', 'success');
+          setTimeout(() => { window.location.href = 'app_membro_v2.html'; }, 1000);
+
+        } catch (err) {
+          showMsg('trocarMsg', 'Erro de conexão. Tente novamente.', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Salvar senha e entrar';
+        }
+      });
+    })();
   </script>
 </body>
 </html>

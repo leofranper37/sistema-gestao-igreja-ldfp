@@ -35,7 +35,8 @@ const {
     getMemberAppContext,
     getPaymentLinkPublic,
     loginMembroApp,
-    primeiroAcessoMembroApp,
+    trocarSenhaMembroApp,
+    resetarSenhaMembroApp,
     getMeuPerfilApp,
     getQrSessionPublic,
     listAutocadastros,
@@ -58,10 +59,11 @@ const {
 
 const router = express.Router();
 
-// Rotas públicas do App de Membros (autenticação por CPF)
+// Rotas do App de Membros
 router.post('/app-membro/login', loginMembroApp);
-router.post('/app-membro/primeiro-acesso', primeiroAcessoMembroApp);
+router.put('/app-membro/trocar-senha', requireAuth, trocarSenhaMembroApp);
 router.get('/app-membro/meu-perfil', getMeuPerfilApp);
+router.post('/membros/:id/resetar-senha-app', requireAuth, authorize(['admin', 'secretaria', 'pastor']), resetarSenhaMembroApp);
 
 router.get('/auth/me', requireAuth, getAuthMe);
 router.get('/app-membro/context', requireAuth, requireModuleEnabled('appMembro'), getMemberAppContext);

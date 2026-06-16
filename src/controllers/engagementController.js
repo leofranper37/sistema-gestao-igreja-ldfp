@@ -100,7 +100,7 @@ async function primeiroAcessoMembroApp(req, res) {
         throw createHttpError(409, 'Este CPF já possui senha cadastrada. Use a opção de login.');
     }
 
-    const hash = await bcrypt.hash(String(senha), 10);
+    const hash = await bcrypt.hash(String(senha), config.security.passwordSaltRounds);
     await pool.query(`UPDATE membros SET app_senha = $1 WHERE id = $2`, [hash, membro.id]);
 
     const payload = {

@@ -30,13 +30,13 @@ async function getOrCreateVapidKeys() {
         return {
             publicKey:  map.vapid_public_key,
             privateKey: map.vapid_private_key,
-            subject:    map.vapid_subject || 'mailto:admin@ldfp.com.br'
+            subject:    map.vapid_subject || 'mailto:admin@example.com'
         };
     }
 
     // Primeira execução: gerar e persistir
     const { publicKey, privateKey } = webpush.generateVAPIDKeys();
-    const subject = process.env.VAPID_SUBJECT || 'mailto:admin@ldfp.com.br';
+    const subject = process.env.VAPID_SUBJECT || 'mailto:admin@example.com';
 
     await pool.query(
         `INSERT INTO sistema_config (config_key, config_value) VALUES

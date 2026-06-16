@@ -40,7 +40,7 @@ const senha = '123456';
 const nome = 'Super Admin LDFP';
 const role = 'super-admin';
 
-const passwordHash = bcrypt.hashSync(senha, 10);
+const passwordHash = bcrypt.hashSync(senha, 12);
 
 db.serialize(() => {
     let igrejaId = 1;

@@ -161,7 +161,7 @@ async function gerarPix({ igrejaId, nomeIgreja, emailPagador, planoSlug, ciclo }
             description: descricao,
             payment_method_id: 'pix',
             payer: {
-                email: emailPagador || process.env.MP_DEFAULT_PAYER_EMAIL || 'pagador@ldfp.com.br',
+                email: emailPagador || process.env.MP_DEFAULT_PAYER_EMAIL || 'pagador@example.com',
             },
             date_of_expiration: expiresAt.toISOString(),
             external_reference: referenceCode,

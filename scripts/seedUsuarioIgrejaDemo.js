@@ -33,7 +33,7 @@ const senha = '123456';
 const nome = 'Pastor Demo';
 const role = 'admin';
 
-const passwordHash = bcrypt.hashSync(senha, 10);
+const passwordHash = bcrypt.hashSync(senha, 12);
 
 function resolveIgrejaId(callback) {
   if (Number.isInteger(igrejaIdOverride) && igrejaIdOverride > 0) {

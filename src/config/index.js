@@ -1,4 +1,6 @@
-require('dotenv').config({ override: true });
+// override: false (default) — env vars set by the shell / deploy platform take precedence over .env.
+// This prevents a committed or leaked .env from silently overwriting production secrets.
+require('dotenv').config();
 
 const parseInteger = (value, fallback) => {
     const parsed = Number.parseInt(value, 10);
@@ -75,10 +77,14 @@ const parseJwtExpiresIn = () => {
 };
 
 const databaseUrlConfig = parseDatabaseUrl();
-const weakSecrets = new Set([
+const WEAK_SECRETS = new Set([
     '',
     'ldfp-dev-secret',
     'troque-esta-chave-em-producao',
+    'teu_secret_aqui_minimo_32_caracteres',
+    'uma_chave_forte_com_32_ou_mais_caracteres',
+    'gere_uma_chave_aleatoria_de_64_caracteres_aqui',
+    'leo_gere_uma_chave_forte_aqui_minimo_32_caracteres',
     'secret',
     'changeme'
 ]);
@@ -99,8 +105,9 @@ const config = {
         allowedOrigins: parseAllowedOrigins()
     },
     security: {
-        passwordSaltRounds: parseInteger(process.env.PASSWORD_SALT_ROUNDS, 10),
-        jwtSecret: process.env.JWT_SECRET || 'ldfp-dev-secret',
+        passwordSaltRounds: parseInteger(process.env.PASSWORD_SALT_ROUNDS, 12),
+        // No fallback — an absent or weak JWT_SECRET is a hard startup error in all environments
+        jwtSecret: process.env.JWT_SECRET,
         jwtExpiresIn: parseJwtExpiresIn()
     },
     app: {
@@ -108,32 +115,38 @@ const config = {
     }
 };
 
-const validateProductionSecurity = () => {
-    if (String(process.env.NODE_ENV || '').trim() !== 'production') {
-        return;
-    }
-
+const validateConfig = () => {
     const errors = [];
+    const isTest = String(process.env.NODE_ENV || '').trim() === 'test';
+    const isProduction = String(process.env.NODE_ENV || '').trim() === 'production';
     const jwtSecret = String(config.security.jwtSecret || '').trim();
     const setupRouteEnabled = String(process.env.ENABLE_SETUP_ROUTE || '').trim().toLowerCase() === 'true';
 
-    if (!jwtSecret || weakSecrets.has(jwtSecret.toLowerCase()) || jwtSecret.length < 24) {
-        errors.push('JWT_SECRET ausente ou fraco para produção.');
+    // JWT_SECRET is required in every environment (tests set their own via process.env)
+    if (!isTest && (!jwtSecret || WEAK_SECRETS.has(jwtSecret.toLowerCase()) || jwtSecret.length < 24)) {
+        errors.push(
+            'JWT_SECRET ausente, fraco ou é um valor placeholder conhecidos. ' +
+            'Defina JWT_SECRET no .env com no mínimo 24 caracteres aleatórios. ' +
+            'Gere um com: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"'
+        );
     }
 
-    if (!Array.isArray(config.cors.allowedOrigins) || config.cors.allowedOrigins.length === 0) {
-        errors.push('CORS_ORIGIN/CORS_ORIGINS deve ser definido em produção.');
-    }
+    // Production-only checks
+    if (isProduction) {
+        if (!Array.isArray(config.cors.allowedOrigins) || config.cors.allowedOrigins.length === 0) {
+            errors.push('CORS_ORIGIN/CORS_ORIGINS deve ser definido em produção.');
+        }
 
-    if (setupRouteEnabled) {
-        errors.push('ENABLE_SETUP_ROUTE=true não é permitido em produção.');
+        if (setupRouteEnabled) {
+            errors.push('ENABLE_SETUP_ROUTE=true não é permitido em produção.');
+        }
     }
 
     if (errors.length > 0) {
-        throw new Error(`Configuração inválida para produção: ${errors.join(' ')}`);
+        throw new Error(`[config] Configuração inválida:\n  • ${errors.join('\n  • ')}`);
     }
 };
 
-validateProductionSecurity();
+validateConfig();
 
 module.exports = config;

@@ -4,7 +4,7 @@ const express = require('express');
 
 const router = express.Router();
 
-const DEPLOY_DIR = process.env.DEPLOY_DIR || '/home/ldfp8965/ldfp.com.br';
+const DEPLOY_DIR = process.env.DEPLOY_DIR;
 const DEPLOY_BRANCH = process.env.DEPLOY_BRANCH || 'main';
 
 function verifyGithubSignature(req) {
@@ -34,6 +34,11 @@ router.post('/', (req, res) => {
     if (!process.env.GITHUB_WEBHOOK_SECRET) {
         console.error('[webhook/github] GITHUB_WEBHOOK_SECRET não configurado.');
         return res.status(503).json({ error: 'Webhook não configurado no servidor.' });
+    }
+
+    if (!DEPLOY_DIR) {
+        console.error('[webhook/github] DEPLOY_DIR não configurado.');
+        return res.status(503).json({ error: 'Diretório de deploy não configurado no servidor.' });
     }
 
     if (!verifyGithubSignature(req)) {

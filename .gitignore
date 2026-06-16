@@ -2,9 +2,20 @@
 node_modules/
 
 # Variáveis de ambiente e senhas (Segurança)
+# Cobre .env, .env.production, .env.staging, .env.development, .env.test, etc.
 .env
-.env.local
-.env*.local
+.env.*
+!.env.example
+
+# Chaves privadas e certificados
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cert
+private_key*
+*_private_key*
 
 # Banco de dados SQLite local (nunca subir para o GitHub)
 *.sqlite

@@ -250,13 +250,18 @@
             const dashboardTemplate = mainContentArea ? mainContentArea.innerHTML : '';
 
             // ── Verificação de acesso: apenas role === 'super-admin' ──────────────
-            if (!window.requireAuthSession || !window.requireAuthSession()) return;
+            const auth = window.getStoredAuth?.();
+            if (!auth?.token) {
+                window.location.href = '/super_admin_login';
+                return;
+            }
 
-            const currentUser = window.getStoredAuth?.()?.user || null;
+            const currentUser = auth.user || null;
             const currentRole = String(currentUser?.role || '').trim().toLowerCase();
 
             if (currentRole !== 'super-admin') {
-                window.location.href = 'dashboard.html';
+                window.clearAuthSession?.();
+                window.location.href = '/super_admin_login';
                 return;
             }
             // ─────────────────────────────────────────────────────────────────────
@@ -439,7 +444,7 @@
             async function loadOverview() {
                 const token = window.getAuthToken?.() || sessionStorage.getItem('token') || localStorage.getItem('token') || '';
                 const resp = await fetch('/super-admin/overview', { headers: token ? { 'Authorization': 'Bearer ' + token } : {} });
-                if (resp.status === 401) { window.location.href = 'login.html'; return; }
+                if (resp.status === 401) { window.location.href = '/super_admin_login'; return; }
                 if (!resp.ok) throw new Error('Não foi possível carregar os dados do super-admin.');
                 const data = await resp.json();
                 applyKpis(data?.kpis || {});
@@ -454,7 +459,7 @@
                 const newChurchBtn = document.getElementById('newChurchBtn');
                 const refreshBtn  = document.getElementById('refreshBtn');
 
-                if (logoutBtn) logoutBtn.addEventListener('click', () => { window.clearAuthSession?.(); window.location.href = 'login.html'; });
+                if (logoutBtn) logoutBtn.addEventListener('click', () => { window.clearAuthSession?.(); window.location.href = '/super_admin_login'; });
                 if (newChurchBtn) newChurchBtn.addEventListener('click', () => loadContentPage('cadastro_igreja.html'));
                 if (refreshBtn) refreshBtn.addEventListener('click', () => loadOverview().catch(() => {}));
             }

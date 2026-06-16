@@ -148,6 +148,10 @@ app.get(['/super_admin', '/super-admin', '/superadmin'], (req, res) => {
     res.sendFile(path.join(staticAssetsPath, 'admin-master.html'));
 });
 
+app.get(['/super_admin_login', '/super-admin-login'], (req, res) => {
+    res.sendFile(path.join(staticAssetsPath, 'super_admin_login.html'));
+});
+
 app.use((req, res, next) => {
     if (!maintenanceModeEnabled) {
         return next();

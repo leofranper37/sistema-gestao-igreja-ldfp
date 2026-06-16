@@ -144,6 +144,10 @@ app.get(['/index.htm', '/INDEX.HTM'], (req, res) => {
     res.redirect(301, '/index.html');
 });
 
+app.get(['/super_admin', '/super-admin', '/superadmin'], (req, res) => {
+    res.sendFile(path.join(staticAssetsPath, 'admin-master.html'));
+});
+
 app.use((req, res, next) => {
     if (!maintenanceModeEnabled) {
         return next();

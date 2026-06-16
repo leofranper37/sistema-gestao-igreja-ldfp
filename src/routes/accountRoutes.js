@@ -216,6 +216,40 @@ router.patch('/api/church/config', requireAuth, async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** GET /api/app/meu-token — retorna o public_token da igreja autenticada (para o admin compartilhar com membros) */
+router.get('/api/app/meu-token', requireAuth, async (req, res) => {
+    try {
+        const igrejaId = req.auth?.igrejaId;
+        if (!igrejaId) return res.status(401).json({ error: 'Sem contexto de igreja.' });
+
+        const crypto = require('crypto');
+
+        // Garante que a coluna existe (idempotente)
+        try { await pool.query('ALTER TABLE igrejas ADD COLUMN public_token VARCHAR(64)'); } catch (_) {}
+
+        const [rows] = await pool.query(
+            'SELECT public_token FROM igrejas WHERE id = ? LIMIT 1',
+            [igrejaId]
+        );
+        let token = rows[0]?.public_token || null;
+
+        // Gera o token se a igreja ainda não tiver um (backfill sob demanda)
+        if (!token) {
+            token = crypto.randomBytes(20).toString('hex');
+            await pool.query(
+                "UPDATE igrejas SET public_token = ? WHERE id = ? AND (public_token IS NULL OR public_token = '')",
+                [token, igrejaId]
+            );
+        }
+
+        return res.json({ publicToken: token });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 router.post('/api/reset-request', async (req, res) => {
     try {
         const { email } = req.body || {};

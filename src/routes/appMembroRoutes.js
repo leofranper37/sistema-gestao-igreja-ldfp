@@ -1,14 +1,20 @@
 /**
  * Rotas públicas do App do Membro (PWA).
- * Não requerem sessão do painel — usam igrejaId via query string (padrão: 1).
+ * Não requerem sessão do painel.
+ *
+ * Identificação da igreja: parâmetro igrejaTk (query string ou body).
+ * É um token público aleatório gerado no cadastro — não é o id numérico.
+ * Sem um igrejaTk válido as rotas retornam 400 ou 404. Não há fallback.
  *
  * GET  /api/app/config          → configurações públicas (logo, verso, etc.)
  * GET  /api/app/congregacoes    → lista de congregações
  * GET  /api/app/videos          → vídeos marcados como visíveis no app
+ * GET  /api/app/midias          → todas as mídias agrupadas por tipo
  * GET  /api/app/eventos         → eventos do mês (?mes=YYYY-MM)
  * POST /api/app/conexoes        → pedido de conexão / oração / ajuda / decisão
  */
 
+const crypto = require('crypto');
 const express = require('express');
 const { pool } = require('../config/db');
 const agendaService = require('../services/agendaService');
@@ -16,15 +22,6 @@ const agendaService = require('../services/agendaService');
 const router = express.Router();
 
 // ─── helpers ────────────────────────────────────────────────────────────────
-
-function igrejaId(req) {
-    return Number(req.query.igrejaId || 1);
-}
-
-function igrejaIdFromBodyOrQuery(req) {
-    const value = Number(req.body?.igrejaId || req.query?.igrejaId || 1);
-    return Number.isFinite(value) && value > 0 ? value : 1;
-}
 
 function normalizeMediaType(type) {
     const raw = String(type || '').trim().toLowerCase();
@@ -320,17 +317,56 @@ async function ensureAppTables() {
 
         await ensureOptionalColumn('app_config', 'youtube', 'TEXT');
         await ensureOptionalColumn('app_config', 'live_stream_url', 'TEXT');
+
+        // Garante a coluna public_token em igrejas (bancos existentes não a têm)
+        await ensureOptionalColumn('igrejas', 'public_token', 'VARCHAR(64)');
+
+        // Atribui token a igrejas que ainda não têm (backfill para instalações antigas e SQLite)
+        const [unTokened] = await pool.query(
+            "SELECT id FROM igrejas WHERE public_token IS NULL OR public_token = ''"
+        );
+        for (const row of (unTokened || [])) {
+            const token = crypto.randomBytes(20).toString('hex');
+            await pool.query(
+                "UPDATE igrejas SET public_token = ? WHERE id = ? AND (public_token IS NULL OR public_token = '')",
+                [token, row.id]
+            );
+        }
     })();
 
     return _tablesReady;
 }
 
+// ─── middleware: identifica a igreja pelo token público ──────────────────────
+
+async function resolveIgreja(req, res, next) {
+    const token = String(req.query.igrejaTk || req.body?.igrejaTk || '').trim();
+    if (!token) {
+        return res.status(400).json({ error: 'Identificador de igreja ausente (igrejaTk).' });
+    }
+    try {
+        // ensureAppTables garante que a coluna existe e o backfill foi aplicado
+        await ensureAppTables();
+        const [rows] = await pool.query(
+            'SELECT id FROM igrejas WHERE public_token = ? LIMIT 1',
+            [token]
+        );
+        if (!rows || !rows.length) {
+            return res.status(404).json({ error: 'Igreja não encontrada.' });
+        }
+        req.igrejaId = rows[0].id;
+        return next();
+    } catch (err) {
+        return res.status(500).json({ error: 'Erro interno ao identificar a igreja.' });
+    }
+}
+
 // ─── GET /api/app/config ─────────────────────────────────────────────────────
 
-router.get('/api/app/config', async (req, res) => {
+router.get('/api/app/config', resolveIgreja, async (req, res) => {
     try {
         await ensureAppTables();
-        const id = igrejaId(req);
+        const id = req.igrejaId;
         const [rows] = await pool.query(
             'SELECT verso_contribuicoes, logo_url, whatsapp, facebook, instagram, youtube, live_stream_url FROM app_config WHERE igreja_id = ? LIMIT 1',
             [id]
@@ -350,11 +386,11 @@ router.get('/api/app/config', async (req, res) => {
     }
 });
 
-router.post('/api/app/config', async (req, res) => {
+router.post('/api/app/config', resolveIgreja, async (req, res) => {
     try {
         await ensureAppTables();
 
-        const id = igrejaIdFromBodyOrQuery(req);
+        const id = req.igrejaId;
         const versiculoContribuicoes = String(req.body?.versiculoContribuicoes || '').trim() || null;
         const logoUrl = String(req.body?.logoUrl || '').trim() || null;
         const whatsapp = String(req.body?.whatsapp || '').trim() || null;
@@ -398,7 +434,6 @@ router.post('/api/app/config', async (req, res) => {
 
         return res.json({
             ok: true,
-            igrejaId: id,
             versiculoContribuicoes,
             logoUrl,
             whatsapp,
@@ -414,10 +449,10 @@ router.post('/api/app/config', async (req, res) => {
 
 // ─── GET /api/app/congregacoes ───────────────────────────────────────────────
 
-router.get('/api/app/congregacoes', async (req, res) => {
+router.get('/api/app/congregacoes', resolveIgreja, async (req, res) => {
     try {
         await ensureAppTables();
-        const id = igrejaId(req);
+        const id = req.igrejaId;
         const [rows] = await pool.query(
             `SELECT id, nome, pastor, dirigente, telefone, endereco, latitude, longitude
              FROM app_congregacoes
@@ -433,10 +468,10 @@ router.get('/api/app/congregacoes', async (req, res) => {
 
 // ─── GET /api/app/videos ─────────────────────────────────────────────────────
 
-router.get('/api/app/videos', async (req, res) => {
+router.get('/api/app/videos', resolveIgreja, async (req, res) => {
     try {
         await ensureAppTables();
-        const id = igrejaId(req);
+        const id = req.igrejaId;
         const [rows] = await pool.query(
             `SELECT id, titulo, url, data
              FROM app_videos
@@ -452,10 +487,10 @@ router.get('/api/app/videos', async (req, res) => {
 
 // ─── GET /api/app/midias ────────────────────────────────────────────────────
 
-router.get('/api/app/midias', async (req, res) => {
+router.get('/api/app/midias', resolveIgreja, async (req, res) => {
     try {
         await ensureAppTables();
-        const id = igrejaId(req);
+        const id = req.igrejaId;
 
         const [videos] = await pool.query(
             `SELECT id, titulo, url, '' AS descricao, '' AS file_name, created_at
@@ -490,7 +525,6 @@ router.get('/api/app/midias', async (req, res) => {
         );
 
         return res.json({
-            igrejaId: id,
             videos: (videos || []).map((item) => ({
                 id: item.id,
                 title: item.titulo,
@@ -531,7 +565,7 @@ router.get('/api/app/midias', async (req, res) => {
 
 // ─── POST /api/app/midias/:type ─────────────────────────────────────────────
 
-router.post('/api/app/midias/:type', async (req, res) => {
+router.post('/api/app/midias/:type', resolveIgreja, async (req, res) => {
     try {
         await ensureAppTables();
         const type = normalizeMediaType(req.params.type);
@@ -540,7 +574,7 @@ router.post('/api/app/midias/:type', async (req, res) => {
             return res.status(400).json({ error: 'Tipo de mídia inválido.' });
         }
 
-        const id = igrejaIdFromBodyOrQuery(req);
+        const id = req.igrejaId;
         const title = String(req.body?.title || '').trim();
         const url = String(req.body?.url || '').trim();
         const description = String(req.body?.description || '').trim();
@@ -573,13 +607,13 @@ router.post('/api/app/midias/:type', async (req, res) => {
 
 // ─── DELETE /api/app/midias/:type/:id ───────────────────────────────────────
 
-router.delete('/api/app/midias/:type/:id', async (req, res) => {
+router.delete('/api/app/midias/:type/:id', resolveIgreja, async (req, res) => {
     try {
         await ensureAppTables();
         const type = normalizeMediaType(req.params.type);
         const table = mediaTableByType(type);
         const mediaId = Number(req.params.id || 0);
-        const id = igrejaId(req);
+        const id = req.igrejaId;
 
         if (!table || !mediaId) {
             return res.status(400).json({ error: 'Parâmetros inválidos para exclusão.' });
@@ -604,9 +638,9 @@ router.delete('/api/app/midias/:type/:id', async (req, res) => {
 // ─── GET /api/app/eventos ────────────────────────────────────────────────────
 // ?mes=YYYY-MM   (padrão: mês corrente)
 
-router.get('/api/app/eventos', async (req, res) => {
+router.get('/api/app/eventos', resolveIgreja, async (req, res) => {
     try {
-        const id = igrejaId(req);
+        const id = req.igrejaId;
 
         // Determina o intervalo do mês
         let mesParam = req.query.mes;
@@ -641,10 +675,10 @@ router.get('/api/app/eventos', async (req, res) => {
 
 const TIPOS_VALIDOS = ['conexao', 'oracao', 'ajuda', 'decisao'];
 
-router.post('/api/app/conexoes', async (req, res) => {
+router.post('/api/app/conexoes', resolveIgreja, async (req, res) => {
     try {
         await ensureAppTables();
-        const id = igrejaId(req);
+        const id = req.igrejaId;
 
         const { tipo, nome, celular, mensagem } = req.body || {};
 

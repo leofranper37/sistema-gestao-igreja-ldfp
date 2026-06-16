@@ -413,6 +413,7 @@ async function initializeDatabase() {
             modulo_escala_culto SMALLINT NOT NULL DEFAULT 0,
             modulo_pedidos_oracao SMALLINT NOT NULL DEFAULT 1,
             modulo_mural_oracao SMALLINT NOT NULL DEFAULT 1,
+            public_token VARCHAR(64),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
@@ -548,6 +549,9 @@ async function initializeDatabase() {
         try { await activePgPool.query(`ALTER TABLE igrejas ADD COLUMN mensalidade_valor DECIMAL(10,2) NOT NULL DEFAULT 0`); } catch(_){}
         try { await activePgPool.query(`ALTER TABLE igrejas ADD COLUMN ultimo_pagamento TIMESTAMP`); } catch(_){}
         try { await activePgPool.query(`ALTER TABLE igrejas ADD COLUMN proximo_vencimento TIMESTAMP`); } catch(_){}
+        try { await activePgPool.query(`ALTER TABLE igrejas ADD COLUMN public_token VARCHAR(64)`); } catch(_){}
+        try { await activePgPool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_igrejas_public_token ON igrejas (public_token) WHERE public_token IS NOT NULL`); } catch(_){}
+        try { await activePgPool.query(`UPDATE igrejas SET public_token = encode(gen_random_bytes(20), 'hex') WHERE public_token IS NULL OR public_token = ''`); } catch(_){}
 
         console.log('✅ Tabelas principais verificadas/criadas no PostgreSQL.');
         return;
@@ -573,6 +577,7 @@ async function initializeDatabase() {
             modulo_pedidos_oracao TINYINT(1) NOT NULL DEFAULT 1,
             modulo_mural_oracao TINYINT(1) NOT NULL DEFAULT 1,
             config_personalizada_json LONGTEXT NULL,
+            public_token VARCHAR(64) NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN config_personalizada_json LONGTEXT NULL`); } catch(_){}
@@ -707,6 +712,8 @@ async function initializeDatabase() {
         try { await activeMysqlPool.query('ALTER TABLE saas_planos CHANGE `versículo` `versiculo` TEXT'); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN ultimo_pagamento DATETIME`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN proximo_vencimento DATETIME`); } catch(_){}
+        try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN public_token VARCHAR(64) NULL`); } catch(_){}
+        try { await activeMysqlPool.query(`UPDATE igrejas SET public_token = LOWER(HEX(RANDOM_BYTES(20))) WHERE public_token IS NULL OR public_token = ''`); } catch(_){}
 
         await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS saas_modulos (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -823,6 +830,7 @@ async function initializeDatabase() {
                 modulo_escala_culto INTEGER NOT NULL DEFAULT 0,
                 modulo_pedidos_oracao INTEGER NOT NULL DEFAULT 1,
                 modulo_mural_oracao INTEGER NOT NULL DEFAULT 1,
+                public_token TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )`);
 
@@ -987,6 +995,10 @@ async function initializeDatabase() {
             safeAlter('ALTER TABLE igrejas ADD COLUMN mensalidade_valor REAL NOT NULL DEFAULT 0');
             safeAlter('ALTER TABLE igrejas ADD COLUMN ultimo_pagamento TEXT');
             safeAlter('ALTER TABLE igrejas ADD COLUMN proximo_vencimento TEXT');
+            safeAlter('ALTER TABLE igrejas ADD COLUMN public_token TEXT');
+            // Backfill SQLite: o pool abstrato não está disponível aqui;
+            // a geração de tokens para instalações SQLite antigas ocorre
+            // em ensureAppTables() na primeira requisição ao App do Membro.
 
             db.run(`CREATE TABLE IF NOT EXISTS saas_modulos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,

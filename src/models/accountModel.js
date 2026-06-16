@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { pool } = require('../config/db');
 
 async function findChurchByName(name) {
@@ -37,11 +38,14 @@ async function createChurch(name, planoSlug) {
     const maxCadastros = Number(plan?.max_cadastros || 40);
     const maxCongregacoes = Number(plan?.max_congregacoes || 1);
 
+    const publicToken = crypto.randomBytes(20).toString('hex');
+
     const [result] = await pool.query(
         `INSERT INTO igrejas (
             nome, plano, status_assinatura, trial_starts_at, trial_ends_at, max_cadastros, max_congregacoes,
-            modulo_app_membro, modulo_app_midia, modulo_ebd, modulo_agenda_eventos, modulo_escala_culto, modulo_pedidos_oracao, modulo_mural_oracao
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, 1, 1, 1, 1, 1)`,
+            modulo_app_membro, modulo_app_midia, modulo_ebd, modulo_agenda_eventos, modulo_escala_culto, modulo_pedidos_oracao, modulo_mural_oracao,
+            public_token
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, 1, 1, 1, 1, 1, ?)`,
         [
             name,
             resolvedPlano,
@@ -49,7 +53,8 @@ async function createChurch(name, planoSlug) {
             now.toISOString(),
             trialEndsAt.toISOString(),
             maxCadastros,
-            maxCongregacoes
+            maxCongregacoes,
+            publicToken
         ]
     );
     return result.insertId;

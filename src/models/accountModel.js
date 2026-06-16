@@ -38,7 +38,7 @@ async function createChurch(name, planoSlug) {
     const maxCadastros = Number(plan?.max_cadastros || 40);
     const maxCongregacoes = Number(plan?.max_congregacoes || 1);
 
-    const publicToken = crypto.randomBytes(20).toString('hex');
+    const publicToken = crypto.randomBytes(6).toString('hex');
 
     const [result] = await pool.query(
         `INSERT INTO igrejas (

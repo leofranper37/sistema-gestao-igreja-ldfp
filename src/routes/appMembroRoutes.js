@@ -18,6 +18,7 @@ const crypto = require('crypto');
 const express = require('express');
 const { pool } = require('../config/db');
 const agendaService = require('../services/agendaService');
+const { requireAuth, authorize } = require('../middlewares/auth');
 
 const router = express.Router();
 
@@ -386,11 +387,11 @@ router.get('/api/app/config', resolveIgreja, async (req, res) => {
     }
 });
 
-router.post('/api/app/config', resolveIgreja, async (req, res) => {
+router.post('/api/app/config', requireAuth, async (req, res) => {
     try {
         await ensureAppTables();
 
-        const id = req.igrejaId;
+        const id = req.auth.igrejaId;
         const versiculoContribuicoes = String(req.body?.versiculoContribuicoes || '').trim() || null;
         const logoUrl = String(req.body?.logoUrl || '').trim() || null;
         const whatsapp = String(req.body?.whatsapp || '').trim() || null;
@@ -565,7 +566,7 @@ router.get('/api/app/midias', resolveIgreja, async (req, res) => {
 
 // ─── POST /api/app/midias/:type ─────────────────────────────────────────────
 
-router.post('/api/app/midias/:type', resolveIgreja, async (req, res) => {
+router.post('/api/app/midias/:type', requireAuth, authorize(['admin', 'secretaria']), async (req, res) => {
     try {
         await ensureAppTables();
         const type = normalizeMediaType(req.params.type);
@@ -574,7 +575,7 @@ router.post('/api/app/midias/:type', resolveIgreja, async (req, res) => {
             return res.status(400).json({ error: 'Tipo de mídia inválido.' });
         }
 
-        const id = req.igrejaId;
+        const id = req.auth.igrejaId;
         const title = String(req.body?.title || '').trim();
         const url = String(req.body?.url || '').trim();
         const description = String(req.body?.description || '').trim();
@@ -607,13 +608,13 @@ router.post('/api/app/midias/:type', resolveIgreja, async (req, res) => {
 
 // ─── DELETE /api/app/midias/:type/:id ───────────────────────────────────────
 
-router.delete('/api/app/midias/:type/:id', resolveIgreja, async (req, res) => {
+router.delete('/api/app/midias/:type/:id', requireAuth, authorize(['admin', 'secretaria']), async (req, res) => {
     try {
         await ensureAppTables();
         const type = normalizeMediaType(req.params.type);
         const table = mediaTableByType(type);
         const mediaId = Number(req.params.id || 0);
-        const id = req.igrejaId;
+        const id = req.auth.igrejaId;
 
         if (!table || !mediaId) {
             return res.status(400).json({ error: 'Parâmetros inválidos para exclusão.' });

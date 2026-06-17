@@ -224,45 +224,8 @@
   const plansGrid = document.getElementById('plansGrid');
   const _isUpgradeMode = new URLSearchParams(window.location.search).get('upgrade') === '1';
 
-  const PLANOS_FALLBACK = [
-    {
-      slug: 'hebrom',
-      nome: 'Hebrom',
-      subtitulo: 'Igrejas em formacao',
-      preco_mensal: 50,
-      preco_anual: 500,
-      features_json: '["App Web Instalavel (PWA)","150 cadastros","1 congregacao","Suporte via e-mail"]'
-    },
-    {
-      slug: 'betel',
-      nome: 'Betel',
-      subtitulo: 'Igrejas em crescimento',
-      preco_mensal: 80,
-      preco_anual: 800,
-      features_json: '["App do Membro","300 cadastros","5 congregacoes","Suporte via e-mail e WhatsApp"]'
-    },
-    {
-      slug: 'siao',
-      nome: 'Siao',
-      subtitulo: 'Operacao avancada',
-      preco_mensal: 100,
-      preco_anual: 1000,
-      features_json: '["App do Membro","500 cadastros","10 congregacoes","Suporte prioritario"]'
-    }
-  ];
-
-  async function loadPlanosFromStatic() {
-    const resp = await fetch('planos-data.json', { headers: { Accept: 'application/json' } });
-    if (!resp.ok) {
-      throw new Error(`HTTP ${resp.status} ao consultar planos-data.json`);
-    }
-
-    const planos = await resp.json();
-    if (!Array.isArray(planos)) {
-      throw new Error('planos-data.json nao retornou um array.');
-    }
-
-    return planos;
+  function esc(t) {
+    return String(t || '').replace(/[&<>"]/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[s]));
   }
 
   function renderPlanos(planos) {
@@ -274,21 +237,29 @@
     const destaqueSlug = 'betel';
 
     plansGrid.innerHTML = planos.map(p => {
-      let features = [];
-      try {
-        features = JSON.parse(p.features_json || '[]');
-      } catch (_e) {
-        features = [];
-      }
+      // Itens fixos do plano (limites, suporte, etc.) vindos de saas_planos.features_json
+      let featuresFixas = [];
+      try { featuresFixas = JSON.parse(p.features_json || '[]'); } catch (_) {}
+
+      // Módulos dinâmicos criados via Fábrica de Inovações (saas_plano_modulos JOIN saas_modulos)
+      const modulosDinamicos = Array.isArray(p.modules) ? p.modules : [];
+
+      const featuresHtml = featuresFixas.map(f => `
+        <li><i class="fa-solid fa-check"></i> ${esc(f)}</li>
+      `).join('');
+
+      const modulosHtml = modulosDinamicos.map(m => `
+        <li><i class="${esc(m.icon || 'fa-puzzle-piece')}"></i> ${esc(m.nome)}</li>
+      `).join('');
 
       return `
         <article class="plan-card ${p.slug === destaqueSlug ? 'highlight' : ''}">
           <div class="plan-header">
             <div class="plan-name">
-              ${p.nome}
+              ${esc(p.nome)}
               ${p.slug === destaqueSlug ? '<span style="font-size:0.7rem;background:rgba(248,250,252,0.08);padding:2px 8px;border-radius:999px;color:#fed7aa;">Mais escolhido</span>' : ''}
             </div>
-            <div class="plan-subtitle">${p.subtitulo || ''}</div>
+            <div class="plan-subtitle">${esc(p.subtitulo || '')}</div>
           </div>
 
           <div class="plan-price">
@@ -302,20 +273,16 @@
           </div>
 
           <ul class="plan-features">
-            ${features.map(f => `
-              <li>
-                <i class="fa-solid fa-check"></i>
-                ${f}
-              </li>
-            `).join('')}
+            ${featuresHtml}
+            ${modulosHtml}
           </ul>
 
           <div class="plan-footer">
-            <button class="plan-cta primary" onclick="assinarPlano('${p.slug}')">
-              <span>Começar com ${p.nome}</span>
+            <button class="plan-cta primary" onclick="assinarPlano('${esc(p.slug)}')">
+              <span>Começar com ${esc(p.nome)}</span>
               <i class="fa-solid fa-arrow-right"></i>
             </button>
-            ${_isUpgradeMode ? '' : `<button class="plan-cta outline" onclick="assinarPlano('${p.slug}')">
+            ${_isUpgradeMode ? '' : `<button class="plan-cta outline" onclick="assinarPlano('${esc(p.slug)}')">
               <i class="fa-solid fa-bolt"></i>
               Testar agora, configurar depois
             </button>`}
@@ -326,21 +293,14 @@
   }
 
   async function carregarPlanos() {
-    let planos = PLANOS_FALLBACK;
-
     try {
       const resp = await fetch('/api/planos', { headers: { Accept: 'application/json' } });
-      if (resp.ok) {
-        const data = await resp.json();
-        if (Array.isArray(data) && data.length) {
-          planos = data;
-        }
-      }
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      renderPlanos(Array.isArray(data) ? data : []);
     } catch (_err) {
-      // usa fallback
+      plansGrid.innerHTML = '<p style="color:#9ca3af;font-size:0.9rem;">Não foi possível carregar os planos. Tente novamente em instantes.</p>';
     }
-
-    renderPlanos(planos);
   }
 
   function assinarPlano(slug) {

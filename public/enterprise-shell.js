@@ -123,6 +123,7 @@
     };
 
     let dynamicFeatureAllowList = null;
+    let dynamicModules = [];
 
     const FEATURE_KEY_ALIASES = {
         ebd: 'criancas',
@@ -736,6 +737,37 @@
         `;
     }
 
+    function renderDynamicModulesGroup(activePath) {
+        // Módulos criados via Fábrica de Inovações que têm route_path definido
+        const extras = dynamicModules.filter(m =>
+            m.effective_enabled &&
+            m.route_path &&
+            !PAGE_FEATURES[m.route_path.split('?')[0]]
+        );
+
+        if (!extras.length) return '';
+
+        const linksHtml = extras.map(m => {
+            const href = m.route_path;
+            const icon = m.icon || 'fa-solid fa-puzzle-piece';
+            const label = m.nome || m.slug || '';
+            const activeClass = isLinkActive(href, activePath) ? 'active-link' : '';
+            return `<a href="${href}" class="${activeClass}" data-href="${href}" data-label="${label}"><i class="${icon}"></i><span>${label}</span></a>`;
+        }).join('');
+
+        const hasActive = extras.some(m => isLinkActive(m.route_path, activePath));
+
+        return `
+            <button class="dropdown-btn ${hasActive ? 'active' : ''}" type="button">
+                <span><i class="fa-solid fa-lightbulb icon-left"></i> Módulos</span>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </button>
+            <div class="dropdown-container" style="${hasActive ? 'display:block;' : 'display:none;'}">
+                ${linksHtml}
+            </div>
+        `;
+    }
+
     function renderSidebar(activePath, user) {
         return `
             <aside class="sidebar enterprise-sidebar legacy-shell-sidebar" id="enterpriseSidebar">
@@ -785,6 +817,8 @@
                         ['relatorios_tesouraria.html', 'fa-regular fa-file-lines', 'Tesouraria', 'financeiro'],
                         ['relatorios_contabilidade.html', 'fa-regular fa-file-lines', 'Contabilidade', 'financeiro']
                     ], activePath, false, user)}
+
+                    ${renderDynamicModulesGroup(activePath)}
                 </nav>
 
                 <div class="sidebar-footer">
@@ -935,30 +969,29 @@
         try {
             const CACHE_KEY = 'ldfp_modulos_me';
             const cached = sessionStorage.getItem(CACHE_KEY);
-            
+
             if (cached) {
                 const payload = JSON.parse(cached);
                 dynamicFeatureAllowList = normalizeFeatureAllowList(Array.isArray(payload?.featureKeys) ? payload.featureKeys : null);
+                dynamicModules = Array.isArray(payload?.modules) ? payload.modules : [];
                 return;
             }
 
             const response = await fetch('/api/modulos/me');
             if (!response.ok) {
                 dynamicFeatureAllowList = null;
+                dynamicModules = [];
                 return;
             }
 
             const payload = await response.json();
             sessionStorage.setItem(CACHE_KEY, JSON.stringify(payload));
-            
-            const featureKeys = Array.isArray(payload?.featureKeys) ? payload.featureKeys : null;
-            const normalizedFeatures = normalizeFeatureAllowList(featureKeys);
 
-            // Fallback de compatibilidade: se o catálogo SaaS ainda não foi configurado,
-            // mantém o menu padrão por perfil para não bloquear módulos já existentes.
-            dynamicFeatureAllowList = normalizedFeatures;
+            dynamicFeatureAllowList = normalizeFeatureAllowList(Array.isArray(payload?.featureKeys) ? payload.featureKeys : null);
+            dynamicModules = Array.isArray(payload?.modules) ? payload.modules : [];
         } catch (_) {
             dynamicFeatureAllowList = null;
+            dynamicModules = [];
         }
     }
 

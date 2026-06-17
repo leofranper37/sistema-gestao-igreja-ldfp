@@ -307,7 +307,27 @@ async function listPlanosPublico(req, res) {
                     max_cadastros, max_congregacoes, modulo_app_membro, features_json
              FROM saas_planos WHERE ativo = 1 ORDER BY preco_mensal ASC`
         );
-        const result = rows.map(r => ({ ...r, features: safeJson(r.features_json, []) }));
+
+        // Busca módulos ativos de cada plano para enriquecer a resposta
+        const [moduloRows] = await pool.query(
+            `SELECT spm.plano_slug, sm.nome, sm.icon
+             FROM saas_plano_modulos spm
+             JOIN saas_modulos sm ON sm.slug = spm.modulo_slug
+             WHERE spm.ativo = 1 AND sm.ativo = 1
+             ORDER BY sm.nome ASC`
+        ).catch(() => [[]]);
+
+        const modulosPorPlano = {};
+        for (const m of moduloRows) {
+            if (!modulosPorPlano[m.plano_slug]) modulosPorPlano[m.plano_slug] = [];
+            modulosPorPlano[m.plano_slug].push({ nome: m.nome, icon: m.icon || 'fa-puzzle-piece' });
+        }
+
+        const result = rows.map(r => ({
+            ...r,
+            features: safeJson(r.features_json, []),
+            modules: modulosPorPlano[r.slug] || []
+        }));
         res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });

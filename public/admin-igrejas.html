@@ -69,6 +69,16 @@ tbody tr:hover{background:#f8fafc}
 .modal-footer{display:flex;gap:10px;justify-content:flex-end}
 .toast{position:fixed;bottom:24px;right:24px;padding:14px 22px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;z-index:2000;opacity:0;transform:translateY(16px);transition:.3s}
 .toast.show{opacity:1;transform:translateY(0)}.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+/* Modal exclusão */
+.del-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:1100;backdrop-filter:blur(4px)}
+.del-overlay.open{display:flex}
+.del-box{background:#fff;border-radius:16px;padding:32px 28px;width:min(420px,94vw);box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.del-box h3{font-size:18px;font-weight:800;color:#0f172a;margin-bottom:8px}
+.del-box .church-highlighted{font-weight:700;color:var(--red);font-size:15px;margin:6px 0 14px}
+.del-warn{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:13px;color:#991b1b;margin-bottom:20px}
+.del-footer{display:flex;gap:10px;justify-content:flex-end}
+.btn-del-confirm{background:var(--red);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px}
+.btn-del-confirm:hover{background:#b91c1c}.btn-del-confirm:disabled{opacity:.6;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -184,6 +194,20 @@ tbody tr:hover{background:#f8fafc}
   </div>
 </div>
 
+<!-- Modal: confirmar exclusão -->
+<div class="del-overlay" id="delModal">
+  <div class="del-box">
+    <h3><i class="fa-solid fa-triangle-exclamation" style="color:var(--red);margin-right:8px"></i>Excluir Igreja</h3>
+    <p style="font-size:13px;color:var(--muted)">Você está prestes a excluir permanentemente:</p>
+    <div class="church-highlighted" id="delModalName"></div>
+    <div class="del-warn"><i class="fa-solid fa-circle-xmark"></i> <strong>Ação irreversível.</strong> Todos os membros, usuários, financeiro e dados dessa igreja serão apagados do banco.</div>
+    <div class="del-footer">
+      <button class="btn btn-outline" onclick="closeDelModal()">Cancelar</button>
+      <button class="btn-del-confirm" id="delConfirmBtn" onclick="confirmDel()"><i class="fa-solid fa-trash"></i> Excluir definitivamente</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script src="session.js?v=20260501"></script>
 <script>
@@ -280,6 +304,7 @@ function renderTable(rows) {
         <div class="actions-cell">
           <button class="btn btn-outline btn-sm" onclick="editChurch(${r.id})" title="Editar contrato"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
           <button class="btn btn-warn btn-sm" onclick="openStatusModal(${r.id},'${r.status_assinatura}','${esc(r.nome)}')" title="Alterar status"><i class="fa-solid fa-toggle-on"></i> Status</button>
+          <button class="btn btn-danger btn-sm" data-id="${r.id}" data-nome="${esc(r.nome)}" onclick="openDelModal(this)" title="Excluir igreja"><i class="fa-solid fa-trash"></i> Excluir</button>
         </div>
       </td>
     </tr>`;
@@ -313,6 +338,37 @@ async function confirmStatus() {
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+let _delId = null;
+function openDelModal(btn) {
+  _delId = Number(btn.dataset.id);
+  document.getElementById('delModalName').textContent = btn.dataset.nome || 'ID ' + btn.dataset.id;
+  document.getElementById('delConfirmBtn').disabled = false;
+  document.getElementById('delConfirmBtn').innerHTML = '<i class="fa-solid fa-trash"></i> Excluir definitivamente';
+  document.getElementById('delModal').classList.add('open');
+}
+function closeDelModal() { _delId = null; document.getElementById('delModal').classList.remove('open'); }
+document.getElementById('delModal').addEventListener('click', e => { if (e.target === document.getElementById('delModal')) closeDelModal(); });
+
+async function confirmDel() {
+  if (!_delId) return;
+  const btn = document.getElementById('delConfirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Excluindo...';
+  try {
+    const r = await fetch('/api/saas/igrejas/' + _delId, { method: 'DELETE', headers: hdrs() });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erro ' + r.status);
+    closeDelModal();
+    allData = allData.filter(x => x.id !== _delId);
+    applyFilter();
+    toast('Igreja excluída com sucesso.', 'success');
+  } catch (e) {
+    toast('Erro: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-trash"></i> Excluir definitivamente';
+  }
+}
 function toast(msg, type='success') {
   const el = document.getElementById('toast');
   el.textContent = msg; el.className = 'toast ' + type + ' show';

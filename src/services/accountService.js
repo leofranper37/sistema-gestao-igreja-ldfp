@@ -55,13 +55,12 @@ async function registerAccount(payload) {
     const passwordHash = await bcrypt.hash(payload.senha, config.security.passwordSaltRounds);
 
     const existingChurch = await accountModel.findChurchByName(payload.igreja);
-    let igrejaId = existingChurch?.id;
-    let churchMetadata = existingChurch || null;
-
-    if (!igrejaId) {
-        igrejaId = await accountModel.createChurch(payload.igreja, payload.plano);
-        churchMetadata = await accountModel.findChurchByName(payload.igreja);
+    if (existingChurch) {
+        throw createHttpError(409, 'Já existe uma igreja cadastrada com esse nome. Entre em contato com o administrador ou escolha outro nome.');
     }
+
+    const igrejaId = await accountModel.createChurch(payload.igreja, payload.plano);
+    const churchMetadata = await accountModel.findChurchByName(payload.igreja);
 
     const userId = await accountModel.createUser({
         igreja: payload.igreja,

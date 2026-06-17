@@ -1,10 +1,13 @@
-'use strict';
+﻿'use strict';
 
 const { pool } = require('../config/db');
 const financeModel = require('../models/financeModel');
+const { createHttpError } = require('../utils/httpError');
 
 function getIgrejaId(req) {
-    return Number(req.auth?.igrejaId || 1);
+    const id = Number(req.auth?.igrejaId);
+    if (!id) throw createHttpError(401, 'Token inválido: igrejaId ausente. Faça login novamente.');
+    return id;
 }
 
 async function getRelatorioMembro(req, res) {

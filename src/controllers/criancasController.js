@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 const { pool } = require('../config/db');
 const { audit } = require('../services/auditService');
 
@@ -19,7 +19,7 @@ function formatRow(row) {
 }
 
 async function listCriancas(req, res) {
-    const igrejaId = Number(req.auth?.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const { search, limit = 200, page = 1 } = req.query;
 
     let where = 'WHERE igreja_id = ?';
@@ -41,7 +41,7 @@ async function listCriancas(req, res) {
 }
 
 async function getCrianca(req, res) {
-    const igrejaId = Number(req.auth?.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ message: 'ID inválido.' });
 
@@ -55,7 +55,7 @@ async function getCrianca(req, res) {
 }
 
 async function createCrianca(req, res) {
-    const igrejaId = Number(req.auth?.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const {
         nome, nascimento, apresentacao, sexo, situacao,
         pai, mae, nomePai, nomeMae,
@@ -104,7 +104,7 @@ async function createCrianca(req, res) {
 }
 
 async function updateCrianca(req, res) {
-    const igrejaId = Number(req.auth?.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ message: 'ID inválido.' });
 
@@ -158,7 +158,7 @@ async function updateCrianca(req, res) {
 }
 
 async function deleteCrianca(req, res) {
-    const igrejaId = Number(req.auth?.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ message: 'ID inválido.' });
 

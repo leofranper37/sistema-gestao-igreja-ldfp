@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 const { pool } = require('../config/db');
 const { audit } = require('../services/auditService');
 
@@ -19,7 +19,7 @@ function formatRow(row) {
 }
 
 async function listBatismos(req, res) {
-    const igrejaId = Number(req.auth?.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const { q, encerrado, limit = 100, page = 1 } = req.query;
 
     let where = 'WHERE b.igreja_id = ?';
@@ -59,7 +59,7 @@ async function listBatismos(req, res) {
 }
 
 async function getBatismo(req, res) {
-    const igrejaId = Number(req.auth?.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ message: 'ID inválido.' });
 
@@ -78,7 +78,7 @@ async function getBatismo(req, res) {
 }
 
 async function createBatismo(req, res) {
-    const igrejaId  = Number(req.auth?.igrejaId || 1);
+    const igrejaId  = getIgrejaId(req.auth);
     const createdBy = req.auth?.id || null;
 
     const {
@@ -114,7 +114,7 @@ async function createBatismo(req, res) {
 }
 
 async function updateBatismo(req, res) {
-    const igrejaId = Number(req.auth?.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ message: 'ID inválido.' });
 
@@ -161,7 +161,7 @@ async function updateBatismo(req, res) {
 }
 
 async function deleteBatismo(req, res) {
-    const igrejaId = Number(req.auth?.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ message: 'ID inválido.' });
 
@@ -178,7 +178,7 @@ async function deleteBatismo(req, res) {
 }
 
 async function addCandidato(req, res) {
-    const igrejaId  = Number(req.auth?.igrejaId || 1);
+    const igrejaId  = getIgrejaId(req.auth);
     const batismoId = Number(req.params.id);
     if (!batismoId) return res.status(400).json({ message: 'ID inválido.' });
 
@@ -212,7 +212,7 @@ async function addCandidato(req, res) {
 }
 
 async function updateCandidato(req, res) {
-    const igrejaId  = Number(req.auth?.igrejaId || 1);
+    const igrejaId  = getIgrejaId(req.auth);
     const batismoId = Number(req.params.id);
     const cid       = Number(req.params.cid);
 
@@ -247,7 +247,7 @@ async function updateCandidato(req, res) {
 }
 
 async function deleteCandidato(req, res) {
-    const igrejaId  = Number(req.auth?.igrejaId || 1);
+    const igrejaId  = getIgrejaId(req.auth);
     const batismoId = Number(req.params.id);
     const cid       = Number(req.params.cid);
 

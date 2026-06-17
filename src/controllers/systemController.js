@@ -2,9 +2,15 @@ const systemService = require('../services/systemService');
 const { audit } = require('../services/auditService');
 const { createHttpError } = require('../utils/httpError');
 
+function getIgrejaId(auth) {
+    const id = Number(auth?.igrejaId);
+    if (!id) throw createHttpError(401, 'Token inválido: igrejaId ausente. Faça login novamente.');
+    return id;
+}
+
 async function listMembros(req, res) {
     const query = req.validatedQuery || {};
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     const hasAdvancedQuery = Boolean(
         query.page || query.limit || query.sortBy || query.sortOrder
@@ -36,7 +42,7 @@ async function listMembros(req, res) {
 
 async function createMembro(req, res) {
     const payload = req.validatedBody;
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const maxCadastros = Number(req.auth.maxCadastros || 0);
 
     if (maxCadastros > 0) {
@@ -93,7 +99,7 @@ async function createMembro(req, res) {
 
 async function updateMembro(req, res) {
     const payload = req.validatedBody;
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
 
     if (isNaN(id) || id <= 0) {
@@ -145,7 +151,7 @@ async function updateMembro(req, res) {
 }
 
 async function deleteMembro(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
 
     if (isNaN(id) || id <= 0) {
@@ -161,7 +167,7 @@ async function deleteMembro(req, res) {
 async function listVisitantes(req, res) {
     const query = req.validatedQuery || {};
     const rows = await systemService.listVisitantes({
-        igrejaId: Number(req.auth.igrejaId || 1),
+        igrejaId: getIgrejaId(req.auth),
         search: String(query.search || '').trim()
     });
     res.json(rows);
@@ -190,7 +196,7 @@ async function createVisitante(req, res) {
         retornoEm: payload.retornoEm || null
     };
 
-    await systemService.createVisitante({ ...visitante, igrejaId: Number(req.auth.igrejaId || 1) });
+    await systemService.createVisitante({ ...visitante, igrejaId: getIgrejaId(req.auth) });
     audit('visitante.create', req, { nome: visitante.nome, data: visitante.data });
 
     res.status(201).json({ message: 'Visitante registrado com sucesso.' });
@@ -199,7 +205,7 @@ async function createVisitante(req, res) {
 async function updateVisitante(req, res) {
     const payload = req.validatedBody;
     const id = Number(req.params.id);
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     const visitante = {
         id,
@@ -235,7 +241,7 @@ async function updateVisitante(req, res) {
 
 async function deleteVisitante(req, res) {
     const id = Number(req.params.id);
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     const affected = await systemService.deleteVisitante({ id, igrejaId });
     if (!affected) {
@@ -249,7 +255,7 @@ async function deleteVisitante(req, res) {
 async function listCongregados(req, res) {
     const query = req.validatedQuery || {};
     const rows = await systemService.listCongregados({
-        igrejaId: Number(req.auth.igrejaId || 1),
+        igrejaId: getIgrejaId(req.auth),
         search: String(query.search || '').trim()
     });
     res.json(rows);
@@ -277,7 +283,7 @@ async function createCongregado(req, res) {
         fotoUrl: payload.fotoUrl || null
     };
 
-    await systemService.createCongregado({ ...congregado, igrejaId: Number(req.auth.igrejaId || 1) });
+    await systemService.createCongregado({ ...congregado, igrejaId: getIgrejaId(req.auth) });
     audit('congregado.create', req, { nome: congregado.nome, cidade: congregado.cidade, telefone: congregado.telefone });
 
     res.status(201).json({ message: 'Congregado registrado com sucesso.' });
@@ -286,7 +292,7 @@ async function createCongregado(req, res) {
 async function updateCongregado(req, res) {
     const payload = req.validatedBody;
     const id = Number(req.params.id);
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     const congregado = {
         id,
@@ -321,7 +327,7 @@ async function updateCongregado(req, res) {
 
 async function deleteCongregado(req, res) {
     const id = Number(req.params.id);
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     const affected = await systemService.deleteCongregado({ id, igrejaId });
     if (!affected) {
@@ -335,7 +341,7 @@ async function deleteCongregado(req, res) {
 async function listCriancas(req, res) {
     const query = req.validatedQuery || {};
     const rows = await systemService.listCriancas({
-        igrejaId: Number(req.auth.igrejaId || 1),
+        igrejaId: getIgrejaId(req.auth),
         search: String(query.search || '').trim()
     });
     res.json(rows);
@@ -366,7 +372,7 @@ async function createCrianca(req, res) {
         fotoUrl: payload.fotoUrl || null
     };
 
-    await systemService.createCrianca({ ...crianca, igrejaId: Number(req.auth.igrejaId || 1) });
+    await systemService.createCrianca({ ...crianca, igrejaId: getIgrejaId(req.auth) });
     audit('crianca.create', req, { nome: crianca.nome, cidade: crianca.cidade, pai: crianca.pai, mae: crianca.mae });
 
     res.status(201).json({ message: 'Criança registrada com sucesso.' });
@@ -375,7 +381,7 @@ async function createCrianca(req, res) {
 async function updateCrianca(req, res) {
     const payload = req.validatedBody;
     const id = Number(req.params.id);
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     const crianca = {
         id,
@@ -413,7 +419,7 @@ async function updateCrianca(req, res) {
 
 async function deleteCrianca(req, res) {
     const id = Number(req.params.id);
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     const affected = await systemService.deleteCrianca({ id, igrejaId });
     if (!affected) {
@@ -441,7 +447,7 @@ function canManageOracao(req, row) {
 async function listMyOracoes(req, res) {
     const query = req.validatedQuery || {};
     const rows = await systemService.listOracoesMy({
-        igrejaId: Number(req.auth.igrejaId || 1),
+        igrejaId: getIgrejaId(req.auth),
         userId: Number(req.auth.id),
         status: query.status || null
     });
@@ -451,7 +457,7 @@ async function listMyOracoes(req, res) {
 
 async function listMuralOracoes(req, res) {
     const rows = await systemService.listOracoesMural({
-        igrejaId: Number(req.auth.igrejaId || 1)
+        igrejaId: getIgrejaId(req.auth)
     });
 
     res.json(rows);
@@ -461,7 +467,7 @@ async function createOracao(req, res) {
     const payload = req.validatedBody;
 
     const data = {
-        igrejaId: Number(req.auth.igrejaId || 1),
+        igrejaId: getIgrejaId(req.auth),
         userId: Number(req.auth.id),
         userName: req.auth.nome || req.auth.email || 'Usuário',
         pedido: payload.pedido,
@@ -477,7 +483,7 @@ async function createOracao(req, res) {
 
 async function updateOracao(req, res) {
     const id = Number(req.params.id);
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const payload = req.validatedBody;
 
     const row = await systemService.getOracaoById({ igrejaId, id });
@@ -507,7 +513,7 @@ async function updateOracao(req, res) {
 
 async function updateOracaoResposta(req, res) {
     const id = Number(req.params.id);
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const payload = req.validatedBody;
 
     const row = await systemService.getOracaoById({ igrejaId, id });
@@ -536,7 +542,7 @@ async function updateOracaoResposta(req, res) {
 
 async function deleteOracao(req, res) {
     const id = Number(req.params.id);
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     const row = await systemService.getOracaoById({ igrejaId, id });
     if (!row) {
@@ -558,7 +564,7 @@ async function deleteOracao(req, res) {
 
 async function getTotalVisitantes(req, res) {
     try {
-        const total = await systemService.getTotalVisitantes(Number(req.auth.igrejaId || 1));
+        const total = await systemService.getTotalVisitantes(getIgrejaId(req.auth));
         res.json({ total });
     } catch (error) {
         res.json({ total: 0 });

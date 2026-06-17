@@ -1,9 +1,10 @@
-const { createHttpError } = require('../utils/httpError');
+﻿const { createHttpError } = require('../utils/httpError');
 const cargoService = require('../services/cargoService');
+const getIgrejaId = require('../utils/getIgrejaId');
 const { audit } = require('../services/auditService');
 
 async function listCargos(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const rows = await cargoService.listCargos(igrejaId);
     res.json(rows);
 }
@@ -11,7 +12,7 @@ async function listCargos(req, res) {
 async function createCargo(req, res) {
     const { descricao } = req.validatedBody;
 
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     try {
         await cargoService.createCargo(igrejaId, descricao);
@@ -27,7 +28,7 @@ async function createCargo(req, res) {
 
 async function updateCargo(req, res) {
     const id = Number.parseInt(req.params.id, 10);
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const { descricao } = req.validatedBody;
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -53,7 +54,7 @@ async function updateCargo(req, res) {
 
 async function deleteCargo(req, res) {
     const id = Number.parseInt(req.params.id, 10);
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     if (!Number.isInteger(id) || id <= 0) {
         throw createHttpError(400, 'ID inválido.');

@@ -1,17 +1,18 @@
-const { createHttpError } = require('../utils/httpError');
+﻿const { createHttpError } = require('../utils/httpError');
 const parseDecimal = require('../utils/parseDecimal');
 const financeService = require('../services/financeService');
+const getIgrejaId = require('../utils/getIgrejaId');
 const { audit } = require('../services/auditService');
 
 async function getSaldo(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const saldoFinal = await financeService.getSaldo(igrejaId);
 
     res.json({ saldo: saldoFinal.toFixed(2).replace('.', ',') });
 }
 
 async function listTransacoes(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const query = req.validatedQuery || {};
 
     const hasAdvancedQuery = Boolean(
@@ -46,7 +47,7 @@ async function createTransacao(req, res) {
         throw createHttpError(400, 'Valor da transação inválido.');
     }
 
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     await financeService.createTransacao({ descricao, tipo, amount, igrejaId });
     audit('finance.transacao.create', req, { tipo, amount, descricao });
@@ -55,7 +56,7 @@ async function createTransacao(req, res) {
 }
 
 async function getSaldoInicial(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const row = await financeService.getSaldoInicial(igrejaId);
 
     if (!row) {
@@ -76,7 +77,7 @@ async function upsertSaldoInicial(req, res) {
         throw createHttpError(400, 'Saldo inicial inválido.');
     }
 
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
 
     await financeService.upsertSaldoInicial({ competencia, saldoInicial, igrejaId });
     audit('finance.saldo-inicial.upsert', req, { competencia, saldoInicial });
@@ -87,7 +88,7 @@ async function upsertSaldoInicial(req, res) {
 // ─── Dízimos ────────────────────────────────────────────────────────────────
 
 async function listDizimos(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const q = req.validatedQuery || {};
     const result = await financeService.listDizimos(igrejaId, {
         competencia: q.competencia || null,
@@ -101,14 +102,14 @@ async function listDizimos(req, res) {
 }
 
 async function getTotaisDizimos(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const competencia = String(req.query.competencia || '').trim() || null;
     const totais = await financeService.getTotaisDizimos(igrejaId, competencia);
     res.json(totais);
 }
 
 async function createDizimo(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const { valor } = req.validatedBody;
     const amount = parseDecimal(valor);
 
@@ -122,7 +123,7 @@ async function createDizimo(req, res) {
 }
 
 async function deleteDizimo(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     await financeService.deleteDizimo(id, igrejaId);
     audit('finance.dizimo.delete', req, { id });
@@ -130,21 +131,21 @@ async function deleteDizimo(req, res) {
 }
 
 async function listTiposReceita(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const query = req.validatedQuery || {};
     const items = await financeService.listTiposReceita(igrejaId, { search: query.search || null });
     res.json({ items });
 }
 
 async function createTipoReceita(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = await financeService.createTipoReceita(igrejaId, req.validatedBody, req.auth.id);
     audit('finance.tipo-receita.create', req, { id, descricao: req.validatedBody.descricao });
     res.status(201).json({ message: 'Tipo de receita criado com sucesso.', id });
 }
 
 async function updateTipoReceita(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = String(req.params.id || '').trim();
 
     const current = await financeService.getTipoReceitaById(id, igrejaId);
@@ -161,7 +162,7 @@ async function updateTipoReceita(req, res) {
 }
 
 async function deleteTipoReceita(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = String(req.params.id || '').trim();
 
     const current = await financeService.getTipoReceitaById(id, igrejaId);

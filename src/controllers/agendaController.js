@@ -1,8 +1,11 @@
-const agendaService = require('../services/agendaService');
+﻿const agendaService = require('../services/agendaService');
+const { createHttpError } = require('../utils/httpError');
 const { audit } = require('../services/auditService');
 
 function getIgrejaId(req) {
-    return Number(req.auth?.igrejaId || 1);
+    const id = Number(req.auth?.igrejaId);
+    if (!id) throw createHttpError(401, 'Token inválido: igrejaId ausente. Faça login novamente.');
+    return id;
 }
 
 async function listEventos(req, res) {

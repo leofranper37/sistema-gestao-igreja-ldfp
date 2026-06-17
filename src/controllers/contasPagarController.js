@@ -1,10 +1,11 @@
-const parseDecimal = require('../utils/parseDecimal');
+﻿const parseDecimal = require('../utils/parseDecimal');
 const contasPagarService = require('../services/contasPagarService');
+const getIgrejaId = require('../utils/getIgrejaId');
 const { audit } = require('../services/auditService');
 const { createHttpError } = require('../utils/httpError');
 
 async function listContasPagar(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const q = req.query;
     const result = await contasPagarService.listContasPagar(igrejaId, {
         status: q.status || null,
@@ -20,13 +21,13 @@ async function listContasPagar(req, res) {
 }
 
 async function getTotais(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const totais = await contasPagarService.getTotais(igrejaId);
     res.json(totais);
 }
 
 async function createContaPagar(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const { valor: raw, ...rest } = req.validatedBody;
     const valor = parseDecimal(raw);
 
@@ -40,7 +41,7 @@ async function createContaPagar(req, res) {
 }
 
 async function patchContaPagar(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     const { status, dataPagamento } = req.body;
 
@@ -54,7 +55,7 @@ async function patchContaPagar(req, res) {
 }
 
 async function deleteContaPagar(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     await contasPagarService.deleteContaPagar(id, igrejaId);
     audit('financeiro.contas_pagar.delete', req, { id });

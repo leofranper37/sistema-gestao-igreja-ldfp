@@ -1,16 +1,17 @@
-const parseDecimal = require('../utils/parseDecimal');
+﻿const parseDecimal = require('../utils/parseDecimal');
 const bancoService = require('../services/bancoService');
+const getIgrejaId = require('../utils/getIgrejaId');
 const { audit } = require('../services/auditService');
 const { createHttpError } = require('../utils/httpError');
 
 async function listContas(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const contas = await bancoService.listContas(igrejaId);
     res.json(contas);
 }
 
 async function getConta(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const conta = await bancoService.getConta(Number(req.params.id), igrejaId);
 
     if (!conta) throw createHttpError(404, 'Conta não encontrada.');
@@ -18,7 +19,7 @@ async function getConta(req, res) {
 }
 
 async function createConta(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const { saldoInicial: raw, ...rest } = req.validatedBody;
     const saldoInicial = parseDecimal(raw);
 
@@ -32,7 +33,7 @@ async function createConta(req, res) {
 }
 
 async function updateConta(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     const { saldoInicial: raw, ...rest } = req.validatedBody;
     const saldoInicial = parseDecimal(raw);
@@ -43,7 +44,7 @@ async function updateConta(req, res) {
 }
 
 async function deleteConta(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     await bancoService.deleteConta(id, igrejaId);
     audit('banco.conta.delete', req, { id });
@@ -51,7 +52,7 @@ async function deleteConta(req, res) {
 }
 
 async function listLancamentos(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const contaId = Number(req.params.contaId);
     const rows = await bancoService.listLancamentos(contaId, igrejaId);
     const saldo = await bancoService.getSaldoConta(contaId, igrejaId);
@@ -59,7 +60,7 @@ async function listLancamentos(req, res) {
 }
 
 async function createLancamento(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const contaId = Number(req.params.contaId);
     const { descricao, tipo, valor, dataLancamento, observacao } = req.validatedBody;
     const id = await bancoService.createLancamento(igrejaId, { contaId, descricao, tipo, valor, dataLancamento, observacao }, req.auth.id);
@@ -68,7 +69,7 @@ async function createLancamento(req, res) {
 }
 
 async function deleteLancamento(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
     await bancoService.deleteLancamento(id, igrejaId);
     audit('banco.lancamento.delete', req, { id });

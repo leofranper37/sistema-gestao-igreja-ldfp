@@ -1,16 +1,18 @@
-const { createHttpError } = require('../utils/httpError');
+﻿const { createHttpError } = require('../utils/httpError');
 const parseDecimal = require('../utils/parseDecimal');
+const getIgrejaId = require('../utils/getIgrejaId');
 const { audit } = require('../services/auditService');
 const contabilidadeService = require('../services/contabilidadeService');
+const getIgrejaId = require('../utils/getIgrejaId');
 
 async function listPlanoContas(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const items = await contabilidadeService.listPlanoContas(igrejaId);
     res.json({ items });
 }
 
 async function createPlanoConta(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const id = await contabilidadeService.createPlanoConta({
         igrejaId,
         codigo: req.validatedBody.codigo,
@@ -28,13 +30,13 @@ async function createPlanoConta(req, res) {
 }
 
 async function listBalanceteAbertura(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const data = await contabilidadeService.listBalanceteAbertura(igrejaId);
     res.json(data);
 }
 
 async function createBalanceteAbertura(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const debito = parseDecimal(req.validatedBody.debito);
     const credito = parseDecimal(req.validatedBody.credito);
 
@@ -55,13 +57,13 @@ async function createBalanceteAbertura(req, res) {
 }
 
 async function listLancamentosContabeis(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const items = await contabilidadeService.listLancamentosContabeis(igrejaId);
     res.json({ items });
 }
 
 async function createLancamentoContabil(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const valor = parseDecimal(req.validatedBody.valor);
     if (Number.isNaN(valor) || valor <= 0) {
         throw createHttpError(400, 'Valor inválido.');
@@ -82,13 +84,13 @@ async function createLancamentoContabil(req, res) {
 }
 
 async function listEncerramentos(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const items = await contabilidadeService.listEncerramentos(igrejaId);
     res.json({ items });
 }
 
 async function createEncerramento(req, res) {
-    const igrejaId = Number(req.auth.igrejaId || 1);
+    const igrejaId = getIgrejaId(req.auth);
     const usuarioNome = req.auth.nome || req.auth.email || 'Usuário';
     const id = await contabilidadeService.createEncerramento({
         igrejaId,

@@ -445,7 +445,10 @@
                 const token = window.getAuthToken?.() || sessionStorage.getItem('token') || localStorage.getItem('token') || '';
                 const resp = await fetch('/super-admin/overview', { headers: token ? { 'Authorization': 'Bearer ' + token } : {} });
                 if (resp.status === 401) { window.location.href = '/super_admin_login'; return; }
-                if (!resp.ok) throw new Error('Não foi possível carregar os dados do super-admin.');
+                if (!resp.ok) {
+                    const errData = await resp.json().catch(() => ({}));
+                    throw new Error(errData.error || `Erro HTTP ${resp.status}`);
+                }
                 const data = await resp.json();
                 applyKpis(data?.kpis || {});
                 allCustomers = Array.isArray(data?.customers) ? data.customers : [];
@@ -484,9 +487,9 @@
             setupSidebarNav();
             setupAutoRefresh();
 
-            loadOverview().catch(() => {
+            loadOverview().catch((err) => {
                 const tbody = document.getElementById('customersTableBody');
-                if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger-red);">Erro ao carregar dados do painel.</td></tr>';
+                if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger-red);padding:20px;">Erro ao carregar dados do painel: ${escapeHtml(err?.message || 'desconhecido')}</td></tr>`;
             });
         })();
     </script>

@@ -779,6 +779,54 @@ async function deleteNovidade(req, res) {
     } catch (err) { res.status(500).json({ error: err.message }); }
 }
 
+// ── Excluir Igreja ───────────────────────────────────────────────────────────
+
+async function deleteIgreja(req, res) {
+    const id = Number(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID inválido.' });
+
+    // Impede excluir a própria igreja do super-admin
+    const [ig] = await pool.query(`SELECT nome FROM igrejas WHERE id = ?`, [id]);
+    if (!ig.length) return res.status(404).json({ error: 'Igreja não encontrada.' });
+    if (ig[0].nome === 'LDFP Master') {
+        return res.status(403).json({ error: 'A igreja master não pode ser excluída.' });
+    }
+
+    // Tabelas filhas — ignora as que não existirem
+    const tabelas = [
+        'oracao_intercessores', 'oracoes_pedidos', 'pedidos_oracao',
+        'batismos', 'escalas_membros', 'escalas', 'grupos_membros', 'grupos',
+        'ebd_presencas', 'ebd_aulas', 'ebd_classes', 'ebd_cursos',
+        'agenda_eventos_presencas', 'agenda_eventos',
+        'dizimos', 'financeiro', 'contas_pagar', 'banco_lancamentos', 'banco_categorias',
+        'missionarios', 'outras_igrejas_membros',
+        'visitantes_followup', 'visitantes', 'congregados', 'criancas',
+        'auditoria', 'audit_logs', 'push_subscriptions', 'payment_links',
+        'checkins_portaria', 'qr_sessoes', 'autocadastros',
+        'whatsapp_logs', 'whatsapp_templates',
+        'app_congregacoes', 'app_videos', 'app_audios', 'app_images',
+        'app_documents', 'app_conexoes', 'app_midias', 'midia_visitantes',
+        'telao_visitantes', 'estudos_membros', 'estudos',
+        'membros', 'password_reset_requests', 'igreja_modulos',
+    ];
+
+    for (const tabela of tabelas) {
+        try {
+            await pool.query(`DELETE FROM ${tabela} WHERE igreja_id = ?`, [id]);
+        } catch (_) {}
+    }
+
+    // Usuários da igreja
+    try {
+        await pool.query(`DELETE FROM usuarios WHERE igreja_id = ?`, [id]);
+    } catch (_) {}
+
+    // Por último, a própria igreja
+    await pool.query(`DELETE FROM igrejas WHERE id = ?`, [id]);
+
+    res.json({ ok: true, mensagem: `Igreja "${ig[0].nome}" excluída com sucesso.` });
+}
+
 // ── Usuários / Reset de Senha ────────────────────────────────────────────────
 
 async function listUsuariosAdmin(req, res) {
@@ -1140,6 +1188,7 @@ module.exports = {
     createNovidade,
     updateNovidade,
     deleteNovidade,
+    deleteIgreja,
     listUsuariosAdmin,
     postResetSenha,
     listResetRequests,

@@ -88,9 +88,44 @@
 
         .action-button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 5px; transition: color 0.2s; }
         .action-button:hover { color: var(--primary-blue); }
+        .action-button.danger:hover { color: var(--danger-red); }
+
+        /* Modal de confirmação */
+        .confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 9999; align-items: center; justify-content: center; }
+        .confirm-overlay.open { display: flex; }
+        .confirm-box { background: #fff; border-radius: 14px; padding: 32px 28px; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+        .confirm-box h3 { font-size: 18px; font-weight: 800; color: var(--master-dark); margin-bottom: 10px; }
+        .confirm-box p { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 6px; }
+        .confirm-box .church-name { font-weight: 700; color: var(--danger-red); }
+        .confirm-box .warn { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #991b1b; margin: 14px 0; }
+        .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .btn-cancel { padding: 9px 18px; border: 1px solid var(--border-color); background: transparent; border-radius: 7px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text-dark); }
+        .btn-cancel:hover { background: var(--bg-light); }
+        .btn-delete { padding: 9px 18px; background: var(--danger-red); border: none; border-radius: 7px; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 7px; }
+        .btn-delete:hover { background: #dc2626; }
+        .btn-delete:disabled { opacity: 0.6; cursor: not-allowed; }
     </style>
 </head>
 <body>
+
+    <!-- Modal: confirmar exclusão de igreja -->
+    <div class="confirm-overlay" id="deleteModal">
+        <div class="confirm-box">
+            <h3><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger-red);margin-right:8px;"></i>Excluir Igreja</h3>
+            <p>Você está prestes a excluir permanentemente:</p>
+            <p class="church-name" id="deleteModalName"></p>
+            <div class="warn">
+                <i class="fa-solid fa-circle-xmark"></i>
+                <strong>Ação irreversível.</strong> Todos os membros, usuários, financeiro e dados dessa igreja serão apagados do banco de dados.
+            </div>
+            <div class="confirm-actions">
+                <button class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-delete" id="deleteConfirmBtn" onclick="confirmDeleteIgreja()">
+                    <i class="fa-solid fa-trash"></i> Excluir definitivamente
+                </button>
+            </div>
+        </div>
+    </div>
 
     <nav class="sidebar">
         <div class="sidebar-header">
@@ -285,6 +320,48 @@
                     .replace(/'/g, '&#039;');
             }
 
+            // ── Exclusão de igreja ─────────────────────────────────────────
+            let _deleteIgrejaId = null;
+
+            function openDeleteModal(btn) {
+                _deleteIgrejaId = Number(btn.dataset.id);
+                document.getElementById('deleteModalName').textContent = btn.dataset.nome || `ID ${btn.dataset.id}`;
+                document.getElementById('deleteConfirmBtn').disabled = false;
+                document.getElementById('deleteModal').classList.add('open');
+            }
+
+            function closeDeleteModal() {
+                _deleteIgrejaId = null;
+                document.getElementById('deleteModal').classList.remove('open');
+            }
+
+            async function confirmDeleteIgreja() {
+                if (!_deleteIgrejaId) return;
+                const btn = document.getElementById('deleteConfirmBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Excluindo...';
+                try {
+                    const token = localStorage.getItem('ldfp_token') || sessionStorage.getItem('ldfp_token');
+                    const resp = await fetch(`/api/saas/igrejas/${_deleteIgrejaId}`, {
+                        method: 'DELETE',
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const data = await resp.json();
+                    if (!resp.ok) throw new Error(data.error || `Erro ${resp.status}`);
+                    closeDeleteModal();
+                    loadOverview();
+                } catch (err) {
+                    alert('Erro ao excluir: ' + err.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-trash"></i> Excluir definitivamente';
+                }
+            }
+
+            // Fechar modal ao clicar fora
+            document.getElementById('deleteModal').addEventListener('click', function(e) {
+                if (e.target === this) closeDeleteModal();
+            });
+
             function getStatusBadge(status) {
                 const s = String(status || '').toLowerCase();
                 if (s === 'ativa') return { className: 'status-active', label: 'Ativo' };
@@ -363,9 +440,12 @@
                             <td>${Number(item.membros_ativos || 0)} / ${Number(item.max_cadastros || 0) || '-'}</td>
                             <td><span class="status-badge ${badge.className}">${escapeHtml(badge.label)}</span></td>
                             <td>${escapeHtml(formatDate(item.trial_ends_at || item.created_at))}</td>
-                            <td>
+                            <td style="display:flex;gap:4px;align-items:center;">
                                 <button class="action-button" onclick="window.loadContentPage('igreja_editar.html', { id: '${id}' })" title="Visualizar/Editar">
                                     <i class="fa-solid fa-ellipsis-vertical"></i>
+                                </button>
+                                <button class="action-button danger" data-id="${id}" data-nome="${escapeHtml(name)}" onclick="openDeleteModal(this)" title="Excluir igreja">
+                                    <i class="fa-solid fa-trash"></i>
                                 </button>
                             </td>
                         </tr>`;
@@ -408,6 +488,9 @@
             }
 
             window.loadContentPage = loadContentPage;
+            window.openDeleteModal = openDeleteModal;
+            window.closeDeleteModal = closeDeleteModal;
+            window.confirmDeleteIgreja = confirmDeleteIgreja;
 
             function setupSidebarNav() {
                 document.querySelectorAll('.menu-item[data-page]').forEach(link => {

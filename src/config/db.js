@@ -1,4 +1,5 @@
-﻿const path = require('path');
+﻿const crypto = require('crypto');
+const path = require('path');
 const fs = require('fs');
 const mysql = require('mysql2/promise');
 let pg;
@@ -580,6 +581,13 @@ async function initializeDatabase() {
             modulo_mural_oracao TINYINT(1) NOT NULL DEFAULT 1,
             config_personalizada_json LONGTEXT NULL,
             public_token VARCHAR(64) NULL,
+            responsavel VARCHAR(255) NULL,
+            email_admin VARCHAR(255) NULL,
+            telefone VARCHAR(60) NULL,
+            cnpj VARCHAR(30) NULL,
+            mensalidade_valor DECIMAL(10,2) NOT NULL DEFAULT 0,
+            ultimo_pagamento DATETIME NULL,
+            proximo_vencimento DATETIME NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN config_personalizada_json LONGTEXT NULL`); } catch(_){}
@@ -614,6 +622,9 @@ async function initializeDatabase() {
             foto_url VARCHAR(500) NULL,
             acesso_app_midia TINYINT(1) NOT NULL DEFAULT 0,
             gerenciar_midias TINYINT(1) NOT NULL DEFAULT 0,
+            observacoes TEXT NULL,
+            app_senha VARCHAR(255) NULL,
+            precisa_trocar_senha TINYINT(1) NOT NULL DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             INDEX idx_membros_igreja (igreja_id)
         )`);
@@ -717,7 +728,13 @@ async function initializeDatabase() {
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN ultimo_pagamento DATETIME`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN proximo_vencimento DATETIME`); } catch(_){}
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN public_token VARCHAR(64) NULL`); } catch(_){}
-        try { await activeMysqlPool.query(`UPDATE igrejas SET public_token = LOWER(HEX(RANDOM_BYTES(20))) WHERE public_token IS NULL OR public_token = ''`); } catch(_){}
+        try {
+            const [igSemToken] = await activeMysqlPool.query(`SELECT id FROM igrejas WHERE public_token IS NULL OR public_token = ''`);
+            for (const ig of igSemToken) {
+                const token = crypto.randomBytes(20).toString('hex');
+                await activeMysqlPool.query(`UPDATE igrejas SET public_token = ? WHERE id = ?`, [token, ig.id]);
+            }
+        } catch (_) {}
 
         await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS saas_modulos (
             id INT AUTO_INCREMENT PRIMARY KEY,

@@ -20,11 +20,11 @@ async function loginMembroApp(req, res) {
     let sql = `SELECT m.*, i.nome AS nome_igreja, i.id AS igreja_id_num
                FROM membros m
                INNER JOIN igrejas i ON i.id = m.igreja_id
-               WHERE REPLACE(REPLACE(REPLACE(m.cpf, '.', ''), '-', ''), '/', '') = $1`;
+               WHERE REPLACE(REPLACE(REPLACE(m.cpf, '.', ''), '-', ''), '/', '') = ?`;
     const params = [cpfLimpo];
 
     if (igreja_nome) {
-        sql += ` AND LOWER(i.nome) = LOWER($2)`;
+        sql += ` AND LOWER(i.nome) = LOWER(?)`;
         params.push(String(igreja_nome).trim());
     }
     sql += ` LIMIT 1`;
@@ -88,7 +88,7 @@ async function trocarSenhaMembroApp(req, res) {
 
     const hash = await bcrypt.hash(String(novaSenha), config.security.passwordSaltRounds);
     await pool.query(
-        `UPDATE membros SET app_senha = $1, precisa_trocar_senha = 0 WHERE id = $2 AND igreja_id = $3`,
+        `UPDATE membros SET app_senha = ?, precisa_trocar_senha = 0 WHERE id = ? AND igreja_id = ?`,
         [hash, membroId, igrejaId]
     );
 
@@ -100,7 +100,7 @@ async function resetarSenhaMembroApp(req, res) {
     const igrejaId = req.auth.igrejaId;
 
     const [rows] = await pool.query(
-        `SELECT id FROM membros WHERE id = $1 AND igreja_id = $2 LIMIT 1`,
+        `SELECT id FROM membros WHERE id = ? AND igreja_id = ? LIMIT 1`,
         [membroId, igrejaId]
     );
     if (!rows || !rows.length) {
@@ -109,7 +109,7 @@ async function resetarSenhaMembroApp(req, res) {
 
     // Limpa a senha — próximo login usa os 6 primeiros dígitos do CPF
     await pool.query(
-        `UPDATE membros SET app_senha = NULL, precisa_trocar_senha = 1 WHERE id = $1 AND igreja_id = $2`,
+        `UPDATE membros SET app_senha = NULL, precisa_trocar_senha = 1 WHERE id = ? AND igreja_id = ?`,
         [membroId, igrejaId]
     );
 
@@ -138,7 +138,7 @@ async function getMeuPerfilApp(req, res) {
         `SELECT m.*, i.nome AS nome_igreja, i.plano, i.status_assinatura
          FROM membros m
          INNER JOIN igrejas i ON i.id = m.igreja_id
-         WHERE m.id = $1 AND m.igreja_id = $2
+         WHERE m.id = ? AND m.igreja_id = ?
          LIMIT 1`,
         [membroId, igrejaId]
     );

@@ -31,9 +31,18 @@ function addDays(baseDate, days) {
 
 async function getSuperAdminOverview(req, res) {
     try {
-        const [igrejas] = await pool.query(
-            `SELECT status_assinatura, mensalidade_valor, trial_ends_at FROM igrejas`
-        );
+        // Tenta com mensalidade_valor; cai para 0 se a coluna ainda não existe em produção
+        let igrejas;
+        try {
+            [igrejas] = await pool.query(
+                `SELECT status_assinatura, mensalidade_valor, trial_ends_at FROM igrejas`
+            );
+        } catch (_) {
+            [igrejas] = await pool.query(
+                `SELECT status_assinatura, 0 AS mensalidade_valor, trial_ends_at FROM igrejas`
+            );
+        }
+
         const total = igrejas.length;
         const ativas = igrejas.filter(r => r.status_assinatura === 'ativa').length;
         const trial = igrejas.filter(r => r.status_assinatura === 'trial').length;
@@ -55,25 +64,45 @@ async function getSuperAdminOverview(req, res) {
             .filter(r => r.status_assinatura === 'ativa')
             .reduce((s, r) => s + fmt(r.mensalidade_valor), 0);
 
-        const [pending] = await pool.query(
-            `SELECT COUNT(*) AS cnt, COALESCE(SUM(valor),0) AS total
-             FROM payment_links WHERE status = 'pendente'`
-        );
-        const pendingCount = fmt(pending[0]?.cnt);
-        const pendingAmount = fmt(pending[0]?.total);
+        // payment_links pode não existir ainda em bancos antigos
+        let pendingCount = 0, pendingAmount = 0;
+        try {
+            const [pending] = await pool.query(
+                `SELECT COUNT(*) AS cnt, COALESCE(SUM(valor),0) AS total
+                 FROM payment_links WHERE status = 'pendente'`
+            );
+            pendingCount = fmt(pending[0]?.cnt);
+            pendingAmount = fmt(pending[0]?.total);
+        } catch (_) {}
 
-        const [customers] = await pool.query(
-            `SELECT i.id, i.nome, i.plano, i.status_assinatura,
-                    i.responsavel AS responsavel_nome,
-                    i.email_admin AS responsavel_email,
-                    i.mensalidade_valor, i.proximo_vencimento,
-                    i.trial_ends_at, i.max_cadastros, i.created_at,
-                    COUNT(m.id) AS membros_ativos
-             FROM igrejas i
-             LEFT JOIN membros m ON m.igreja_id = i.id
-             GROUP BY i.id
-             ORDER BY i.created_at DESC`
-        );
+        // Tenta com colunas opcionais; cai para NULL se não existirem ainda
+        let customers = [];
+        try {
+            [customers] = await pool.query(
+                `SELECT i.id, i.nome, i.plano, i.status_assinatura,
+                        i.responsavel AS responsavel_nome,
+                        i.email_admin AS responsavel_email,
+                        i.mensalidade_valor, i.proximo_vencimento,
+                        i.trial_ends_at, i.max_cadastros, i.created_at,
+                        COUNT(m.id) AS membros_ativos
+                 FROM igrejas i
+                 LEFT JOIN membros m ON m.igreja_id = i.id
+                 GROUP BY i.id
+                 ORDER BY i.created_at DESC`
+            );
+        } catch (_) {
+            [customers] = await pool.query(
+                `SELECT i.id, i.nome, i.plano, i.status_assinatura,
+                        NULL AS responsavel_nome, NULL AS responsavel_email,
+                        0 AS mensalidade_valor, NULL AS proximo_vencimento,
+                        i.trial_ends_at, i.max_cadastros, i.created_at,
+                        COUNT(m.id) AS membros_ativos
+                 FROM igrejas i
+                 LEFT JOIN membros m ON m.igreja_id = i.id
+                 GROUP BY i.id
+                 ORDER BY i.created_at DESC`
+            );
+        }
 
         res.json({
             kpis: { mrr, activeChurches: ativas, pendingPayments: pendingCount, pendingAmount, total, trial, suspensas, trialExpirando, trialExpirado },
@@ -128,17 +157,33 @@ async function getSaasFaturamento(req, res) {
 
 async function getSaasIgrejas(req, res) {
     try {
-        const [rows] = await pool.query(
-            `SELECT i.id, i.nome, i.plano, i.status_assinatura,
-                    i.responsavel, i.email_admin, i.telefone, i.cnpj,
-                    i.mensalidade_valor, i.proximo_vencimento, i.created_at,
-                    i.trial_starts_at, i.trial_ends_at,
-                    COUNT(m.id) AS total_membros
-             FROM igrejas i
-             LEFT JOIN membros m ON m.igreja_id = i.id
-             GROUP BY i.id
-             ORDER BY i.created_at DESC`
-        );
+        let rows = [];
+        try {
+            [rows] = await pool.query(
+                `SELECT i.id, i.nome, i.plano, i.status_assinatura,
+                        i.responsavel, i.email_admin, i.telefone, i.cnpj,
+                        i.mensalidade_valor, i.proximo_vencimento, i.created_at,
+                        i.trial_starts_at, i.trial_ends_at,
+                        COUNT(m.id) AS total_membros
+                 FROM igrejas i
+                 LEFT JOIN membros m ON m.igreja_id = i.id
+                 GROUP BY i.id
+                 ORDER BY i.created_at DESC`
+            );
+        } catch (_) {
+            [rows] = await pool.query(
+                `SELECT i.id, i.nome, i.plano, i.status_assinatura,
+                        NULL AS responsavel, NULL AS email_admin,
+                        NULL AS telefone, NULL AS cnpj,
+                        0 AS mensalidade_valor, NULL AS proximo_vencimento,
+                        i.created_at, i.trial_starts_at, i.trial_ends_at,
+                        COUNT(m.id) AS total_membros
+                 FROM igrejas i
+                 LEFT JOIN membros m ON m.igreja_id = i.id
+                 GROUP BY i.id
+                 ORDER BY i.created_at DESC`
+            );
+        }
         res.json(rows || []);
     } catch (err) {
         res.status(500).json({ error: err.message });

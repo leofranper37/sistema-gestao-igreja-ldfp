@@ -3,39 +3,35 @@ const { audit } = require('../services/auditService');
 const { createHttpError } = require('../utils/httpError');
 
 async function listMembros(req, res) {
-    try {
-        const query = req.validatedQuery || {};
-        const igrejaId = Number(req.auth.igrejaId || 1);
+    const query = req.validatedQuery || {};
+    const igrejaId = Number(req.auth.igrejaId || 1);
 
-        const hasAdvancedQuery = Boolean(
-            query.page || query.limit || query.sortBy || query.sortOrder
-        );
+    const hasAdvancedQuery = Boolean(
+        query.page || query.limit || query.sortBy || query.sortOrder
+    );
 
-        const baseFilters = {
-            igrejaId,
-            nome: String(query.nome || '').trim(),
-            email: String(query.email || '').trim(),
-            telefone: String(query.telefone || '').trim(),
-            cidade: String(query.cidade || '').trim()
-        };
+    const baseFilters = {
+        igrejaId,
+        nome: String(query.nome || '').trim(),
+        email: String(query.email || '').trim(),
+        telefone: String(query.telefone || '').trim(),
+        cidade: String(query.cidade || '').trim()
+    };
 
-        if (!hasAdvancedQuery && !['1', 'true', true].includes(query.meta)) {
-            const rows = await systemService.listMembros(baseFilters);
-            return res.json(rows);
-        }
-
-        const result = await systemService.listMembrosWithFilters({
-            ...baseFilters,
-            page: query.page,
-            limit: query.limit || 50,
-            sortBy: query.sortBy || 'id',
-            sortOrder: query.sortOrder || 'desc'
-        });
-
-        return res.json(result);
-    } catch (error) {
-        res.json([]);
+    if (!hasAdvancedQuery && !['1', 'true', true].includes(query.meta)) {
+        const rows = await systemService.listMembros(baseFilters);
+        return res.json(rows);
     }
+
+    const result = await systemService.listMembrosWithFilters({
+        ...baseFilters,
+        page: query.page,
+        limit: query.limit || 50,
+        sortBy: query.sortBy || 'id',
+        sortOrder: query.sortOrder || 'desc'
+    });
+
+    return res.json(result);
 }
 
 async function createMembro(req, res) {
@@ -163,16 +159,12 @@ async function deleteMembro(req, res) {
 }
 
 async function listVisitantes(req, res) {
-    try {
-        const query = req.validatedQuery || {};
-        const rows = await systemService.listVisitantes({
-            igrejaId: Number(req.auth.igrejaId || 1),
-            search: String(query.search || '').trim()
-        });
-        res.json(rows);
-    } catch (error) {
-        res.json([]);
-    }
+    const query = req.validatedQuery || {};
+    const rows = await systemService.listVisitantes({
+        igrejaId: Number(req.auth.igrejaId || 1),
+        search: String(query.search || '').trim()
+    });
+    res.json(rows);
 }
 
 async function createVisitante(req, res) {
@@ -255,16 +247,12 @@ async function deleteVisitante(req, res) {
 }
 
 async function listCongregados(req, res) {
-    try {
-        const query = req.validatedQuery || {};
-        const rows = await systemService.listCongregados({
-            igrejaId: Number(req.auth.igrejaId || 1),
-            search: String(query.search || '').trim()
-        });
-        res.json(rows);
-    } catch (error) {
-        res.json([]);
-    }
+    const query = req.validatedQuery || {};
+    const rows = await systemService.listCongregados({
+        igrejaId: Number(req.auth.igrejaId || 1),
+        search: String(query.search || '').trim()
+    });
+    res.json(rows);
 }
 
 async function createCongregado(req, res) {
@@ -345,16 +333,12 @@ async function deleteCongregado(req, res) {
 }
 
 async function listCriancas(req, res) {
-    try {
-        const query = req.validatedQuery || {};
-        const rows = await systemService.listCriancas({
-            igrejaId: Number(req.auth.igrejaId || 1),
-            search: String(query.search || '').trim()
-        });
-        res.json(rows);
-    } catch (error) {
-        res.json([]);
-    }
+    const query = req.validatedQuery || {};
+    const rows = await systemService.listCriancas({
+        igrejaId: Number(req.auth.igrejaId || 1),
+        search: String(query.search || '').trim()
+    });
+    res.json(rows);
 }
 
 async function createCrianca(req, res) {

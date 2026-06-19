@@ -785,46 +785,73 @@ async function deleteIgreja(req, res) {
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ error: 'ID inválido.' });
 
-    // Impede excluir a própria igreja do super-admin
+    // Bloqueia Igreja Padrão (id=1) e LDFP Master pelo nome
+    if (id === 1) return res.status(403).json({ error: 'A Igreja Padrão não pode ser excluída.' });
+
     const [ig] = await pool.query(`SELECT nome FROM igrejas WHERE id = ?`, [id]);
     if (!ig.length) return res.status(404).json({ error: 'Igreja não encontrada.' });
-    if (ig[0].nome === 'LDFP Master') {
+    const igNome = ig[0].nome;
+    if (igNome === 'LDFP Master') {
         return res.status(403).json({ error: 'A igreja master não pode ser excluída.' });
     }
 
-    // Tabelas filhas — ignora as que não existirem
-    const tabelas = [
-        'oracao_intercessores', 'oracoes_pedidos', 'pedidos_oracao',
-        'batismos', 'escalas_membros', 'escalas', 'grupos_membros', 'grupos',
+    // Conta membros antes da exclusão (para o audit)
+    const [[{ totalMembros }]] = await pool.query(
+        `SELECT COUNT(*) AS totalMembros FROM membros WHERE igreja_id = ?`, [id]
+    );
+
+    // Tabelas filhas com igreja_id — folhas antes das raízes, ignora se não existir
+    const tabelasIgrejaId = [
+        'oracao_intercessores', 'pedidos_oracao', 'oracoes_pedidos',
+        'batismos',
+        'grupo_membros', 'grupo_reunioes', 'grupos',
         'ebd_presencas', 'ebd_aulas', 'ebd_classes', 'ebd_cursos',
         'agenda_eventos_presencas', 'agenda_eventos',
-        'dizimos', 'financeiro', 'contas_pagar', 'banco_lancamentos', 'banco_categorias',
-        'missionarios', 'outras_igrejas_membros',
-        'visitantes_followup', 'visitantes', 'congregados', 'criancas',
-        'auditoria', 'audit_logs', 'push_subscriptions', 'payment_links',
+        'dizimos', 'financeiro', 'contas_pagar', 'banco_lancamentos', 'banco_contas', 'banco_categorias',
+        'missionarios', 'outras_igrejas_membros', 'congregados',
+        'criancas', 'visitante_followup', 'visitantes_followup', 'visitantes',
+        'estudo_anotacoes', 'estudo_favoritos', 'estudo_progresso', 'estudo_devocionais',
+        'push_subscriptions', 'payment_links',
         'checkins_portaria', 'qr_sessoes', 'autocadastros',
         'whatsapp_logs', 'whatsapp_templates',
         'app_congregacoes', 'app_videos', 'app_audios', 'app_images',
         'app_documents', 'app_conexoes', 'app_midias', 'midia_visitantes',
-        'telao_visitantes', 'estudos_membros', 'estudos',
+        'telao_visitantes', 'auditoria', 'audit_logs',
         'membros', 'password_reset_requests', 'igreja_modulos',
     ];
 
-    for (const tabela of tabelas) {
-        try {
-            await pool.query(`DELETE FROM ${tabela} WHERE igreja_id = ?`, [id]);
-        } catch (_) {}
+    // Módulo Escalas usa church_id (não igreja_id)
+    const tabelasChurchId = [
+        'escalas_atribuicoes', 'escalas_evento_funcoes', 'escalas_instancias',
+        'escalas_funcoes', 'escalas_eventos', 'escalas_grupos',
+    ];
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        for (const tabela of tabelasIgrejaId) {
+            try { await conn.query(`DELETE FROM ${tabela} WHERE igreja_id = ?`, [id]); } catch (_) {}
+        }
+        for (const tabela of tabelasChurchId) {
+            try { await conn.query(`DELETE FROM ${tabela} WHERE church_id = ?`, [id]); } catch (_) {}
+        }
+        await conn.query(`DELETE FROM usuarios WHERE igreja_id = ?`, [id]);
+        await conn.query(`DELETE FROM igrejas WHERE id = ?`, [id]);
+
+        await conn.commit();
+    } catch (err) {
+        await conn.rollback();
+        throw err;
+    } finally {
+        conn.release();
     }
 
-    // Usuários da igreja
-    try {
-        await pool.query(`DELETE FROM usuarios WHERE igreja_id = ?`, [id]);
-    } catch (_) {}
+    // Registra no audit log após o commit (fire-and-forget)
+    const { audit } = require('../services/auditService');
+    audit('IGREJA_EXCLUIDA', req, { igrejaNome: igNome, igrejaId: id, totalMembros });
 
-    // Por último, a própria igreja
-    await pool.query(`DELETE FROM igrejas WHERE id = ?`, [id]);
-
-    res.json({ ok: true, mensagem: `Igreja "${ig[0].nome}" excluída com sucesso.` });
+    res.json({ ok: true, mensagem: `Igreja "${igNome}" excluída com sucesso.` });
 }
 
 // ── Usuários / Reset de Senha ────────────────────────────────────────────────

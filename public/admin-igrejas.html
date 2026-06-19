@@ -201,9 +201,15 @@ tbody tr:hover{background:#f8fafc}
     <p style="font-size:13px;color:var(--muted)">Você está prestes a excluir permanentemente:</p>
     <div class="church-highlighted" id="delModalName"></div>
     <div class="del-warn"><i class="fa-solid fa-circle-xmark"></i> <strong>Ação irreversível.</strong> Todos os membros, usuários, financeiro e dados dessa igreja serão apagados do banco.</div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px">Digite o nome da igreja para confirmar:</label>
+      <input type="text" id="delConfirmInput" placeholder="Nome exato da igreja..." autocomplete="off"
+        style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text)"
+        oninput="checkDelInput()">
+    </div>
     <div class="del-footer">
       <button class="btn btn-outline" onclick="closeDelModal()">Cancelar</button>
-      <button class="btn-del-confirm" id="delConfirmBtn" onclick="confirmDel()"><i class="fa-solid fa-trash"></i> Excluir definitivamente</button>
+      <button class="btn-del-confirm" id="delConfirmBtn" onclick="confirmDel()" disabled><i class="fa-solid fa-trash"></i> Excluir definitivamente</button>
     </div>
   </div>
 </div>
@@ -340,14 +346,28 @@ async function confirmStatus() {
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 let _delId = null;
+let _delNome = '';
 function openDelModal(btn) {
   _delId = Number(btn.dataset.id);
-  document.getElementById('delModalName').textContent = btn.dataset.nome || 'ID ' + btn.dataset.id;
-  document.getElementById('delConfirmBtn').disabled = false;
+  _delNome = btn.dataset.nome || '';
+  document.getElementById('delModalName').textContent = _delNome || 'ID ' + _delId;
+  const inp = document.getElementById('delConfirmInput');
+  inp.value = '';
+  document.getElementById('delConfirmBtn').disabled = true;
   document.getElementById('delConfirmBtn').innerHTML = '<i class="fa-solid fa-trash"></i> Excluir definitivamente';
   document.getElementById('delModal').classList.add('open');
+  setTimeout(() => inp.focus(), 80);
 }
-function closeDelModal() { _delId = null; document.getElementById('delModal').classList.remove('open'); }
+function checkDelInput() {
+  const typed = document.getElementById('delConfirmInput').value;
+  document.getElementById('delConfirmBtn').disabled = (typed !== _delNome);
+}
+function closeDelModal() {
+  _delId = null; _delNome = '';
+  document.getElementById('delConfirmInput').value = '';
+  document.getElementById('delConfirmBtn').disabled = true;
+  document.getElementById('delModal').classList.remove('open');
+}
 document.getElementById('delModal').addEventListener('click', e => { if (e.target === document.getElementById('delModal')) closeDelModal(); });
 
 async function confirmDel() {

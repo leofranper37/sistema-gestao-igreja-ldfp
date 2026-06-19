@@ -1,0 +1,18 @@
+
+Para próximos deploys (guarde isso)
+
+Sempre que editar e commitar no VS Code, no terminal do cPanel execute:
+
+# Puxar do GitHub
+cd /home/ldfp8965/sistema-gestao-igreja-ldfp-main && git pull origin main
+
+# Copiar para o app que roda
+cp -r src/* /home/ldfp8965/ldfp.com.br/src/
+cp app.js /home/ldfp8965/ldfp.com.br/app.js
+cp -r public/* /home/ldfp8965/ldfp.com.br/public/
+
+# Reiniciar
+touch /home/ldfp8965/ldfp.com.br/tmp/restart.txt
+
+Se o package.json mudar, adicione antes do restart:
+source /home/ldfp8965/nodevenv/ldfp.com.br/18/bin/activate && cd /home/ldfp8965/ldfp.com.br && npm install

@@ -3,7 +3,6 @@ const parseDecimal = require('../utils/parseDecimal');
 const getIgrejaId = require('../utils/getIgrejaId');
 const { audit } = require('../services/auditService');
 const contabilidadeService = require('../services/contabilidadeService');
-const getIgrejaId = require('../utils/getIgrejaId');
 
 async function listPlanoContas(req, res) {
     const igrejaId = getIgrejaId(req.auth);

@@ -1,6 +1,7 @@
 ﻿'use strict';
 const { pool } = require('../config/db');
 const { audit } = require('../services/auditService');
+const getIgrejaId = require('../utils/getIgrejaId');
 
 // MySQL DATE fields come as JS Date objects when dateStrings is not set
 function fmtDate(d) {

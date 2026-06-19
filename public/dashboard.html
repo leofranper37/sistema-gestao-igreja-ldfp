@@ -1032,18 +1032,9 @@
                 const promStats = fetchSemCache('/api/dashboard/stats').catch(() => null);
                 const promPlano = fetchSemCache('/api/pagamentos/status').catch(() => null);
                 
-                const promOnboard = (!superRoles.includes(role) && isAdmin) 
-                    ? fetchWithSessionCache('/api/church/onboarding/status').catch(() => null)
-                    : Promise.resolve(null);
-
-                const [stats, pagamentosStatus, onboardingStatus] = await Promise.all([
-                    promStats, promPlano, promOnboard
+                const [stats, pagamentosStatus] = await Promise.all([
+                    promStats, promPlano
                 ]);
-
-                if (onboardingStatus && !onboardingStatus.completo) {
-                    location.href = 'onboarding.html';
-                    return;
-                }
 
                 if (stats && stats.totais) {
                     const t = stats.totais;

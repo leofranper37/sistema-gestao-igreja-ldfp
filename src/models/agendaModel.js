@@ -134,6 +134,7 @@ async function deleteEvento({ igrejaId, id }) {
 }
 
 module.exports = {
+    ensureAgendaTable,
     createEvento,
     deleteEvento,
     getEventoById,

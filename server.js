@@ -1,9 +1,11 @@
 const { initializeDatabase } = require('./src/config/db');
+const { bootstrapAllTables } = require('./src/models/tableBootstrap');
 const app = require('./src/app');
 
 const PORT = process.env.PORT || 3001;
 
 initializeDatabase()
+    .then(() => bootstrapAllTables())
     .then(() => {
         app.listen(PORT, () => {
             console.log(JSON.stringify({

@@ -975,6 +975,7 @@ async function getDbHealth() {
 }
 
 module.exports = {
+    ensureSystemTables,
     countMembros,
     countVisitantes,
     createCrianca,

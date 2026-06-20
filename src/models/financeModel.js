@@ -461,6 +461,7 @@ async function deleteTipoReceita(id, igrejaId) {
 }
 
 module.exports = {
+    ensureFinanceTables,
     createSaldoInicial,
     createTransacao,
     findSaldoInicialByCompetencia,

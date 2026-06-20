@@ -258,6 +258,7 @@ async function deleteMissionario({ igrejaId, id }) {
 }
 
 module.exports = {
+    ensureMissionariosTable,
     createMissionario,
     deleteMissionario,
     getMissionarioById,

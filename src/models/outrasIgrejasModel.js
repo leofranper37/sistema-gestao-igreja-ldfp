@@ -197,6 +197,7 @@ async function countOutrasIgrejas(igrejaId) {
 }
 
 module.exports = {
+    ensureOutrasIgrejasTable,
     countOutrasIgrejas,
     createOutrasIgreja,
     deleteOutrasIgreja,

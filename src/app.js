@@ -10,6 +10,7 @@ const config = require('./config');
 const logger = require('./config/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const csrfGuard = require('./middlewares/csrfGuard');
+const churchGuard = require('./middlewares/churchGuard');
 const { createHttpError } = require('./utils/httpError');
 const { requireAuth, authorize } = require('./middlewares/auth');
 const accountRoutes = require('./routes/accountRoutes');
@@ -231,6 +232,8 @@ app.use((req, res, next) => {
 
     next();
 });
+
+app.use(churchGuard);
 
 app.use(financeRoutes);
 app.use(bancoRoutes);

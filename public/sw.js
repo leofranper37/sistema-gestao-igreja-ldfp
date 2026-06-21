@@ -86,14 +86,29 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 4. ESTÁTICOS (CSS, JS, Imagens): Cache-first
+  // 4. CSS/JS: Network-first — sempre busca versão nova do servidor
+  if (url.pathname.endsWith('.css') || url.pathname.endsWith('.js')) {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // 5. OUTROS ESTÁTICOS (imagens, fontes): Cache-first
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       return (
         cachedResponse ||
         fetch(request)
           .then((networkResponse) => {
-            // Faz cache dinâmico apenas de requisições válidas da própria origem (evita estourar limite do cache)
             if (
               networkResponse &&
               networkResponse.status === 200 &&
@@ -106,9 +121,7 @@ self.addEventListener('fetch', (event) => {
             }
             return networkResponse;
           })
-          .catch(() => {
-            // Tratamento genérico caso o recurso não esteja em cache e não haja rede
-          })
+          .catch(() => {})
       );
     })
   );

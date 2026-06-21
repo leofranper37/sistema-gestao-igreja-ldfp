@@ -61,8 +61,23 @@ O super admin **não acessa dados de clientes diretamente**. Para suporte, usa o
 `admin-master.html`, `admin-igrejas.html`, `admin-metricas.html`, `admin-relatorio-financeiro.html`, `admin-assinaturas.html`, `admin-usuarios.html`, `admin-modulos.html`, `admin-planos.html`, `admin-retomada.html`, `admin-sistema.html`, `admin-backup.html`, `admin-novidades.html`, `admin-inovacoes.html`
 
 ## Estado atual (21/06/2026)
-- Commit em produção: `e8cc6de`
-- Parte 1 (banco): ✅ `is_system` adicionado, Igreja Padrão deletada, LDFP Master marcada
+- Commit em produção: `a322038`
+- Parte 1 (banco): ✅ `is_system` adicionado, Igreja Padrão deletada, LDFP Master marcada (is_system=1)
 - Parte 2 (filtro): ✅ `getSaasIgrejas` e `getSuperAdminOverview` filtram `is_system = 0`
-- Parte 3 (middleware de bloqueio): 🔲 pendente
-- Parte 4 (criar igreja pelo painel): 🔲 pendente
+- Parte 3 (churchGuard): ✅ super-admin bloqueado de rotas de dados de igreja — usa botão "Acessar" para suporte
+- Parte 4 (criar igreja): ✅ `POST /api/saas/igrejas` + modal "Nova Igreja" em admin-igrejas.html
+- Isolamento confirmado: membro criado em igreja id=8 foi para `igreja_id=8` ✅
+
+## Banco de dados — estado limpo (21/06/2026)
+- `igrejas`: apenas id=2 (LDFP Master, is_system=1) + igrejas de clientes reais
+- `membros`: dados isolados por `igreja_id` — confirmado funcionando
+- `usuarios`: super-admin id=1 (leopereita31@gmail.com, igreja_id=2)
+- Seed de "Igreja Padrão" removida do db.js — não volta mais no restart
+- Usuários órfãos (igreja deletada) devem ser limpos com: `DELETE FROM usuarios WHERE igreja_id NOT IN (SELECT id FROM igrejas) AND role != 'super-admin'`
+
+## Fluxo para criar novo cliente
+1. Super admin → admin-igrejas.html → botão "Nova Igreja"
+2. Preenche: nome, plano, email admin, senha, responsável, telefone
+3. Sistema cria: registro em `igrejas` + usuário admin em `usuarios`
+4. Cliente loga com email/senha fornecidos → acessa painel da própria igreja
+5. Tudo que o cliente cadastra vai para o `igrejaId` dele

@@ -308,6 +308,7 @@ function renderTable(rows) {
       <td><div class="trial-meta"><strong>${r.status_assinatura === 'trial' ? trialEnd : venc}</strong><span class="trial-text ${trial.className}">${r.status_assinatura === 'trial' ? trial.label : 'Cobranca recorrente'}</span></div></td>
       <td>
         <div class="actions-cell">
+          <button class="btn btn-success btn-sm" onclick="acessarComoCliente(${r.id},'${esc(r.nome)}')" title="Acessar painel como esta igreja"><i class="fa-solid fa-right-to-bracket"></i> Acessar</button>
           <button class="btn btn-outline btn-sm" onclick="editChurch(${r.id})" title="Editar contrato"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
           <button class="btn btn-warn btn-sm" onclick="openStatusModal(${r.id},'${r.status_assinatura}','${esc(r.nome)}')" title="Alterar status"><i class="fa-solid fa-toggle-on"></i> Status</button>
           <button class="btn btn-danger btn-sm" data-id="${r.id}" data-nome="${esc(r.nome)}" onclick="openDelModal(this)" title="Excluir igreja"><i class="fa-solid fa-trash"></i> Excluir</button>
@@ -318,6 +319,22 @@ function renderTable(rows) {
 }
 
 function editChurch(id) { location.href = 'admin-edicao-cliente.html?id=' + id; }
+
+async function acessarComoCliente(id, nome) {
+  if (!confirm(`Acessar o painel como a igreja "${nome}"?\n\nSeu login atual será substituído temporariamente. Para voltar ao super admin, faça logout e entre novamente com sua conta.`)) return;
+  try {
+    const r = await fetch('/api/saas/igrejas/' + id + '/impersonate', { method: 'POST' });
+    if (!r.ok) { const e = await r.json(); alert('Erro: ' + (e.error || r.status)); return; }
+    const data = await r.json();
+    localStorage.setItem('ldfpAuth', JSON.stringify({ token: data.token, user: data.user }));
+    localStorage.setItem('token', data.token);
+    sessionStorage.setItem('token', data.token);
+    sessionStorage.removeItem('ldfp_modulos_me');
+    window.open('dashboard.html', '_blank');
+  } catch (err) {
+    alert('Erro ao acessar como cliente: ' + err.message);
+  }
+}
 
 function openStatusModal(id, current, nome) {
   selectedId = id;

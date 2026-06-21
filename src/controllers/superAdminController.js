@@ -779,6 +779,88 @@ async function deleteNovidade(req, res) {
     } catch (err) { res.status(500).json({ error: err.message }); }
 }
 
+// ── Impersonar Igreja (gerar JWT como admin da igreja) ───────────────────────
+
+async function impersonateChurch(req, res) {
+    const id = Number(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID inválido.' });
+
+    try {
+        const [churchRows] = await pool.query(
+            `SELECT id, nome, plano, status_assinatura, trial_starts_at, trial_ends_at, max_cadastros, max_congregacoes
+             FROM igrejas WHERE id = ? LIMIT 1`,
+            [id]
+        );
+        if (!churchRows.length) return res.status(404).json({ error: 'Igreja não encontrada.' });
+        const church = churchRows[0];
+
+        // Busca usuário admin da igreja
+        let [userRows] = await pool.query(
+            `SELECT id, nome, email, role, igreja_id FROM usuarios WHERE igreja_id = ? ORDER BY id ASC LIMIT 1`,
+            [id]
+        );
+
+        let userId, userNome, userEmail, userRole;
+
+        if (userRows.length) {
+            ({ id: userId, nome: userNome, email: userEmail, role: userRole } = userRows[0]);
+        } else {
+            // Cria usuário admin padrão para a igreja se não existir
+            const bcrypt = require('bcryptjs');
+            const crypto = require('crypto');
+            const tempSenha = crypto.randomBytes(12).toString('hex');
+            const hash = await bcrypt.hash(tempSenha, 12);
+            const emailAuto = `admin-${id}@ldfp.internal`;
+            const [ins] = await pool.query(
+                `INSERT INTO usuarios (igreja, igreja_id, nome, email, password_hash, role)
+                 VALUES (?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)`,
+                [church.nome, id, `Admin Igreja ${id}`, emailAuto, hash, 'admin']
+            );
+            userId = ins.insertId;
+            userNome = `Admin Igreja ${id}`;
+            userEmail = emailAuto;
+            userRole = 'admin';
+        }
+
+        const jwt = require('jsonwebtoken');
+        const config = require('../config');
+
+        const token = jwt.sign(
+            {
+                sub: userId,
+                email: userEmail,
+                igreja: church.nome,
+                igrejaId: id,
+                role: userRole,
+                nome: userNome,
+                plano: church.plano || 'hebrom',
+                statusAssinatura: church.status_assinatura || 'trial'
+            },
+            config.security.jwtSecret,
+            { expiresIn: '12h' }
+        );
+
+        res.json({
+            token,
+            user: {
+                id: userId,
+                nome: userNome,
+                email: userEmail,
+                igreja: church.nome,
+                igrejaId: id,
+                role: userRole,
+                plano: church.plano || 'hebrom',
+                statusAssinatura: church.status_assinatura || 'trial',
+                trialEndsAt: church.trial_ends_at || null,
+                maxCadastros: church.max_cadastros || 40
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 // ── Excluir Igreja ───────────────────────────────────────────────────────────
 
 async function deleteIgreja(req, res) {
@@ -1216,6 +1298,7 @@ module.exports = {
     updateNovidade,
     deleteNovidade,
     deleteIgreja,
+    impersonateChurch,
     listUsuariosAdmin,
     postResetSenha,
     listResetRequests,

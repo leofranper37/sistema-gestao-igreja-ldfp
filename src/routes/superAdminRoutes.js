@@ -37,6 +37,7 @@ const {
     updateNovidade,
     deleteNovidade,
     deleteIgreja,
+    impersonateChurch,
     listUsuariosAdmin,
     postResetSenha,
     listResetRequests
@@ -70,6 +71,7 @@ router.get('/api/saas/igrejas/:id', ...isSuperAdmin, getSaasIgrejaContrato);
 router.patch('/api/saas/igrejas/:id/status', ...isSuperAdmin, patchIgrejaStatus);
 router.patch('/api/saas/igrejas/:id/contrato', ...isSuperAdmin, updateSaasIgrejaContrato);
 router.delete('/api/saas/igrejas/:id', ...isSuperAdmin, deleteIgreja);
+router.post('/api/saas/igrejas/:id/impersonate', ...isSuperAdmin, impersonateChurch);
 
 // Planos
 router.get('/api/saas/planos', ...isSuperAdmin, listPlanos);

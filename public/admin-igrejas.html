@@ -323,7 +323,7 @@ function editChurch(id) { location.href = 'admin-edicao-cliente.html?id=' + id; 
 async function acessarComoCliente(id, nome) {
   if (!confirm(`Acessar o painel como a igreja "${nome}"?\n\nSeu login atual será substituído temporariamente. Para voltar ao super admin, faça logout e entre novamente com sua conta.`)) return;
   try {
-    const r = await fetch('/api/saas/igrejas/' + id + '/impersonate', { method: 'POST' });
+    const r = await fetch('/api/saas/igrejas/' + id + '/impersonate', { method: 'POST', headers: hdrs() });
     if (!r.ok) { const e = await r.json(); alert('Erro: ' + (e.error || r.status)); return; }
     const data = await r.json();
     localStorage.setItem('ldfpAuth', JSON.stringify({ token: data.token, user: data.user }));

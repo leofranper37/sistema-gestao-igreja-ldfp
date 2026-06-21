@@ -931,14 +931,28 @@
             });
         });
 
-        // Toggle da sidebar no mobile
+        // Toggle da sidebar (desktop: recolhe/expande; mobile: abre/fecha)
         menuToggle.addEventListener('click', function () {
-            sidebar.classList.toggle('is-open');
+            if (window.innerWidth > 1080) {
+                document.body.classList.toggle('sidebar-collapsed');
+                const icon = menuToggle.querySelector('i');
+                if (icon) {
+                    icon.className = document.body.classList.contains('sidebar-collapsed')
+                        ? 'fa-solid fa-bars-staggered'
+                        : 'fa-solid fa-bars';
+                }
+            } else {
+                sidebar.classList.toggle('is-open');
+            }
         });
 
         window.addEventListener('resize', function () {
             if (window.innerWidth > 1080) {
                 sidebar.classList.remove('is-open');
+            } else {
+                document.body.classList.remove('sidebar-collapsed');
+                const icon = menuToggle.querySelector('i');
+                if (icon) icon.className = 'fa-solid fa-bars';
             }
         });
 

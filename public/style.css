@@ -1342,7 +1342,8 @@ body.enterprise-shell-page .main-content.enterprise-main {
 }
 
 .enterprise-menu-toggle {
-    display: none;
+    display: inline-grid;
+    place-items: center;
     width: 42px;
     height: 42px;
     border: 1px solid #dbe2ea;
@@ -1350,6 +1351,25 @@ body.enterprise-shell-page .main-content.enterprise-main {
     background: #ffffff;
     color: #0f172a;
     cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* Sidebar recolhido no desktop */
+body.enterprise-shell-page .sidebar.enterprise-sidebar,
+body.enterprise-dashboard .sidebar.enterprise-sidebar {
+    transition: transform 0.25s ease;
+}
+
+body.sidebar-collapsed.enterprise-shell-page .sidebar.enterprise-sidebar,
+body.sidebar-collapsed.enterprise-dashboard .sidebar.enterprise-sidebar {
+    transform: translateX(-100%);
+}
+
+body.sidebar-collapsed.enterprise-shell-page .main-content.enterprise-main,
+body.sidebar-collapsed.enterprise-dashboard .main-content.enterprise-main {
+    margin-left: 0;
+    width: 100%;
+    transition: margin-left 0.25s ease, width 0.25s ease;
 }
 
 .enterprise-breadcrumb {

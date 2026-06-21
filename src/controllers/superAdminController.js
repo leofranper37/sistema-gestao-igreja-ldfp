@@ -867,6 +867,69 @@ async function impersonateChurch(req, res) {
 
 // ── Excluir Igreja ───────────────────────────────────────────────────────────
 
+async function createIgreja(req, res) {
+    const {
+        nome, plano, responsavel, email_admin, senha, telefone,
+        status_assinatura = 'trial', trial_days = 7, mensalidade_valor
+    } = req.body || {};
+
+    if (!nome || !plano || !email_admin || !senha) {
+        return res.status(400).json({ error: 'nome, plano, email_admin e senha são obrigatórios.' });
+    }
+
+    try {
+        const [existing] = await pool.query(
+            'SELECT id FROM usuarios WHERE email = ? LIMIT 1',
+            [email_admin.toLowerCase().trim()]
+        );
+        if (existing.length) {
+            return res.status(409).json({ error: 'E-mail já cadastrado no sistema.' });
+        }
+
+        const [planoRows] = await pool.query(
+            'SELECT max_cadastros, max_congregacoes FROM saas_planos WHERE slug = ? LIMIT 1',
+            [plano]
+        );
+        const maxCadastros = planoRows[0]?.max_cadastros || 150;
+        const maxCongregacoes = planoRows[0]?.max_congregacoes || 1;
+
+        const now = new Date();
+        const trialStartsAt = status_assinatura === 'trial' ? now.toISOString().slice(0, 19).replace('T', ' ') : null;
+        const days = Number(trial_days) || 7;
+        const trialEndsAt = status_assinatura === 'trial'
+            ? new Date(now.getTime() + days * 86400000).toISOString().slice(0, 19).replace('T', ' ')
+            : null;
+
+        const [igResult] = await pool.query(
+            `INSERT INTO igrejas
+                (nome, plano, status_assinatura, max_cadastros, max_congregacoes,
+                 responsavel, email_admin, telefone, mensalidade_valor,
+                 trial_starts_at, trial_ends_at, is_system)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+            [
+                nome.trim(), plano, status_assinatura, maxCadastros, maxCongregacoes,
+                responsavel || null, email_admin.toLowerCase().trim(), telefone || null,
+                mensalidade_valor ? fmt(mensalidade_valor) : 0,
+                trialStartsAt, trialEndsAt
+            ]
+        );
+        const igrejaId = igResult.insertId;
+
+        const bcrypt = require('bcryptjs');
+        const hash = await bcrypt.hash(senha, 12);
+        await pool.query(
+            `INSERT INTO usuarios (igreja, igreja_id, nome, email, password_hash, role)
+             VALUES (?, ?, ?, ?, ?, 'admin')`,
+            [nome.trim(), igrejaId, responsavel || nome.trim(), email_admin.toLowerCase().trim(), hash]
+        );
+
+        const [newChurch] = await pool.query('SELECT * FROM igrejas WHERE id = ? LIMIT 1', [igrejaId]);
+        res.status(201).json(newChurch[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 async function deleteIgreja(req, res) {
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ error: 'ID inválido.' });
@@ -1297,6 +1360,7 @@ module.exports = {
     createNovidade,
     updateNovidade,
     deleteNovidade,
+    createIgreja,
     deleteIgreja,
     impersonateChurch,
     listUsuariosAdmin,

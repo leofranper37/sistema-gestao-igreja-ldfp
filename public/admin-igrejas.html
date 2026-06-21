@@ -113,6 +113,7 @@ tbody tr:hover{background:#f8fafc}
     <h1><i class="fa-solid fa-church" style="color:var(--blue);margin-right:8px"></i>Igrejas & Clientes</h1>
     <div style="display:flex;gap:10px">
       <button class="btn btn-outline" onclick="loadIgrejas()"><i class="fa-solid fa-rotate-right"></i> Atualizar</button>
+      <button class="btn btn-primary" onclick="openNovaIgrejaModal()"><i class="fa-solid fa-plus"></i> Nova Igreja</button>
     </div>
   </header>
 
@@ -210,6 +211,65 @@ tbody tr:hover{background:#f8fafc}
     <div class="del-footer">
       <button class="btn btn-outline" onclick="closeDelModal()">Cancelar</button>
       <button class="btn-del-confirm" id="delConfirmBtn" onclick="confirmDel()" disabled><i class="fa-solid fa-trash"></i> Excluir definitivamente</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVA IGREJA -->
+<div class="modal-overlay" id="novaIgrejaModal" style="display:none;align-items:center;justify-content:center">
+  <div class="modal" style="width:min(520px,95vw);max-height:90vh;overflow-y:auto">
+    <h2><i class="fa-solid fa-plus" style="color:var(--blue);margin-right:8px"></i>Nova Igreja Cliente</h2>
+    <p>Preencha os dados da igreja e do admin que vai acessar o painel.</p>
+
+    <div style="display:grid;gap:12px;margin-bottom:20px">
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Nome da Igreja *</label>
+        <input id="ni-nome" type="text" placeholder="Ex: Igreja Evangelica Graça" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Plano *</label>
+          <select id="ni-plano" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <option value="hebrom">Hebrom — R$ 50/mês</option>
+            <option value="betel">Betel — R$ 80/mês</option>
+            <option value="siao">Sião — R$ 100/mês</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Status inicial</label>
+          <select id="ni-status" onchange="toggleTrialDays()" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <option value="trial">Trial (período de teste)</option>
+            <option value="ativa">Ativa (já paga)</option>
+          </select>
+        </div>
+      </div>
+      <div id="ni-trial-row">
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Dias de trial</label>
+        <input id="ni-trial-days" type="number" value="7" min="1" max="90" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Nome do responsável</label>
+        <input id="ni-responsavel" type="text" placeholder="Ex: Pastor João Silva" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">E-mail do admin *</label>
+        <input id="ni-email" type="email" placeholder="pastor@igrejateste.com" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Senha de acesso *</label>
+        <input id="ni-senha" type="password" placeholder="Mínimo 6 caracteres" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Telefone / WhatsApp</label>
+        <input id="ni-telefone" type="text" placeholder="(00) 00000-0000" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+    </div>
+
+    <div id="ni-error" style="display:none;background:#fee2e2;color:#b91c1c;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeNovaIgrejaModal()">Cancelar</button>
+      <button class="btn btn-primary" id="ni-btn" onclick="submitNovaIgreja()"><i class="fa-solid fa-plus"></i> Criar Igreja</button>
     </div>
   </div>
 </div>
@@ -420,6 +480,75 @@ function toast(msg, type='success') {
 
 loadIgrejas();
 setInterval(loadIgrejas, 60000);
+
+// ── Nova Igreja ──────────────────────────────────────────────────────────────
+function openNovaIgrejaModal() {
+  ['ni-nome','ni-responsavel','ni-email','ni-senha','ni-telefone'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ni-plano').value = 'hebrom';
+  document.getElementById('ni-status').value = 'trial';
+  document.getElementById('ni-trial-days').value = '7';
+  document.getElementById('ni-trial-row').style.display = '';
+  document.getElementById('ni-error').style.display = 'none';
+  document.getElementById('ni-btn').disabled = false;
+  document.getElementById('ni-btn').innerHTML = '<i class="fa-solid fa-plus"></i> Criar Igreja';
+  const m = document.getElementById('novaIgrejaModal');
+  m.style.display = 'flex';
+}
+
+function closeNovaIgrejaModal() {
+  document.getElementById('novaIgrejaModal').style.display = 'none';
+}
+
+function toggleTrialDays() {
+  const isTrial = document.getElementById('ni-status').value === 'trial';
+  document.getElementById('ni-trial-row').style.display = isTrial ? '' : 'none';
+}
+
+async function submitNovaIgreja() {
+  const nome       = document.getElementById('ni-nome').value.trim();
+  const plano      = document.getElementById('ni-plano').value;
+  const status     = document.getElementById('ni-status').value;
+  const trialDays  = document.getElementById('ni-trial-days').value;
+  const responsavel= document.getElementById('ni-responsavel').value.trim();
+  const email      = document.getElementById('ni-email').value.trim();
+  const senha      = document.getElementById('ni-senha').value;
+  const telefone   = document.getElementById('ni-telefone').value.trim();
+  const errEl      = document.getElementById('ni-error');
+
+  if (!nome || !email || !senha) {
+    errEl.textContent = 'Nome da igreja, e-mail e senha são obrigatórios.';
+    errEl.style.display = '';
+    return;
+  }
+  if (senha.length < 6) {
+    errEl.textContent = 'A senha precisa ter pelo menos 6 caracteres.';
+    errEl.style.display = '';
+    return;
+  }
+
+  const btn = document.getElementById('ni-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Criando...';
+  errEl.style.display = 'none';
+
+  try {
+    const r = await fetch('/api/saas/igrejas', {
+      method: 'POST',
+      headers: hdrs(),
+      body: JSON.stringify({ nome, plano, status_assinatura: status, trial_days: Number(trialDays), responsavel, email_admin: email, senha, telefone })
+    });
+    const data = await r.json();
+    if (!r.ok) { errEl.textContent = data.error || 'Erro ao criar igreja.'; errEl.style.display = ''; btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> Criar Igreja'; return; }
+    closeNovaIgrejaModal();
+    showToast(`Igreja "${data.nome}" criada com sucesso!`);
+    loadIgrejas();
+  } catch (err) {
+    errEl.textContent = 'Erro de conexão: ' + err.message;
+    errEl.style.display = '';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-plus"></i> Criar Igreja';
+  }
+}
 </script>
 </body>
 </html>

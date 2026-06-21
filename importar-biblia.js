@@ -32,7 +32,7 @@ async function main() {
         process.exit(1);
     }
 
-    const biblia = JSON.parse(fs.readFileSync(JSON_PATH, 'utf8'));
+    const biblia = JSON.parse(fs.readFileSync(JSON_PATH, 'utf8').replace(/^﻿/, ''));
     console.log(`JSON carregado — ${biblia.length} livros`);
 
     const pool = mysql2.createPool({

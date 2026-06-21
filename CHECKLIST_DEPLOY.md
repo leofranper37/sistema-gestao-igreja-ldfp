@@ -71,8 +71,9 @@ Esse script faz tudo de uma vez: `git pull` + copiar arquivos públicos + restar
 
 | Item | Valor |
 |------|-------|
-| Repo no servidor | `~/sistema-gestao-igreja-ldfp-main` |
-| Arquivos públicos | `~/public_html/` |
-| Restart Node | `touch tmp/restart.txt` (cPanel Passenger) |
+| Repo Git no servidor | `/home/ldfp8965/sistema-gestao-igreja-ldfp-main` |
+| App em execução (Node roda aqui) | `/home/ldfp8965/ldfp.com.br/` |
+| Restart Node | `touch /home/ldfp8965/ldfp.com.br/tmp/restart.txt` |
 | Banco de produção | `ldfp8965_sistema_gestao` |
-| Script de deploy | `~/deploy.sh` |
+| Script de deploy | `~/deploy.sh` (git pull + cp src,public,app.js + restart) |
+| npm install (se package.json mudou) | `source /home/ldfp8965/nodevenv/ldfp.com.br/18/bin/activate && cd /home/ldfp8965/ldfp.com.br && npm install` |

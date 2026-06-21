@@ -418,7 +418,6 @@ async function initializeDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        await activePgPool.query(`INSERT INTO igrejas (id, nome) VALUES (1, 'Igreja Padrão') ON CONFLICT DO NOTHING`);
 
         await activePgPool.query(`CREATE TABLE IF NOT EXISTS membros (
             id SERIAL PRIMARY KEY,
@@ -592,7 +591,6 @@ async function initializeDatabase() {
         )`);
         try { await activeMysqlPool.query(`ALTER TABLE igrejas ADD COLUMN config_personalizada_json LONGTEXT NULL`); } catch(_){}
 
-        await activeMysqlPool.query(`INSERT IGNORE INTO igrejas (id, nome) VALUES (1, 'Igreja Padrão')`);
 
         await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS membros (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -863,7 +861,6 @@ async function initializeDatabase() {
             safeAlter('ALTER TABLE igrejas ADD COLUMN modulo_pedidos_oracao INTEGER NOT NULL DEFAULT 1');
             safeAlter('ALTER TABLE igrejas ADD COLUMN modulo_mural_oracao INTEGER NOT NULL DEFAULT 1');
 
-            db.run(`INSERT OR IGNORE INTO igrejas (id, nome) VALUES (1, 'Igreja Padrão')`);
 
             db.run(`CREATE TABLE IF NOT EXISTS membros (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,

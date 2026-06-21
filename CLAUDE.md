@@ -13,13 +13,14 @@ O super admin **não acessa dados de clientes diretamente**. Para suporte, usa o
 
 ## Infraestrutura
 - **Servidor:** cPanel em `/home/ldfp8965/`
-- **Repo no servidor:** `~/sistema-gestao-igreja-ldfp-main`
-- **Arquivos públicos servidos de:** `~/public_html/` (cópia manual após git pull)
+- **Repo no servidor:** `/home/ldfp8965/sistema-gestao-igreja-ldfp-main` (só git pull aqui)
+- **App em execução:** `/home/ldfp8965/ldfp.com.br/` (onde o Node roda de fato)
 - **Banco MySQL 5.6:** `ldfp8965_sistema_gestao` — host `localhost`, user `ldfp8965_Leo`
 - **Domínio:** `https://ldfp.com.br`
 - **Repo GitHub:** `leofranper37/sistema-gestao-igreja-ldfp`, branch `main`
-- **Restart Node:** `touch tmp/restart.txt` (cPanel Passenger)
-- **Script de deploy:** `~/deploy.sh` (git pull + cp + restart em um comando)
+- **Restart Node:** `touch /home/ldfp8965/ldfp.com.br/tmp/restart.txt` (cPanel Passenger)
+- **Script de deploy:** `~/deploy.sh` — faz git pull + copia src/, public/, app.js para ldfp.com.br/ + restart
+- **Node.js env (se precisar npm install):** `source /home/ldfp8965/nodevenv/ldfp.com.br/18/bin/activate`
 
 ## Restrições críticas do banco (MySQL 5.6)
 - NUNCA usar tipo `JSON` — usar `LONGTEXT`

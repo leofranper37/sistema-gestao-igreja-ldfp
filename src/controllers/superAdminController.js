@@ -871,14 +871,10 @@ async function deleteIgreja(req, res) {
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ error: 'ID inválido.' });
 
-    // Bloqueia Igreja Padrão (id=1) e LDFP Master pelo nome
-    if (id === 1) return res.status(403).json({ error: 'A Igreja Padrão não pode ser excluída.' });
-
-    const [ig] = await pool.query(`SELECT nome FROM igrejas WHERE id = ?`, [id]);
+    const [ig] = await pool.query(`SELECT nome, is_system FROM igrejas WHERE id = ?`, [id]);
     if (!ig.length) return res.status(404).json({ error: 'Igreja não encontrada.' });
-    const igNome = ig[0].nome;
-    if (igNome === 'LDFP Master') {
-        return res.status(403).json({ error: 'A igreja master não pode ser excluída.' });
+    if (ig[0].is_system) {
+        return res.status(403).json({ error: 'Igrejas do sistema não podem ser excluídas.' });
     }
 
     // Conta membros antes da exclusão (para o audit)

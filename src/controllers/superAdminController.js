@@ -35,11 +35,11 @@ async function getSuperAdminOverview(req, res) {
         let igrejas;
         try {
             [igrejas] = await pool.query(
-                `SELECT status_assinatura, mensalidade_valor, trial_ends_at FROM igrejas`
+                `SELECT status_assinatura, mensalidade_valor, trial_ends_at FROM igrejas WHERE is_system = 0`
             );
         } catch (_) {
             [igrejas] = await pool.query(
-                `SELECT status_assinatura, 0 AS mensalidade_valor, trial_ends_at FROM igrejas`
+                `SELECT status_assinatura, 0 AS mensalidade_valor, trial_ends_at FROM igrejas WHERE is_system = 0`
             );
         }
 
@@ -87,6 +87,7 @@ async function getSuperAdminOverview(req, res) {
                         COUNT(m.id) AS membros_ativos
                  FROM igrejas i
                  LEFT JOIN membros m ON m.igreja_id = i.id
+                 WHERE i.is_system = 0
                  GROUP BY i.id
                  ORDER BY i.created_at DESC`
             );
@@ -99,6 +100,7 @@ async function getSuperAdminOverview(req, res) {
                         COUNT(m.id) AS membros_ativos
                  FROM igrejas i
                  LEFT JOIN membros m ON m.igreja_id = i.id
+                 WHERE i.is_system = 0
                  GROUP BY i.id
                  ORDER BY i.created_at DESC`
             );
@@ -167,6 +169,7 @@ async function getSaasIgrejas(req, res) {
                         COUNT(m.id) AS total_membros
                  FROM igrejas i
                  LEFT JOIN membros m ON m.igreja_id = i.id
+                 WHERE i.is_system = 0
                  GROUP BY i.id
                  ORDER BY i.created_at DESC`
             );
@@ -180,6 +183,7 @@ async function getSaasIgrejas(req, res) {
                         COUNT(m.id) AS total_membros
                  FROM igrejas i
                  LEFT JOIN membros m ON m.igreja_id = i.id
+                 WHERE i.is_system = 0
                  GROUP BY i.id
                  ORDER BY i.created_at DESC`
             );

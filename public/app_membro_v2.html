@@ -8,6 +8,8 @@
   <title>LDFP - App do Membro</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
       --bg-main: #101826;
@@ -607,6 +609,196 @@
     .novidade-data { font-size:11px; color:var(--muted); }
     .novidade-tags { font-size:11px; color:var(--accent); }
 
+    /* CARTEIRINHA DIGITAL */
+    .carteirinha-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0 20px;
+    }
+    .carteirinha-card {
+      width: 100%;
+      max-width: 340px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      background: #141d2b;
+      border: 1px solid rgba(15,118,110,0.3);
+    }
+    .carteirinha-header {
+      background: linear-gradient(135deg, #0f766e 0%, #065f46 100%);
+      padding: 18px 20px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .carteirinha-header-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: rgba(255,255,255,0.15);
+    }
+    .carteirinha-header-logo-fallback {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .carteirinha-header-title {
+      text-align: right;
+    }
+    .carteirinha-header-title span {
+      display: block;
+      font-size: 11px;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .carteirinha-header-title strong {
+      font-size: 14px;
+      color: #fff;
+    }
+    .carteirinha-body {
+      padding: 18px 20px;
+    }
+    .carteirinha-photo-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .carteirinha-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 14px;
+      object-fit: cover;
+      border: 2px solid rgba(15,118,110,0.4);
+      background: #0f172a;
+      flex-shrink: 0;
+    }
+    .carteirinha-photo-placeholder {
+      width: 80px;
+      height: 80px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0f766e, #065f46);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .carteirinha-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .carteirinha-nome {
+      font-size: 18px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    .carteirinha-cargo-pill {
+      display: inline-block;
+      background: rgba(15,118,110,0.2);
+      border: 1px solid rgba(15,118,110,0.4);
+      color: #6ee7b7;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 4px;
+    }
+    .carteirinha-situacao-pill {
+      display: inline-block;
+      background: rgba(249,115,22,0.15);
+      border: 1px solid rgba(249,115,22,0.3);
+      color: #fed7aa;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-left: 4px;
+      margin-bottom: 4px;
+    }
+    .carteirinha-divider {
+      border: none;
+      border-top: 1px solid rgba(148,163,184,0.1);
+      margin: 12px 0;
+    }
+    .carteirinha-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .carteirinha-field label {
+      display: block;
+      font-size: 10px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+    }
+    .carteirinha-field span {
+      font-size: 13px;
+      color: #cbd5e1;
+      font-weight: 500;
+    }
+    .carteirinha-qr-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 6px;
+    }
+    .carteirinha-qr-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+    .carteirinha-qr-box canvas,
+    .carteirinha-qr-box img { display: block; }
+    .carteirinha-qr-label {
+      font-size: 10px;
+      color: #64748b;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+    .carteirinha-footer {
+      background: rgba(255,255,255,0.03);
+      border-top: 1px solid rgba(148,163,184,0.08);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #475569;
+    }
+    .btn-baixar-carteirinha {
+      margin-top: 16px;
+      background: #0f766e;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-baixar-carteirinha:active { opacity: 0.85; }
+
     /* PUSH NOTIFICATION BANNER */
     .push-banner {
       display:flex; align-items:center; gap:12px;
@@ -835,6 +1027,65 @@
       </div>
     </section>
 
+    <!-- CARTEIRINHA -->
+    <section id="panel-carteirinha" class="panel">
+      <div class="panel-title">
+        <h1>Minha Carteirinha</h1>
+        <p>Sua credencial digital de membro.</p>
+      </div>
+      <div class="carteirinha-wrap">
+        <div id="carteirinha-card" class="carteirinha-card">
+          <div class="carteirinha-header">
+            <div id="cart-logo-wrap">
+              <div class="carteirinha-header-logo-fallback" id="cart-logo-fallback">I</div>
+            </div>
+            <div class="carteirinha-header-title">
+              <span>Membro Oficial</span>
+              <strong id="cart-nome-igreja">Igreja</strong>
+            </div>
+          </div>
+          <div class="carteirinha-body">
+            <div class="carteirinha-photo-row">
+              <div id="cart-photo-wrap">
+                <div class="carteirinha-photo-placeholder" id="cart-photo-fallback">M</div>
+              </div>
+              <div class="carteirinha-info">
+                <div class="carteirinha-nome" id="cart-nome">Nome do Membro</div>
+                <div>
+                  <span class="carteirinha-cargo-pill" id="cart-cargo">Membro</span>
+                  <span class="carteirinha-situacao-pill" id="cart-situacao">Ativo</span>
+                </div>
+              </div>
+            </div>
+            <hr class="carteirinha-divider">
+            <div class="carteirinha-fields">
+              <div class="carteirinha-field">
+                <label>Matrícula</label>
+                <span id="cart-matricula">#000001</span>
+              </div>
+              <div class="carteirinha-field">
+                <label>Membro desde</label>
+                <span id="cart-admissao">-</span>
+              </div>
+            </div>
+            <div class="carteirinha-qr-section">
+              <div class="carteirinha-qr-box">
+                <div id="cart-qrcode"></div>
+              </div>
+              <div class="carteirinha-qr-label">Escaneie para verificar</div>
+            </div>
+          </div>
+          <div class="carteirinha-footer">
+            <span>LDFP — Sistema de Gestão</span>
+            <span id="cart-validade">Válida em 2026</span>
+          </div>
+        </div>
+        <button class="btn-baixar-carteirinha" id="btnBaixarCarteirinha" type="button">
+          <i class="fa-solid fa-download"></i> Baixar Carteirinha
+        </button>
+      </div>
+    </section>
+
     <!-- NOVIDADES -->
     <section id="panel-novidades" class="panel">
       <div class="panel-title">
@@ -880,6 +1131,10 @@
     <div class="bottom-item" data-target="panel-eventos">
       <i class="fa-solid fa-calendar-check"></i>
       <span>Eventos</span>
+    </div>
+    <div class="bottom-item" data-target="panel-carteirinha">
+      <i class="fa-solid fa-id-card"></i>
+      <span>Carteirinha</span>
     </div>
     <div class="bottom-item" data-target="panel-novidades">
       <i class="fa-solid fa-bell"></i>
@@ -1102,6 +1357,7 @@
     if (user) {
       greetingEl.textContent = 'Olá, ' + (user.nome || 'Membro') + '!';
       renderDigitalCredential(user);
+      renderCarteirinha(user);
       hydrateMemberProfile();
     }
     const logoUrl = localStorage.getItem('church_logo_url');
@@ -1146,6 +1402,8 @@
       localStorage.setItem('app_member_user', JSON.stringify(nextUser));
       greetingEl.textContent = 'Olá, ' + (nextUser.nome || 'Membro') + '!';
       renderDigitalCredential(nextUser);
+      _qrGenerated = false;
+      renderCarteirinha(nextUser);
     } catch (_error) {
       // Mantém dados locais caso a API de perfil esteja indisponível
     }
@@ -1675,6 +1933,83 @@
   // Botões de conexão
   document.querySelectorAll('[data-tipo]').forEach(btn => {
     btn.addEventListener('click', () => abrirModal(btn.dataset.tipo));
+  });
+
+  // --- Carteirinha Digital ---
+  let _qrGenerated = false;
+
+  function renderCarteirinha(member) {
+    const nome = String(member?.nome || 'Membro');
+    const nomeIgreja = String(member?.nome_igreja || member?.igrejaNome || member?.igreja || 'Igreja');
+    const cargo = String(member?.cargo || 'Membro');
+    const situacao = String(member?.situacao || 'Ativo');
+    const foto = String(member?.foto_url || member?.fotoUrl || '').trim();
+    const id = member?.id || member?.membro_id || 0;
+    const rawMatricula = member?.matricula || member?.numero || id;
+    const matricula = rawMatricula ? '#' + String(rawMatricula).padStart(6, '0') : '#' + String(id).padStart(6, '0');
+    const admissao = member?.data_admissao || member?.admissao || member?.created_at || null;
+    const admissaoFmt = admissao
+      ? new Date(admissao).toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' })
+      : '-';
+    const ano = new Date().getFullYear();
+
+    document.getElementById('cart-nome').textContent = nome;
+    document.getElementById('cart-nome-igreja').textContent = nomeIgreja;
+    document.getElementById('cart-cargo').textContent = cargo;
+    document.getElementById('cart-situacao').textContent = situacao;
+    document.getElementById('cart-matricula').textContent = matricula;
+    document.getElementById('cart-admissao').textContent = admissaoFmt;
+    document.getElementById('cart-validade').textContent = 'Válida em ' + ano;
+
+    // Inicial do nome da igreja no logo fallback
+    const fallbackLogo = document.getElementById('cart-logo-fallback');
+    if (fallbackLogo) fallbackLogo.textContent = (nomeIgreja[0] || 'I').toUpperCase();
+
+    // Foto do membro
+    const photoWrap = document.getElementById('cart-photo-wrap');
+    if (foto && photoWrap) {
+      photoWrap.innerHTML = '<img class="carteirinha-photo" src="' + foto + '" alt="Foto" onerror="this.style.display=\'none\'">';
+    } else {
+      const fallbackPhoto = document.getElementById('cart-photo-fallback');
+      if (fallbackPhoto) fallbackPhoto.textContent = (nome[0] || 'M').toUpperCase();
+    }
+
+    // QR Code
+    if (!_qrGenerated) {
+      const qrEl = document.getElementById('cart-qrcode');
+      if (qrEl && typeof QRCode !== 'undefined') {
+        qrEl.innerHTML = '';
+        new QRCode(qrEl, {
+          text: 'LDFP:MEMBRO:' + id + ':' + nome,
+          width: 110,
+          height: 110,
+          colorDark: '#0f172a',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+        _qrGenerated = true;
+      }
+    }
+  }
+
+  document.getElementById('btnBaixarCarteirinha').addEventListener('click', async () => {
+    const card = document.getElementById('carteirinha-card');
+    const btn = document.getElementById('btnBaixarCarteirinha');
+    if (!card || typeof html2canvas === 'undefined') return;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+    try {
+      const canvas = await html2canvas(card, { backgroundColor: null, scale: 2, useCORS: true });
+      const link = document.createElement('a');
+      link.download = 'carteirinha-membro.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      alert('Não foi possível gerar a imagem. Tente um screenshot manual.');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-download"></i> Baixar Carteirinha';
+    }
   });
 
   // --- Start ---

@@ -3,47 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Recibo</title>
+    <title>LDFP - Recibos</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); }
-        .field { width:100%; padding:10px; border:1px solid #dbe3ef; border-radius:8px; margin-top:8px; }
-        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; margin-top:10px; }
-        .preview { background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:14px; line-height:1.7; }
-        @media (max-width: 900px) { .grid { grid-template-columns:1fr; } }
+        .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+        @media (max-width: 900px) { .grid2 { grid-template-columns:1fr; } }
+        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; box-shadow:0 4px 16px rgba(15,23,42,.07); }
+        .field { width:100%; padding:10px 12px; border:1px solid #dbe3ef; border-radius:8px; margin-top:6px; font-size:14px; box-sizing:border-box; }
+        .field:focus { border-color:#0f766e; outline:none; }
+        label { font-size:12px; font-weight:600; color:#64748b; display:block; margin-top:12px; }
+        .btn-primary { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 18px; font-weight:700; cursor:pointer; margin-top:14px; }
+        .btn-secondary { border:0; background:#1e293b; color:#fff; border-radius:8px; padding:10px 18px; font-weight:700; cursor:pointer; margin-top:14px; margin-left:8px; }
+        .btn-danger { border:0; background:#dc2626; color:#fff; border-radius:6px; padding:5px 10px; cursor:pointer; font-size:12px; }
+        .preview-box { background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:18px; line-height:1.9; min-height:160px; font-size:14px; }
+        .lista-recibos { margin-top:24px; }
+        .busca-row { display:flex; gap:10px; margin-bottom:12px; }
+        .busca-row input { flex:1; padding:9px 12px; border:1px solid #dbe3ef; border-radius:8px; font-size:13px; }
+        table { width:100%; border-collapse:collapse; font-size:13px; }
+        th { background:#f1f5f9; padding:10px 12px; text-align:left; font-weight:600; color:#475569; }
+        td { padding:10px 12px; border-bottom:1px solid #f1f5f9; }
+        tr:hover td { background:#f8fafc; }
+        .badge-num { background:#e0f2fe; color:#0369a1; border-radius:20px; padding:2px 10px; font-weight:700; font-size:12px; }
+        .msg { font-size:13px; margin-top:8px; }
+        .msg.ok { color:#15803d; }
+        .msg.err { color:#dc2626; }
+        .empty { text-align:center; color:#94a3b8; padding:24px; }
     </style>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-active="recibo.html" data-shell-title="Recibo" data-shell-breadcrumb="LDFP / Tesouraria / Recibo" data-shell-chip="Financeiro" data-shell-role="Tesouraria">
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="recibo.html" data-shell-title="Recibos" data-shell-breadcrumb="LDFP / Tesouraria / Recibos" data-shell-chip="Financeiro" data-shell-role="Tesouraria">
 <main class="main-content enterprise-main">
     <div class="enterprise-page-shell">
         <div class="enterprise-page-hero">
             <div>
-                <h2>Geracao de Recibo</h2>
-                <p>Preencha os dados e gere um recibo simples para impressao e conferencia.</p>
+                <h2>Recibos</h2>
+                <p>Gere, salve e imprima recibos numerados automaticamente.</p>
             </div>
-            <div class="enterprise-page-badge"><i class="fa-solid fa-receipt"></i> Documento</div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-receipt"></i> Financeiro</div>
         </div>
 
-        <div class="grid">
+        <div class="grid2">
+            <!-- Formulário -->
             <section class="card">
-                <h3>Dados do Recibo</h3>
-                <input id="favorecido" class="field" type="text" placeholder="Nome do favorecido">
-                <input id="referente" class="field" type="text" placeholder="Referente a (ex: contribuicao mensal)">
-                <input id="valor" class="field" type="number" step="0.01" placeholder="Valor">
+                <h3 style="margin-top:0">Novo Recibo</h3>
+                <label>Favorecido *</label>
+                <input id="favorecido" class="field" type="text" placeholder="Nome do favorecido / pagador">
+                <label>Referente a *</label>
+                <input id="referente" class="field" type="text" placeholder="Ex: Contribuição mensal, Aluguel...">
+                <label>Valor (R$) *</label>
+                <input id="valor" class="field" type="number" step="0.01" min="0" placeholder="0,00">
+                <label>Data *</label>
                 <input id="data" class="field" type="date">
-                <button id="btnGerar" class="btn" type="button">Gerar recibo</button>
-                <button id="btnImprimir" class="btn" type="button" style="background:#1e293b">Imprimir</button>
+                <label>Observação</label>
+                <input id="observacao" class="field" type="text" placeholder="Opcional">
+                <div>
+                    <button id="btnSalvar" class="btn-primary" type="button"><i class="fa fa-save"></i> Salvar e Gerar</button>
+                    <button id="btnImprimir" class="btn-secondary" type="button" disabled><i class="fa fa-print"></i> Imprimir</button>
+                </div>
+                <p id="msg" class="msg"></p>
             </section>
 
+            <!-- Pré-visualização -->
             <section class="card">
-                <h3>Pre-visualizacao</h3>
-                <div id="reciboPreview" class="preview">
-                    Recibo ainda nao gerado.
+                <h3 style="margin-top:0">Pré-visualização</h3>
+                <div id="reciboPreview" class="preview-box">
+                    Preencha os dados e clique em <strong>Salvar e Gerar</strong>.
                 </div>
             </section>
         </div>
+
+        <!-- Lista de recibos -->
+        <section class="card lista-recibos">
+            <h3 style="margin-top:0">Recibos Emitidos</h3>
+            <div class="busca-row">
+                <input id="busca" type="text" placeholder="Buscar por favorecido, referência ou número...">
+                <button class="btn-primary" onclick="carregarLista()" style="margin:0; padding:9px 16px;"><i class="fa fa-search"></i></button>
+            </div>
+            <div id="tabelaWrap">
+                <p class="empty">Carregando...</p>
+            </div>
+        </section>
     </div>
 </main>
 
@@ -56,28 +95,132 @@ function moeda(v) {
     return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-document.getElementById('btnGerar').addEventListener('click', () => {
-    const nome = document.getElementById('favorecido').value.trim();
-    const ref = document.getElementById('referente').value.trim();
-    const valor = document.getElementById('valor').value;
-    const data = document.getElementById('data').value;
-    const alvo = document.getElementById('reciboPreview');
+function fmtData(s) {
+    if (!s) return '-';
+    const d = new Date(s + 'T00:00:00');
+    return d.toLocaleDateString('pt-BR');
+}
 
-    if (!nome || !ref || !valor || !data) {
-        alvo.textContent = 'Preencha todos os campos para gerar o recibo.';
+function gerarHtmlRecibo({ numero, favorecido, referente, valor, data_recibo, observacao }) {
+    return [
+        '<div style="border:2px solid #0f766e;border-radius:10px;padding:18px;font-family:serif;">',
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">',
+        '<strong style="font-size:18px;color:#0f766e;">RECIBO</strong>',
+        '<span style="background:#e0f2fe;color:#0369a1;border-radius:20px;padding:3px 14px;font-weight:700;">Nº ' + numero + '</span>',
+        '</div>',
+        '<p>Recebi de <strong>' + favorecido + '</strong> o valor de <strong>' + moeda(valor) + '</strong>.</p>',
+        '<p>Referente a: <strong>' + referente + '</strong>.</p>',
+        observacao ? '<p>Obs: ' + observacao + '</p>' : '',
+        '<p>Data: <strong>' + fmtData(data_recibo) + '</strong>.</p>',
+        '<div style="margin-top:24px;border-top:1px solid #e2e8f0;padding-top:14px;">',
+        'Assinatura: ______________________________',
+        '</div></div>'
+    ].join('');
+}
+
+async function carregarLista() {
+    const busca = document.getElementById('busca').value;
+    const wrap = document.getElementById('tabelaWrap');
+    wrap.innerHTML = '<p class="empty">Carregando...</p>';
+    try {
+        const auth = JSON.parse(localStorage.getItem('ldfpAuth') || '{}');
+        const resp = await fetch('/api/recibos?limite=50&busca=' + encodeURIComponent(busca), {
+            headers: { Authorization: 'Bearer ' + auth.token }
+        });
+        const data = await resp.json();
+        if (!data.recibos || data.recibos.length === 0) {
+            wrap.innerHTML = '<p class="empty">Nenhum recibo emitido ainda.</p>';
+            return;
+        }
+        let html = '<table><thead><tr><th>Nº</th><th>Favorecido</th><th>Referente</th><th>Valor</th><th>Data</th><th></th></tr></thead><tbody>';
+        data.recibos.forEach(r => {
+            html += '<tr>';
+            html += '<td><span class="badge-num">' + r.numero + '</span></td>';
+            html += '<td>' + r.favorecido + '</td>';
+            html += '<td>' + r.referente + '</td>';
+            html += '<td>' + moeda(r.valor) + '</td>';
+            html += '<td>' + fmtData(r.data_recibo) + '</td>';
+            html += '<td><button class="btn-danger" onclick="verRecibo(' + JSON.stringify(r).replace(/"/g, '&quot;') + ')">Ver</button> ';
+            html += '<button class="btn-danger" onclick="excluirRecibo(' + r.id + ')" style="background:#6b7280">Excluir</button></td>';
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+        wrap.innerHTML = html;
+    } catch (e) {
+        wrap.innerHTML = '<p class="empty err">Erro ao carregar recibos.</p>';
+    }
+}
+
+function verRecibo(r) {
+    document.getElementById('reciboPreview').innerHTML = gerarHtmlRecibo(r);
+    document.getElementById('btnImprimir').disabled = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function excluirRecibo(id) {
+    if (!confirm('Excluir este recibo permanentemente?')) return;
+    const auth = JSON.parse(localStorage.getItem('ldfpAuth') || '{}');
+    await fetch('/api/recibos/' + id, {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer ' + auth.token }
+    });
+    carregarLista();
+}
+
+document.getElementById('btnSalvar').addEventListener('click', async () => {
+    const favorecido = document.getElementById('favorecido').value.trim();
+    const referente = document.getElementById('referente').value.trim();
+    const valor = document.getElementById('valor').value;
+    const data_recibo = document.getElementById('data').value;
+    const observacao = document.getElementById('observacao').value.trim();
+    const msg = document.getElementById('msg');
+
+    if (!favorecido || !referente || !valor || !data_recibo) {
+        msg.className = 'msg err';
+        msg.textContent = 'Preencha todos os campos obrigatórios.';
         return;
     }
 
-    alvo.innerHTML = [
-        '<strong>RECIBO</strong><br>',
-        'Recebi de <strong>' + nome + '</strong> o valor de <strong>' + moeda(valor) + '</strong>.<br>',
-        'Referente a: <strong>' + ref + '</strong>.<br>',
-        'Data: <strong>' + new Date(data + 'T00:00:00').toLocaleDateString('pt-BR') + '</strong>.<br><br>',
-        'Assinatura: ______________________________'
-    ].join('');
+    const btn = document.getElementById('btnSalvar');
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+    msg.textContent = '';
+
+    try {
+        const auth = JSON.parse(localStorage.getItem('ldfpAuth') || '{}');
+        const resp = await fetch('/api/recibos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + auth.token },
+            body: JSON.stringify({ favorecido, referente, valor, data_recibo, observacao })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Erro ao salvar.');
+
+        const reciboCompleto = { numero: data.numero, favorecido, referente, valor, data_recibo, observacao };
+        document.getElementById('reciboPreview').innerHTML = gerarHtmlRecibo(reciboCompleto);
+        document.getElementById('btnImprimir').disabled = false;
+        msg.className = 'msg ok';
+        msg.textContent = 'Recibo Nº ' + data.numero + ' gerado e salvo com sucesso!';
+        carregarLista();
+
+        document.getElementById('favorecido').value = '';
+        document.getElementById('referente').value = '';
+        document.getElementById('valor').value = '';
+        document.getElementById('data').value = '';
+        document.getElementById('observacao').value = '';
+    } catch (e) {
+        msg.className = 'msg err';
+        msg.textContent = e.message || 'Erro ao salvar recibo.';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-save"></i> Salvar e Gerar';
+    }
 });
 
 document.getElementById('btnImprimir').addEventListener('click', () => window.print());
+document.getElementById('busca').addEventListener('keydown', e => { if (e.key === 'Enter') carregarLista(); });
+
+carregarLista();
 </script>
 </body>
 </html>

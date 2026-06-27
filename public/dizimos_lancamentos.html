@@ -1,0 +1,343 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Lançamentos de Dízimo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --azul-700: #1d4ed8;
+            --azul-600: #2563eb;
+            --azul-100: #dbeafe;
+            --verde-700: #15803d;
+            --verde-600: #16a34a;
+            --verde-100: #dcfce7;
+            --texto-700: #334155;
+            --borda: #dbe3ef;
+        }
+
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 18px 14px 32px; }
+        .top-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 18px; }
+        .kpi { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 16px; box-shadow: 0 4px 14px rgba(15,23,42,.07); }
+        .kpi small { display: block; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+        .kpi strong { display: block; font-size: 1.6rem; font-weight: 800; color: #0f172a; }
+        .kpi.total strong { color: var(--verde-700); }
+        .kpi.dizimo strong { color: var(--azul-700); }
+        .kpi.oferta strong { color: var(--verde-600); }
+        .kpi.missoes strong { color: var(--azul-600); }
+        .kpi.outros strong { color: var(--texto-700); }
+
+        .main-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }
+        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 6px 20px rgba(15,23,42,.08); padding: 16px; }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .card-header h2 { margin: 0; font-size: 15px; color: var(--azul-700); }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .form-row .full { grid-column: 1 / -1; }
+
+        input, select, textarea {
+            width: 100%;
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 13.5px;
+            box-sizing: border-box;
+        }
+        textarea { resize: vertical; min-height: 60px; }
+
+        .btn { border: 0; border-radius: 8px; padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; color: #fff; }
+        .btn-primary { background: var(--verde-700); width: 100%; margin-top: 4px; }
+        .btn-del { background: #dc2626; padding: 5px 8px; font-size: 11px; }
+
+        .filtros { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: flex-end; }
+        .filtros input, .filtros select { max-width: 180px; margin: 0; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+        th, td { border-bottom: 1px solid #f1f5f9; padding: 9px 8px; text-align: left; vertical-align: top; }
+        th { background: #f8fafc; color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 700; }
+        .badge-dizimo { background: var(--azul-100); color: var(--azul-700); }
+        .badge-oferta { background: var(--verde-100); color: var(--verde-700); }
+        .badge-missoes { background: #e0f2fe; color: #0369a1; }
+        .badge-outros { background: #ecfeff; color: #0f766e; }
+
+        .msg { font-size: 13px; margin-top: 8px; min-height: 18px; }
+        .msg.ok { color: var(--verde-700); }
+        .msg.error { color: #b91c1c; }
+
+        .pag { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; align-items: center; }
+        .pag button { border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+        .pag button:disabled { opacity: .45; cursor: not-allowed; }
+        .pag span { font-size: 12px; color: #64748b; }
+
+        @media (max-width: 1000px) {
+            .top-cards { grid-template-columns: repeat(2, 1fr); }
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            .top-cards { grid-template-columns: 1fr; }
+            .filtros input, .filtros select { max-width: 100%; }
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Lançamentos de Dízimo" data-shell-breadcrumb="LDFP / Tesouraria / Dízimos" data-shell-active="dizimos_lancamentos.html" data-shell-chip="Tesouraria ativa" data-shell-role="Admin financeiro">
+<main class="main-content enterprise-main">
+<div class="wrap">
+
+    <div class="top-cards">
+        <div class="kpi total"><small>Total Geral</small><strong id="kpiTotal">R$ 0,00</strong></div>
+        <div class="kpi dizimo"><small>Dízimos</small><strong id="kpiDizimo">R$ 0,00</strong></div>
+        <div class="kpi oferta"><small>Ofertas</small><strong id="kpiOferta">R$ 0,00</strong></div>
+        <div class="kpi missoes"><small>Missões</small><strong id="kpiMissoes">R$ 0,00</strong></div>
+        <div class="kpi outros"><small>Outros / Lançamentos</small><strong id="kpiOutros">R$ 0,00 <span id="kpiCount" style="font-size:1rem;color:#94a3b8;font-weight:600;"></span></strong></div>
+    </div>
+
+    <div class="main-grid">
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-hand-holding-dollar"></i> Lançamentos de Dízimo</h2>
+                <div class="filtros">
+                    <input type="month" id="filtroComp" title="Filtrar competência">
+                    <select id="filtroTipo" title="Filtrar tipo">
+                        <option value="">Todos os tipos</option>
+                        <option value="dizimo">Dízimo</option>
+                        <option value="oferta">Oferta</option>
+                        <option value="missoes">Missões</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                    <input type="text" id="filtroNome" placeholder="Buscar por nome..." style="max-width:160px;">
+                    <button class="btn" style="background:var(--azul-600);" type="button" id="btnFiltrar">Filtrar</button>
+                </div>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Competência</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Obs</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbDizimos"></tbody>
+                </table>
+            </div>
+
+            <div class="pag">
+                <button id="btnAnterior" type="button" disabled>&#8592; Anterior</button>
+                <span id="pagInfo">Pág 1</span>
+                <button id="btnProximo" type="button" disabled>Próxima &#8594;</button>
+            </div>
+            <p class="msg" id="msgLista"></p>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-plus"></i> Novo lançamento</h2>
+            </div>
+            <form id="formDizimo">
+                <div class="form-row">
+                    <input class="full" type="text" id="membroNome" placeholder="Nome do membro *" required>
+                    <input type="text" id="valor" placeholder="Valor (Ex: 150,00) *" required>
+                    <select id="tipo">
+                        <option value="dizimo">Dízimo</option>
+                        <option value="oferta">Oferta</option>
+                        <option value="missoes">Missões</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                    <input type="month" id="competencia" required>
+                    <textarea class="full" id="observacao" placeholder="Observação (opcional)"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Registrar</button>
+            </form>
+            <p class="msg" id="msgForm"></p>
+        </section>
+    </div>
+</div>
+</main>
+
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script>
+    requireAuthSession();
+
+    const tbDizimos = document.getElementById('tbDizimos');
+    const msgLista = document.getElementById('msgLista');
+    const msgForm = document.getElementById('msgForm');
+    const btnAnterior = document.getElementById('btnAnterior');
+    const btnProximo = document.getElementById('btnProximo');
+    const pagInfo = document.getElementById('pagInfo');
+
+    let currentPage = 1;
+    let totalPages = 1;
+
+    function setMsg(el, text, isError = false) {
+        el.className = isError ? 'msg error' : 'msg ok';
+        el.textContent = text || '';
+    }
+
+    function fmtVal(v) {
+        return 'R$ ' + Number(v).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function competenciaParaExibicao(comp) {
+        if (!comp) return '-';
+        const [mes, ano] = comp.split('/');
+        const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+        return `${meses[parseInt(mes, 10) - 1]} ${ano}`;
+    }
+
+    function monthInputToComp(val) {
+        if (!val) return '';
+        const [ano, mes] = val.split('-');
+        return `${mes}/${ano}`;
+    }
+
+    async function loadTotais(competencia) {
+        const params = competencia ? `?competencia=${encodeURIComponent(competencia)}` : '';
+        const r = await fetch(`/dizimos/totais${params}`);
+        const d = await r.json().catch(() => ({}));
+        if (r.ok) {
+            document.getElementById('kpiTotal').textContent = fmtVal(d.totalGeral);
+            document.getElementById('kpiDizimo').textContent = fmtVal(d.totalDizimos);
+            document.getElementById('kpiOferta').textContent = fmtVal(d.totalOfertas);
+            document.getElementById('kpiMissoes').textContent = fmtVal(d.totalMissoes);
+            document.getElementById('kpiOutros').textContent = fmtVal(d.totalOutros);
+            document.getElementById('kpiCount').textContent = `(${d.totalLancamentos})`;
+        }
+    }
+
+    async function loadLista(page = 1) {
+        const competencia = monthInputToComp(document.getElementById('filtroComp').value);
+        const tipo = document.getElementById('filtroTipo').value;
+        const membroNome = document.getElementById('filtroNome').value.trim();
+
+        const params = new URLSearchParams({ page, limit: 50 });
+        if (competencia) params.set('competencia', competencia);
+        if (tipo) params.set('tipo', tipo);
+        if (membroNome) params.set('membroNome', membroNome);
+
+        const r = await fetch(`/dizimos?${params}`);
+        const d = await r.json().catch(() => ({ items: [], meta: { page: 1, totalPages: 1 } }));
+
+        if (!r.ok) {
+            setMsg(msgLista, d.error || 'Erro ao carregar.', true);
+            return;
+        }
+
+        const items = d.items || [];
+        totalPages = d.meta?.totalPages || 1;
+        currentPage = d.meta?.page || 1;
+
+        pagInfo.textContent = `Pág ${currentPage} de ${totalPages}`;
+        btnAnterior.disabled = currentPage <= 1;
+        btnProximo.disabled = currentPage >= totalPages;
+
+        if (!items.length) {
+            tbDizimos.innerHTML = '<tr><td colspan="6" style="color:#94a3b8;text-align:center;padding:20px;">Nenhum lançamento encontrado.</td></tr>';
+            return;
+        }
+
+        const badgeMap = { dizimo: 'badge-dizimo', oferta: 'badge-oferta', missoes: 'badge-missoes', outros: 'badge-outros' };
+        const labelMap = { dizimo: 'Dízimo', oferta: 'Oferta', missoes: 'Missões', outros: 'Outros' };
+
+        tbDizimos.innerHTML = items.map(item => `
+            <tr>
+                <td><strong>${item.membro_nome}</strong></td>
+                <td>${competenciaParaExibicao(item.competencia)}</td>
+                <td><span class="badge ${badgeMap[item.tipo] || 'badge-outros'}">${labelMap[item.tipo] || item.tipo}</span></td>
+                <td style="font-weight:700;color:var(--verde-700);">${fmtVal(item.valor)}</td>
+                <td style="color:#64748b;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.observacao || ''}">${item.observacao || '-'}</td>
+                <td><button class="btn btn-del" onclick="excluir(${item.id})" title="Remover">×</button></td>
+            </tr>
+        `).join('');
+
+        setMsg(msgLista, '');
+    }
+
+    async function refresh() {
+        const competencia = monthInputToComp(document.getElementById('filtroComp').value);
+        await Promise.all([loadLista(currentPage), loadTotais(competencia)]);
+    }
+
+    window.excluir = async function(id) {
+        if (!confirm('Remover este lançamento?')) return;
+        const r = await fetch(`/dizimos/${id}`, { method: 'DELETE' });
+        if (r.ok) {
+            setMsg(msgLista, 'Removido com sucesso.');
+            refresh();
+        } else {
+            const d = await r.json().catch(() => ({}));
+            setMsg(msgLista, d.error || 'Erro ao remover.', true);
+        }
+    };
+
+    document.getElementById('btnFiltrar').addEventListener('click', () => {
+        currentPage = 1;
+        refresh();
+    });
+
+    btnAnterior.addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadLista(currentPage); } });
+    btnProximo.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; loadLista(currentPage); } });
+
+    document.getElementById('formDizimo').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        setMsg(msgForm, '');
+
+        const valorRaw = document.getElementById('valor').value.trim().replace(',', '.');
+        const valor = parseFloat(valorRaw);
+        if (!valor || valor <= 0) {
+            setMsg(msgForm, 'Informe um valor válido.', true);
+            return;
+        }
+
+        const competenciaRaw = document.getElementById('competencia').value;
+        if (!competenciaRaw) {
+            setMsg(msgForm, 'Selecione a competência.', true);
+            return;
+        }
+
+        const body = {
+            membroNome: document.getElementById('membroNome').value.trim(),
+            valor,
+            competencia: monthInputToComp(competenciaRaw),
+            tipo: document.getElementById('tipo').value,
+            observacao: document.getElementById('observacao').value.trim() || null
+        };
+
+        const r = await fetch('/dizimos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const d = await r.json().catch(() => ({}));
+
+        if (!r.ok) {
+            setMsg(msgForm, d.error || 'Erro ao registrar.', true);
+            return;
+        }
+
+        setMsg(msgForm, 'Lançamento registrado!');
+        document.getElementById('membroNome').value = '';
+        document.getElementById('valor').value = '';
+        document.getElementById('observacao').value = '';
+        currentPage = 1;
+        refresh();
+    });
+
+    const hoje = new Date();
+    const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+    document.getElementById('competencia').value = mesAtual;
+    document.getElementById('filtroComp').value = mesAtual;
+
+    refresh();
+</script>
+</body>
+</html>

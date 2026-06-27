@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano de Leitura — LDFP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap { padding: 24px 30px 40px; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #0ea5e9; text-decoration: none; margin-bottom: 18px; }
+        
+        .plano-header {
+            background: linear-gradient(135deg, #8b5cf6, #a855f7);
+            color: #fff;
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.25);
+        }
+        .plano-header h1 { margin: 0 0 4px; font-size: 26px; }
+        .plano-header p { margin: 0; opacity: .9; font-size: 14px; }
+
+        .passos-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .passo-item {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: background .2s;
+        }
+        .passo-item.concluido { background: #f0fdf4; border-left: 4px solid #10b981; }
+        .passo-check {
+            width: 24px; height: 24px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-size: 14px;
+            transition: .2s;
+        }
+        .passo-item.concluido .passo-check { background: #10b981; border-color: #10b981; }
+        
+        .passo-info { flex: 1; }
+        .passo-dia { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+        .passo-refs { font-size: 16px; font-weight: 600; color: #0f172a; }
+        .passo-refs a { color: #0ea5e9; text-decoration: none; }
+        .passo-refs a:hover { text-decoration: underline; }
+
+        .loading-state { text-align: center; padding: 60px 20px; color: #64748b; }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 9999; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Detalhe do Plano" data-shell-breadcrumb="LDFP / Ensino / Planos / Detalhe" data-shell-active="planos-estudo.html">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <a href="planos-estudo.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Voltar para Planos</a>
+            <div id="planoContainer" class="loading-state">
+                <i class="fa-solid fa-spinner fa-spin fa-2x"></i><p>Carregando plano...</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="estudoToast" class="toast"></div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+        const planoId = new URLSearchParams(window.location.search).get('id');
+        const container = document.getElementById('planoContainer');
+
+        function showToast(msg) {
+            const toast = document.getElementById('estudoToast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        async function carregarPlano() {
+            if (!planoId) {
+                container.innerHTML = '<div class="loading-state" style="color:#ef4444">ID do plano não fornecido.</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/estudo/planos/${planoId}`);
+                if (!res.ok) throw new Error('Erro ao buscar plano.');
+                const data = await res.json();
+                const { plano, progresso } = data;
+
+                document.title = `${plano.titulo} — LDFP`;
+
+                let html = `
+                    <div class="plano-header">
+                        <h1>${plano.titulo}</h1>
+                        <p>${plano.descricao}</p>
+                    </div>
+                    <div class="passos-container">
+                `;
+
+                plano.passos.forEach((passo, index) => {
+                    const dia = index + 1;
+                    const concluido = progresso.passo_atual >= dia;
+                    const refsHtml = passo.refs.map(ref => `<a href="estudo.html?ref=${encodeURIComponent(ref)}" target="_blank">${ref}</a>`).join('; ');
+
+                    html += `
+                        <div class="passo-item ${concluido ? 'concluido' : ''}" id="passo-${dia}">
+                            <div class="passo-check" onclick="marcarPasso(${dia}, ${plano.dias_total})">
+                                ${concluido ? '<i class="fa-solid fa-check"></i>' : ''}
+                            </div>
+                            <div class="passo-info">
+                                <div class="passo-dia">Dia ${dia}</div>
+                                <div class="passo-refs">${refsHtml}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+                container.innerHTML = html;
+
+            } catch (err) {
+                container.innerHTML = `<div class="loading-state" style="color:#ef4444">${err.message}</div>`;
+            }
+        }
+
+        async function marcarPasso(dia, totalDias) {
+            const item = document.getElementById(`passo-${dia}`);
+            const check = item.querySelector('.passo-check');
+            const isConcluido = item.classList.contains('concluido');
+
+            // Para simplificar, o usuário só pode avançar. Desmarcar não é suportado no MVP.
+            if (isConcluido) return;
+
+            try {
+                const res = await fetch(`/api/estudo/planos/${planoId}/progresso`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        passo_atual: dia,
+                        concluido: dia >= totalDias
+                    })
+                });
+                if (!res.ok) throw new Error('Erro ao salvar progresso.');
+
+                // Atualiza a UI para todos os passos até o atual
+                for (let i = 1; i <= dia; i++) {
+                    const el = document.getElementById(`passo-${i}`);
+                    if (el) {
+                        el.classList.add('concluido');
+                        el.querySelector('.passo-check').innerHTML = '<i class="fa-solid fa-check"></i>';
+                    }
+                }
+                showToast(`Dia ${dia} concluído! Continue firme!`);
+
+            } catch (err) {
+                showToast('Erro: ' + err.message);
+            }
+        }
+
+        carregarPlano();
+    </script>
+</body>
+</html>

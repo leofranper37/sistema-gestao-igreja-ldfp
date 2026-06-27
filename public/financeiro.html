@@ -1,0 +1,277 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Financeiro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .finance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .finance-card, .form-container, .table-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); }
+        .finance-card { padding: 22px; }
+        .finance-card h1 { margin: 0; font-size: 20px; color: #475569; }
+        #valorSaldo { font-size: 38px; font-weight: 800; color: #15803d; margin-top: 12px; }
+        .form-container { padding: 20px; }
+        .form-container h3 { margin-top: 0; }
+        input, select { padding: 10px; margin: 6px 0; width: 100%; border: 1px solid #dbe3ef; border-radius: 8px; }
+        .btn-primary { padding: 10px 18px; background-color: #0f172a; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; margin-top: 8px; }
+        .table-wrap { margin-top: 20px; overflow: hidden; }
+        .table-controls { display: grid; grid-template-columns: 1fr 180px 140px auto; gap: 10px; margin: 12px 0; align-items: center; }
+        .table-pagination { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin: 10px 0 4px; }
+        .table-pagination button { padding: 8px 12px; border: 1px solid #cbd5e1; background: #fff; border-radius: 8px; cursor: pointer; }
+        .table-pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .table-pagination span { font-size: 13px; color: #475569; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        th { background: #f8fafc; color: #475569; }
+        .entrada { color: #15803d; font-weight: bold; }
+        .saida { color: #be123c; font-weight: bold; }
+        .status-msg { margin-top: 10px; font-size: 13px; color: #0f766e; }
+        .status-msg.error { color: #b91c1c; }
+        .status-msg:empty { display: none; }
+        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+        @media (max-width: 900px) { .finance-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="financeiro.html" data-shell-title="Financeiro" data-shell-breadcrumb="LDFP / Tesouraria / Caixa" data-shell-chip="Módulo financeiro" data-shell-role="Admin financeiro">
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
+            <div class="enterprise-page-hero">
+                <div>
+                    <h2>Financeiro</h2>
+                    <p>Controle de caixa com saldo atual, lançamento rápido e histórico filtrável na mesma tela.</p>
+                </div>
+                <div class="enterprise-page-badge"><i class="fa-solid fa-vault"></i> Tesouraria ativa</div>
+            </div>
+
+            <div class="finance-grid">
+                <div class="finance-card">
+                    <h1>Saldo em Caixa</h1>
+                    <div id="valorSaldo">R$ 0,00</div>
+                </div>
+
+                <div class="form-container">
+                    <h3>Nova Transação</h3>
+                    <input type="text" id="desc" placeholder="Descrição (Ex: Dízimo Irmão João)">
+                    <input type="number" id="valor" placeholder="Valor (Ex: 100.00)">
+                    <select id="tipo" aria-label="Tipo da transação" title="Tipo da transação">
+                        <option value="entrada">Entrada (+)</option>
+                        <option value="saida">Saída (-)</option>
+                    </select>
+                    <button class="btn-primary" id="btnRegistrar" onclick="salvarTransacao()">Registrar</button>
+                    <div id="financeStatus" class="status-msg"></div>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <div class="table-controls">
+                    <input type="text" id="filtroDescricao" placeholder="Filtrar por descrição...">
+                    <select id="filtroTipo" aria-label="Filtrar por tipo" title="Filtrar por tipo">
+                        <option value="">Todos os tipos</option>
+                        <option value="entrada">Entrada</option>
+                        <option value="saida">Saída</option>
+                    </select>
+                    <select id="filtroLimit" aria-label="Quantidade por página" title="Quantidade por página">
+                        <option value="10">10 por página</option>
+                        <option value="20" selected>20 por página</option>
+                        <option value="50">50 por página</option>
+                    </select>
+                    <button class="btn-primary btn-no-margin-top" id="btnFiltrar" type="button">Filtrar</button>
+                </div>
+                <table id="tabelaTransacoes">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="table-pagination">
+                    <button id="btnPrevTransacoes" type="button">Anterior</button>
+                    <span id="transacoesPageInfo">Página 1 de 1</span>
+                    <button id="btnNextTransacoes" type="button">Próxima</button>
+                </div>
+                <div id="tableStatus" class="status-msg"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const transacoesState = {
+            page: 1,
+            limit: 20,
+            totalPages: 1
+        };
+
+        function setStatus(id, text, isError = false) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = text;
+            el.classList.toggle('error', isError);
+        }
+
+        function extractErrorMessage(data, fallbackMessage) {
+            if (!data) {
+                return fallbackMessage;
+            }
+
+            return data.error || data.message || fallbackMessage;
+        }
+
+        async function fetchJson(url, options = {}, fallbackMessage = 'Falha ao processar requisicao.') {
+            const response = await fetch(url, options);
+            const data = await response.json().catch(() => null);
+
+            if (!response.ok) {
+                throw new Error(extractErrorMessage(data, fallbackMessage));
+            }
+
+            return data;
+        }
+
+        async function carregarSaldo() {
+            try {
+                const dadosSaldo = await fetchJson('/saldo', {}, 'Nao foi possivel carregar o saldo.');
+                document.getElementById('valorSaldo').innerText = `R$ ${dadosSaldo.saldo}`;
+            } catch (err) {
+                document.getElementById('valorSaldo').innerText = 'R$ --';
+                setStatus('tableStatus', err.message || 'Erro ao carregar saldo.', true);
+            }
+        }
+
+        async function carregarTransacoes() {
+            const descricao = document.getElementById('filtroDescricao').value.trim();
+            const tipo = document.getElementById('filtroTipo').value;
+            const params = new URLSearchParams({
+                page: String(transacoesState.page),
+                limit: String(transacoesState.limit),
+                sortBy: 'created_at',
+                sortOrder: 'desc',
+                meta: '1'
+            });
+
+            if (descricao) params.set('descricao', descricao);
+            if (tipo) params.set('tipo', tipo);
+
+            setStatus('tableStatus', '', false);
+
+            let payload;
+            try {
+                payload = await fetchJson(`/transacoes?${params.toString()}`, {}, 'Nao foi possivel carregar as transacoes.');
+            } catch (err) {
+                const tbodyError = document.querySelector('#tabelaTransacoes tbody');
+                tbodyError.innerHTML = `<tr><td colspan="3" class="saida">${err.message || 'Erro ao carregar transacoes.'}</td></tr>`;
+                setStatus('tableStatus', err.message || 'Erro ao carregar transacoes.', true);
+                return;
+            }
+
+            const lista = Array.isArray(payload) ? payload : (payload.items || []);
+
+            if (!Array.isArray(payload) && payload.meta) {
+                transacoesState.totalPages = payload.meta.totalPages || 1;
+            } else {
+                transacoesState.totalPages = 1;
+            }
+
+            document.getElementById('transacoesPageInfo').textContent = `Página ${transacoesState.page} de ${transacoesState.totalPages}`;
+            document.getElementById('btnPrevTransacoes').disabled = transacoesState.page <= 1;
+            document.getElementById('btnNextTransacoes').disabled = transacoesState.page >= transacoesState.totalPages;
+
+            const tbody = document.querySelector('#tabelaTransacoes tbody');
+            tbody.innerHTML = '';
+
+            if (!lista.length) {
+                tbody.innerHTML = '<tr><td colspan="3">Nenhuma transacao encontrada para os filtros atuais.</td></tr>';
+                return;
+            }
+
+            lista.forEach(t => {
+                const tr = document.createElement('tr');
+                const classeCor = t.type === 'entrada' ? 'entrada' : 'saida';
+                const sinal = t.type === 'entrada' ? '+' : '-';
+                tr.innerHTML = `
+                    <td>${t.description}</td>
+                    <td class="${classeCor}">${t.type.toUpperCase()}</td>
+                    <td class="${classeCor}">${sinal} R$ ${t.amount}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function salvarTransacao() {
+            const descricao = document.getElementById('desc').value;
+            const valor = document.getElementById('valor').value;
+            const tipo = document.getElementById('tipo').value;
+            const btn = document.getElementById('btnRegistrar');
+
+            setStatus('financeStatus', '', false);
+
+            if (!descricao || !valor) {
+                setStatus('financeStatus', 'Preencha descricao e valor para registrar a transacao.', true);
+                return;
+            }
+
+            if (Number(valor) <= 0) {
+                setStatus('financeStatus', 'Informe um valor maior que zero.', true);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Registrando...';
+
+            try {
+                await fetchJson('/transacoes', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ descricao, valor, tipo })
+                }, 'Nao foi possivel registrar a transacao.');
+
+                setStatus('financeStatus', 'Transacao registrada com sucesso!');
+                document.getElementById('desc').value = '';
+                document.getElementById('valor').value = '';
+                await carregarSaldo();
+                await carregarTransacoes();
+            } catch (err) {
+                setStatus('financeStatus', err.message || 'Erro ao registrar transacao.', true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Registrar';
+            }
+        }
+
+        document.getElementById('btnFiltrar').addEventListener('click', async () => {
+            transacoesState.page = 1;
+            transacoesState.limit = Number(document.getElementById('filtroLimit').value || 20);
+            await carregarTransacoes();
+        });
+
+        document.getElementById('btnPrevTransacoes').addEventListener('click', async () => {
+            if (transacoesState.page <= 1) return;
+            transacoesState.page -= 1;
+            await carregarTransacoes();
+        });
+
+        document.getElementById('btnNextTransacoes').addEventListener('click', async () => {
+            if (transacoesState.page >= transacoesState.totalPages) return;
+            transacoesState.page += 1;
+            await carregarTransacoes();
+        });
+
+        document.getElementById('filtroLimit').addEventListener('change', async () => {
+            transacoesState.page = 1;
+            transacoesState.limit = Number(document.getElementById('filtroLimit').value || 20);
+            await carregarTransacoes();
+        });
+
+        carregarSaldo();
+        carregarTransacoes();
+    </script>
+</body>
+</html>

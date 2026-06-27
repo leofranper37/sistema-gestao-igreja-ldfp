@@ -1,0 +1,733 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Configurações</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap {
+            padding: 24px 30px 30px;
+        }
+
+        .page-title {
+            margin: 0 0 14px 0;
+            color: #0f172a;
+            font-size: 24px;
+        }
+
+        .config-container {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+        }
+
+        .tabs-header {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(90deg, #ecfeff 0%, #f0fdf4 100%);
+            overflow-x: auto;
+        }
+
+        .tab-link {
+            padding: 14px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+        }
+
+        .tab-link.active {
+            color: #0f172a;
+            background: #fff;
+            border-bottom-color: #0ea5e9;
+        }
+
+        .config-body {
+            padding: 20px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .settings-column-compact {
+            max-width: 620px;
+        }
+
+        .settings-group {
+            margin-bottom: 20px;
+        }
+
+        .group-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 10px;
+        }
+
+        .group-subtitle {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 10px;
+        }
+
+        .radio-item,
+        .checkbox-item {
+            display: block;
+            margin-bottom: 10px;
+            color: #334155;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .radio-item input,
+        .checkbox-item input {
+            margin-right: 8px;
+            accent-color: #10b981;
+        }
+
+        .radio-help {
+            display: block;
+            margin-left: 22px;
+            margin-top: 4px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .btn-salvar,
+        .btn-planos {
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 700;
+            padding: 10px 16px;
+        }
+
+        .btn-salvar {
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+        }
+
+        .btn-planos {
+            margin-top: 8px;
+            background: #0284c7;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .form-select {
+            width: 100%;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 13px;
+            color: #334155;
+            box-sizing: border-box;
+        }
+
+        .warning-banner {
+            background: #ecfeff;
+            border: 1px solid #bae6fd;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 14px;
+            color: #0c4a6e;
+        }
+
+        .letters-layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            min-height: 430px;
+        }
+
+        .letters-sidebar {
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .letter-type {
+            padding: 12px 14px;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 13px;
+            color: #475569;
+            cursor: pointer;
+        }
+
+        .letter-type.active {
+            background: #fff;
+            color: #0284c7;
+            font-weight: 700;
+            border-left: 3px solid #0ea5e9;
+        }
+
+        .letters-editor {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .editor-toolbar {
+            border: 1px solid #dbe3ef;
+            border-bottom: none;
+            background: #f8fafc;
+            border-radius: 8px 8px 0 0;
+            padding: 8px;
+            color: #64748b;
+        }
+
+        .editor-textarea,
+        .editor-surface {
+            border: 1px solid #dbe3ef;
+            border-radius: 0 0 8px 8px;
+            min-height: 220px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #334155;
+            background: #fff;
+        }
+
+        .editor-textarea {
+            resize: vertical;
+            font-family: Segoe UI, sans-serif;
+        }
+
+        .editor-surface {
+            white-space: pre-line;
+        }
+
+        .asset-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 2px;
+        }
+
+        .asset-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .asset-row input {
+            flex: 1;
+            border: 1px solid #dbe3ef;
+            border-radius: 6px;
+            padding: 7px 9px;
+            font-size: 12px;
+        }
+
+        .asset-row button {
+            border: 1px solid #bae6fd;
+            background: #ecfeff;
+            color: #0369a1;
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .variable-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 11px;
+            color: #0369a1;
+            font-weight: 700;
+        }
+
+        .row-flex {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .row-flex > div {
+            min-width: 180px;
+            flex: 1;
+        }
+
+        @media (max-width: 900px) {
+            .letters-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .letters-sidebar {
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Configurações" data-shell-breadcrumb="LDFP / Meu LDFP / Configurações" data-shell-active="configuracoes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <h2 class="page-title">Configurações</h2>
+
+            <div class="config-container">
+                <div class="tabs-header">
+                    <div class="tab-link active" onclick="abrirAba(event, 'igreja')">Igreja</div>
+                    <div class="tab-link" onclick="abrirAba(event, 'globais')">Geral</div>
+                    <div class="tab-link" onclick="abrirAba(event, 'usuario')">Usuário</div>
+                    <div class="tab-link" onclick="abrirAba(event, 'contabilidade')">Contabilidade</div>
+                    <div class="tab-link" onclick="abrirAba(event, 'cartas')">Cartas</div>
+                    <div class="tab-link" onclick="abrirAba(event, 'certificados')">Certificados</div>
+                </div>
+
+                <div class="config-body">
+                    <!-- ── Aba: Igreja ── -->
+                    <div id="igreja" class="tab-content active">
+                        <div style="max-width: 780px;">
+                            <div class="settings-group">
+                                <div class="group-title">Identidade da Igreja</div>
+                                <div class="row-flex">
+                                    <div style="flex:2">
+                                        <label class="form-label">Nome da Igreja *</label>
+                                        <input id="cfg_nome" type="text" class="form-select" placeholder="Nome oficial">
+                                    </div>
+                                    <div style="flex:1">
+                                        <label class="form-label">CNPJ</label>
+                                        <input id="cfg_cnpj" type="text" class="form-select" placeholder="00.000.000/0001-00">
+                                    </div>
+                                </div>
+                                <div class="row-flex">
+                                    <div>
+                                        <label class="form-label">Pastor / Responsável</label>
+                                        <input id="cfg_pastor" type="text" class="form-select" placeholder="Nome do pastor">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Telefone</label>
+                                        <input id="cfg_telefone" type="text" class="form-select" placeholder="(00) 0000-0000">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">WhatsApp</label>
+                                        <input id="cfg_whatsapp" type="text" class="form-select" placeholder="(00) 90000-0000">
+                                    </div>
+                                </div>
+                                <div class="row-flex">
+                                    <div>
+                                        <label class="form-label">E-mail</label>
+                                        <input id="cfg_email" type="email" class="form-select" placeholder="contato@igreja.com.br">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Site</label>
+                                        <input id="cfg_site" type="url" class="form-select" placeholder="https://www.suaigreja.com.br">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-group">
+                                <div class="group-title">Endereço</div>
+                                <div class="row-flex">
+                                    <div style="flex:3">
+                                        <label class="form-label">Logradouro</label>
+                                        <input id="cfg_endereco" type="text" class="form-select" placeholder="Rua, Avenida...">
+                                    </div>
+                                    <div style="flex:1">
+                                        <label class="form-label">Número</label>
+                                        <input id="cfg_numero" type="text" class="form-select" placeholder="Nº">
+                                    </div>
+                                </div>
+                                <div class="row-flex">
+                                    <div>
+                                        <label class="form-label">Bairro</label>
+                                        <input id="cfg_bairro" type="text" class="form-select" placeholder="Bairro">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Cidade</label>
+                                        <input id="cfg_cidade" type="text" class="form-select" placeholder="Cidade">
+                                    </div>
+                                    <div style="max-width:100px">
+                                        <label class="form-label">UF</label>
+                                        <input id="cfg_estado" type="text" class="form-select" placeholder="UF" maxlength="2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-group">
+                                <div class="group-title">Logo</div>
+                                <label class="form-label">URL da Logo</label>
+                                <input id="cfg_logo_url" type="url" class="form-select" placeholder="https://...">
+                                <div id="logoPreview" style="margin-top:10px;display:none;">
+                                    <img id="logoImg" src="" alt="Logo" style="max-height:80px;border-radius:8px;border:1px solid #e2e8f0;">
+                                </div>
+                            </div>
+
+                            <div id="cfgIgrejaMsg" style="display:none;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;"></div>
+                            <button class="btn-salvar" onclick="salvarIgreja()">
+                                <i class="fa-solid fa-floppy-disk" style="margin-right:6px;"></i>Salvar Dados da Igreja
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="globais" class="tab-content">
+                        <div class="settings-column-compact">
+                            <div class="settings-group">
+                                <div class="group-title">Cadastro de Membros</div>
+                                <div class="group-subtitle">Numeração da Ficha</div>
+
+                                <label class="radio-item">
+                                    <input type="radio" name="numeracao_ficha" value="manual">
+                                    Manual
+                                    <span class="radio-help">O número da ficha é digitado manualmente pelo usuário.</span>
+                                </label>
+
+                                <label class="radio-item">
+                                    <input type="radio" name="numeracao_ficha" value="por_congregacao" checked>
+                                    Automática - Por Congregação
+                                    <span class="radio-help">Cada congregação inicia em 1 com sequência própria.</span>
+                                </label>
+
+                                <label class="radio-item">
+                                    <input type="radio" name="numeracao_ficha" value="todas">
+                                    Automática - Todas as Congregações
+                                    <span class="radio-help">Uma única sequência para toda a instituição.</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button class="btn-salvar" onclick="salvarConfig()">Salvar Globais</button>
+                    </div>
+
+                    <div id="usuario" class="tab-content">
+                        <div style="max-width: 620px;">
+                            <label class="form-label">Membro Associado</label>
+                            <select class="form-select" style="margin-bottom: 16px;">
+                                <option value="">Selecione um membro...</option>
+                                <option value="1">Leonard Francisco Pereira</option>
+                            </select>
+
+                            <label class="checkbox-item"><input type="checkbox"> Permanecer na tela de dízimos ao salvar</label>
+                            <label class="checkbox-item"><input type="checkbox"> Permanecer na tela de caixa ao salvar</label>
+                            <label class="checkbox-item"><input type="checkbox"> Permanecer na tela bancária ao salvar</label>
+                            <label class="checkbox-item"><input type="checkbox"> Usar interface clássica do financeiro</label>
+
+                            <button class="btn-salvar" onclick="salvarConfig()">Salvar Preferências</button>
+                        </div>
+                    </div>
+
+                    <div id="cartas" class="tab-content">
+                        <div class="warning-banner">
+                            <h3 style="margin:0 0 4px 0;font-size:14px;"><i class="fa-solid fa-lock"></i> Funcionalidade Indisponível no Plano Atual</h3>
+                            <p style="margin:0;font-size:13px;">Esta opção está disponível em planos superiores.</p>
+                            <button class="btn-planos"><i class="fa-solid fa-star"></i> Ver Planos</button>
+                        </div>
+
+                        <div class="letters-layout">
+                            <div class="letters-sidebar">
+                                <div class="letter-type active" onclick="trocarCarta(this, 'nascimento')">Nascimento</div>
+                                <div class="letter-type" onclick="trocarCarta(this, 'casamento')">Casamento</div>
+                                <div class="letter-type" onclick="trocarCarta(this, 'recomendacao')">Recomendação</div>
+                                <div class="letter-type" onclick="trocarCarta(this, 'mudanca')">Mudança</div>
+                                <div class="letter-type" onclick="trocarCarta(this, 'novo_convertido')">Novo Convertido</div>
+                                <div class="letter-type" onclick="trocarCarta(this, 'livre')">Carta Livre</div>
+                            </div>
+                            <div class="letters-editor">
+                                <div class="editor-toolbar"><i class="fa-solid fa-bold"></i> <i class="fa-solid fa-italic"></i> <i class="fa-solid fa-underline"></i></div>
+                                <textarea id="editorCartas" class="editor-textarea">[SISTEMA_DATA_CONGREGA]
+
+Querido(a) Irmão(ã), [MEMBRO_NOME],
+
+É motivo de muita alegria para nós...</textarea>
+                                <button class="btn-salvar" style="align-self:flex-start;" onclick="salvarConfig()">Salvar Carta</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="certificados" class="tab-content">
+                        <div class="warning-banner">
+                            <h3 style="margin:0 0 4px 0;font-size:14px;"><i class="fa-solid fa-lock"></i> Funcionalidade Indisponível no Plano Atual</h3>
+                            <p style="margin:0;font-size:13px;">Esta opção está disponível em planos superiores.</p>
+                            <button class="btn-planos"><i class="fa-solid fa-star"></i> Ver Planos</button>
+                        </div>
+
+                        <div class="letters-layout">
+                            <div class="letters-sidebar">
+                                <div class="letter-type active" onclick="trocarCertificado(this, 'batismo1')">Batismo - Modelo 1</div>
+                                <div class="letter-type" onclick="trocarCertificado(this, 'batismo2')">Batismo - Modelo 2</div>
+                                <div class="letter-type" onclick="trocarCertificado(this, 'batismo3')">Batismo - Modelo 3</div>
+                                <div class="letter-type" onclick="trocarCertificado(this, 'membresia')">Membresia</div>
+                                <div class="letter-type" onclick="trocarCertificado(this, 'ordenacao')">Ordenação</div>
+                                <div class="letter-type" onclick="trocarCertificado(this, 'crianca_menino')">Criança - Menino</div>
+                                <div class="letter-type" onclick="trocarCertificado(this, 'crianca_menina')">Criança - Menina</div>
+                            </div>
+                            <div class="letters-editor">
+                                <div class="asset-title">Imagem de Fundo Personalizada (1122x793px) JPG/JPEG</div>
+                                <div class="asset-row">
+                                    <input type="text" placeholder="Escolher arquivo" readonly>
+                                    <button type="button">Nenhum arquivo selecionado</button>
+                                </div>
+                                <div class="editor-toolbar"><i class="fa-solid fa-align-left"></i> <i class="fa-solid fa-align-center"></i> <i class="fa-solid fa-align-right"></i></div>
+                                <div class="variable-tags">
+                                    <span>&gt; Dados do Membro</span>
+                                    <span>&gt; Família do Membro</span>
+                                    <span>&gt; Dados Ministeriais</span>
+                                    <span>&gt; Dados do Sistema</span>
+                                </div>
+                                <div id="editorCertificados" class="editor-surface" contenteditable="true">CERTIFICADO DE BATISMO
+
+Certificamos que
+
+[MEMBRO_NOME]
+
+Foi batizado em nome do Pai, do Filho e do Espírito Santo.</div>
+                                <button class="btn-salvar" style="align-self:flex-start;" onclick="salvarConfig()">Salvar Certificado</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="contabilidade" class="tab-content">
+                        <div style="max-width: 920px;">
+                            <div class="settings-group">
+                                <div class="group-title">Dados do Contador</div>
+                                <div class="row-flex">
+                                    <div>
+                                        <label class="form-label">Nome do Contador *</label>
+                                        <input type="text" class="form-select" placeholder="Nome completo do contador">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Título *</label>
+                                        <input type="text" class="form-select" placeholder="Contador, Técnico...">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">CRC *</label>
+                                        <input type="text" class="form-select" placeholder="Número do CRC">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">UF *</label>
+                                        <input type="text" class="form-select" placeholder="UF">
+                                    </div>
+                                </div>
+                                <div class="row-flex">
+                                    <div>
+                                        <label class="form-label">CPF *</label>
+                                        <input type="text" class="form-select" placeholder="000.000.000-00">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">E-mail *</label>
+                                        <input type="email" class="form-select" placeholder="contato@email.com">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Telefone *</label>
+                                        <input type="text" class="form-select" placeholder="(00) 00000-0000">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-group">
+                                <div class="group-title">Certificado de Regularidade (RF/ANEX)</div>
+                                <div class="row-flex">
+                                    <div>
+                                        <label class="form-label">Identificador *</label>
+                                        <input type="text" class="form-select" placeholder="UF/YYYY/0000/0000">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Data de Validade *</label>
+                                        <input type="date" class="form-select">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-group">
+                                <div class="group-title">Responsável perante o Ministério da Fazenda</div>
+                                <div class="row-flex">
+                                    <div>
+                                        <label class="form-label">Nome do Responsável *</label>
+                                        <input type="text" class="form-select" placeholder="Nome completo">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">CPF</label>
+                                        <input type="text" class="form-select" placeholder="000.000.000-00">
+                                    </div>
+                                </div>
+                                <label class="checkbox-item"><input type="checkbox"> Instituição Isenta das Contribuições Patronais</label>
+                            </div>
+
+                            <button class="btn-salvar" onclick="salvarConfig()">Salvar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        function abrirAba(evt, nomeAba) {
+            document.querySelectorAll('.tab-content').forEach((aba) => aba.classList.remove('active'));
+            document.querySelectorAll('.tab-link').forEach((link) => link.classList.remove('active'));
+            document.getElementById(nomeAba).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // ── Helpers de mensagem ──────────────────────────────────────
+        function showMsg(elId, texto, tipo) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.textContent = texto;
+            el.style.display = 'block';
+            el.style.background = tipo === 'ok' ? '#f0fdf4' : '#fef2f2';
+            el.style.color      = tipo === 'ok' ? '#166534' : '#991b1b';
+            el.style.border     = `1px solid ${tipo === 'ok' ? '#86efac' : '#fca5a5'}`;
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+
+        // ── Carregamento inicial ──────────────────────────────────────
+        async function carregarConfig() {
+            try {
+                const r = await fetch('/api/church/config');
+                if (!r.ok) return;
+                const d = await r.json();
+
+                // Aba Igreja
+                const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+                set('cfg_nome',      d.nome);
+                set('cfg_whatsapp',  d.whatsapp);
+                set('cfg_logo_url',  d.logo_url);
+                const cfg = d.config || {};
+                set('cfg_cnpj',      cfg.cnpj);
+                set('cfg_pastor',    cfg.pastor);
+                set('cfg_telefone',  cfg.telefone);
+                set('cfg_email',     cfg.email);
+                set('cfg_site',      cfg.site);
+                set('cfg_endereco',  cfg.endereco);
+                set('cfg_numero',    cfg.numero);
+                set('cfg_bairro',    cfg.bairro);
+                set('cfg_cidade',    cfg.cidade);
+                set('cfg_estado',    cfg.estado);
+                atualizarLogo();
+
+                // Aba Geral — numeração
+                const numFicha = cfg.numeracao_ficha || 'por_congregacao';
+                const radios = document.querySelectorAll('[name="numeracao_ficha"]');
+                radios.forEach(r => { r.checked = (r.value === numFicha); });
+            } catch (_) {}
+        }
+
+        function atualizarLogo() {
+            const url = (document.getElementById('cfg_logo_url') || {}).value || '';
+            const preview = document.getElementById('logoPreview');
+            const img = document.getElementById('logoImg');
+            if (preview && img) {
+                if (url) { img.src = url; preview.style.display = 'block'; }
+                else { preview.style.display = 'none'; }
+            }
+        }
+
+        // ── Salvar aba Igreja ────────────────────────────────────────
+        async function salvarIgreja() {
+            const val = (id) => (document.getElementById(id) || {}).value || '';
+            const body = {
+                nome:      val('cfg_nome'),
+                whatsapp:  val('cfg_whatsapp'),
+                logo_url:  val('cfg_logo_url'),
+                cnpj:      val('cfg_cnpj'),
+                pastor:    val('cfg_pastor'),
+                telefone:  val('cfg_telefone'),
+                email:     val('cfg_email'),
+                site:      val('cfg_site'),
+                endereco:  val('cfg_endereco'),
+                numero:    val('cfg_numero'),
+                bairro:    val('cfg_bairro'),
+                cidade:    val('cfg_cidade'),
+                estado:    val('cfg_estado')
+            };
+            try {
+                const r = await fetch('/api/church/config', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const d = await r.json();
+                if (r.ok && d.ok) {
+                    showMsg('cfgIgrejaMsg', '✓ Dados da igreja salvos com sucesso!', 'ok');
+                    atualizarLogo();
+                } else {
+                    showMsg('cfgIgrejaMsg', d.error || 'Erro ao salvar.', 'erro');
+                }
+            } catch (_) {
+                showMsg('cfgIgrejaMsg', 'Erro de rede. Tente novamente.', 'erro');
+            }
+        }
+
+        // ── Salvar aba Geral ─────────────────────────────────────────
+        async function salvarConfig() {
+            const numFichaEl = document.querySelector('[name="numeracao_ficha"]:checked');
+            const numeracao_ficha = numFichaEl ? numFichaEl.value : 'por_congregacao';
+            try {
+                const r = await fetch('/api/church/config', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ numeracao_ficha })
+                });
+                const d = await r.json();
+                if (r.ok && d.ok) {
+                    alert('Configurações salvas com sucesso!');
+                } else {
+                    alert('Erro: ' + (d.error || 'Não foi possível salvar.'));
+                }
+            } catch (_) {
+                alert('Erro de rede. Tente novamente.');
+            }
+        }
+
+        function ativarItemMenu(el) {
+            const grupo = el.parentElement.querySelectorAll('.letter-type');
+            grupo.forEach((item) => item.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function trocarCarta(el, tipo) {
+            ativarItemMenu(el);
+            document.getElementById('editorCartas').value = 'Texto do modelo ' + tipo;
+        }
+
+        function trocarCertificado(el, tipo) {
+            ativarItemMenu(el);
+            const modelosCertificado = {
+                batismo1: 'CERTIFICADO DE BATISMO\n\nCertificamos que\n\n[MEMBRO_NOME]\n\nFoi batizado em nome do Pai, do Filho e do Espírito Santo.',
+                batismo2: 'CERTIFICADO DE BATISMO\n\nDeclaramos que\n\n[MEMBRO_NOME]\n\nrecebeu o batismo nas águas conforme sua confissão de fé.',
+                batismo3: 'CERTIFICADO\n\nA Igreja certifica que\n\n[MEMBRO_NOME]\n\nfoi batizado(a) em data registrada nesta congregação.',
+                membresia: 'CERTIFICADO DE MEMBRESIA\n\nCertificamos que\n\n[MEMBRO_NOME]\n\né membro(a) desta igreja em plena comunhão.',
+                ordenacao: 'CERTIFICADO DE ORDENAÇÃO\n\nCertificamos que\n\n[MEMBRO_NOME]\n\nfoi ordenado(a) para o exercício do ministério.',
+                crianca_menino: 'CERTIFICADO DE APRESENTAÇÃO\n\nCertificamos a apresentação de\n\n[NOME_CRIANCA]\n\nperante a igreja do Senhor.',
+                crianca_menina: 'CERTIFICADO DE APRESENTAÇÃO\n\nCertificamos a apresentação de\n\n[NOME_CRIANCA]\n\nperante a igreja do Senhor.'
+            };
+
+            const editor = document.getElementById('editorCertificados');
+            if (!editor) return;
+            editor.textContent = modelosCertificado[tipo] || ('Texto do certificado ' + tipo);
+        }
+
+        // Inicializar
+        carregarConfig();
+        document.getElementById('cfg_logo_url')?.addEventListener('input', atualizarLogo);
+    </script>
+    <script src="speed-insights.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,326 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>LDFP - Planos para Igrejas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #020617;
+      --bg-soft: #0b1220;
+      --card: #020617;
+      --border: #1e293b;
+      --brand: #0f766e;
+      --brand-soft: #99f6e4;
+      --accent: #f97316;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-soft: 0 18px 40px rgba(15,23,42,0.65);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    header h1 {
+      font-size: 1.9rem;
+      margin-bottom: 6px;
+    }
+    header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15,118,110,0.14);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      color: var(--brand-soft);
+      margin-bottom: 10px;
+    }
+
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+    }
+
+    .plan-card {
+      background: linear-gradient(145deg,#020617,#050816);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      padding: 18px 18px 20px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 260px;
+    }
+
+    .plan-card.highlight {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(249,115,22,0.4), var(--shadow-soft);
+    }
+
+    .plan-tag {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      font-size: 0.7rem;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.8);
+      border: 1px solid rgba(148,163,184,0.6);
+      color: var(--muted);
+    }
+
+    .plan-header {
+      margin-bottom: 10px;
+    }
+
+    .plan-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .plan-subtitle {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .plan-price {
+      margin: 12px 0;
+    }
+    .plan-price-main {
+      font-size: 1.7rem;
+      font-weight: 700;
+    }
+    .plan-price-main small {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 400;
+      margin-left: 4px;
+    }
+    .plan-price-annual {
+      font-size: 0.8rem;
+      color: var(--brand-soft);
+    }
+
+    .plan-features {
+      list-style: none;
+      margin: 12px 0 14px;
+      padding: 0;
+      flex-grow: 1;
+    }
+    .plan-features li {
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+    }
+    .plan-features li i {
+      font-size: 0.7rem;
+      color: var(--brand-soft);
+    }
+
+    .plan-footer {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .plan-cta {
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      padding: 9px 14px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background-color .15s, transform .08s;
+    }
+    .plan-cta.primary {
+      background: var(--accent);
+      color: #0b1120;
+    }
+    .plan-cta.primary:hover {
+      background: #ea580c;
+      transform: translateY(-1px);
+    }
+    .plan-cta.outline {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .plan-cta.outline:hover {
+      border-color: var(--brand);
+    }
+
+    .plan-note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      header h1 { font-size: 1.5rem; }
+      .plan-card { min-height: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="badge">
+      <i class="fa-solid fa-church"></i>
+      Planos pensados para a realidade da igreja local
+    </div>
+    <h1>Escolha o plano ideal para sua igreja</h1>
+    <p>Do primeiro cadastro até a operação avançada, o LDFP cresce junto com sua igreja.</p>
+  </header>
+
+  <section class="plans-grid" id="plansGrid">
+  </section>
+
+  <p class="plan-note" style="margin-top:18px;">
+    Valores em reais (R$). Cobrança mensal ou anual. Você só será cobrado após concluir o cadastro da igreja.
+  </p>
+</div>
+
+<script>
+  const plansGrid = document.getElementById('plansGrid');
+  const _isUpgradeMode = new URLSearchParams(window.location.search).get('upgrade') === '1';
+
+  function esc(t) {
+    return String(t || '').replace(/[&<>"]/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[s]));
+  }
+
+  function renderPlanos(planos) {
+    if (!Array.isArray(planos) || !planos.length) {
+      plansGrid.innerHTML = '<p style="color:#9ca3af;font-size:0.9rem;">Nenhum plano disponível no momento.</p>';
+      return;
+    }
+
+    const destaqueSlug = 'betel';
+
+    plansGrid.innerHTML = planos.map(p => {
+      // Itens fixos do plano (limites, suporte, etc.) vindos de saas_planos.features_json
+      let featuresFixas = [];
+      try { featuresFixas = JSON.parse(p.features_json || '[]'); } catch (_) {}
+
+      // Módulos dinâmicos criados via Fábrica de Inovações (saas_plano_modulos JOIN saas_modulos)
+      const modulosDinamicos = Array.isArray(p.modules) ? p.modules : [];
+
+      const featuresHtml = featuresFixas.map(f => `
+        <li><i class="fa-solid fa-check"></i> ${esc(f)}</li>
+      `).join('');
+
+      const modulosHtml = modulosDinamicos.map(m => `
+        <li><i class="${esc(m.icon || 'fa-puzzle-piece')}"></i> ${esc(m.nome)}</li>
+      `).join('');
+
+      return `
+        <article class="plan-card ${p.slug === destaqueSlug ? 'highlight' : ''}">
+          <div class="plan-header">
+            <div class="plan-name">
+              ${esc(p.nome)}
+              ${p.slug === destaqueSlug ? '<span style="font-size:0.7rem;background:rgba(248,250,252,0.08);padding:2px 8px;border-radius:999px;color:#fed7aa;">Mais escolhido</span>' : ''}
+            </div>
+            <div class="plan-subtitle">${esc(p.subtitulo || '')}</div>
+          </div>
+
+          <div class="plan-price">
+            <div class="plan-price-main">
+              R$ ${Number(p.preco_mensal).toFixed(2).replace('.', ',')}
+              <small>/mês</small>
+            </div>
+            <div class="plan-price-annual">
+              ou R$ ${Number(p.preco_anual).toFixed(2).replace('.', ',')} /ano
+            </div>
+          </div>
+
+          <ul class="plan-features">
+            ${featuresHtml}
+            ${modulosHtml}
+          </ul>
+
+          <div class="plan-footer">
+            <button class="plan-cta primary" onclick="assinarPlano('${esc(p.slug)}')">
+              <span>Começar com ${esc(p.nome)}</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            ${_isUpgradeMode ? '' : `<button class="plan-cta outline" onclick="assinarPlano('${esc(p.slug)}')">
+              <i class="fa-solid fa-bolt"></i>
+              Testar agora, configurar depois
+            </button>`}
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  async function carregarPlanos() {
+    try {
+      const resp = await fetch('/api/planos', { headers: { Accept: 'application/json' } });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      renderPlanos(Array.isArray(data) ? data : []);
+    } catch (_err) {
+      plansGrid.innerHTML = '<p style="color:#9ca3af;font-size:0.9rem;">Não foi possível carregar os planos. Tente novamente em instantes.</p>';
+    }
+  }
+
+  function assinarPlano(slug) {
+    if (_isUpgradeMode) {
+      window.location.href = `assinar.html?plano=${encodeURIComponent(slug)}&upgrade=1`;
+    } else {
+      window.location.href = `cadastro_igreja.html?plano=${encodeURIComponent(slug)}`;
+    }
+  }
+
+  carregarPlanos();
+
+  // Modo upgrade: exibe aviso acima do grid de planos
+  if (_isUpgradeMode) {
+    const notice = document.createElement('div');
+    notice.style.cssText = 'background:rgba(15,118,110,.13);border:1px solid rgba(15,118,110,.35);color:#99f6e4;padding:11px 16px;border-radius:10px;font-size:0.85rem;text-align:center;margin-bottom:20px;';
+    notice.innerHTML = '<i class="fa-solid fa-info-circle" style="margin-right:6px"></i><strong>Upgrade de plano:</strong> o período de teste já foi utilizado. Clique em "Começar com…" para contratar diretamente.';
+    const grid = document.getElementById('plansGrid');
+    if (grid) grid.parentNode.insertBefore(notice, grid);
+  }
+</script>
+</body>
+</html>

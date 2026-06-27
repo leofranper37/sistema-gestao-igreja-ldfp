@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Caixa</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Seus estilos CSS personalizados (copiados do seu arquivo original) */
+        :root {
+            --brand:   #0f766e;
+            --teal:    #0d9488;
+            --blue:    #0284c7;
+            --green:   #16a34a;
+            --red:     #dc2626;
+            --yellow:  #f59e0b;
+            --surface: #ffffff;
+            --bg:      #f1f5f9;
+            --border:  #e2e8f0;
+            --text:    #0f172a;
+            --muted:   #64748b;
+            --radius:  14px;
+            --shadow:  0 4px 16px rgba(15,23,42,.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* KPIs */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .kpi-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card::before {
+            content:'';
+            position:absolute;
+            top:0;left:0;right:0;height:4px;
+            background: var(--kpi-color, var(--teal));
+        }
+        .kpi-card small {
+            display:block;
+            font-size:11px;
+            font-weight:700;
+            color:var(--muted);
+            text-transform:uppercase;
+            letter-spacing:.05em;
+            margin-bottom:6px;
+        }
+        .kpi-card strong {
+            display:block;
+            font-size:1.5rem;
+            font-weight:800;
+            color:var(--kpi-color, var(--text));
+            line-height:1;
+        }
+        .kpi-card span {
+            display:block;
+            margin-top:4px;
+            font-size:11px;
+            color:var(--muted);
+        }
+        .kpi-saldo   { --kpi-color:#0f766e; }
+        .kpi-entradas{ --kpi-color:#16a34a; }
+        .kpi-saidas  { --kpi-color:#dc2626; }
+        .kpi-mes     { --kpi-color:#0284c7; }
+
+        /* Tabs internas */
+        .inner-tabs {
+            display:flex;
+            gap:4px;
+            border-bottom:2px solid var(--border);
+            margin-bottom:18px;
+        }
+        .inner-tab {
+            padding:9px 18px;
+            font-size:13px;
+            font-weight:700;
+            color:var(--muted);
+            border:none;
+            background:none;
+            cursor:pointer;
+            border-bottom:3px solid transparent;
+            margin-bottom:-2px;
+            border-radius:8px 8px 0 0;
+            display:flex;
+            align-items:center;
+            gap:7px;
+            transition:all .2s;
+        }
+        .inner-tab:hover { color:var(--text); background:var(--bg); }
+        .inner-tab.active {
+            color:var(--brand);
+            border-bottom-color:var(--brand);
+            background:#f0fdfa;
+        }
+        .inner-panel { display:none; }
+        .inner-panel.active { display:block; }
+
+        /* Layout principal */
+        .main-grid {
+            display:grid;
+            grid-template-columns:minmax(0,1.4fr) minmax(320px,1fr);
+            gap:16px;
+            align-items:start;
+        }
+        .card {
+            background:var(--surface);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            box-shadow:var(--shadow);
+            padding:18px;
+        }
+        .card-header {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:14px;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+        .card-header h3 {
+            font-size:15px;
+            font-weight:800;
+            color:var(--text);
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .card-header h3 i { color:var(--teal); }
+
+        /* Filtros */
+        .filter-bar {
+            display:grid;
+            grid-template-columns:140px 140px 140px 1fr auto;
+            gap:8px;
+            margin-bottom:12px;
+            align-items:end;
+        }
+        .filter-group {
+            display:flex;
+            flex-direction:column;
+            gap:4px;
+        }
+        .filter-group label {
+            font-size:10px;
+            font-weight:700;
+            color:var(--muted);
+            text-transform:uppercase;
+        }
+        .filter-group input,
+        .filter-group select {
+            padding:8px 10px;
+            border-radius:8px;
+            border:1.5px solid var(--border);
+            font-size:13px;
+            background:var(--bg);
+            color:var(--text);
+        }
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline:none;
+            border-color:var(--teal);
+            background:#fff;
+        }
+
+        /* Botões */
+        .btn {
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            padding:9px 14px;
+            border-radius:8px;
+            border:none;
+            font-size:13px;
+            font-weight:700;
+            cursor:pointer;
+            color:#fff;
+            transition:all .2s;
+            white-space:nowrap;
+        }
+        .btn-primary { background:linear-gradient(90deg,var(--brand),var(--teal)); }
+        .btn-primary:hover { opacity:.9; }
+        .btn-blue { background:var(--blue); }
+        .btn-blue:hover { background:#0369a1; }
+        .btn-red { background:var(--red); }
+        .btn-red:hover { background:#b91c1c; }
+        .btn-slate { background:#64748b; }
+        .btn-slate:hover { background:#475569; }
+        .btn-sm { padding:5px 9px; font-size:11px; border-radius:6px; }
+        .btn-full { width:100%; justify-content:center; margin-top:6px; }
+
+        /* Tabela */
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; font-size:12.5px; }
+        th {
+            background:#f8fafc;
+            color:var(--muted);
+            font-size:10.5px;
+            font-weight:700;
+            text-transform:uppercase;
+            padding:9px 10px;
+            text-align:left;
+            border-bottom:2px solid var(--border);
+        }
+        td {
+            padding:9px 10px;
+            border-bottom:1px solid #e5e7eb;
+            vertical-align:middle;
+        }
+        tbody tr:hover { background:#f8fafc; }
+        .empty-row td {
+            text-align:center;
+            padding:20px;
+            color:var(--muted);
+        }
+
+        /* Paginação */
+        .pag {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-top:14px;
+            font-size:12px;
+            color:var(--muted);
+        }
+        .pag-btns { display:flex; gap:6px; }
+        .pag-btn {
+            padding:6px 10px;
+            border-radius:6px;
+            border:1px solid var(--border);
+            background:var(--bg);
+            color:var(--text);
+            cursor:pointer;
+            font-size:11px;
+            font-weight:700;
+        }
+        .pag-btn:disabled {
+            opacity:.5;
+            cursor:not-allowed;
+        }
+
+        /* Formulários */
+        .form-group { margin-bottom:12px; }
+        .form-group label {
+            display:block;
+            font-size:11px;
+            font-weight:700;
+            color:var(--muted);
+            text-transform:uppercase;
+            margin-bottom:4px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group input[type="month"],
+        .form-group select,
+        .form-group textarea {
+            width:100%;
+            padding:9px 12px;
+            border-radius:8px;
+            border:1.5px solid var(--border);
+            font-size:13px;
+            background:var(--bg);
+            color:var(--text);
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline:none;
+            border-color:var(--teal);
+            background:#fff;
+        }
+        .form-group textarea { resize:vertical; min-height:60px; }
+        .form-row-2 {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:12px;
+        }
+
+        /* Resumo */
+        .resumo-item {
+            display:flex;
+            justify-content:space-between;
+            padding:6px 0;
+            font-size:13px;
+            color:var(--text);
+        }
+        .resumo-item span:first-child { font-weight:600; }
+        .resumo-item .saldo-valor {
+            font-size:15px;
+            font-weight:800;
+        }
+        .saldo-positivo { color:#15803d; }
+        .saldo-negativo { color:#b91c1c; }
+        .section-divider {
+            text-align:center;
+            font-size:11px;
+            font-weight:700;
+            color:var(--muted);
+            text-transform:uppercase;
+            letter-spacing:.05em;
+            margin:18px 0 10px;
+            position:relative;
+        }
+        .section-divider::before,
+        .section-divider::after {
+            content:'';
+            position:absolute;
+            top:50%;
+            width:calc(50% - 40px);
+            height:1px;
+            background:var(--border);
+        }
+        .section-divider::before { left:0; }
+        .section-divider::after { right:0; }
+
+        /* Badges */
+        .badge {
+            display:inline-block;
+            padding:4px 8px;
+            border-radius:9999px;
+            font-size:10px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:.05em;
+        }
+        .badge-entrada { background:#dcfce7; color:#15803d; }
+        .badge-saida { background:#fee2e2; color:#b91c1c; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="tesouraria_caixa.html" data-shell-title="Caixa" data-shell-breadcrumb="LDFP / Tesouraria / Caixa" data-shell-chip="Módulo financeiro" data-shell-role="Financeiro">
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
+            <div class="enterprise-page-hero">
+                <div>
+                    <h2>Caixa</h2>
+                    <p>Gerencie as movimentações de entrada e saída do caixa da sua organização.</p>
+                </div>
+                <div class="enterprise-page-badge"><i class="fa-solid fa-cash-register"></i> Caixa</div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-saldo">
+                    <small>Saldo Atual</small>
+                    <strong id="kpiSaldo">R$ 0,00</strong>
+                    <span id="kpiSaldoInfo">Mês corrente</span>
+                </div>
+                <div class="kpi-card kpi-entradas">
+                    <small>Entradas no Período</small>
+                    <strong id="kpiEntradas">R$ 0,00</strong>
+                </div>
+                <div class="kpi-card kpi-saidas">
+                    <small>Saídas no Período</small>
+                    <strong id="kpiSaidas">R$ 0,00</strong>
+                </div>
+                <div class="kpi-card kpi-mes">
+                    <small>Mês do Caixa</small>
+                    <strong id="kpiMes">-</strong>
+                    <span id="kpiMesStatus">Nenhum mês ativo</span>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="inner-tabs">
+                <button class="inner-tab active" data-tab="lancamentos">
+                    <i class="fa-solid fa-list-ul"></i><span>Lançamentos</span>
+                </button>
+                <button class="inner-tab" data-tab="config">
+                    <i class="fa-solid fa-gear"></i><span>Configuração do Mês</span>
+                </button>
+            </div>
+
+            <!-- Painel Lançamentos -->
+            <div class="inner-panel active" id="panel-lancamentos">
+                <div class="main-grid">
+                    <!-- Lista -->
+                    <section class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-cash-register"></i> Lançamentos de Caixa</h3>
+                        </div>
+
+                        <div class="filter-bar">
+                            <div class="filter-group">
+                                <label>Início</label>
+                                <input type="date" id="filtroInicio">
+                            </div>
+                            <div class="filter-group">
+                                <label>Fim</label>
+                                <input type="date" id="filtroFim">
+                            </div>
+                            <div class="filter-group">
+                                <label>Tipo</label>
+                                <select id="filtroTipo">
+                                    <option value="">Entradas e Saídas</option>
+                                    <option value="ENTRADA">Somente Entradas</option>
+                                    <option value="SAIDA">Somente Saídas</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Buscar</label>
+                                <input type="text" id="filtroBusca" placeholder="Histórico / doc...">
+                            </div>
+                            <button class="btn btn-blue" type="button" id="btnFiltrarCaixa">
+                                <i class="fa-solid fa-filter"></i> Filtrar
+                            </button>
+                        </div>
+
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Doc</th>
+                                        <th>Histórico</th>
+                                        <th>Tipo</th>
+                                        <th>Valor</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbCaixa"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="pag">
+                            <span class="pag-info" id="pagInfoCaixa">Pág 1</span>
+                            <div class="pag-btns">
+                                <button class="pag-btn" id="btnAnteriorCaixa">&larr; Anterior</button>
+                                <button class="pag-btn" id="btnProximoCaixa">Próxima &rarr;</button>
+                            </div>
+                        </div>
+
+                        <div class="status-msg" id="msgListaCaixa"></div>
+                    </section>
+
+                    <!-- Formulário novo lançamento -->
+                    <section class="card resumo-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-plus"></i> Novo Lançamento</h3>
+                        </div>
+
+                        <form id="formCaixa">
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label>Data</label>
+                                    <input type="date" id="data" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Documento</label>
+                                    <input type="text" id="doc" placeholder="Ex: NF, Recibo, Ref. interna">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Histórico *</label>
+                                <input type="text" id="historico" placeholder="Descrição do lançamento" required>
+                            </div>
+
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label>Valor *</label>
+                                    <input type="number" step="0.01" min="0" id="valor" placeholder="0,00" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tipo *</label>
+                                    <select id="tipo" required>
+                                        <option value="ENTRADA">Entrada</option>
+                                        <option value="SAIDA">Saída</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Observação</label>
+                                <textarea id="obs" placeholder="Opcional..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-full">
+                                <i class="fa-solid fa-floppy-disk"></i> Registrar no Caixa
+                            </button>
+                        </form>
+
+                        <div class="section-divider" style="margin-top:14px;">Preview</div>
+
+                        <div class="resumo-item">
+                            <span>Data:</span>
+                            <span id="prevData">-</span>
+                        </div>
+                        <div class="resumo-item">
+                            <span>Tipo:</span>
+                            <span id="prevTipo">Entrada</span>
+                        </div>
+                        <div class="resumo-item">
+                            <span>Histórico:</span>
+                            <span id="prevHist">-</span>
+                        </div>
+                        <div class="resumo-item">
+                            <span>Valor:</span>
+                            <span id="prevValor">R$ 0,00</span>
+                        </div>
+
+                        <div class="status-msg" id="msgFormCaixa"></div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Painel Configuração -->
+            <div class="inner-panel" id="panel-config">
+                <div class="main-grid">
+                    <!-- Card configuração -->
+                    <section class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-calendar-check"></i> Configuração do Mês de Caixa</h3>
+                        </div>
+
+                        <form id="formMesCaixa">
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label>Mês de referência *</label>
+                                    <input type="month" id="mesRef" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Saldo inicial *</label>
+                                    <input type="number" step="0.01" id="saldoInicial" placeholder="0,00" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Observações</label>
+                                <textarea id="obsMes" placeholder="Ex: abertura do caixa para campanha, troca de tesoureiro, etc."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-full">
+                                <i class="fa-solid fa-lock-open"></i> Ativar/Atualizar Mês do Caixa
+                            </button>
+                        </form>
+
+                        <div class="status-msg" id="msgMes"></div>
+                    </section>
+
+                    <!-- Card resumo do mês -->
+                    <section class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-chart-line"></i> Resumo do Mês Ativo</h3>
+                        </div>
+
+                        <div class="resumo-item">
+                            <span class="saldo-label">Saldo Anterior:</span>
+                            <span id="resSaldoInicial" class="saldo-valor saldo-positivo">R$ 0,00</span>
+                        </div>
+                        <div class="resumo-item">
+                            <span>Entradas:</span>
+                            <span id="resEntradas">R$ 0,00</span>
+                        </div>
+                        <div class="resumo-item">
+                            <span>Saídas:</span>
+                            <span id="resSaidas">R$ 0,00</span>
+                        </div>
+                        <hr style="border:none;border-top:1px dashed #e2e8f0;margin:10px 0;">
+                        <div class="resumo-item">
+                            <span>Saldo do Mês:</span>
+                            <span id="resSaldoMes" class="saldo-valor saldo-positivo">R$ 0,00</span>
+                        </div>
+
+                        <div style="margin-top:16px;font-size:12px;color:var(--muted);" id="resInfoMes">
+                            Nenhum mês configurado ainda.
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const $ = id => document.getElementById(id);
+
+        function fmtVal(v) {
+            return Number(v || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+        }
+        function setMsg(id, text, type='ok') {
+            const el = $(id);
+            el.className = text ? 'status-msg '+type : 'status-msg';
+            el.textContent = text || '';
+            if (text) setTimeout(() => { el.className='status-msg'; el.textContent=''; }, 4000);
+        }
+
+        /* Tabs */
+        document.querySelectorAll('.inner-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.inner-tab').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.inner-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        /* Preview formulário */
+        function updatePreview() {
+            const d = $('data').value;
+            $('prevData').textContent = d || '-';
+            $('prevTipo').textContent = $('tipo').value === 'ENTRADA' ? 'Entrada' : 'Saída';
+            $('prevHist').textContent = $('historico').value || '-';
+            const v = parseFloat($('valor').value || 0);
+            $('prevValor').textContent = fmtVal(v);
+        }
+        ['data','tipo','historico','valor'].forEach(id => $(id).addEventListener('input', updatePreview));
+
+        /* Lançamentos */
+        let pagAtual = 1;
+        let pagTotal = 1;
+
+        async function carregarResumoCaixa() {
+            // assumindo GET /caixa/resumo?mes=YYYY-MM
+            const hoje = new Date();
+            const mes = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+            try {
+                const r = await fetch(`/caixa/resumo?mes=${encodeURIComponent(mes)}`);
+                const d = await r.json().catch(()=>({}));
+                if (!r.ok) return;
+
+                $('kpiSaldo').textContent     = fmtVal(d.saldoAtual);
+                $('kpiEntradas').textContent  = fmtVal(d.entradasPeriodo);
+                $('kpiSaidas').textContent    = fmtVal(d.saidasPeriodo);
+                $('kpiMes').textContent       = d.mesCompetencia || mes;
+                $('kpiMesStatus').textContent = d.ativo ? 'Mês ativo' : 'Mês não ativado';
+
+                $('resSaldoInicial').textContent = fmtVal(d.saldoInicial);
+                $('resEntradas').textContent     = fmtVal(d.entradasMes);
+                $('resSaidas').textContent       = fmtVal(d.saidasMes);
+                $('resSaldoMes').textContent     = fmtVal(d.saldoMes);
+
+                if (d.saldoMes < 0) {
+                    $('resSaldoMes').classList.remove('saldo-positivo');
+                    $('resSaldoMes').classList.add('saldo-negativo');
+                } else {
+                    $('resSaldoMes').classList.add('saldo-positivo');
+                    $('resSaldoMes').classList.remove('saldo-negativo');
+                }
+
+                $('resInfoMes').textContent = d.ativo
+                    ? `Caixa ativo para o mês ${d.mesCompetencia || mes}. Última atualização em ${d.atualizadoEm || '-'}.`
+                    : 'Nenhum mês de caixa está ativo no momento.';
+                $('kpiSaldoInfo').textContent = d.mesCompetencia ? `Ref.: ${d.mesCompetencia}` : 'Mês corrente';
+            } catch (_) {}
+        }
+
+        async function carregarLancamentos(page=1) {
+            const params = new URLSearchParams({ page, limit:50 });
+            if ($('filtroInicio').value) params.set('inicio', $('filtroInicio').value);
+            if ($('filtroFim').value)    params.set('fim', $('filtroFim').value);
+            if ($('filtroTipo').value)   params.set('tipo', $('filtroTipo').value);
+            if ($('filtroBusca').value.trim()) params.set('busca', $('filtroBusca').value.trim());
+
+            try {
+                const r = await fetch(`/caixa/lancamentos?${params}`);
+                const d = await r.json().catch(()=>({ items:[], meta:{page:1,totalPages:1} }));
+                if (!r.ok) { setMsg('msgListaCaixa', d.error || 'Erro ao carregar lançamentos.', 'error'); return; }
+
+                const items = d.items || [];
+                pagAtual = d.meta?.page || 1;
+                pagTotal = d.meta?.totalPages || 1;
+
+                $('pagInfoCaixa').textContent = `Pág ${pagAtual} de ${pagTotal}`;
+                $('btnAnteriorCaixa').disabled = pagAtual <= 1;
+                $('btnProximoCaixa').disabled  = pagAtual >= pagTotal;
+
+                if (!items.length) {
+                    $('tbCaixa').innerHTML = `
+                        <tr class="empty-row">
+                            <td colspan="6">
+                                <i class="fa-solid fa-inbox" style="font-size:20px;color:#cbd5e1;display:block;margin-bottom:6px;"></i>
+                                Nenhum lançamento de caixa encontrado.
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
+                $('tbCaixa').innerHTML = items.map(l => {
+                    const tipoBadge = l.tipo === 'ENTRADA' ? 'badge-entrada' : 'badge-saida';
+                    const tipoLabel = l.tipo === 'ENTRADA' ? 'Entrada' : 'Saída';
+                    const data = l.data ? new Date(l.data).toLocaleDateString('pt-BR') : '-';
+                    return `
+                        <tr>
+                            <td>${data}</td>
+                            <td>${l.doc || '-'}</td>
+                            <td>${l.historico || '-'}</td>
+                            <td><span class="badge ${tipoBadge}">${tipoLabel}</span></td>
+                            <td style="font-weight:700;${l.tipo==='SAIDA'?'color:#b91c1c;':'color:#15803d;'}}">${fmtVal(l.valor)}</td>
+                            <td>
+                                <button class="btn btn-red btn-sm" onclick="excluirCaixa(${l.id})" title="Remover">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                }).join('');
+
+                setMsg('msgListaCaixa', '');
+            } catch (_) {
+                setMsg('msgListaCaixa', 'Falha de conexão ao carregar lançamentos.', 'error');
+            }
+        }
+
+        async function refreshCaixa() {
+            await Promise.all([carregarLancamentos(pagAtual), carregarResumoCaixa()]);
+        }
+
+        window.excluirCaixa = async function(id) {
+            if (!confirm('Remover este lançamento de caixa?')) return;
+            const r = await fetch(`/caixa/lancamentos/${id}`, { method:'DELETE' });
+            if (r.ok) {
+                setMsg('msgListaCaixa', 'Lançamento removido.', 'ok');
+                refreshCaixa();
+            } else {
+                const d = await r.json().catch(()=>({}));
+                setMsg('msgListaCaixa', d.error || 'Erro ao remover lançamento.', 'error');
+            }
+        };
+
+        $('btnFiltrarCaixa').addEventListener('click', () => { pagAtual=1; refreshCaixa(); });
+        $('btnAnteriorCaixa').addEventListener('click', () => { if (pagAtual>1) { pagAtual--; carregarLancamentos(pagAtual); } });
+        $('btnProximoCaixa').addEventListener('click', () => { if (pagAtual<pagTotal) { pagAtual++; carregarLancamentos(pagAtual); } });
+
+        $('formCaixa').addEventListener('submit', async e => {
+            e.preventDefault();
+            setMsg('msgFormCaixa','');
+
+            const valor = parseFloat($('valor').value || 0);
+            if (!valor || valor <= 0) { setMsg('msgFormCaixa','Informe um valor válido.','error'); return; }
+            if (!$('historico').value.trim()) { setMsg('msgFormCaixa','Informe o histórico.','error'); return; }
+
+            const body = {
+                data: $('data').value || null,
+                doc: $('doc').value.trim() || null,
+                historico: $('historico').value.trim(),
+                valor,
+                tipo: $('tipo').value,
+                observacao: $('obs').value.trim() || null
+            };
+
+            try {
+                const resp = await fetch('/caixa/lancamentos', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify(body)
+                });
+                const d = await resp.json().catch(()=>({}));
+
+                if (!resp.ok) {
+                    setMsg('msgFormCaixa', d.error || 'Erro ao salvar lançamento.', 'error');
+                    return;
+                }
+
+                setMsg('msgFormCaixa', 'Lançamento salvo no caixa!', 'ok');
+                $('formCaixa').reset();
+                updatePreview();
+                pagAtual = 1;
+                refreshCaixa();
+            } catch (_) {
+                setMsg('msgFormCaixa','Falha de conexão ao salvar.','error');
+            }
+        });
+
+        /* Configuração do Mês */
+        $('formMesCaixa').addEventListener('submit', async e => {
+            e.preventDefault();
+            setMsg('msgMes','');
+
+            const mes = $('mesRef').value;
+            const saldoInicial = parseFloat($('saldoInicial').value || 0);
+
+            if (!mes) { setMsg('msgMes','Selecione o mês de referência.','error'); return; }
+
+            const body = {
+                mesCompetencia: mes,
+                saldoInicial,
+                observacao: $('obsMes').value.trim() || null
+            };
+
+            try {
+                const r = await fetch('/caixa/mes', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify(body)
+                });
+                const d = await r.json().catch(()=>({}));
+
+                if (!r.ok) {
+                    setMsg('msgMes', d.error || 'Erro ao configurar mês do caixa.', 'error');
+                    return;
+                }
+
+                setMsg('msgMes','Mês de caixa configurado/atualizado com sucesso!','ok');
+                carregarResumoCaixa();
+            } catch (_) {
+                setMsg('msgMes','Falha de conexão ao salvar configuração.','error');
+            }
+        });
+
+        /* INIT */
+        (function init() {
+            const hoje = new Date();
+            const hojeStr = hoje.toISOString().slice(0,10);
+            const mes = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+            $('data').value = hojeStr;
+            $('filtroInicio').value = hojeStr;
+            $('filtroFim').value = hojeStr;
+            $('mesRef').value = mes;
+            updatePreview();
+            refreshCaixa();
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+RewriteEngine On
+
+# Nunca exibir listagem de diretórios no domínio raiz.
+Options -Indexes
+
+# Redireciona www para não-www (HTTPS).
+RewriteCond %{HTTP_HOST} ^www\.ldfp\.com\.br [NC]
+RewriteRule ^ https://ldfp.com.br%{REQUEST_URI} [L,R=301]
+
+# Forca HTTPS (considera tambem cabecalho de proxy/reverse proxy).
+RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Preserva Authorization para APIs protegidas por Bearer token.
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+# Redireciona a raiz "/" para a página inicial.
+RewriteRule ^$ /index.html [L,R=301]
+
+# Mantém /api intacto (pode ser tratado por Node/Passenger quando ativo).
+RewriteCond %{REQUEST_URI} !^/api(?:/|$) [NC]
+RewriteCond %{REQUEST_URI} !^/public(?:/|$) [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /public/$1 [L]
+
+# Nao faca proxy manual para 127.0.0.1:3000 aqui.
+# No cPanel, o Setup Node.js App (Passenger) ja encaminha as requisicoes.

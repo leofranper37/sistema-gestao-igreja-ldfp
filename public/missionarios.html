@@ -1,0 +1,570 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Missionarios</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .missionarios-wrap {
+            padding: 22px 28px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .box {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+        }
+
+        .box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(120deg, #f8fafc 0%, #ecfeff 100%);
+        }
+
+        .box-title {
+            margin: 0;
+            font-size: 1rem;
+            color: #0f172a;
+        }
+
+        .box-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 600;
+            font-size: 0.84rem;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            border: 0;
+            background: #0f766e;
+            color: #fff;
+        }
+
+        .btn-light {
+            border: 1px solid #dbe3ee;
+            background: #fff;
+            color: #334155;
+        }
+
+        .search-area {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-area input {
+            flex: 1;
+            border: 1px solid #dbe3ee;
+            border-radius: 8px;
+            padding: 9px 10px;
+            font-size: 0.85rem;
+        }
+
+        .table-wrap {
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 980px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #edf2f7;
+            padding: 10px;
+            font-size: 0.82rem;
+            text-align: left;
+            color: #334155;
+        }
+
+        th {
+            background: #f8fafc;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.03em;
+            color: #64748b;
+        }
+
+        .empty {
+            padding: 18px;
+            color: #94a3b8;
+            text-align: center;
+            font-size: 0.84rem;
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .row-actions button {
+            border: 1px solid #dbe3ee;
+            background: #fff;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 0.72rem;
+            cursor: pointer;
+        }
+
+        .row-actions button.delete {
+            color: #b91c1c;
+            border-color: #fecaca;
+            background: #fef2f2;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.45);
+            z-index: 130;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            width: min(980px, 95vw);
+            max-height: 92vh;
+            overflow: auto;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+            padding: 16px;
+        }
+
+        .modal h3 {
+            margin: 0 0 12px;
+            color: #0f172a;
+        }
+
+        .section-title {
+            margin: 10px 0 6px;
+            color: #0f172a;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field.col-2 { grid-column: span 2; }
+        .field.col-3 { grid-column: span 3; }
+        .field.col-4 { grid-column: span 4; }
+
+        .field label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .field input,
+        .field textarea,
+        .field select {
+            border: 1px solid #dbe3ee;
+            border-radius: 8px;
+            padding: 8px 9px;
+            font-size: 0.84rem;
+            font-family: inherit;
+        }
+
+        .modal-actions {
+            margin-top: 12px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .message {
+            margin-top: 8px;
+            color: #b91c1c;
+            font-size: 0.78rem;
+        }
+
+        @media (max-width: 1080px) {
+            .missionarios-wrap {
+                padding: 14px;
+            }
+
+            .form-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .field.col-3,
+            .field.col-4 {
+                grid-column: span 2;
+            }
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Missionarios" data-shell-breadcrumb="LDFP / Secretaria / Missionarios" data-shell-active="missionarios.html" data-shell-chip="Cadastro ativo" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <section class="missionarios-wrap">
+            <article class="box">
+                <header class="box-header">
+                    <h2 class="box-title">Cadastro de missionarios</h2>
+                    <div class="box-actions">
+                        <button type="button" class="btn btn-light" id="btnRefresh"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+                        <button type="button" class="btn btn-primary" id="btnNovo"><i class="fa-solid fa-plus"></i> Novo missionario</button>
+                    </div>
+                </header>
+
+                <div class="search-area">
+                    <input type="search" id="searchInput" placeholder="Pesquisar por nome, cidade ou pais...">
+                    <button type="button" class="btn btn-light" id="btnBuscar"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Titulo</th>
+                                <th>Cidade / Pais</th>
+                                <th>Telefone</th>
+                                <th>E-mail</th>
+                                <th>Acoes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyMissionarios"></tbody>
+                    </table>
+                </div>
+                <div class="empty" id="emptyState" style="display:none;">Nenhum missionario encontrado.</div>
+            </article>
+        </section>
+    </main>
+
+    <div class="modal-overlay" id="modalCadastro">
+        <div class="modal">
+            <h3 id="modalTitle">Novo missionario</h3>
+            <form id="formCadastro">
+                <input type="hidden" id="rowId">
+
+                <div class="section-title">Dados principais</div>
+                <div class="form-grid">
+                    <div class="field col-2"><label>Nome</label><input id="nome" maxlength="255" required></div>
+                    <div class="field col-2"><label>Titulo</label><input id="titulo" maxlength="255"></div>
+                    <div class="field"><label>CEP</label><input id="cep" maxlength="20"></div>
+                    <div class="field col-2"><label>Endereco</label><input id="endereco" maxlength="255"></div>
+                    <div class="field"><label>Bairro</label><input id="bairro" maxlength="150"></div>
+                    <div class="field"><label>Cidade</label><input id="cidade" maxlength="150"></div>
+                    <div class="field"><label>Estado</label><input id="estado" maxlength="50"></div>
+                    <div class="field"><label>Pais</label><input id="pais" maxlength="100"></div>
+                    <div class="field"><label>Telefone</label><input id="telefone" maxlength="50"></div>
+                    <div class="field"><label>Telefone 2</label><input id="telefone2" maxlength="50"></div>
+                    <div class="field col-2"><label>E-mail</label><input id="email" maxlength="255"></div>
+                    <div class="field col-2"><label>E-mail 2</label><input id="email2" maxlength="255"></div>
+                </div>
+
+                <div class="section-title">Dados bancarios</div>
+                <div class="form-grid">
+                    <div class="field"><label>Banco</label><input id="banco" maxlength="255"></div>
+                    <div class="field"><label>Nome agencia</label><input id="nomeAgencia" maxlength="255"></div>
+                    <div class="field"><label>Agencia</label><input id="agencia" maxlength="100"></div>
+                    <div class="field"><label>Tipo conta</label>
+                        <select id="tipoConta">
+                            <option value="">Selecione</option>
+                            <option value="corrente">Corrente</option>
+                            <option value="poupanca">Poupanca</option>
+                            <option value="salario">Salario</option>
+                        </select>
+                    </div>
+                    <div class="field"><label>Numero conta</label><input id="numeroConta" maxlength="100"></div>
+                </div>
+
+                <div class="section-title">Contato de emergencia</div>
+                <div class="form-grid">
+                    <div class="field col-2"><label>Nome contato</label><input id="nomeContato" maxlength="255"></div>
+                    <div class="field"><label>Parentesco</label><input id="parentescoContato" maxlength="100"></div>
+                    <div class="field"><label>CEP contato</label><input id="cepContato" maxlength="20"></div>
+                    <div class="field col-2"><label>Endereco contato</label><input id="enderecoContato" maxlength="255"></div>
+                    <div class="field"><label>Bairro contato</label><input id="bairroContato" maxlength="150"></div>
+                    <div class="field"><label>Cidade contato</label><input id="cidadeContato" maxlength="150"></div>
+                    <div class="field"><label>Estado contato</label><input id="estadoContato" maxlength="50"></div>
+                    <div class="field"><label>Pais contato</label><input id="paisContato" maxlength="100"></div>
+                    <div class="field"><label>Telefone contato</label><input id="telefoneContato" maxlength="50"></div>
+                    <div class="field"><label>Telefone2 contato</label><input id="telefone2Contato" maxlength="50"></div>
+                    <div class="field col-2"><label>E-mail contato</label><input id="emailContato" maxlength="255"></div>
+                    <div class="field col-4"><label>Observacao</label><textarea id="obs" rows="3" maxlength="4000"></textarea></div>
+                </div>
+
+                <div class="message" id="formMessage"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-light" id="btnCancelar">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const tbody = document.getElementById('tbodyMissionarios');
+        const emptyState = document.getElementById('emptyState');
+        const searchInput = document.getElementById('searchInput');
+        const modal = document.getElementById('modalCadastro');
+        let currentRows = [];
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function setFormMessage(text = '') {
+            document.getElementById('formMessage').textContent = text;
+        }
+
+        function renderRows(rows) {
+            currentRows = rows;
+            tbody.innerHTML = '';
+
+            if (!rows.length) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            rows.forEach((row) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${escapeHtml(row.nome)}</strong></td>
+                    <td>${escapeHtml(row.titulo || '-')}</td>
+                    <td>${escapeHtml((row.cidade || '-') + ' / ' + (row.pais || '-'))}</td>
+                    <td>${escapeHtml(row.telefone || '-')}</td>
+                    <td>${escapeHtml(row.email || '-')}</td>
+                    <td>
+                        <div class="row-actions">
+                            <button type="button" data-action="edit" data-id="${row.id}">Editar</button>
+                            <button type="button" data-action="delete" data-id="${row.id}" class="delete">Excluir</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll('button[data-action="edit"]').forEach((button) => {
+                button.addEventListener('click', () => openModal(Number(button.dataset.id)));
+            });
+
+            tbody.querySelectorAll('button[data-action="delete"]').forEach((button) => {
+                button.addEventListener('click', () => removeRow(Number(button.dataset.id)));
+            });
+        }
+
+        async function carregarMissionarios() {
+            const search = searchInput.value.trim();
+            const query = new URLSearchParams();
+            if (search) query.set('search', search);
+
+            const response = await fetch(`/missionarios?${query.toString()}`);
+            if (!response.ok) {
+                renderRows([]);
+                return;
+            }
+
+            const rows = await response.json();
+            renderRows(Array.isArray(rows) ? rows : []);
+        }
+
+        function f(id) {
+            return document.getElementById(id);
+        }
+
+        function fillForm(row) {
+            f('rowId').value = row.id || '';
+            f('nome').value = row.nome || '';
+            f('titulo').value = row.titulo || '';
+            f('cep').value = row.cep || '';
+            f('endereco').value = row.endereco || '';
+            f('bairro').value = row.bairro || '';
+            f('cidade').value = row.cidade || '';
+            f('estado').value = row.estado || '';
+            f('pais').value = row.pais || '';
+            f('telefone').value = row.telefone || '';
+            f('telefone2').value = row.telefone2 || '';
+            f('email').value = row.email || '';
+            f('email2').value = row.email2 || '';
+            f('banco').value = row.banco || '';
+            f('nomeAgencia').value = row.nome_agencia || '';
+            f('agencia').value = row.agencia || '';
+            f('tipoConta').value = row.tipo_conta || '';
+            f('numeroConta').value = row.numero_conta || '';
+            f('nomeContato').value = row.nome_contato || '';
+            f('parentescoContato').value = row.parentesco_contato || '';
+            f('cepContato').value = row.cep_contato || '';
+            f('enderecoContato').value = row.endereco_contato || '';
+            f('bairroContato').value = row.bairro_contato || '';
+            f('cidadeContato').value = row.cidade_contato || '';
+            f('estadoContato').value = row.estado_contato || '';
+            f('paisContato').value = row.pais_contato || '';
+            f('telefoneContato').value = row.telefone_contato || '';
+            f('telefone2Contato').value = row.telefone2_contato || '';
+            f('emailContato').value = row.email_contato || '';
+            f('obs').value = row.obs || '';
+        }
+
+        function collectPayload() {
+            return {
+                nome: f('nome').value.trim(),
+                titulo: f('titulo').value.trim(),
+                cep: f('cep').value.trim(),
+                endereco: f('endereco').value.trim(),
+                bairro: f('bairro').value.trim(),
+                cidade: f('cidade').value.trim(),
+                estado: f('estado').value.trim(),
+                pais: f('pais').value.trim(),
+                telefone: f('telefone').value.trim(),
+                telefone2: f('telefone2').value.trim(),
+                email: f('email').value.trim(),
+                email2: f('email2').value.trim(),
+                banco: f('banco').value.trim(),
+                nomeAgencia: f('nomeAgencia').value.trim(),
+                agencia: f('agencia').value.trim(),
+                tipoConta: f('tipoConta').value.trim(),
+                numeroConta: f('numeroConta').value.trim(),
+                nomeContato: f('nomeContato').value.trim(),
+                parentescoContato: f('parentescoContato').value.trim(),
+                cepContato: f('cepContato').value.trim(),
+                enderecoContato: f('enderecoContato').value.trim(),
+                bairroContato: f('bairroContato').value.trim(),
+                cidadeContato: f('cidadeContato').value.trim(),
+                estadoContato: f('estadoContato').value.trim(),
+                paisContato: f('paisContato').value.trim(),
+                telefoneContato: f('telefoneContato').value.trim(),
+                telefone2Contato: f('telefone2Contato').value.trim(),
+                emailContato: f('emailContato').value.trim(),
+                obs: f('obs').value.trim()
+            };
+        }
+
+        function openModal(id = null) {
+            setFormMessage('');
+            f('formCadastro').reset();
+            fillForm({});
+
+            if (!id) {
+                f('modalTitle').textContent = 'Novo missionario';
+                modal.classList.add('show');
+                return;
+            }
+
+            const row = currentRows.find((item) => Number(item.id) === Number(id));
+            if (!row) return;
+            f('modalTitle').textContent = 'Editar missionario';
+            fillForm(row);
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            modal.classList.remove('show');
+        }
+
+        async function submitForm(event) {
+            event.preventDefault();
+            setFormMessage('');
+
+            const id = f('rowId').value;
+            const payload = collectPayload();
+
+            if (!payload.nome) {
+                setFormMessage('Informe o nome do missionario.');
+                return;
+            }
+
+            const url = id ? `/missionarios/${id}` : '/missionarios';
+            const method = id ? 'PUT' : 'POST';
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                setFormMessage(data.error || 'Nao foi possivel salvar o cadastro.');
+                return;
+            }
+
+            closeModal();
+            await carregarMissionarios();
+        }
+
+        async function removeRow(id) {
+            if (!confirm('Deseja excluir este missionario?')) return;
+
+            const response = await fetch(`/missionarios/${id}`, { method: 'DELETE' });
+            if (!response.ok) {
+                alert('Nao foi possivel excluir o registro.');
+                return;
+            }
+
+            await carregarMissionarios();
+        }
+
+        document.getElementById('btnNovo').addEventListener('click', () => openModal());
+        document.getElementById('btnRefresh').addEventListener('click', carregarMissionarios);
+        document.getElementById('btnBuscar').addEventListener('click', carregarMissionarios);
+        document.getElementById('btnCancelar').addEventListener('click', closeModal);
+        document.getElementById('formCadastro').addEventListener('submit', submitForm);
+
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                carregarMissionarios();
+            }
+        });
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        carregarMissionarios();
+    </script>
+</body>
+</html>

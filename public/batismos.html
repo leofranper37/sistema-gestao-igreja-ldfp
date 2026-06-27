@@ -1,0 +1,1055 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Batismos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --blue:    #0284c7;
+            --cyan:    #0ea5e9;
+            --green:   #10b981;
+            --red:     #dc2626;
+            --yellow:  #f59e0b;
+            --surface: #ffffff;
+            --bg:      #f1f5f9;
+            --border:  #e2e8f0;
+            --text:    #0f172a;
+            --muted:   #64748b;
+            --radius:  14px;
+            --shadow:  0 4px 16px rgba(15,23,42,.08);
+            --shadow-lg: 0 12px 32px rgba(15,23,42,.14);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .page-wrap {
+            padding: 24px 28px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-header-left h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-header-left h2 i { color: var(--blue); }
+        .page-header-left p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-primary { background: linear-gradient(90deg, var(--blue), var(--cyan)); color: #fff; }
+        .btn-primary:hover { opacity: .9; }
+        .btn-ghost { background: var(--bg); color: var(--muted); border: 1.5px solid var(--border); }
+        .btn-ghost:hover { background: var(--border); }
+        .btn-danger { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+        .btn-danger:hover { background: var(--red); color: #fff; }
+        .btn-green { background: var(--green); color: #fff; }
+        .btn-green:hover { background: #059669; }
+        .btn-sm { padding: 7px 11px; font-size: 12px; border-radius: 7px; }
+
+        /* Layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 13px 15px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-count {
+            font-size: 11px;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .search-box { position: relative; }
+        .search-box i {
+            position: absolute;
+            left: 10px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: .8rem;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 9px 11px 9px 30px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
+        }
+        .search-box input:focus { outline: none; border-color: var(--blue); background: #fff; }
+
+        .filtros { display: flex; gap: 6px; }
+        .filtros select {
+            flex: 1;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 12px;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Lista */
+        .bat-list {
+            overflow-y: auto;
+            max-height: calc(100vh - 320px);
+        }
+
+        .bat-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .bat-item:last-child { border-bottom: none; }
+        .bat-item:hover { background: #fafafa; }
+        .bat-item.is-active {
+            background: #e0f2fe;
+            box-shadow: inset 4px 0 0 var(--blue);
+        }
+
+        .bat-icon {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            flex-shrink: 0;
+        }
+        .bat-icon.encerrado {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+        }
+
+        .bat-info { flex: 1; min-width: 0; }
+        .bat-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .bat-sub { font-size: 11px; color: var(--muted); }
+
+        .bat-badge {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+        .badge-aberto    { background: #d1fae5; color: #065f46; }
+        .badge-encerrado { background: #f1f5f9; color: #64748b; }
+
+        .empty-list {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .empty-list i { font-size: 1.8rem; margin-bottom: 10px; color: #cbd5e1; display: block; }
+
+        /* Hero */
+        .bat-hero {
+            border-radius: var(--radius);
+            padding: 22px 26px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: #fff;
+            min-height: 110px;
+        }
+
+        .hero-icon {
+            width: 58px; height: 58px;
+            border-radius: 16px;
+            background: rgba(255,255,255,.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .hero-info { flex: 1; min-width: 0; }
+        .hero-name {
+            font-size: 20px;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .hero-sub { font-size: 13px; opacity: .85; margin-top: 3px; }
+
+        .hero-stats {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .hero-stat {
+            background: rgba(255,255,255,.18);
+            border-radius: 10px;
+            padding: 10px 16px;
+            text-align: center;
+            min-width: 70px;
+        }
+        .hero-stat-val { font-size: 22px; font-weight: 800; }
+        .hero-stat-label { font-size: 10px; opacity: .85; }
+
+        .hero-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+        .hero-btn {
+            background: rgba(255,255,255,.2);
+            border: 1.5px solid rgba(255,255,255,.4);
+            color: #fff;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background .2s;
+        }
+        .hero-btn:hover { background: rgba(255,255,255,.35); }
+
+        /* Painel direito */
+        .right-panel { display: flex; flex-direction: column; gap: 16px; }
+
+        /* Abas */
+        .tabs-bar {
+            display: flex;
+            border-bottom: 2px solid var(--border);
+            background: var(--surface);
+            border-radius: var(--radius) var(--radius) 0 0;
+            overflow: hidden;
+        }
+        .tab-btn {
+            padding: 12px 18px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tab-btn:hover { color: var(--text); }
+        .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Form */
+        .form-section {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .form-section:last-child { border-bottom: none; }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--blue);
+            letter-spacing: .06em;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 12px;
+        }
+        .g2 { grid-template-columns: 1fr 1fr; }
+        .g3 { grid-template-columns: 1fr 1fr 1fr; }
+        .g4 { grid-template-columns: 2fr 1fr 1fr 1fr; }
+        @media (max-width: 700px) {
+            .g2, .g3, .g4 { grid-template-columns: 1fr; }
+        }
+
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+        .field input,
+        .field select,
+        .field textarea {
+            padding: 9px 11px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text);
+            background: var(--bg);
+            font-family: inherit;
+        }
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--blue);
+            background: #fff;
+        }
+        .field textarea { resize: vertical; min-height: 80px; }
+
+        /* Tabela de candidatos */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        td {
+            padding: 11px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text);
+            vertical-align: middle;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8fafc; }
+
+        .empty-table {
+            text-align: center;
+            color: var(--muted);
+            padding: 32px 0;
+            font-size: 13px;
+        }
+
+        /* Badge candidato */
+        .cand-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+        .cand-confirmado { background: #d1fae5; color: #065f46; }
+        .cand-pendente   { background: #fef9c3; color: #854d0e; }
+        .cand-desistiu   { background: #fee2e2; color: #991b1b; }
+
+        /* Status */
+        .status-msg {
+            font-size: 13px;
+            color: var(--green);
+            font-weight: 600;
+            padding: 10px 20px;
+        }
+        .status-msg.error { color: var(--red); }
+        .status-msg:empty { display: none; }
+
+        /* Form actions */
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page"
+      data-shell-title="Batismos"
+      data-shell-breadcrumb="LDFP / Secretaria / Batismos"
+      data-shell-active="batismos.html"
+      data-shell-chip="Ambiente autenticado"
+      data-shell-role="Administrador">
+
+<main class="main-content enterprise-main">
+<div class="page-wrap">
+
+    <!-- CabeÃ§alho -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h2><i class="fa-solid fa-water"></i> Batismos</h2>
+            <p>Gerencie cerimÃ´nias de batismo e candidatos</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" id="btnRecarregar">
+                <i class="fa-solid fa-rotate-right"></i> Recarregar
+            </button>
+            <button class="btn btn-primary" id="btnNovoBatismo">
+                <i class="fa-solid fa-plus"></i> Novo Batismo
+            </button>
+        </div>
+    </div>
+
+    <!-- Dois painÃ©is -->
+    <div class="two-col">
+
+        <!-- Painel esquerdo: lista -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span><i class="fa-solid fa-list"></i> CerimÃ´nias</span>
+                    <span class="panel-count" id="countBatismos">0</span>
+                </div>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar batismo...">
+                </div>
+                <div class="filtros">
+                    <select id="filterStatus">
+                        <option value="">Todos os status</option>
+                        <option value="NÃ£o">Em aberto</option>
+                        <option value="Sim">Encerrados</option>
+                    </select>
+                </div>
+            </div>
+            <div class="bat-list" id="batList">
+                <div class="empty-list">
+                    <i class="fa-solid fa-water"></i>
+                    Nenhum batismo cadastrado ainda.
+                </div>
+            </div>
+        </div>
+
+        <!-- Painel direito -->
+        <div class="right-panel">
+
+            <!-- Hero -->
+            <div class="bat-hero" id="batHero">
+                <div class="hero-icon">
+                    <i class="fa-solid fa-water"></i>
+                </div>
+                <div class="hero-info">
+                    <div class="hero-name" id="heroName">Novo Batismo</div>
+                    <div class="hero-sub" id="heroSub">Preencha os dados ao lado e salve</div>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-val" id="heroTotal">0</div>
+                        <div class="hero-stat-label">Candidatos</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-val" id="heroConfirm">0</div>
+                        <div class="hero-stat-label">Confirmados</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-val" id="heroPend">0</div>
+                        <div class="hero-stat-label">Pendentes</div>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <button class="hero-btn" id="btnSalvarHero">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar
+                    </button>
+                    <button class="hero-btn" id="btnExcluirHero">
+                        <i class="fa-solid fa-trash-can"></i> Excluir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Abas -->
+            <div class="panel">
+                <div class="tabs-bar">
+                    <button class="tab-btn active" data-tab="tabDados">
+                        <i class="fa-solid fa-church"></i> Dados
+                    </button>
+                    <button class="tab-btn" data-tab="tabCandidatos">
+                        <i class="fa-solid fa-users"></i> Candidatos
+                    </button>
+                    <button class="tab-btn" data-tab="tabObs">
+                        <i class="fa-solid fa-note-sticky"></i> ObservaÃ§Ãµes
+                    </button>
+                </div>
+
+                <span class="status-msg" id="statusMsg"></span>
+
+                <!-- Aba Dados -->
+                <div class="tab-panel active" id="tabDados">
+                    <form name="batForm">
+                        <div class="form-section">
+                            <div class="section-title">InformaÃ§Ãµes da cerimÃ´nia</div>
+                            <div class="form-grid g2">
+                                <div class="field" style="grid-column:span 2;">
+                                    <label>DescriÃ§Ã£o</label>
+                                    <input type="text" name="descricao" placeholder="Ex: Batismo 1Âº Semestre 2026">
+                                </div>
+                                <div class="field">
+                                    <label>Data do Batismo</label>
+                                    <input type="date" name="dataBatismo">
+                                </div>
+                                <div class="field">
+                                    <label>HorÃ¡rio</label>
+                                    <input type="time" name="horario">
+                                </div>
+                                <div class="field">
+                                    <label>Local</label>
+                                    <input type="text" name="localBatismo" placeholder="Local da cerimÃ´nia">
+                                </div>
+                                <div class="field">
+                                    <label>Pastor ResponsÃ¡vel</label>
+                                    <input type="text" name="pastor" placeholder="Nome do pastor">
+                                </div>
+                                <div class="field">
+                                    <label>SituaÃ§Ã£o</label>
+                                    <select name="encerrado">
+                                        <option value="NÃ£o">Em aberto</option>
+                                        <option value="Sim">Encerrado</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>CongregaÃ§Ã£o</label>
+                                    <input type="text" name="congregacao" placeholder="CongregaÃ§Ã£o">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="section-title">Aula prÃ©-batismal</div>
+                            <div class="form-grid g3">
+                                <div class="field">
+                                    <label>Data da aula</label>
+                                    <input type="date" name="dataAula">
+                                </div>
+                                <div class="field">
+                                    <label>Professor / ResponsÃ¡vel</label>
+                                    <input type="text" name="professorAula" placeholder="Nome do responsÃ¡vel">
+                                </div>
+                                <div class="field">
+                                    <label>Local da aula</label>
+                                    <input type="text" name="localAula" placeholder="Sala ou endereÃ§o">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" id="btnSalvar">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar
+                        </button>
+                        <button class="btn btn-ghost" id="btnLimpar">
+                            <i class="fa-solid fa-broom"></i> Limpar
+                        </button>
+                        <button class="btn btn-danger" id="btnExcluir">
+                            <i class="fa-solid fa-trash-can"></i> Excluir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Aba Candidatos -->
+                <div class="tab-panel" id="tabCandidatos">
+                    <div class="form-section">
+                        <div class="section-title">Adicionar candidato</div>
+                        <div class="form-grid g3">
+                            <div class="field" style="grid-column:span 2;">
+                                <label>Nome do candidato</label>
+                                <input type="text" id="candNome" placeholder="Nome completo">
+                            </div>
+                            <div class="field">
+                                <label>Status</label>
+                                <select id="candStatus">
+                                    <option value="Pendente">Pendente</option>
+                                    <option value="Confirmado">Confirmado</option>
+                                    <option value="Desistiu">Desistiu</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Membro vinculado</label>
+                                <input type="text" id="candMembro" placeholder="ID ou nome do membro">
+                            </div>
+                            <div class="field">
+                                <label>Telefone</label>
+                                <input type="text" id="candTel" placeholder="(11) 99999-9999">
+                            </div>
+                            <div class="field" style="display:flex;flex-direction:column;justify-content:flex-end;">
+                                <button class="btn btn-green" id="btnAddCandidato">
+                                    <i class="fa-solid fa-plus"></i> Adicionar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Telefone</th>
+                                    <th>Status</th>
+                                    <th>AÃ§Ãµes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="candidatosBody">
+                                <tr>
+                                    <td colspan="4" class="empty-table">
+                                        Selecione um batismo para ver os candidatos.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Aba ObservaÃ§Ãµes -->
+                <div class="tab-panel" id="tabObs">
+                    <form name="batForm">
+                        <div class="form-section">
+                            <div class="section-title">ObservaÃ§Ãµes gerais</div>
+                            <div class="field">
+                                <label>ObservaÃ§Ãµes</label>
+                                <textarea name="obs" rows="5" placeholder="ObservaÃ§Ãµes sobre a cerimÃ´nia..."></textarea>
+                            </div>
+                        </div>
+                        <div class="form-section">
+                            <div class="section-title">Registros pÃ³s-cerimÃ´nia</div>
+                            <div class="form-grid g2">
+                                <div class="field">
+                                    <label>Total de batizados</label>
+                                    <input type="number" name="totalBatizados" min="0" placeholder="0">
+                                </div>
+                                <div class="field">
+                                    <label>FotÃ³grafo / ResponsÃ¡vel mÃ­dia</label>
+                                    <input type="text" name="fotografo" placeholder="Nome">
+                                </div>
+                                <div class="field" style="grid-column:span 2;">
+                                    <label>Link de fotos / vÃ­deo</label>
+                                    <input type="url" name="linkMidia" placeholder="https://...">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" id="btnSalvarObs">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar observaÃ§Ãµes
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+    requireAuthSession();
+
+    const $ = id => document.getElementById(id);
+
+    let batismos     = [];
+    let batismoAtual = null;   // full object with candidatos
+    let filtroTexto  = '';
+    let filtroStatus = '';
+    let searchTimer  = null;
+
+    /* â”€â”€ API helper â”€â”€ */
+    const api = (url, opts = {}) => fetch(url, {
+        headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+        ...opts,
+    }).then(async r => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.message || `Erro ${r.status}`);
+        return data;
+    });
+
+    const fmtDate = iso => {
+        if (!iso) return '-';
+        const [y, m, d] = String(iso).slice(0, 10).split('-');
+        return `${d}/${m}/${y}`;
+    };
+
+    /* â”€â”€ Load lista â”€â”€ */
+    async function loadBatismos() {
+        try {
+            const q = filtroTexto ? `&q=${encodeURIComponent(filtroTexto)}` : '';
+            const s = filtroStatus ? `&encerrado=${encodeURIComponent(filtroStatus)}` : '';
+            const data = await api(`/api/batismos?limit=200${q}${s}`);
+            batismos = data.items || [];
+            $('countBatismos').textContent = data.total ?? batismos.length;
+            renderLista();
+        } catch (e) {
+            setStatus(e.message, true);
+        }
+    }
+    /* â”€â”€ Render lista â”€â”€ */
+    function renderLista() {
+        if (!batismos.length) {
+            $('batList').innerHTML = `
+                <div class="empty-list">
+                    <i class="fa-solid fa-water"></i>
+                    Nenhum batismo encontrado.
+                </div>`;
+            return;
+        }
+        $('batList').innerHTML = batismos.map(b => {
+            const enc   = b.encerrado === 'Sim';
+            const total = Number(b.total_candidatos) || 0;
+            return `
+                <div class="bat-item ${b.id === batismoAtual?.id ? 'is-active' : ''}"
+                     data-id="${b.id}">
+                    <div class="bat-icon ${enc ? 'encerrado' : ''}">
+                        <i class="fa-solid fa-water"></i>
+                    </div>
+                    <div class="bat-info">
+                        <div class="bat-name">${b.descricao || 'Sem descriÃ§Ã£o'}</div>
+                        <div class="bat-sub">
+                            ${fmtDate(b.data_batismo)}
+                            ${b.pastor ? 'Â· ' + b.pastor : ''}
+                            Â· ${total} candidato${total !== 1 ? 's' : ''}
+                        </div>
+                    </div>
+                    <span class="bat-badge ${enc ? 'badge-encerrado' : 'badge-aberto'}">
+                        ${enc ? 'Encerrado' : 'Aberto'}
+                    </span>
+                </div>`;
+        }).join('');
+
+        $('batList').querySelectorAll('.bat-item').forEach(el => {
+            el.addEventListener('click', () => selecionarBatismo(Number(el.dataset.id)));
+        });
+    }
+
+    /* â”€â”€ Hero â”€â”€ */
+    const updateHero = bat => {
+        if (!bat) {
+            $('heroName').textContent     = 'Novo Batismo';
+            $('heroSub').textContent      = 'Preencha os dados e salve';
+            $('heroTotal').textContent    = '0';
+            $('heroConfirm').textContent  = '0';
+            $('heroPend').textContent     = '0';
+            $('batHero').style.background = 'linear-gradient(135deg, #0284c7, #0ea5e9)';
+            return;
+        }
+        const cands   = bat.candidatos || [];
+        const confirm = cands.filter(c => c.status === 'Confirmado').length;
+        const pend    = cands.filter(c => c.status === 'Pendente').length;
+        $('heroName').textContent     = bat.descricao || 'Batismo';
+        $('heroSub').textContent      = `${fmtDate(bat.data_batismo)}${bat.local_batismo ? ' Â· ' + bat.local_batismo : ''}${bat.pastor ? ' Â· ' + bat.pastor : ''}`;
+        $('heroTotal').textContent    = cands.length;
+        $('heroConfirm').textContent  = confirm;
+        $('heroPend').textContent     = pend;
+        $('batHero').style.background = bat.encerrado === 'Sim'
+            ? 'linear-gradient(135deg, #64748b, #94a3b8)'
+            : 'linear-gradient(135deg, #0284c7, #0ea5e9)';
+    };
+
+    /* â”€â”€ Preencher form â”€â”€ */
+    const preencherForm = bat => {
+        const setVal = (name, val) => {
+            const el = document.querySelector(`[name="${name}"]`);
+            if (el) el.value = val || '';
+        };
+        if (!bat) {
+            document.querySelectorAll('form[name="batForm"] [name]').forEach(el => el.value = '');
+            const enc = document.querySelector('[name="encerrado"]');
+            if (enc) enc.value = 'NÃ£o';
+            renderCandidatos(null);
+            return;
+        }
+        // snake_case API â†’ camelCase form names
+        setVal('descricao',      bat.descricao);
+        setVal('dataBatismo',    bat.data_batismo);
+        setVal('horario',        bat.horario);
+        setVal('localBatismo',   bat.local_batismo);
+        setVal('pastor',         bat.pastor);
+        setVal('encerrado',      bat.encerrado || 'NÃ£o');
+        setVal('congregacao',    bat.congregacao);
+        setVal('dataAula',       bat.data_aula);
+        setVal('professorAula',  bat.professor_aula);
+        setVal('localAula',      bat.local_aula);
+        setVal('obs',            bat.obs);
+        setVal('totalBatizados', bat.total_batizados);
+        setVal('fotografo',      bat.fotografo);
+        setVal('linkMidia',      bat.link_midia);
+        renderCandidatos(bat);
+    };
+
+    /* â”€â”€ Candidatos â”€â”€ */
+    const renderCandidatos = bat => {
+        const tbody = $('candidatosBody');
+        if (!bat || !bat.candidatos?.length) {
+            tbody.innerHTML = `<tr><td colspan="4" class="empty-table">
+                ${bat ? 'Nenhum candidato adicionado.' : 'Selecione um batismo para ver os candidatos.'}
+            </td></tr>`;
+            return;
+        }
+        const statusOpts = ['Pendente', 'Confirmado', 'Desistiu'];
+        tbody.innerHTML = bat.candidatos.map(c => `
+            <tr>
+                <td>${c.nome || '-'}</td>
+                <td>${c.telefone || '-'}</td>
+                <td>
+                    <select class="cand-status-sel" data-cid="${c.id}">
+                        ${statusOpts.map(s => `<option value="${s}" ${c.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                    </select>
+                </td>
+                <td>
+                    <button class="btn btn-ghost btn-sm btn-rm-cand" data-cid="${c.id}">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+        tbody.querySelectorAll('.cand-status-sel').forEach(sel => {
+            sel.addEventListener('change', async () => {
+                if (!batismoAtual) return;
+                try {
+                    await api(`/api/batismos/${batismoAtual.id}/candidatos/${sel.dataset.cid}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ status: sel.value }),
+                    });
+                    await recarregarSelecionado();
+                } catch (e) { setStatus(e.message, true); }
+            });
+        });
+
+        tbody.querySelectorAll('.btn-rm-cand').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!batismoAtual) return;
+                if (!confirm('Remover este candidato?')) return;
+                try {
+                    await api(`/api/batismos/${batismoAtual.id}/candidatos/${btn.dataset.cid}`, { method: 'DELETE' });
+                    await recarregarSelecionado();
+                    setStatus('Candidato removido.');
+                } catch (e) { setStatus(e.message, true); }
+            });
+        });
+    };
+
+    /* â”€â”€ Selecionar â”€â”€ */
+    const selecionarBatismo = async id => {
+        try {
+            batismoAtual = await api(`/api/batismos/${id}`);
+            updateHero(batismoAtual);
+            preencherForm(batismoAtual);
+            setStatus('');
+            renderLista();
+        } catch (e) { setStatus(e.message, true); }
+    };
+
+    const recarregarSelecionado = async () => {
+        if (!batismoAtual) return;
+        batismoAtual = await api(`/api/batismos/${batismoAtual.id}`);
+        updateHero(batismoAtual);
+        preencherForm(batismoAtual);
+        await loadBatismos();
+    };
+
+    /* â”€â”€ Status â”€â”€ */
+    const setStatus = (msg, err) => {
+        const el = $('statusMsg');
+        el.textContent = msg || '';
+        el.className = 'status-msg' + (err ? ' error' : '');
+    };
+
+    /* â”€â”€ Coletar form â”€â”€ */
+    const getPayload = () => {
+        const get = name => {
+            const el = document.querySelector(`[name="${name}"]`);
+            return el ? el.value.trim() : '';
+        };
+        // camelCase form names â†’ snake_case API fields
+        return {
+            descricao:      get('descricao'),
+            data_batismo:   get('dataBatismo')    || null,
+            horario:        get('horario')         || null,
+            local_batismo:  get('localBatismo')    || null,
+            pastor:         get('pastor')          || null,
+            encerrado:      get('encerrado')       || 'NÃ£o',
+            congregacao:    get('congregacao')     || null,
+            data_aula:      get('dataAula')        || null,
+            professor_aula: get('professorAula')   || null,
+            local_aula:     get('localAula')       || null,
+            obs:            get('obs')             || null,
+            total_batizados: Number(get('totalBatizados')) || 0,
+            fotografo:      get('fotografo')       || null,
+            link_midia:     get('linkMidia')       || null,
+        };
+    };
+
+    /* â”€â”€ Salvar â”€â”€ */
+    const salvar = async () => {
+        setStatus('');
+        const payload = getPayload();
+        if (!payload.descricao) { setStatus('Informe a descriÃ§Ã£o do batismo.', true); return; }
+        try {
+            if (batismoAtual?.id) {
+                batismoAtual = await api(`/api/batismos/${batismoAtual.id}`, {
+                    method: 'PUT', body: JSON.stringify(payload),
+                });
+            } else {
+                batismoAtual = await api('/api/batismos', {
+                    method: 'POST', body: JSON.stringify(payload),
+                });
+            }
+            await loadBatismos();
+            updateHero(batismoAtual);
+            preencherForm(batismoAtual);
+            setStatus('Batismo salvo com sucesso!');
+        } catch (e) { setStatus(e.message, true); }
+    };
+
+    /* â”€â”€ Excluir â”€â”€ */
+    const excluir = async () => {
+        if (!batismoAtual?.id) { setStatus('Selecione um batismo para excluir.', true); return; }
+        if (!confirm(`Excluir o batismo "${batismoAtual.descricao}"? Esta aÃ§Ã£o nÃ£o pode ser desfeita.`)) return;
+        try {
+            await api(`/api/batismos/${batismoAtual.id}`, { method: 'DELETE' });
+            batismoAtual = null;
+            limpar();
+            setStatus('Batismo excluÃ­do.');
+            await loadBatismos();
+        } catch (e) { setStatus(e.message, true); }
+    };
+
+    /* â”€â”€ Limpar â”€â”€ */
+    const limpar = () => {
+        batismoAtual = null;
+        preencherForm(null);
+        updateHero(null);
+        setStatus('');
+        renderLista();
+    };
+
+    /* â”€â”€ Adicionar candidato â”€â”€ */
+    $('btnAddCandidato').addEventListener('click', async () => {
+        if (!batismoAtual?.id) { setStatus('Salve o batismo antes de adicionar candidatos.', true); return; }
+        const nome   = $('candNome').value.trim();
+        const status = $('candStatus').value;
+        const tel    = $('candTel').value.trim();
+        if (!nome) { setStatus('Informe o nome do candidato.', true); return; }
+        try {
+            await api(`/api/batismos/${batismoAtual.id}/candidatos`, {
+                method: 'POST',
+                body: JSON.stringify({ nome, status, telefone: tel || null }),
+            });
+            $('candNome').value = '';
+            $('candTel').value  = '';
+            await recarregarSelecionado();
+            setStatus('Candidato adicionado!');
+        } catch (e) { setStatus(e.message, true); }
+    });
+
+    /* â”€â”€ Eventos â”€â”€ */
+    $('btnNovoBatismo').addEventListener('click', limpar);
+    $('btnLimpar').addEventListener('click', limpar);
+    $('btnSalvar').addEventListener('click', salvar);
+    $('btnSalvarHero').addEventListener('click', salvar);
+    $('btnSalvarObs').addEventListener('click', salvar);
+    $('btnExcluir').addEventListener('click', excluir);
+    $('btnExcluirHero').addEventListener('click', excluir);
+    $('btnRecarregar').addEventListener('click', loadBatismos);
+
+    $('searchInput').addEventListener('input', e => {
+        filtroTexto = e.target.value.toLowerCase().trim();
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(loadBatismos, 400);
+    });
+    $('filterStatus').addEventListener('change', e => {
+        filtroStatus = e.target.value;
+        loadBatismos();
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            $(btn.dataset.tab)?.classList.add('active');
+        });
+    });
+
+    /* â”€â”€ Init â”€â”€ */
+    loadBatismos();
+    updateHero(null);
+</script>
+</body>
+</html>

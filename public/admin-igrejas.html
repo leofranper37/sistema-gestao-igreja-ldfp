@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Igrejas Clientes — LDFP Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--dark:#0f172a;--panel:#1e293b;--blue:#2563eb;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--bg:#f8fafc;--white:#fff;--text:#334155;--muted:#64748b;--border:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--dark);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}
+.logo-icon{background:linear-gradient(135deg,var(--blue),#60a5fa);width:32px;height:32px;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:800;font-size:14px}
+.sidebar-header h2{font-size:17px;font-weight:800}.sidebar-header span{font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.menu{padding:16px 0;flex:1;overflow-y:auto}
+.menu-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:0 18px;margin:12px 0 6px;font-weight:600}
+.menu-item{padding:11px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.2s;border-left:3px solid transparent}
+.menu-item:hover{background:var(--panel);color:#fff}.menu-item.active{background:var(--panel);border-left-color:var(--blue);color:#fff;font-weight:600}
+.menu-item i{width:18px;text-align:center;font-size:15px}
+.main-content{flex:1;display:flex;flex-direction:column;overflow-y:auto}
+.topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:var(--bg)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px}
+.btn-success{background:var(--green);color:#fff}.btn-success:hover{background:#059669}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-warn{background:var(--gold);color:#000}.btn-warn:hover{background:#d97706}
+.workspace{padding:28px;width:100%}
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px}
+.stat-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.stat-info .val{font-size:22px;font-weight:800;color:var(--dark)}.stat-info .lbl{font-size:11px;color:var(--muted);font-weight:600}
+.trial-meta{display:flex;flex-direction:column;gap:4px}
+.trial-text{font-size:12px;color:var(--muted);line-height:1.35}
+.trial-urgent{color:#b91c1c;font-weight:700}
+.trial-warning{color:#b45309;font-weight:700}
+/* FILTERS */
+.filters-bar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;align-items:center}
+.filters-bar input,.filters-bar select{padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:var(--white);min-width:140px}
+.filters-bar input:focus,.filters-bar select:focus{outline:none;border-color:var(--blue)}
+.filters-bar input{min-width:220px}
+/* TABLE */
+.panel-card{background:var(--white);border-radius:12px;border:1px solid var(--border);overflow:hidden}
+.panel-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.panel-header h3{font-size:15px;font-weight:700}
+table{width:100%;border-collapse:collapse}
+th,td{padding:13px 18px;text-align:left;font-size:13px;border-bottom:1px solid var(--border)}
+th{background:var(--bg);color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+tbody tr:hover{background:#f8fafc}
+.client-cell{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:8px;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.client-name{font-weight:600;color:var(--dark);font-size:13px}.client-email{font-size:11px;color:var(--muted)}
+.status-badge{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.s-ativa{background:#dcfce7;color:#166534}.s-trial{background:#fef9c3;color:#854d0e}
+.s-suspensa{background:#fee2e2;color:#991b1b}.s-cancelada{background:#f1f5f9;color:#475569}
+.s-inativa{background:#f1f5f9;color:#475569}
+.plan-pill{background:rgba(37,99,235,.08);color:var(--blue);padding:3px 8px;border-radius:100px;font-size:11px;font-weight:700}
+.actions-cell{display:flex;gap:6px;flex-wrap:wrap}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:16px;padding:30px;width:min(420px,95vw);box-shadow:0 24px 64px rgba(0,0,0,.2)}
+.modal h2{font-size:18px;font-weight:800;margin-bottom:6px}.modal p{font-size:13px;color:var(--muted);margin-bottom:20px}
+.modal select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:20px}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end}
+.toast{position:fixed;bottom:24px;right:24px;padding:14px 22px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;z-index:2000;opacity:0;transform:translateY(16px);transition:.3s}
+.toast.show{opacity:1;transform:translateY(0)}.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+/* Modal exclusão */
+.del-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:1100;backdrop-filter:blur(4px)}
+.del-overlay.open{display:flex}
+.del-box{background:#fff;border-radius:16px;padding:32px 28px;width:min(420px,94vw);box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.del-box h3{font-size:18px;font-weight:800;color:#0f172a;margin-bottom:8px}
+.del-box .church-highlighted{font-weight:700;color:var(--red);font-size:15px;margin:6px 0 14px}
+.del-warn{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:13px;color:#991b1b;margin-bottom:20px}
+.del-footer{display:flex;gap:10px;justify-content:flex-end}
+.btn-del-confirm{background:var(--red);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px}
+.btn-del-confirm:hover{background:#b91c1c}.btn-del-confirm:disabled{opacity:.6;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">L</div>
+    <div><h2>LDFP Master</h2><span>Painel SaaS</span></div>
+  </div>
+  <div class="menu">
+    <div class="menu-label">Negócio</div>
+    <a href="super-admin.html" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="admin-metricas.html" class="menu-item"><i class="fa-solid fa-chart-pie"></i> Métricas SaaS</a>
+    <a href="admin-relatorio-financeiro.html" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Relatório Financeiro</a>
+    <a href="admin-igrejas.html" class="menu-item active"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+    <a href="admin-assinaturas.html" class="menu-item"><i class="fa-solid fa-file-invoice"></i> Assinaturas & Faturas</a>
+    <a href="admin-usuarios.html" class="menu-item"><i class="fa-solid fa-users-gear"></i> Usuários & Senhas</a>
+    <a href="admin-modulos.html" class="menu-item"><i class="fa-solid fa-puzzle-piece"></i> Catálogo de Módulos</a>
+    <a href="admin-retomada.html" class="menu-item"><i class="fa-solid fa-rocket"></i> Retomada Inteligente</a>
+    <div class="menu-label">Configurações SaaS</div>
+    <a href="admin-planos.html" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+    <a href="admin-novidades.html" class="menu-item"><i class="fa-solid fa-newspaper"></i> Novidades</a>
+    <a href="admin-inovacoes.html" class="menu-item"><i class="fa-solid fa-lightbulb"></i> Fábrica de Inovações</a>
+    <a href="admin-sistema.html" class="menu-item"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
+    <div class="menu-label" style="margin-top:auto">Sessão</div>
+    <a href="login.html" class="menu-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <header class="topbar">
+    <h1><i class="fa-solid fa-church" style="color:var(--blue);margin-right:8px"></i>Igrejas & Clientes</h1>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" onclick="loadIgrejas()"><i class="fa-solid fa-rotate-right"></i> Atualizar</button>
+      <button class="btn btn-primary" onclick="openNovaIgrejaModal()"><i class="fa-solid fa-plus"></i> Nova Igreja</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- STATS -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-card"><div class="stat-icon" style="background:#eff6ff;color:var(--blue)"><i class="fa-solid fa-church"></i></div><div class="stat-info"><div class="val" id="st-total">-</div><div class="lbl">Total</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#ecfdf5;color:var(--green)"><i class="fa-solid fa-check-circle"></i></div><div class="stat-info"><div class="val" id="st-ativas">-</div><div class="lbl">Ativas</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fef9c3;color:#854d0e"><i class="fa-solid fa-hourglass-half"></i></div><div class="stat-info"><div class="val" id="st-trial">-</div><div class="lbl">Trial</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fee2e2;color:var(--red)"><i class="fa-solid fa-ban"></i></div><div class="stat-info"><div class="val" id="st-susp">-</div><div class="lbl">Suspensas</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fff7ed;color:#c2410c"><i class="fa-solid fa-clock"></i></div><div class="stat-info"><div class="val" id="st-trial-expirando">-</div><div class="lbl">Trial vencendo</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#ecfdf5;color:var(--green)"><i class="fa-solid fa-sack-dollar"></i></div><div class="stat-info"><div class="val" id="st-mrr">R$ -</div><div class="lbl">MRR</div></div></div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters-bar">
+      <input type="text" id="searchInput" placeholder="🔍 Buscar por nome, responsável, e-mail..." oninput="applyFilter()">
+      <select id="filterStatus" onchange="applyFilter()">
+        <option value="">Todos os status</option>
+        <option value="ativa">Ativa</option>
+        <option value="trial">Trial</option>
+        <option value="suspensa">Suspensa</option>
+        <option value="cancelada">Cancelada</option>
+        <option value="inativa">Inativa</option>
+      </select>
+      <select id="filterPlano" onchange="applyFilter()">
+        <option value="">Todos os planos</option>
+        <option value="eden">Éden</option>
+        <option value="hebrom">Hebrom</option>
+        <option value="betel">Betel</option>
+        <option value="siao">Sião</option>
+      </select>
+    </div>
+
+    <!-- TABLE -->
+    <div class="panel-card">
+      <div class="panel-header">
+        <h3 id="tableCount">Clientes</h3>
+        <span style="font-size:12px;color:var(--muted)" id="lastUpdate"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Igreja / Responsável</th>
+              <th>Plano</th>
+              <th>Status</th>
+              <th>Membros</th>
+              <th>Mensalidade</th>
+              <th>Trial / Vencimento</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL STATUS -->
+<div class="modal-overlay" id="statusModal">
+  <div class="modal">
+    <h2>Alterar Status</h2>
+    <p id="statusModalDesc">Selecione o novo status para esta igreja.</p>
+    <select id="statusSelect">
+      <option value="ativa">✅ Ativa</option>
+      <option value="trial">⏳ Trial</option>
+      <option value="suspensa">🚫 Suspensa</option>
+      <option value="cancelada">❌ Cancelada</option>
+      <option value="inativa">⬜ Inativa</option>
+    </select>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmStatus()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirmar exclusão -->
+<div class="del-overlay" id="delModal">
+  <div class="del-box">
+    <h3><i class="fa-solid fa-triangle-exclamation" style="color:var(--red);margin-right:8px"></i>Excluir Igreja</h3>
+    <p style="font-size:13px;color:var(--muted)">Você está prestes a excluir permanentemente:</p>
+    <div class="church-highlighted" id="delModalName"></div>
+    <div class="del-warn"><i class="fa-solid fa-circle-xmark"></i> <strong>Ação irreversível.</strong> Todos os membros, usuários, financeiro e dados dessa igreja serão apagados do banco.</div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:6px">Digite o nome da igreja para confirmar:</label>
+      <input type="text" id="delConfirmInput" placeholder="Nome exato da igreja..." autocomplete="off"
+        style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text)"
+        oninput="checkDelInput()">
+    </div>
+    <div class="del-footer">
+      <button class="btn btn-outline" onclick="closeDelModal()">Cancelar</button>
+      <button class="btn-del-confirm" id="delConfirmBtn" onclick="confirmDel()" disabled><i class="fa-solid fa-trash"></i> Excluir definitivamente</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVA IGREJA -->
+<div class="modal-overlay" id="novaIgrejaModal" style="display:none;align-items:center;justify-content:center">
+  <div class="modal" style="width:min(520px,95vw);max-height:90vh;overflow-y:auto">
+    <h2><i class="fa-solid fa-plus" style="color:var(--blue);margin-right:8px"></i>Nova Igreja Cliente</h2>
+    <p>Preencha os dados da igreja e do admin que vai acessar o painel.</p>
+
+    <div style="display:grid;gap:12px;margin-bottom:20px">
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Nome da Igreja *</label>
+        <input id="ni-nome" type="text" placeholder="Ex: Igreja Evangelica Graça" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Plano *</label>
+          <select id="ni-plano" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <option value="hebrom">Hebrom — R$ 50/mês</option>
+            <option value="betel">Betel — R$ 80/mês</option>
+            <option value="siao">Sião — R$ 100/mês</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Status inicial</label>
+          <select id="ni-status" onchange="toggleTrialDays()" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <option value="trial">Trial (período de teste)</option>
+            <option value="ativa">Ativa (já paga)</option>
+          </select>
+        </div>
+      </div>
+      <div id="ni-trial-row">
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Dias de trial</label>
+        <input id="ni-trial-days" type="number" value="7" min="1" max="90" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Nome do responsável</label>
+        <input id="ni-responsavel" type="text" placeholder="Ex: Pastor João Silva" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">E-mail do admin *</label>
+        <input id="ni-email" type="email" placeholder="pastor@igrejateste.com" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Senha de acesso *</label>
+        <input id="ni-senha" type="password" placeholder="Mínimo 6 caracteres" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Telefone / WhatsApp</label>
+        <input id="ni-telefone" type="text" placeholder="(00) 00000-0000" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      </div>
+    </div>
+
+    <div id="ni-error" style="display:none;background:#fee2e2;color:#b91c1c;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeNovaIgrejaModal()">Cancelar</button>
+      <button class="btn btn-primary" id="ni-btn" onclick="submitNovaIgreja()"><i class="fa-solid fa-plus"></i> Criar Igreja</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="session.js?v=20260501"></script>
+<script>
+const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
+const hdrs = () => ({ 'Content-Type':'application/json', Authorization: 'Bearer ' + token() });
+
+let allData = [];
+let selectedId = null;
+
+async function loadIgrejas() {
+  try {
+    const [ri, ro] = await Promise.all([
+      fetch('/api/saas/igrejas', { headers: hdrs() }),
+      fetch('/super-admin/overview', { headers: hdrs() })
+    ]);
+    if (ri.status === 401) { location.href = 'login.html'; return; }
+    allData = await ri.json();
+    const ov = ro.ok ? await ro.json() : {};
+    updateStats(ov);
+    document.getElementById('lastUpdate').textContent = 'Atualizado ' + new Date().toLocaleTimeString('pt-BR');
+    applyFilter();
+  } catch (e) { toast('Erro ao carregar: ' + e.message, 'error'); }
+}
+
+function updateStats(ov) {
+  const s = id => document.getElementById(id);
+  s('st-total').textContent = ov.total ?? allData.length;
+  s('st-ativas').textContent = ov.ativas ?? allData.filter(r=>r.status_assinatura==='ativa').length;
+  s('st-trial').textContent = ov.trial ?? allData.filter(r=>r.status_assinatura==='trial').length;
+  s('st-susp').textContent = ov.suspensas ?? allData.filter(r=>r.status_assinatura==='suspensa').length;
+  s('st-trial-expirando').textContent = ov.trialExpirando ?? allData.filter(r => trialState(r).level !== 'ok').length;
+  const mrr = ov.mrr ?? allData.filter(r=>r.status_assinatura==='ativa').reduce((s,r)=>s+(+r.mensalidade_valor||0),0);
+  s('st-mrr').textContent = 'R$ ' + mrr.toLocaleString('pt-BR',{minimumFractionDigits:2});
+}
+
+function trialState(row) {
+  if (row.status_assinatura !== 'trial' || !row.trial_ends_at) {
+    return { label: '—', className: '', level: 'ok' };
+  }
+
+  const trialEnd = new Date(row.trial_ends_at);
+  if (Number.isNaN(trialEnd.getTime())) {
+    return { label: 'Data invalida', className: 'trial-warning', level: 'warning' };
+  }
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  trialEnd.setHours(0, 0, 0, 0);
+  const diffDays = Math.ceil((trialEnd.getTime() - now.getTime()) / 86400000);
+
+  if (diffDays < 0) {
+    return { label: `Encerrado ha ${Math.abs(diffDays)} dia(s)`, className: 'trial-urgent', level: 'expired' };
+  }
+  if (diffDays <= 3) {
+    return { label: `Expira em ${diffDays} dia(s)`, className: 'trial-warning', level: 'warning' };
+  }
+  return { label: `Restam ${diffDays} dia(s)`, className: '', level: 'ok' };
+}
+
+function applyFilter() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const st = document.getElementById('filterStatus').value;
+  const pl = document.getElementById('filterPlano').value;
+  const filtered = allData.filter(r => {
+    const match = !q || [r.nome,r.responsavel,r.email_admin].filter(Boolean).some(v=>v.toLowerCase().includes(q));
+    const matchSt = !st || r.status_assinatura === st;
+    const matchPl = !pl || (r.plano||'').includes(pl);
+    return match && matchSt && matchPl;
+  });
+  renderTable(filtered);
+  document.getElementById('tableCount').textContent = `${filtered.length} cliente(s)`;
+}
+
+function renderTable(rows) {
+  const tb = document.getElementById('tableBody');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Nenhum resultado.</td></tr>'; return; }
+  tb.innerHTML = rows.map(r => {
+    const init = (r.nome||'?').slice(0,2).toUpperCase();
+    const statusClass = 's-' + (r.status_assinatura||'inativa');
+    const statusLabel = {ativa:'Ativa',trial:'Trial',suspensa:'Suspensa',cancelada:'Cancelada',inativa:'Inativa'}[r.status_assinatura] || r.status_assinatura;
+    const venc = r.proximo_vencimento ? new Date(r.proximo_vencimento).toLocaleDateString('pt-BR') : '—';
+    const trialEnd = r.trial_ends_at ? new Date(r.trial_ends_at).toLocaleDateString('pt-BR') : '—';
+    const trial = trialState(r);
+    const val = r.mensalidade_valor ? 'R$ ' + Number(r.mensalidade_valor).toLocaleString('pt-BR',{minimumFractionDigits:2}) : '—';
+    const plano = r.plano ? `<span class="plan-pill">${r.plano}</span>` : '<span style="color:var(--muted)">—</span>';
+    return `<tr>
+      <td><div class="client-cell"><div class="avatar">${init}</div><div><div class="client-name">${esc(r.nome)}</div><div class="client-email">${esc(r.responsavel||r.email_admin||'')}</div></div></div></td>
+      <td>${plano}</td>
+      <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+      <td>${r.total_membros||0}</td>
+      <td>${val}</td>
+      <td><div class="trial-meta"><strong>${r.status_assinatura === 'trial' ? trialEnd : venc}</strong><span class="trial-text ${trial.className}">${r.status_assinatura === 'trial' ? trial.label : 'Cobranca recorrente'}</span></div></td>
+      <td>
+        <div class="actions-cell">
+          <button class="btn btn-success btn-sm" onclick="acessarComoCliente(${r.id},'${esc(r.nome)}')" title="Acessar painel como esta igreja"><i class="fa-solid fa-right-to-bracket"></i> Acessar</button>
+          <button class="btn btn-outline btn-sm" onclick="editChurch(${r.id})" title="Editar contrato"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+          <button class="btn btn-warn btn-sm" onclick="openStatusModal(${r.id},'${r.status_assinatura}','${esc(r.nome)}')" title="Alterar status"><i class="fa-solid fa-toggle-on"></i> Status</button>
+          <button class="btn btn-danger btn-sm" data-id="${r.id}" data-nome="${esc(r.nome)}" onclick="openDelModal(this)" title="Excluir igreja"><i class="fa-solid fa-trash"></i> Excluir</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function editChurch(id) { location.href = 'admin-edicao-cliente.html?id=' + id; }
+
+async function acessarComoCliente(id, nome) {
+  if (!confirm(`Acessar o painel como a igreja "${nome}"?\n\nSeu login atual será substituído temporariamente. Para voltar ao super admin, faça logout e entre novamente com sua conta.`)) return;
+  try {
+    const r = await fetch('/api/saas/igrejas/' + id + '/impersonate', { method: 'POST', headers: hdrs() });
+    if (!r.ok) { const e = await r.json(); alert('Erro: ' + (e.error || r.status)); return; }
+    const data = await r.json();
+    localStorage.setItem('ldfpAuth', JSON.stringify({ token: data.token, user: data.user }));
+    localStorage.setItem('token', data.token);
+    sessionStorage.setItem('token', data.token);
+    sessionStorage.removeItem('ldfp_modulos_me');
+    window.open('dashboard.html', '_blank');
+  } catch (err) {
+    alert('Erro ao acessar como cliente: ' + err.message);
+  }
+}
+
+function openStatusModal(id, current, nome) {
+  selectedId = id;
+  document.getElementById('statusModalDesc').textContent = `Alterar status de: ${nome}`;
+  document.getElementById('statusSelect').value = current;
+  document.getElementById('statusModal').classList.add('open');
+}
+function closeModal() { document.getElementById('statusModal').classList.remove('open'); selectedId = null; }
+
+async function confirmStatus() {
+  if (!selectedId) return;
+  const status = document.getElementById('statusSelect').value;
+  try {
+    const r = await fetch('/api/saas/igrejas/' + selectedId + '/status', {
+      method: 'PATCH', headers: hdrs(), body: JSON.stringify({ status })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const row = allData.find(x => x.id === selectedId);
+    if (row) row.status_assinatura = status;
+    closeModal();
+    applyFilter();
+    toast('Status alterado com sucesso!', 'success');
+  } catch (e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+let _delId = null;
+let _delNome = '';
+function openDelModal(btn) {
+  _delId = Number(btn.dataset.id);
+  _delNome = btn.dataset.nome || '';
+  document.getElementById('delModalName').textContent = _delNome || 'ID ' + _delId;
+  const inp = document.getElementById('delConfirmInput');
+  inp.value = '';
+  document.getElementById('delConfirmBtn').disabled = true;
+  document.getElementById('delConfirmBtn').innerHTML = '<i class="fa-solid fa-trash"></i> Excluir definitivamente';
+  document.getElementById('delModal').classList.add('open');
+  setTimeout(() => inp.focus(), 80);
+}
+function checkDelInput() {
+  const typed = document.getElementById('delConfirmInput').value;
+  document.getElementById('delConfirmBtn').disabled = (typed !== _delNome);
+}
+function closeDelModal() {
+  _delId = null; _delNome = '';
+  document.getElementById('delConfirmInput').value = '';
+  document.getElementById('delConfirmBtn').disabled = true;
+  document.getElementById('delModal').classList.remove('open');
+}
+document.getElementById('delModal').addEventListener('click', e => { if (e.target === document.getElementById('delModal')) closeDelModal(); });
+
+async function confirmDel() {
+  if (!_delId) return;
+  const btn = document.getElementById('delConfirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Excluindo...';
+  try {
+    const r = await fetch('/api/saas/igrejas/' + _delId, { method: 'DELETE', headers: hdrs() });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erro ' + r.status);
+    closeDelModal();
+    allData = allData.filter(x => x.id !== _delId);
+    applyFilter();
+    toast('Igreja excluída com sucesso.', 'success');
+  } catch (e) {
+    toast('Erro: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-trash"></i> Excluir definitivamente';
+  }
+}
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast ' + type + ' show';
+  setTimeout(() => { el.className = 'toast ' + type; }, 3000);
+}
+
+(function() {
+  const t = token();
+  if (!t) { location.href = 'login.html'; return; }
+  try { const p = JSON.parse(atob(t.split('.')[1])); if (!['super-admin','super_admin','superadmin','master'].includes(p.role)) location.href = 'login.html'; } catch(_){}
+})();
+
+loadIgrejas();
+setInterval(loadIgrejas, 60000);
+
+// ── Nova Igreja ──────────────────────────────────────────────────────────────
+function openNovaIgrejaModal() {
+  ['ni-nome','ni-responsavel','ni-email','ni-senha','ni-telefone'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ni-plano').value = 'hebrom';
+  document.getElementById('ni-status').value = 'trial';
+  document.getElementById('ni-trial-days').value = '7';
+  document.getElementById('ni-trial-row').style.display = '';
+  document.getElementById('ni-error').style.display = 'none';
+  document.getElementById('ni-btn').disabled = false;
+  document.getElementById('ni-btn').innerHTML = '<i class="fa-solid fa-plus"></i> Criar Igreja';
+  const m = document.getElementById('novaIgrejaModal');
+  m.style.display = 'flex';
+}
+
+function closeNovaIgrejaModal() {
+  document.getElementById('novaIgrejaModal').style.display = 'none';
+}
+
+function toggleTrialDays() {
+  const isTrial = document.getElementById('ni-status').value === 'trial';
+  document.getElementById('ni-trial-row').style.display = isTrial ? '' : 'none';
+}
+
+async function submitNovaIgreja() {
+  const nome       = document.getElementById('ni-nome').value.trim();
+  const plano      = document.getElementById('ni-plano').value;
+  const status     = document.getElementById('ni-status').value;
+  const trialDays  = document.getElementById('ni-trial-days').value;
+  const responsavel= document.getElementById('ni-responsavel').value.trim();
+  const email      = document.getElementById('ni-email').value.trim();
+  const senha      = document.getElementById('ni-senha').value;
+  const telefone   = document.getElementById('ni-telefone').value.trim();
+  const errEl      = document.getElementById('ni-error');
+
+  if (!nome || !email || !senha) {
+    errEl.textContent = 'Nome da igreja, e-mail e senha são obrigatórios.';
+    errEl.style.display = '';
+    return;
+  }
+  if (senha.length < 6) {
+    errEl.textContent = 'A senha precisa ter pelo menos 6 caracteres.';
+    errEl.style.display = '';
+    return;
+  }
+
+  const btn = document.getElementById('ni-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Criando...';
+  errEl.style.display = 'none';
+
+  try {
+    const r = await fetch('/api/saas/igrejas', {
+      method: 'POST',
+      headers: hdrs(),
+      body: JSON.stringify({ nome, plano, status_assinatura: status, trial_days: Number(trialDays), responsavel, email_admin: email, senha, telefone })
+    });
+    const data = await r.json();
+    if (!r.ok) { errEl.textContent = data.error || 'Erro ao criar igreja.'; errEl.style.display = ''; btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> Criar Igreja'; return; }
+    closeNovaIgrejaModal();
+    showToast(`Igreja "${data.nome}" criada com sucesso!`);
+    loadIgrejas();
+  } catch (err) {
+    errEl.textContent = 'Erro de conexão: ' + err.message;
+    errEl.style.display = '';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-plus"></i> Criar Igreja';
+  }
+}
+</script>
+</body>
+</html>

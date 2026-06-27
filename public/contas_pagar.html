@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Contas a Pagar</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 18px 14px 40px; }
+        .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+        .kpi { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 16px; box-shadow: 0 4px 14px rgba(15,23,42,.07); }
+        .kpi small { display: block; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+        .kpi strong { display: block; font-size: 1.55rem; font-weight: 800; }
+        .kpi.aberto strong { color: #0369a1; }
+        .kpi.vencido strong { color: #dc2626; }
+        .kpi.pendente strong { color: #d97706; }
+        .kpi.pago strong { color: #16a34a; }
+        .main-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(330px, 1fr); gap: 14px; }
+        .main-grid > * { min-width: 0; }
+        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 6px 20px rgba(15,23,42,.08); padding: 16px; }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+        .card-header h2 { margin: 0; font-size: 15px; color: #155e75; }
+        .filtros { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+        .filtros input, .filtros select { max-width: 170px; min-width: 130px; margin: 0; }
+        input, select, textarea { width: 100%; border: 1px solid #dbe3ef; border-radius: 8px; padding: 9px 12px; font-size: 13.5px; box-sizing: border-box; margin-bottom: 6px; }
+        textarea { resize: vertical; min-height: 55px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .form-row .full { grid-column: 1/-1; }
+        .btn { border: 0; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; color: #fff; }
+        .btn-primary { background: #0f766e; width: 100%; margin-top: 4px; }
+        .btn-del { background: #dc2626; padding: 5px 8px; font-size: 11px; }
+        .btn-pay { background: #16a34a; padding: 5px 8px; font-size: 11px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+        th, td { border-bottom: 1px solid #f1f5f9; padding: 9px 8px; text-align: left; vertical-align: top; }
+        td { word-break: break-word; }
+        th { background: #f8fafc; color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 700; }
+        .badge-pendente { background: #fef9c3; color: #a16207; }
+        .badge-pago { background: #dcfce7; color: #15803d; }
+        .badge-vencido { background: #fee2e2; color: #b91c1c; }
+        .badge-cancelado { background: #f1f5f9; color: #64748b; }
+        .msg { font-size: 13px; min-height: 18px; margin-top: 6px; }
+        .msg.ok { color: #0f766e; } .msg.error { color: #b91c1c; }
+        .venc-red { color: #b91c1c; font-weight: 700; }
+        .pag { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; align-items: center; }
+        .pag button { border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+        .pag button:disabled { opacity: .45; cursor: not-allowed; }
+        .pag span { font-size: 12px; color: #64748b; }
+        @media (max-width: 1180px) { .main-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 1000px) { .kpis { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 600px) { .kpis { grid-template-columns: 1fr; } .filtros input, .filtros select { max-width: 100%; } }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Contas a Pagar" data-shell-breadcrumb="LDFP / Tesouraria / Contas a Pagar" data-shell-active="contas_pagar.html" data-shell-chip="Tesouraria ativa">
+<main class="main-content enterprise-main">
+<div class="enterprise-page-shell" style="padding-bottom: 30px;">
+    <div class="enterprise-page-hero" style="margin-bottom: 14px;">
+        <div>
+            <h2>Contas a Pagar</h2>
+            <p>Controle de duplicatas, vencimentos e pagamentos com visao operacional da tesouraria.</p>
+        </div>
+        <div class="enterprise-page-badge"><i class="fa-solid fa-file-invoice-dollar"></i> Tesouraria</div>
+    </div>
+
+<div class="wrap" style="padding: 0; max-width: 100%;">
+
+    <!-- KPIs -->
+    <div class="kpis">
+        <div class="kpi aberto"><small>Total em aberto</small><strong id="kpiAberto">R$ 0,00</strong></div>
+        <div class="kpi vencido"><small>Vencido</small><strong id="kpiVencido">R$ 0,00</strong></div>
+        <div class="kpi pendente"><small>A vencer</small><strong id="kpiPendente">R$ 0,00</strong></div>
+        <div class="kpi pago"><small>Pago no período</small><strong id="kpiPago">R$ 0,00</strong></div>
+    </div>
+
+    <div class="main-grid">
+
+        <!-- Lista -->
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-file-invoice-dollar"></i> Contas a pagar</h2>
+                <div class="filtros">
+                    <select id="filtroStatus">
+                        <option value="">Todos status</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="vencido">Vencido</option>
+                        <option value="pago">Pago</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                    <input type="date" id="filtroVencDe" placeholder="Venc. de">
+                    <input type="date" id="filtroVencAte" placeholder="Venc. até">
+                    <input type="text" id="filtroDesc" placeholder="Buscar..." style="max-width:150px;">
+                    <button class="btn" style="background:#0284c7;" type="button" id="btnFiltrar">Filtrar</button>
+                </div>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Vencimento</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbContas"></tbody>
+                </table>
+            </div>
+            <div class="pag">
+                <button id="btnAnterior" type="button" disabled>&#8592; Anterior</button>
+                <span id="pagInfo">Pág 1</span>
+                <button id="btnProximo" type="button" disabled>Próxima &#8594;</button>
+            </div>
+            <p class="msg" id="msgLista"></p>
+        </section>
+
+        <!-- Formulário -->
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-plus"></i> Nova conta a pagar</h2>
+            </div>
+            <form id="formConta">
+                <div class="form-row">
+                    <input class="full" type="text" id="descricao" placeholder="Descrição *" required>
+                    <input type="text" id="fornecedor" placeholder="Fornecedor">
+                    <input type="text" id="valor" placeholder="Valor (ex: 150,00) *" required>
+                    <input type="date" id="vencimento" required>
+                    <input class="full" type="text" id="categoria" placeholder="Categoria (ex: Aluguel, Água, Luz)">
+                    <textarea class="full" id="observacao" placeholder="Observação (opcional)"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> Registrar
+                </button>
+            </form>
+            <p class="msg" id="msgForm"></p>
+        </section>
+
+    </div>
+</div>
+</div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+    requireAuthSession();
+
+    const tbContas = document.getElementById('tbContas');
+    const msgLista = document.getElementById('msgLista');
+    const msgForm = document.getElementById('msgForm');
+    const btnAnterior = document.getElementById('btnAnterior');
+    const btnProximo = document.getElementById('btnProximo');
+    const pagInfo = document.getElementById('pagInfo');
+
+    let currentPage = 1;
+    let totalPages = 1;
+
+    function setMsg(el, text, isError = false) {
+        el.className = isError ? 'msg error' : 'msg ok';
+        el.textContent = text || '';
+    }
+
+    function fmtVal(v) {
+        return 'R$ ' + Number(v).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function fmtDate(s) {
+        if (!s) return '-';
+        const d = new Date(s + 'T12:00:00');
+        return d.toLocaleDateString('pt-BR');
+    }
+
+    function isVencida(vencimento, status) {
+        if (status !== 'pendente') return false;
+        return new Date(vencimento + 'T23:59:59') < new Date();
+    }
+
+    async function loadTotais() {
+        const r = await fetch('/contas-pagar/totais');
+        const d = await r.json().catch(() => ({}));
+        if (r.ok) {
+            document.getElementById('kpiAberto').textContent = fmtVal(d.totalAberto);
+            document.getElementById('kpiVencido').textContent = fmtVal(d.totalVencido);
+            document.getElementById('kpiPendente').textContent = fmtVal(d.totalPendente);
+            document.getElementById('kpiPago').textContent = fmtVal(d.totalPago);
+        }
+    }
+
+    async function loadLista(page = 1) {
+        const params = new URLSearchParams({ page, limit: 50 });
+        const status = document.getElementById('filtroStatus').value;
+        const vencDe = document.getElementById('filtroVencDe').value;
+        const vencAte = document.getElementById('filtroVencAte').value;
+        const descricao = document.getElementById('filtroDesc').value.trim();
+
+        if (status) params.set('status', status);
+        if (vencDe) params.set('vencimentoDe', vencDe);
+        if (vencAte) params.set('vencimentoAte', vencAte);
+        if (descricao) params.set('descricao', descricao);
+
+        const r = await fetch(`/contas-pagar?${params}`);
+        const d = await r.json().catch(() => ({ items: [], meta: { page: 1, totalPages: 1 } }));
+
+        if (!r.ok) {
+            setMsg(msgLista, d.error || 'Erro ao carregar.', true);
+            return;
+        }
+
+        const items = d.items || [];
+        totalPages = d.meta?.totalPages || 1;
+        currentPage = d.meta?.page || 1;
+        pagInfo.textContent = `Pág ${currentPage} de ${totalPages}`;
+        btnAnterior.disabled = currentPage <= 1;
+        btnProximo.disabled = currentPage >= totalPages;
+
+        if (!items.length) {
+            tbContas.innerHTML = '<tr><td colspan="5" style="color:#94a3b8;text-align:center;padding:20px;">Nenhuma conta encontrada.</td></tr>';
+            return;
+        }
+
+        tbContas.innerHTML = items.map(item => {
+            const vencida = isVencida(item.vencimento, item.status);
+            const statusDisplay = vencida ? 'vencido' : item.status;
+
+            return `
+            <tr>
+                <td>
+                    <strong>${item.descricao}</strong>
+                    ${item.fornecedor ? `<br><small style="color:#64748b">${item.fornecedor}</small>` : ''}
+                    ${item.categoria ? `<br><span style="font-size:10px;color:#94a3b8">${item.categoria}</span>` : ''}
+                </td>
+                <td class="${vencida ? 'venc-red' : ''}">${fmtDate(item.vencimento)}</td>
+                <td style="font-weight:700;">${fmtVal(item.valor)}</td>
+                <td><span class="badge badge-${statusDisplay}">${statusDisplay.charAt(0).toUpperCase() + statusDisplay.slice(1)}</span></td>
+                <td style="white-space:nowrap;">
+                    ${item.status !== 'pago' && item.status !== 'cancelado' ? `<button class="btn btn-pay" onclick="marcarPago(${item.id})" title="Marcar como pago"><i class="fa-solid fa-check"></i></button>` : ''}
+                    <button class="btn btn-del" onclick="excluir(${item.id})" title="Excluir">×</button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        setMsg(msgLista, '');
+    }
+
+    async function refresh() {
+        await Promise.all([loadLista(currentPage), loadTotais()]);
+    }
+
+    window.marcarPago = async function(id) {
+        const hoje = new Date().toISOString().slice(0, 10);
+        const r = await fetch(`/contas-pagar/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'pago', dataPagamento: hoje })
+        });
+
+        if (r.ok) {
+            setMsg(msgLista, 'Marcado como pago!');
+            refresh();
+        } else {
+            const d = await r.json().catch(() => ({}));
+            setMsg(msgLista, d.error || 'Erro.', true);
+        }
+    };
+
+    window.excluir = async function(id) {
+        if (!confirm('Remover esta conta?')) return;
+        const r = await fetch(`/contas-pagar/${id}`, { method: 'DELETE' });
+        if (r.ok) {
+            setMsg(msgLista, 'Removido.');
+            refresh();
+        } else {
+            const d = await r.json().catch(() => ({}));
+            setMsg(msgLista, d.error || 'Erro ao remover.', true);
+        }
+    };
+
+    document.getElementById('btnFiltrar').addEventListener('click', () => {
+        currentPage = 1;
+        refresh();
+    });
+
+    btnAnterior.addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadLista(currentPage); } });
+    btnProximo.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; loadLista(currentPage); } });
+
+    document.getElementById('formConta').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        setMsg(msgForm, '');
+
+        const valorRaw = document.getElementById('valor').value.trim().replace(',', '.');
+        const valor = parseFloat(valorRaw);
+        if (!valor || valor <= 0) {
+            setMsg(msgForm, 'Informe um valor válido.', true);
+            return;
+        }
+
+        const body = {
+            descricao: document.getElementById('descricao').value.trim(),
+            fornecedor: document.getElementById('fornecedor').value.trim() || null,
+            valor,
+            vencimento: document.getElementById('vencimento').value,
+            categoria: document.getElementById('categoria').value.trim() || null,
+            observacao: document.getElementById('observacao').value.trim() || null
+        };
+
+        const r = await fetch('/contas-pagar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const d = await r.json().catch(() => ({}));
+
+        if (!r.ok) {
+            setMsg(msgForm, d.error || 'Erro ao registrar.', true);
+            return;
+        }
+
+        setMsg(msgForm, 'Conta registrada!');
+        document.getElementById('formConta').reset();
+        currentPage = 1;
+        refresh();
+    });
+
+    refresh();
+</script>
+</body>
+</html>

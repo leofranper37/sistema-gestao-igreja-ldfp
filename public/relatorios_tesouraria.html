@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Relatorios Tesouraria</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); margin-bottom:16px; }
+        .row { display:grid; grid-template-columns: 180px 180px auto; gap:10px; align-items:end; }
+        .field { width:100%; padding:10px; border:1px solid #dbe3ef; border-radius:8px; }
+        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
+        .result { background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:14px; }
+        @media (max-width:900px) { .row { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="relatorios_tesouraria.html" data-shell-title="Relatorios Tesouraria" data-shell-breadcrumb="LDFP / Relatorios / Tesouraria" data-shell-chip="Relatorios" data-shell-role="Tesouraria">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Relatorios da Tesouraria</h2>
+                <p>Gere resumo financeiro por periodo para prestacao de contas.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-regular fa-file-lines"></i> Tesouraria</div>
+        </div>
+
+        <section class="card">
+            <div class="row">
+                <input id="inicio" class="field" type="date">
+                <input id="fim" class="field" type="date">
+                <button id="gerar" class="btn" type="button">Gerar relatorio</button>
+            </div>
+            <div id="saida" class="result" style="margin-top:12px">Selecione o periodo e clique em gerar.</div>
+        </section>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+requireAuthSession();
+
+function moeda(v) {
+    return Number(v || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+}
+
+document.getElementById('gerar').addEventListener('click', () => {
+    const i = document.getElementById('inicio').value;
+    const f = document.getElementById('fim').value;
+    const out = document.getElementById('saida');
+    if (!i || !f) { out.textContent = 'Informe inicio e fim para gerar.'; return; }
+
+    const entradas = 38250;
+    const saidas = 14520;
+    out.innerHTML = [
+        '<strong>Relatorio da Tesouraria</strong><br>',
+        'Periodo: ' + new Date(i + 'T00:00:00').toLocaleDateString('pt-BR') + ' a ' + new Date(f + 'T00:00:00').toLocaleDateString('pt-BR') + '.<br>',
+        'Total de entradas: ' + moeda(entradas) + '.<br>',
+        'Total de saidas: ' + moeda(saidas) + '.<br>',
+        'Saldo do periodo: ' + moeda(entradas - saidas) + '.'
+    ].join('');
+});
+</script>
+</body>
+</html>

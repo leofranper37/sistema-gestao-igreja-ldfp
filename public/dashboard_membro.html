@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f766e">
+    <title>LDFP - App do Membro</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .app-shell {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 20px 14px 28px;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #115e59, #0f766e 60%, #0891b2);
+            color: #ecfeff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.2);
+            margin-bottom: 16px;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .hero p {
+            margin: 8px 0 0;
+            font-size: 0.92rem;
+            color: #ccfbf1;
+        }
+
+        .chips {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip {
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .stat {
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+        }
+
+        .stat small {
+            color: #64748b;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .stat strong {
+            display: block;
+            margin-top: 6px;
+            font-size: 1.4rem;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .action {
+            border-radius: 10px;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            text-decoration: none;
+            color: #0f172a;
+            font-weight: 700;
+            text-align: center;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .action i {
+            font-size: 1.2em;
+            color: #0f766e;
+        }
+
+        .panels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .panel {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+        }
+
+        .panel h2 {
+            margin: 0 0 12px;
+            font-size: 1.1rem;
+            color: #0f172a;
+        }
+
+        .panel .item {
+            padding: 8px 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .panel .item:last-child {
+            border-bottom: none;
+        }
+
+        .panel .item strong {
+            display: block;
+            font-size: 0.95rem;
+            color: #0f172a;
+        }
+
+        .panel .item .muted {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .panel .muted {
+            font-size: 0.9rem;
+            color: #64748b;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .app-shell {
+                padding: 15px 10px 20px;
+            }
+            .stats, .quick-actions, .panels {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+            .action {
+                font-size: 12px;
+                padding: 8px;
+            }
+            .action i {
+                font-size: 1em;
+            }
+        }
+        @media (max-width: 480px) {
+            .stats, .quick-actions, .panels {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page"
+      data-shell-active="dashboard_membro.html"
+      data-shell-title="App do Membro"
+      data-shell-breadcrumb="LDFP / App / Membro"
+      data-shell-chip="Módulo de Engajamento"
+      data-shell-role="Membro">
+
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
+            <div class="enterprise-page-hero">
+                <div>
+                    <h2 id="userLabel">Carregando informações...</h2>
+                    <p>Bem-vindo(a) ao seu painel personalizado.</p>
+                </div>
+                <div class="enterprise-page-badge" id="roleChips">
+                    <span class="chip">Carregando...</span>
+                </div>
+            </div>
+
+            <section class="kpi-grid stats">
+                <div class="kpi-card stat">
+                    <small>Templates Ativos</small>
+                    <strong id="statTemplates">0</strong>
+                </div>
+                <div class="kpi-card stat">
+                    <small>Envios Hoje</small>
+                    <strong id="statEnviosHoje">0</strong>
+                </div>
+                <div class="kpi-card stat">
+                    <small>Check-ins Hoje</small>
+                    <strong id="statCheckinsHoje">0</strong>
+                </div>
+                <div class="kpi-card stat">
+                    <small>Pagamentos Pendentes</small>
+                    <strong id="statPagamentosPendentes">0</strong>
+                </div>
+            </section>
+
+            <section class="quick-actions" id="quickActions">
+                <!-- Ações rápidas renderizadas via JS -->
+            </section>
+
+            <div class="panels">
+                <div class="panel">
+                    <h2>Envios Recentes (WhatsApp)</h2>
+                    <div id="listWhatsapp"></div>
+                </div>
+                <div class="panel">
+                    <h2>Check-ins Recentes (Portaria)</h2>
+                    <div id="listPortaria"></div>
+                </div>
+                <div class="panel">
+                    <h2>Pagamentos Recentes</h2>
+                    <div id="listPayments"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        if (!requireAuthSession()) {
+            throw new Error('Sessao administrativa nao autorizada.');
+        }
+
+        const ROLE_ACTIONS = {
+            admin: [
+                { label: 'Gerenciar Membros', href: 'membros.html',         icon: 'fa-solid fa-users' },
+                { label: 'Configurações',      href: 'configuracoes.html',   icon: 'fa-solid fa-gear' },
+                { label: 'Tesouraria',         href: 'tesouraria_dizimos.html', icon: 'fa-solid fa-coins' },
+                { label: 'Dashboard',          href: 'dashboard.html',       icon: 'fa-regular fa-eye' }
+            ],
+            secretaria: [
+                { label: 'Dashboard',   href: 'dashboard.html',        icon: 'fa-regular fa-eye' },
+                { label: 'Membros',     href: 'membros.html',           icon: 'fa-solid fa-users' },
+                { label: 'Agenda',      href: 'agenda.html',            icon: 'fa-solid fa-calendar' },
+                { label: 'Portaria',    href: 'portaria.html',          icon: 'fa-solid fa-door-open' }
+            ],
+            pastor: [
+                { label: 'Orações',  href: 'oracoes.html',  icon: 'fa-solid fa-hands-praying' },
+                { label: 'Agenda',   href: 'agenda.html',   icon: 'fa-solid fa-calendar' },
+                { label: 'Membros',  href: 'membros.html',  icon: 'fa-solid fa-users' }
+            ],
+            oficial: [
+                { label: 'Portaria', href: 'portaria.html', icon: 'fa-solid fa-door-open' },
+                { label: 'Agenda',   href: 'agenda.html',   icon: 'fa-solid fa-calendar' },
+                { label: 'Orações',  href: 'oracoes.html',  icon: 'fa-solid fa-hands-praying' }
+            ],
+            financeiro: [
+                { label: 'Dízimos',    href: 'tesouraria_dizimos.html', icon: 'fa-solid fa-coins' },
+                { label: 'Caixa',      href: 'tesouraria_caixa.html',   icon: 'fa-solid fa-cash-register' },
+                { label: 'Bancos',     href: 'tesouraria_bancos.html',  icon: 'fa-solid fa-building-columns' },
+                { label: 'Dashboard',  href: 'dashboard.html',           icon: 'fa-regular fa-eye' }
+            ],
+            membro: [
+                { label: 'App do Membro', href: 'app_membro_v2.html', icon: 'fa-solid fa-mobile-screen-button' }
+            ],
+            visitante: [
+                { label: 'App do Membro', href: 'app_login.html', icon: 'fa-solid fa-mobile-screen-button' }
+            ]
+        };
+
+        function renderStats(stats) {
+            document.getElementById('statTemplates').textContent         = stats.templatesAtivos      ?? '0';
+            document.getElementById('statEnviosHoje').textContent        = stats.enviosHoje           ?? '0';
+            document.getElementById('statCheckinsHoje').textContent      = stats.checkinsHoje         ?? '0';
+            document.getElementById('statPagamentosPendentes').textContent = stats.pagamentosPendentes ?? '0';
+        }
+
+        function renderActions(role) {
+            const node    = document.getElementById('quickActions');
+            const actions = ROLE_ACTIONS[role] || ROLE_ACTIONS.membro;
+            node.innerHTML = actions.map(item =>
+                `<a class="action" href="${item.href}"><i class="${item.icon || 'fa-solid fa-arrow-right'}"></i>${item.label}</a>`
+            ).join('');
+        }
+
+        function renderList(nodeId, items, renderer, emptyText) {
+            const node = document.getElementById(nodeId);
+            if (!items || !items.length) {
+                node.innerHTML = `<div class="muted">${emptyText}</div>`;
+                return;
+            }
+            node.innerHTML = items.map(renderer).join('');
+        }
+
+        async function loadContext() {
+            try {
+                const [contextResp, permsResp] = await Promise.all([
+                    fetch('/app-membro/context'),
+                    fetch('/app-membro/permissions')
+                ]);
+
+                if (!contextResp.ok) throw new Error('Não foi possível carregar o contexto do app membro.');
+
+                const data     = await contextResp.json();
+                const permsData = permsResp.ok ? await permsResp.json() : { features: [] };
+
+                document.getElementById('userLabel').textContent = `${data.user.nome} • Perfil: ${data.user.role}`;
+                document.getElementById('roleChips').innerHTML = `
+                    <span class="chip"><i class="fa-solid fa-church"></i> Igreja ${data.user.igrejaId}</span>
+                    <span class="chip">${data.user.role}</span>
+                    <span class="chip">${data.user.email}</span>
+                `;
+
+                renderStats(data.quickStats || {});
+                renderActions(data.user.role);
+
+                renderList(
+                    'listWhatsapp',
+                    data.recent.whatsapp || [],
+                    item => `<div class="item"><strong>${item.gatilho}</strong><br><span class="muted">${item.destino} • ${item.status}</span></div>`,
+                    'Nenhum envio recente.'
+                );
+                renderList(
+                    'listPortaria',
+                    data.recent.checkins || [],
+                    item => `<div class="item"><strong>${item.nome_visitante}</strong><br><span class="muted">${item.evento || 'Sem evento'} • ${item.status}</span></div>`,
+                    'Nenhum check-in recente.'
+                );
+                renderList(
+                    'listPayments',
+                    data.recent.payments || [],
+                    item => `<div class="item"><strong>${item.descricao}</strong><br><span class="muted">R$ ${Number(item.valor).toFixed(2)} • ${item.status}</span></div>`,
+                    'Nenhum pagamento recente.'
+                );
+            } catch (error) {
+                document.getElementById('userLabel').textContent = `Erro: ${error.message}`;
+                console.error('Erro ao carregar contexto do App Membro:', error);
+            }
+        }
+
+        loadContext();
+    </script>
+</body>
+</html>

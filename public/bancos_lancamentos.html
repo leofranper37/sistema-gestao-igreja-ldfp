@@ -1,0 +1,545 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Lançamentos Bancários</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .bl-wrap { padding: 24px 28px 48px; }
+
+        .bl-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #0b3340 50%, #115e59 100%);
+            border-radius: 16px;
+            color: #e2e8f0;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 16px 34px rgba(15, 23, 42, .2);
+        }
+        .bl-hero h2 { margin: 0 0 6px; font-size: 22px; }
+        .bl-hero p { margin: 0; color: #bfdbfe; font-size: 13px; }
+
+        /* ── Escolha do banco ── */
+        .bl-section-header {
+            background: linear-gradient(135deg, #0ea5e9, #0f766e);
+            border-radius: 12px 12px 0 0;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .bl-section-header h3 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #ecfeff;
+        }
+        .bl-search-row {
+            display: flex;
+            gap: 8px;
+        }
+        .bl-search-row input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13.5px;
+        }
+        .bl-search-row button {
+            background: #0f172a;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .bl-table-wrap {
+            background: #fff;
+            border: 1px solid #dbe6f3;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            overflow-x: auto;
+            margin-bottom: 32px;
+            box-shadow: 0 10px 24px rgba(15,23,42,.08);
+        }
+        .bl-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+        .bl-table thead tr { background: #f8f9fa; }
+        .bl-table th {
+            padding: 11px 14px;
+            text-align: left;
+            color: #555;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .bl-table td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; }
+        .bl-table tbody tr { cursor: pointer; transition: background .15s; }
+        .bl-table tbody tr:hover { background: #f0fdf4; }
+        .bl-table tbody tr.selected { background: #d1fae5; }
+        .bl-table .badge-tipo {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .bl-table .badge-corrente    { background: #dbeafe; color: #1d4ed8; }
+        .bl-table .badge-poupanca    { background: #dcfce7; color: #15803d; }
+        .bl-table .badge-caixa_interno { background: #fef9c3; color: #a16207; }
+        .bl-table .badge-investimento { background: #f3e8ff; color: #7e22ce; }
+        .bl-table .badge-outro       { background: #f1f5f9; color: #475569; }
+
+        /* ── Painel de lançamentos ── */
+        #painelLancamentos { display: none; }
+        .bl-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .bl-panel-title { margin: 0; font-size: 17px; color: #0f172a; }
+        .bl-panel-saldo {
+            font-size: 15px;
+            font-weight: 700;
+        }
+        .bl-panel-saldo.positivo { color: #15803d; }
+        .bl-panel-saldo.negativo { color: #b91c1c; }
+
+        .bl-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .bl-card {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid #dbe6f3;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 8px 20px rgba(15,23,42,.08);
+        }
+        .bl-card h4 { margin: 0 0 14px; font-size: 14px; color: #374151; }
+        .bl-field { margin-bottom: 10px; }
+        .bl-field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #6b7280;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .bl-field input, .bl-field select {
+            width: 100%;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 13.5px;
+            box-sizing: border-box;
+        }
+        .bl-btn-primary {
+            background: #0f766e;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 4px;
+        }
+        .bl-btn-primary:hover { background: #0d6460; }
+        .bl-msg { font-size: 12.5px; margin-top: 8px; min-height: 18px; }
+        .bl-msg.ok { color: #065f46; }
+        .bl-msg.error { color: #b91c1c; }
+
+        .bl-historico { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; box-shadow: 0 4px 14px rgba(15,23,42,.07); }
+        .bl-historico { border-color: #dbe6f3; box-shadow: 0 8px 20px rgba(15,23,42,.08); }
+        .bl-historico-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+        .bl-historico-top h4 { margin: 0; font-size: 14px; }
+        .bl-historico-top input { border: 1px solid #dbe3ef; border-radius: 8px; padding: 8px 12px; font-size: 13px; width: 220px; }
+        .bl-hist-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .bl-hist-table th { padding: 9px 10px; background: #f8fafc; color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .bl-hist-table td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; }
+        .bl-hist-table .tag-entrada { color: #15803d; font-weight: 700; }
+        .bl-hist-table .tag-saida   { color: #b91c1c; font-weight: 700; }
+        .bl-hist-table .btn-del {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: none;
+            border-radius: 6px;
+            padding: 4px 9px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .bl-vazio { text-align: center; padding: 36px; color: #9ca3af; font-size: 13px; }
+
+        @media (max-width: 860px) { .bl-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page"
+      data-shell-title="Lançamentos Bancários"
+      data-shell-breadcrumb="LDFP / Tesouraria / Bancos / Lançamentos Bancários"
+      data-shell-active="bancos_lancamentos.html"
+      data-shell-chip="Tesouraria">
+<main class="main-content enterprise-main">
+<div class="bl-wrap">
+
+    <section class="bl-hero">
+        <h2><i class="fa-solid fa-money-bill-transfer"></i> Lancamentos Bancarios</h2>
+        <p>Controle profissional de entradas e saidas com resumo em tempo real no padrao visual LDFP.</p>
+    </section>
+
+    <!-- ── Escolha o Banco ──────────────────────────────────────────── -->
+    <div id="tela-escolha">
+        <div class="pagina-topo" style="margin-bottom:20px;">
+            <div>
+                <div class="breadcrumb">LDFP <span>/</span> Tesouraria <span>/</span> Bancos <span>/</span> Lançamentos Bancários</div>
+                <h1>Escolha o Banco</h1>
+            </div>
+            <div style="align-self:center;">
+                <button class="btn-primario" onclick="location.href='banco.html'" style="white-space:nowrap;">
+                    <i class="fa-solid fa-plus"></i> Nova Conta
+                </button>
+            </div>
+        </div>
+
+        <div class="bl-section-header">
+            <h3><i class="fa-solid fa-building-columns"></i> Bancos</h3>
+            <div class="bl-search-row">
+                <input id="searchBanco" type="text" placeholder="Pesquisar banco...">
+                <button id="btnBuscar"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </div>
+
+        <div class="bl-table-wrap">
+            <table class="bl-table">
+                <thead>
+                    <tr>
+                        <th>Banco</th>
+                        <th>Tipo</th>
+                        <th>Agência / Conta</th>
+                        <th style="text-align:right;">Saldo Inicial</th>
+                    </tr>
+                </thead>
+                <tbody id="tbBancos">
+                    <tr><td colspan="4" class="bl-vazio">Carregando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Painel de Lançamentos ──────────────────────────────────────── -->
+    <div id="painelLancamentos">
+        <div class="bl-panel-header">
+            <div style="display:flex;align-items:center;gap:14px;">
+                <button onclick="voltarParaLista()" title="Voltar" style="background:none;border:none;cursor:pointer;font-size:1.25rem;color:#0f766e;">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <h2 class="bl-panel-title" id="painelNomeBanco">—</h2>
+            </div>
+            <span class="bl-panel-saldo positivo" id="painelSaldo">R$ 0,00</span>
+        </div>
+
+        <div class="bl-grid">
+            <!-- Novo lançamento -->
+            <div class="bl-card">
+                <h4><i class="fa-solid fa-pen-to-square"></i> Novo Lançamento</h4>
+                <div class="bl-field">
+                    <label>Data</label>
+                    <input type="date" id="lancData">
+                </div>
+                <div class="bl-field">
+                    <label>Descrição *</label>
+                    <input type="text" id="lancDescricao" placeholder="Ex: Depósito oferta">
+                </div>
+                <div class="bl-field">
+                    <label>Valor (R$) *</label>
+                    <input type="text" id="lancValor" placeholder="0,00">
+                </div>
+                <div class="bl-field">
+                    <label>Tipo *</label>
+                    <select id="lancTipo">
+                        <option value="entrada">🟢 Crédito (Entrada)</option>
+                        <option value="saida">🔴 Débito (Saída)</option>
+                    </select>
+                </div>
+                <button class="bl-btn-primary" id="btnSalvarLanc">
+                    <i class="fa-solid fa-floppy-disk"></i> Registrar Lançamento
+                </button>
+                <div class="bl-msg" id="msgLanc"></div>
+            </div>
+
+            <!-- Resumo -->
+            <div class="bl-card" style="display:flex;flex-direction:column;gap:10px;">
+                <h4><i class="fa-solid fa-chart-pie"></i> Resumo da Conta</h4>
+                <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+                    <span style="color:#6b7280;font-size:13px;">Saldo Inicial</span>
+                    <strong id="rSaldoInicial">R$ 0,00</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+                    <span style="color:#15803d;font-size:13px;">Total Entradas</span>
+                    <strong id="rEntradas" style="color:#15803d;">R$ 0,00</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+                    <span style="color:#b91c1c;font-size:13px;">Total Saídas</span>
+                    <strong id="rSaidas" style="color:#b91c1c;">R$ 0,00</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:14px 0;">
+                    <span style="font-weight:700;font-size:14px;">Saldo Atual</span>
+                    <strong id="rSaldoAtual" style="font-size:16px;">R$ 0,00</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Histórico -->
+        <div class="bl-historico">
+            <div class="bl-historico-top">
+                <h4><i class="fa-solid fa-list"></i> Histórico de Lançamentos</h4>
+                <input type="text" id="filtroHistorico" placeholder="Filtrar descrição...">
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="bl-hist-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Tipo</th>
+                            <th style="text-align:right;">Valor</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbHistorico">
+                        <tr><td colspan="5" class="bl-vazio">Nenhum lançamento.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+    requireAuthSession();
+
+    const tipoLabels = {
+        corrente: 'Corrente', poupanca: 'Poupança',
+        caixa_interno: 'Caixa', investimento: 'Investimento', outro: 'Outro'
+    };
+
+    function fmt(v) {
+        return 'R$ ' + Number(v).toLocaleString('pt-br', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function fmtData(d) {
+        if (!d) return '-';
+        return d.substring(0, 10).split('-').reverse().join('/');
+    }
+
+    // ── Lista de bancos ──────────────────────────────────────────────────────
+    let _bancos = [];
+
+    async function carregarBancos(filtro = '') {
+        const tb = document.getElementById('tbBancos');
+        tb.innerHTML = `<tr><td colspan="4" class="bl-vazio">Carregando...</td></tr>`;
+        try {
+            const r = await fetch('/banco/contas');
+            const dados = await r.json();
+            _bancos = dados;
+
+            const lista = filtro
+                ? dados.filter(b => (b.nome + ' ' + (b.banco || '')).toLowerCase().includes(filtro.toLowerCase()))
+                : dados;
+
+            if (!lista.length) {
+                tb.innerHTML = `<tr><td colspan="4" class="bl-vazio">Nenhum resultado foi encontrado.</td></tr>`;
+                return;
+            }
+
+            tb.innerHTML = lista.map(b => `
+                <tr data-id="${b.id}" data-nome="${b.nome}" data-saldo="${b.saldo_inicial}">
+                    <td>
+                        <strong>${b.nome}</strong>
+                        ${b.banco ? `<br><small style="color:#9ca3af;">${b.banco}</small>` : ''}
+                    </td>
+                    <td><span class="badge-tipo badge-${b.tipo}">${tipoLabels[b.tipo] || b.tipo}</span></td>
+                    <td style="color:#6b7280;font-size:12px;">
+                        ${b.agencia ? 'Ag ' + b.agencia : '-'}
+                        ${b.conta   ? ' • C ' + b.conta : ''}
+                    </td>
+                    <td style="text-align:right;font-weight:700;">${fmt(b.saldo_inicial)}</td>
+                </tr>
+            `).join('');
+
+            tb.querySelectorAll('tr[data-id]').forEach(row => {
+                row.addEventListener('click', () => abrirConta(
+                    Number(row.dataset.id),
+                    row.dataset.nome,
+                    Number(row.dataset.saldo)
+                ));
+            });
+        } catch {
+            tb.innerHTML = `<tr><td colspan="4" class="bl-vazio">Erro ao carregar bancos.</td></tr>`;
+        }
+    }
+
+    document.getElementById('btnBuscar').addEventListener('click', () => {
+        carregarBancos(document.getElementById('searchBanco').value.trim());
+    });
+    document.getElementById('searchBanco').addEventListener('keydown', e => {
+        if (e.key === 'Enter') carregarBancos(e.target.value.trim());
+    });
+
+    // ── Painel de lançamentos ────────────────────────────────────────────────
+    let _contaAtiva = null;
+    let _lancamentos = [];
+
+    async function abrirConta(id, nome, saldoInicial) {
+        _contaAtiva = { id, nome, saldoInicial };
+        document.getElementById('painelNomeBanco').textContent = nome;
+        document.getElementById('rSaldoInicial').textContent = fmt(saldoInicial);
+
+        // data padrão hoje
+        const hoje = new Date().toISOString().substring(0, 10);
+        document.getElementById('lancData').value = hoje;
+
+        document.getElementById('tela-escolha').style.display = 'none';
+        document.getElementById('painelLancamentos').style.display = 'block';
+
+        await carregarLancamentos();
+    }
+
+    function voltarParaLista() {
+        _contaAtiva = null;
+        document.getElementById('painelLancamentos').style.display = 'none';
+        document.getElementById('tela-escolha').style.display = 'block';
+        document.getElementById('msgLanc').textContent = '';
+    }
+
+    async function carregarLancamentos() {
+        if (!_contaAtiva) return;
+        try {
+            const r = await fetch(`/banco/contas/${_contaAtiva.id}/lancamentos`);
+            const data = await r.json();
+            _lancamentos = data.lancamentos || [];
+
+            // Atualizar saldo painel
+            const saldoAtual = Number(data.saldo);
+            const saldoEl = document.getElementById('painelSaldo');
+            saldoEl.textContent = fmt(saldoAtual);
+            saldoEl.className = 'bl-panel-saldo ' + (saldoAtual >= 0 ? 'positivo' : 'negativo');
+            document.getElementById('rSaldoAtual').textContent = fmt(saldoAtual);
+            document.getElementById('rSaldoAtual').style.color = saldoAtual >= 0 ? '#15803d' : '#b91c1c';
+
+            // Totais
+            const entradas = _lancamentos.filter(l => l.tipo === 'entrada').reduce((s, l) => s + Number(l.valor), 0);
+            const saidas   = _lancamentos.filter(l => l.tipo === 'saida').reduce((s, l) => s + Number(l.valor), 0);
+            document.getElementById('rEntradas').textContent = fmt(entradas);
+            document.getElementById('rSaidas').textContent   = fmt(saidas);
+
+            renderHistorico();
+        } catch {
+            document.getElementById('tbHistorico').innerHTML = `<tr><td colspan="5" class="bl-vazio">Erro ao carregar lançamentos.</td></tr>`;
+        }
+    }
+
+    function renderHistorico(filtro = '') {
+        const tb = document.getElementById('tbHistorico');
+        const lista = filtro
+            ? _lancamentos.filter(l => l.descricao.toLowerCase().includes(filtro.toLowerCase()))
+            : _lancamentos;
+
+        if (!lista.length) {
+            tb.innerHTML = `<tr><td colspan="5" class="bl-vazio">Nenhum lançamento encontrado.</td></tr>`;
+            return;
+        }
+
+        tb.innerHTML = lista.map(l => `
+            <tr>
+                <td>${fmtData(l.data_lancamento)}</td>
+                <td>${l.descricao}</td>
+                <td><span class="tag-${l.tipo}">${l.tipo === 'entrada' ? '🟢 Entrada' : '🔴 Saída'}</span></td>
+                <td style="text-align:right;font-weight:700;">${fmt(l.valor)}</td>
+                <td>
+                    <button class="btn-del" onclick="excluirLancamento(${l.id})">×</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    document.getElementById('filtroHistorico').addEventListener('input', e => {
+        renderHistorico(e.target.value.trim());
+    });
+
+    // ── Salvar lançamento ────────────────────────────────────────────────────
+    document.getElementById('btnSalvarLanc').addEventListener('click', async () => {
+        const msgEl = document.getElementById('msgLanc');
+        msgEl.textContent = '';
+
+        const descricao = document.getElementById('lancDescricao').value.trim();
+        const valorRaw  = document.getElementById('lancValor').value.trim().replace(',', '.');
+        const tipo      = document.getElementById('lancTipo').value;
+        const data      = document.getElementById('lancData').value;
+
+        if (!descricao || !valorRaw || !data) {
+            msgEl.className = 'bl-msg error';
+            msgEl.textContent = 'Preencha descrição, valor e data.';
+            return;
+        }
+        const valor = parseFloat(valorRaw);
+        if (isNaN(valor) || valor <= 0) {
+            msgEl.className = 'bl-msg error';
+            msgEl.textContent = 'Valor inválido.';
+            return;
+        }
+
+        try {
+            const r = await fetch(`/banco/contas/${_contaAtiva.id}/lancamentos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ descricao, tipo, valor, dataLancamento: data })
+            });
+            const d = await r.json();
+            if (!r.ok) throw new Error(d.error || d.message || 'Erro');
+
+            msgEl.className = 'bl-msg ok';
+            msgEl.textContent = 'Lançamento registrado!';
+            document.getElementById('lancDescricao').value = '';
+            document.getElementById('lancValor').value = '';
+            await carregarLancamentos();
+        } catch (err) {
+            msgEl.className = 'bl-msg error';
+            msgEl.textContent = err.message;
+        }
+    });
+
+    // ── Excluir lançamento ───────────────────────────────────────────────────
+    window.excluirLancamento = async function(id) {
+        if (!confirm('Remover este lançamento?')) return;
+        try {
+            const r = await fetch(`/banco/lancamentos/${id}`, { method: 'DELETE' });
+            if (!r.ok) throw new Error('Erro ao remover.');
+            await carregarLancamentos();
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    // ── Init ─────────────────────────────────────────────────────────────────
+    carregarBancos();
+</script>
+</body>
+</html>

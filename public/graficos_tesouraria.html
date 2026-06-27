@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Graficos Tesouraria</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); margin-bottom:16px; }
+        .kpi { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+        .item { border:1px solid #e2e8f0; border-radius:10px; padding:14px; background:#f8fafc; }
+        .item small { color:#64748b; }
+        .item strong { display:block; margin-top:8px; font-size:22px; color:#0f172a; }
+        @media (max-width:900px) { .kpi { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="graficos_tesouraria.html" data-shell-title="Graficos Tesouraria" data-shell-breadcrumb="LDFP / Graficos / Tesouraria" data-shell-chip="Indicadores" data-shell-role="Tesouraria">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Graficos da Tesouraria</h2>
+                <p>Resumo de desempenho financeiro e movimentacoes da tesouraria.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-chart-line"></i> Financeiro</div>
+        </div>
+
+        <section class="card">
+            <div class="kpi">
+                <div class="item"><small>Entradas no mes</small><strong>R$ 42.380,00</strong></div>
+                <div class="item"><small>Saidas no mes</small><strong>R$ 17.940,00</strong></div>
+                <div class="item"><small>Saldo projetado</small><strong>R$ 24.440,00</strong></div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>requireAuthSession();</script>
+</body>
+</html>

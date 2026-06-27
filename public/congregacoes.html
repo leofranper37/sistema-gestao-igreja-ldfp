@@ -1,0 +1,749 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Multi-Congregação</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap { padding: 24px 30px 40px; }
+
+        /* KPIs */
+        .kpi-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+        .kpi-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 18px 20px;
+            box-shadow: 0 4px 14px rgba(15,23,42,.05);
+        }
+        .kpi-card .kpi-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 700;
+            letter-spacing: .5px;
+            margin-bottom: 6px;
+        }
+        .kpi-card .kpi-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1;
+        }
+        .kpi-card .kpi-sub {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        .kpi-card.accent { border-top: 3px solid #0ea5e9; }
+        .kpi-card.green  { border-top: 3px solid #10b981; }
+        .kpi-card.warn   { border-top: 3px solid #f59e0b; }
+
+        /* Progress bar */
+        .plan-bar-wrap {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 14px rgba(15,23,42,.05);
+        }
+        .plan-bar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .plan-bar-title { font-weight: 700; color: #0f172a; font-size: 13px; }
+        .plan-badge {
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        .plan-bar-track {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .plan-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+            border-radius: 99px;
+            transition: width .4s;
+        }
+        .plan-bar-fill.at-limit { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+        .plan-bar-legend {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Alert */
+        .limit-alert {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #92400e;
+            margin-bottom: 18px;
+            display: none;
+        }
+        .limit-alert.show { display: flex; gap: 10px; align-items: flex-start; }
+        .limit-alert i { margin-top: 2px; flex-shrink: 0; }
+
+        /* Page header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .title-area h2 { margin: 0; color: #0f172a; }
+        .title-area small { color: #64748b; }
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* Search */
+        .search-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .search-row input {
+            flex: 1;
+            min-width: 200px;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 13px;
+            outline: none;
+        }
+        .search-row input:focus { border-color: #0ea5e9; }
+
+        /* Cards grid */
+        .filiais-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .filial-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 14px rgba(15,23,42,.05);
+            transition: box-shadow .2s, transform .2s;
+        }
+        .filial-card:hover { box-shadow: 0 8px 24px rgba(15,23,42,.1); transform: translateY(-2px); }
+        .filial-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+        .filial-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .filial-card-actions { display: flex; gap: 6px; }
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-edit  { background: #eff6ff; color: #2563eb; }
+        .btn-del   { background: #fee2e2; color: #b91c1c; }
+        .btn-edit:hover { background: #dbeafe; }
+        .btn-del:hover  { background: #fecaca; }
+
+        .filial-nome {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0 0 2px;
+            word-break: break-word;
+        }
+        .filial-sede {
+            font-size: 12px;
+            color: #0ea5e9;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .filial-detail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #475569;
+            margin-bottom: 5px;
+        }
+        .filial-detail i { width: 14px; color: #94a3b8; }
+
+        /* Empty state */
+        .empty-state {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 50px 20px;
+            color: #64748b;
+        }
+        .empty-state i { font-size: 48px; color: #cbd5e1; margin-bottom: 12px; display: block; }
+        .empty-state p { font-size: 15px; margin-bottom: 16px; }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,.45);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(15,23,42,.25);
+        }
+        .modal-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .modal-head h3 { margin: 0; font-size: 16px; color: #0f172a; }
+        .modal-close {
+            width: 30px; height: 30px;
+            border: none; background: #f1f5f9;
+            border-radius: 7px; cursor: pointer;
+            font-size: 14px; color: #64748b;
+        }
+        .modal-body { padding: 20px 24px; }
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        /* Form fields in modal */
+        .fg { display: grid; gap: 12px; margin-bottom: 14px; }
+        .fg-2 { grid-template-columns: 1fr 1fr; }
+        .f { display: flex; flex-direction: column; gap: 5px; }
+        .f label { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; }
+        .f input, .f select, .f textarea {
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 9px 10px;
+            font-size: 13px;
+            outline: none;
+        }
+        .f input:focus, .f select:focus, .f textarea:focus { border-color: #0ea5e9; }
+        .sect-sep {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            font-weight: 700;
+            letter-spacing: .5px;
+            margin: 16px 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sect-sep::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .form-status {
+            font-size: 13px;
+            padding: 8px 0;
+            min-height: 20px;
+        }
+        .form-status.ok  { color: #047857; }
+        .form-status.err { color: #b91c1c; }
+
+        /* Skeleton loader */
+        .skel { background: #f1f5f9; border-radius: 14px; animation: pulse 1.4s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+        @media (max-width: 640px) {
+            .page-wrap { padding: 16px; }
+            .fg-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Multi-Congregação" data-shell-breadcrumb="LDFP / Secretaria / Multi-Congregação" data-shell-active="congregacoes.html" data-shell-chip="Painel de Filiais" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+
+            <!-- Header -->
+            <div class="page-header">
+                <div class="title-area">
+                    <h2><i class="fa-solid fa-church" style="color:#0ea5e9;margin-right:8px;"></i>Multi-Congregação</h2>
+                    <small>Painel de gestão das filiais e unidades da sua igreja</small>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-primary" id="btnNova" type="button">
+                        <i class="fa-solid fa-plus"></i> Nova Filial
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-bar">
+                <div class="kpi-card accent">
+                    <div class="kpi-label">Filiais Cadastradas</div>
+                    <div class="kpi-value" id="kpiTotal">—</div>
+                    <div class="kpi-sub">unidades ativas</div>
+                </div>
+                <div class="kpi-card green">
+                    <div class="kpi-label">Limite do Plano</div>
+                    <div class="kpi-value" id="kpiLimite">—</div>
+                    <div class="kpi-sub" id="kpiPlanNome">plano atual</div>
+                </div>
+                <div class="kpi-card warn">
+                    <div class="kpi-label">Slots Disponíveis</div>
+                    <div class="kpi-value" id="kpiDisponivel">—</div>
+                    <div class="kpi-sub">para adicionar mais</div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="plan-bar-wrap">
+                <div class="plan-bar-header">
+                    <span class="plan-bar-title">Uso do Plano</span>
+                    <span class="plan-badge" id="planBadge">…</span>
+                </div>
+                <div class="plan-bar-track">
+                    <div class="plan-bar-fill" id="planBarFill" style="width:0%"></div>
+                </div>
+                <div class="plan-bar-legend" id="planBarLegend">Carregando…</div>
+            </div>
+
+            <!-- Limit Alert -->
+            <div class="limit-alert" id="limitAlert">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span id="limitAlertMsg"></span>
+            </div>
+
+            <!-- Search -->
+            <div class="search-row">
+                <input type="search" id="searchInput" placeholder="Buscar por nome, cidade ou responsável…">
+                <button class="btn-secondary" type="button" id="btnBuscar"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+
+            <!-- Cards Grid -->
+            <div class="filiais-grid" id="filiaisGrid">
+                <!-- filled by JS -->
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ============ MODAL CRUD ============ -->
+    <div class="modal-backdrop" id="modalBackdrop">
+        <div class="modal">
+            <div class="modal-head">
+                <h3 id="modalTitle">Nova Filial</h3>
+                <button class="modal-close" id="modalClose" type="button"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="sect-sep"><i class="fa-solid fa-church"></i> Identificação</div>
+                <div class="fg fg-2">
+                    <div class="f" style="grid-column:1/-1;">
+                        <label>Nome da Congregação / Filial *</label>
+                        <input type="text" id="fNome" placeholder="Ex: Filial Jardim Norte">
+                    </div>
+                    <div class="f">
+                        <label>Tipo / Sede</label>
+                        <input type="text" id="fSede" placeholder="Ex: Congregação, Célula…">
+                    </div>
+                    <div class="f">
+                        <label>Pastor / Responsável</label>
+                        <input type="text" id="fResponsavel" placeholder="Nome do responsável">
+                    </div>
+                    <div class="f">
+                        <label>Cargo do Responsável</label>
+                        <input type="text" id="fCargo" placeholder="Ex: Pastor, Líder…">
+                    </div>
+                </div>
+
+                <div class="sect-sep"><i class="fa-solid fa-map-pin"></i> Endereço</div>
+                <div class="fg fg-2">
+                    <div class="f" style="grid-column:1/-1;">
+                        <label>Endereço</label>
+                        <input type="text" id="fEndereco" placeholder="Rua, Avenida…">
+                    </div>
+                    <div class="f">
+                        <label>Bairro</label>
+                        <input type="text" id="fBairro" placeholder="Bairro">
+                    </div>
+                    <div class="f">
+                        <label>Cidade</label>
+                        <input type="text" id="fCidade" placeholder="Cidade">
+                    </div>
+                    <div class="f">
+                        <label>Estado (UF)</label>
+                        <input type="text" id="fEstado" placeholder="Ex: SP">
+                    </div>
+                    <div class="f">
+                        <label>CEP</label>
+                        <input type="text" id="fCep" placeholder="00000-000">
+                    </div>
+                </div>
+
+                <div class="sect-sep"><i class="fa-solid fa-phone"></i> Contato</div>
+                <div class="fg fg-2">
+                    <div class="f">
+                        <label>Telefone</label>
+                        <input type="text" id="fTelefone" placeholder="(00) 0000-0000">
+                    </div>
+                    <div class="f">
+                        <label>Celular / WhatsApp</label>
+                        <input type="text" id="fCelular" placeholder="(00) 00000-0000">
+                    </div>
+                    <div class="f" style="grid-column:1/-1;">
+                        <label>E-mail</label>
+                        <input type="email" id="fEmail" placeholder="email@filial.com">
+                    </div>
+                </div>
+
+                <div class="form-status" id="formStatus"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="modalCancel" type="button">Cancelar</button>
+                <button class="btn-primary" id="modalSave" type="button">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        /* ─── State ─────────────────────────────────────────── */
+        let allFiliais = [];
+        let filtered   = [];
+        let editingId   = null;
+
+        /* ─── DOM refs ───────────────────────────────────────── */
+        const grid          = document.getElementById('filiaisGrid');
+        const searchInput   = document.getElementById('searchInput');
+        const btnNova       = document.getElementById('btnNova');
+        const btnBuscar     = document.getElementById('btnBuscar');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const modalTitle    = document.getElementById('modalTitle');
+        const modalSave     = document.getElementById('modalSave');
+        const modalCancel   = document.getElementById('modalCancel');
+        const modalClose    = document.getElementById('modalClose');
+        const formStatus    = document.getElementById('formStatus');
+        const limitAlert    = document.getElementById('limitAlert');
+        const limitAlertMsg = document.getElementById('limitAlertMsg');
+
+        /* ─── Helpers ────────────────────────────────────────── */
+        function setStatus(msg, type) {
+            formStatus.textContent = msg;
+            formStatus.className = 'form-status ' + (type || '');
+        }
+
+        function escHtml(str) {
+            return String(str || '')
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function clearModal() {
+            ['fNome','fSede','fResponsavel','fCargo','fEndereco','fBairro',
+             'fCidade','fEstado','fCep','fTelefone','fCelular','fEmail']
+                .forEach(id => document.getElementById(id).value = '');
+            setStatus('');
+            editingId = null;
+        }
+
+        function openModal(filial) {
+            clearModal();
+            if (filial) {
+                editingId = filial.id;
+                modalTitle.textContent = 'Editar Filial';
+                document.getElementById('fNome').value        = filial.nome        || '';
+                document.getElementById('fSede').value        = filial.sede        || '';
+                document.getElementById('fResponsavel').value = filial.responsavel || '';
+                document.getElementById('fCargo').value       = filial.cargo       || '';
+                document.getElementById('fEndereco').value    = filial.endereco    || '';
+                document.getElementById('fBairro').value      = filial.bairro      || '';
+                document.getElementById('fCidade').value      = filial.cidade      || '';
+                document.getElementById('fEstado').value      = filial.estado      || '';
+                document.getElementById('fCep').value         = filial.cep         || '';
+                document.getElementById('fTelefone').value    = filial.telefone    || '';
+                document.getElementById('fCelular').value     = filial.celular     || '';
+                document.getElementById('fEmail').value       = filial.email       || '';
+            } else {
+                modalTitle.textContent = 'Nova Filial';
+            }
+            modalBackdrop.classList.add('open');
+            document.getElementById('fNome').focus();
+        }
+
+        function closeModal() {
+            modalBackdrop.classList.remove('open');
+        }
+
+        /* ─── Render KPIs ────────────────────────────────────── */
+        function renderKPIs(total, limite, disponivel, plano) {
+            document.getElementById('kpiTotal').textContent      = total;
+            document.getElementById('kpiLimite').textContent     = limite > 0 ? limite : '∞';
+            document.getElementById('kpiDisponivel').textContent = disponivel !== null ? disponivel : '∞';
+            document.getElementById('kpiPlanNome').textContent   = 'plano ' + (plano || '—');
+
+            const badge = document.getElementById('planBadge');
+            badge.textContent = (plano || 'básico').charAt(0).toUpperCase() + (plano || '').slice(1);
+
+            const pct  = limite > 0 ? Math.min(100, Math.round((total / limite) * 100)) : 0;
+            const fill = document.getElementById('planBarFill');
+            fill.style.width = (limite > 0 ? pct : 0) + '%';
+            fill.classList.toggle('at-limit', pct >= 100);
+
+            const legend = document.getElementById('planBarLegend');
+            legend.textContent = limite > 0
+                ? `${total} de ${limite} filiais usadas (${pct}%)`
+                : `${total} filiais cadastradas — sem limite de plano`;
+
+            if (disponivel !== null && disponivel === 0) {
+                limitAlertMsg.textContent =
+                    `Você atingiu o limite de ${limite} filial(is) do seu plano. Para adicionar mais, faça upgrade.`;
+                limitAlert.classList.add('show');
+                btnNova.disabled = true;
+            } else if (disponivel !== null && disponivel <= 1) {
+                limitAlertMsg.textContent =
+                    `Atenção: você tem apenas ${disponivel} slot(s) disponível(is) no plano atual.`;
+                limitAlert.classList.add('show');
+                btnNova.disabled = false;
+            } else {
+                limitAlert.classList.remove('show');
+                btnNova.disabled = false;
+            }
+        }
+
+        /* ─── Render Cards ───────────────────────────────────── */
+        function renderCards(list) {
+            grid.innerHTML = '';
+            if (!list.length) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-church"></i>
+                        <p>Nenhuma filial cadastrada ainda.</p>
+                        <button class="btn-primary" onclick="openModal()">
+                            <i class="fa-solid fa-plus"></i> Cadastrar Primeira Filial
+                        </button>
+                    </div>`;
+                return;
+            }
+            list.forEach(f => {
+                const card = document.createElement('div');
+                card.className = 'filial-card';
+                card.innerHTML = `
+                    <div class="filial-card-header">
+                        <div class="filial-icon"><i class="fa-solid fa-church"></i></div>
+                        <div class="filial-card-actions">
+                            <button class="btn-icon btn-edit" title="Editar" onclick="editFilial(${f.id})">
+                                <i class="fa-solid fa-pencil"></i>
+                            </button>
+                            <button class="btn-icon btn-del" title="Excluir" onclick="deleteFilial(${f.id})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="filial-nome">${escHtml(f.nome)}</p>
+                    ${f.sede ? `<p class="filial-sede">${escHtml(f.sede)}</p>` : ''}
+                    ${f.responsavel ? `<div class="filial-detail"><i class="fa-solid fa-user-tie"></i><span>${escHtml(f.responsavel)}${f.cargo ? ' — ' + escHtml(f.cargo) : ''}</span></div>` : ''}
+                    ${f.cidade ? `<div class="filial-detail"><i class="fa-solid fa-location-dot"></i><span>${escHtml(f.cidade)}${f.estado ? '/' + escHtml(f.estado) : ''}</span></div>` : ''}
+                    ${f.telefone || f.celular ? `<div class="filial-detail"><i class="fa-solid fa-phone"></i><span>${escHtml(f.telefone || f.celular)}</span></div>` : ''}
+                    ${f.email ? `<div class="filial-detail"><i class="fa-solid fa-envelope"></i><span>${escHtml(f.email)}</span></div>` : ''}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        /* ─── API calls ──────────────────────────────────────── */
+        async function loadPainel() {
+            grid.innerHTML = `<div class="skel filial-card" style="height:160px;"></div>`.repeat(3);
+            try {
+                const resp = await fetch('/congregacoes/painel');
+                if (!resp.ok) throw new Error('Erro ao carregar painel');
+                const data = await resp.json();
+                allFiliais = data.filiais || [];
+                filtered   = [...allFiliais];
+                renderKPIs(data.total, data.limite, data.disponivel, data.plano);
+                renderCards(filtered);
+            } catch {
+                grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;color:#b91c1c;">
+                    <i class="fa-solid fa-circle-exclamation" style="color:#fca5a5;"></i>
+                    <p>Erro ao carregar filiais. Tente recarregar a página.</p>
+                </div>`;
+            }
+        }
+
+        function applySearch() {
+            const q = searchInput.value.trim().toLowerCase();
+            filtered = q
+                ? allFiliais.filter(f =>
+                    (f.nome||'').toLowerCase().includes(q) ||
+                    (f.cidade||'').toLowerCase().includes(q) ||
+                    (f.responsavel||'').toLowerCase().includes(q))
+                : [...allFiliais];
+            renderCards(filtered);
+        }
+
+        window.editFilial = function(id) {
+            const f = allFiliais.find(x => x.id === id);
+            if (f) openModal(f);
+        };
+
+        window.deleteFilial = async function(id) {
+            const f = allFiliais.find(x => x.id === id);
+            if (!confirm(`Deseja excluir a filial "${f?.nome || id}"? Esta ação não pode ser desfeita.`)) return;
+            try {
+                const resp = await fetch(`/outras-igrejas/${id}`, { method: 'DELETE' });
+                if (!resp.ok) {
+                    const d = await resp.json().catch(() => ({}));
+                    alert(d.message || 'Erro ao excluir.');
+                    return;
+                }
+                await loadPainel();
+            } catch {
+                alert('Erro de conexão ao excluir.');
+            }
+        };
+
+        modalSave.addEventListener('click', async () => {
+            const nome = document.getElementById('fNome').value.trim();
+            if (!nome) { setStatus('Informe o nome da filial.', 'err'); return; }
+
+            const payload = {
+                nome,
+                sede:        document.getElementById('fSede').value.trim()        || null,
+                responsavel: document.getElementById('fResponsavel').value.trim() || null,
+                cargo:       document.getElementById('fCargo').value.trim()       || null,
+                endereco:    document.getElementById('fEndereco').value.trim()    || null,
+                bairro:      document.getElementById('fBairro').value.trim()      || null,
+                cidade:      document.getElementById('fCidade').value.trim()      || null,
+                estado:      document.getElementById('fEstado').value.trim()      || null,
+                cep:         document.getElementById('fCep').value.trim()         || null,
+                telefone:    document.getElementById('fTelefone').value.trim()    || null,
+                celular:     document.getElementById('fCelular').value.trim()     || null,
+                email:       document.getElementById('fEmail').value.trim()       || null
+            };
+
+            const url    = editingId ? `/outras-igrejas/${editingId}` : '/outras-igrejas';
+            const method = editingId ? 'PUT' : 'POST';
+
+            modalSave.disabled = true;
+            setStatus('Salvando…', '');
+
+            try {
+                const resp = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    setStatus(data.message || 'Erro ao salvar.', 'err');
+                    return;
+                }
+                closeModal();
+                await loadPainel();
+            } catch {
+                setStatus('Erro de conexão. Tente novamente.', 'err');
+            } finally {
+                modalSave.disabled = false;
+            }
+        });
+
+        /* ─── Events ─────────────────────────────────────────── */
+        btnNova.addEventListener('click', () => openModal());
+        modalCancel.addEventListener('click', closeModal);
+        modalClose.addEventListener('click', closeModal);
+        modalBackdrop.addEventListener('click', e => {
+            if (e.target === modalBackdrop) closeModal();
+        });
+        btnBuscar.addEventListener('click', applySearch);
+        searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') applySearch(); });
+        searchInput.addEventListener('input', () => {
+            if (!searchInput.value) { filtered = [...allFiliais]; renderCards(filtered); }
+        });
+
+        /* ─── Init ───────────────────────────────────────────── */
+        loadPainel();
+    </script>
+</body>
+</html>

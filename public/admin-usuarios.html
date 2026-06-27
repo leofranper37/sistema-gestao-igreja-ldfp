@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usuários & Senhas - LDFP Master</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--dark:#0f172a;--panel:#1e293b;--blue:#2563eb;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--bg:#f8fafc;--white:#fff;--text:#334155;--muted:#64748b;--border:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--dark);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}
+.logo-icon{background:linear-gradient(135deg,var(--blue),#60a5fa);width:32px;height:32px;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:800;font-size:14px}
+.sidebar-header h2{font-size:17px;font-weight:800}.sidebar-header span{font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.menu{padding:16px 0;flex:1;overflow-y:auto}
+.menu-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:0 18px;margin:12px 0 6px;font-weight:600}
+.menu-item{padding:11px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.2s;border-left:3px solid transparent}
+.menu-item:hover{background:var(--panel);color:#fff}.menu-item.active{background:var(--panel);border-left-color:var(--blue);color:#fff;font-weight:600}
+.menu-item i{width:18px;text-align:center;font-size:15px}
+.main-content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.badge{font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px}
+.badge.alert{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+.workspace{padding:26px;flex:1;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-content:start}
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.card.full{grid-column:1/-1}
+.card-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card-header h3{font-size:15px;font-weight:800;color:var(--dark)}
+.card-body{padding:18px}
+.search-row{display:flex;gap:10px;margin-bottom:14px}
+.search-row input{flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text)}
+.search-row input:focus{outline:none;border-color:var(--blue)}
+.btn{padding:9px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:8px;transition:.2s}
+.btn.primary{background:var(--blue);color:#fff}.btn.primary:hover{background:#1d4ed8}
+.btn.secondary{background:#fff;border:1px solid var(--border);color:var(--text)}.btn.secondary:hover{background:#f8fafc}
+.btn.danger{background:var(--red);color:#fff}.btn.danger:hover{opacity:.9}
+.btn.sm{padding:5px 10px;font-size:12px}
+.table-wrap{max-height:320px;overflow:auto;border:1px solid var(--border);border-radius:10px}
+table{width:100%;border-collapse:collapse;background:#fff}
+th,td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;text-align:left}
+th{position:sticky;top:0;background:#f8fafc;color:var(--muted);text-transform:uppercase;font-size:10px;letter-spacing:.5px}
+tr:last-child td{border-bottom:none}
+tr.selected td{background:#eff6ff}
+.status{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px}
+.status.ativa{background:#dcfce7;color:#166534}
+.status.trial{background:#fef3c7;color:#92400e}
+.status.suspensa{background:#fee2e2;color:#991b1b}
+.status.pendente{background:#fef3c7;color:#92400e}
+.status.resolvido{background:#dcfce7;color:#166534}
+.reset-panel{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:12px;display:none}
+.reset-panel.open{display:block}
+.reset-panel h4{font-size:13px;font-weight:800;color:var(--dark);margin-bottom:12px}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.form-row input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;color:var(--text)}
+.form-row input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+#toast{position:fixed;right:20px;bottom:20px;background:#0f172a;color:#fff;padding:12px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(10px);transition:.25s;z-index:50}
+#toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:1100px){.workspace{grid-template-columns:1fr}}
+@media(max-width:720px){body{flex-direction:column}.sidebar{width:100%;height:auto}.main-content{overflow-y:auto}.workspace{padding:14px}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">L</div>
+    <div><h2>LDFP Master</h2><span>Fábrica SaaS</span></div>
+  </div>
+  <div class="menu">
+    <div class="menu-label">Negócio</div>
+    <a href="super-admin.html" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="admin-igrejas.html" class="menu-item"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+    <a href="admin-assinaturas.html" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Assinaturas & Faturas</a>
+    <a href="admin-usuarios.html" class="menu-item active"><i class="fa-solid fa-users-gear"></i> Usuários & Senhas</a>
+    <a href="admin-modulos.html" class="menu-item"><i class="fa-solid fa-puzzle-piece"></i> Catálogo de Módulos</a>
+    <a href="admin-retomada.html" class="menu-item"><i class="fa-solid fa-rocket"></i> Retomada Inteligente</a>
+    <div class="menu-label">Configurações SaaS</div>
+    <a href="admin-planos.html" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+    <a href="admin-novidades.html" class="menu-item"><i class="fa-solid fa-newspaper"></i> Novidades</a>
+    <a href="admin-inovacoes.html" class="menu-item"><i class="fa-solid fa-lightbulb"></i> Fábrica de Inovações</a>
+    <a href="admin-sistema.html" class="menu-item"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
+    <div class="menu-label" style="margin-top:auto">Sessão</div>
+    <a href="login.html" class="menu-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <header class="topbar">
+    <h1><i class="fa-solid fa-users-gear" style="color:var(--blue);margin-right:8px"></i>Usuários & Redefinição de Senhas</h1>
+    <div class="topbar-right">
+      <span class="badge alert" id="pendingBadge" style="display:none"><i class="fa-solid fa-bell"></i> <span id="pendingCount">0</span> solicitações pendentes</span>
+      <button class="btn secondary" onclick="loadAll()"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+    </div>
+  </header>
+
+  <section class="workspace">
+
+    <!-- Solicitações de Redefinição -->
+    <article class="card full">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-key" style="color:var(--gold)"></i> Solicitações de Redefinição de Senha</h3>
+        <span style="font-size:11px;color:var(--muted)">Clientes que clicaram em "Esqueci minha senha"</span>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Status</th>
+                <th>Solicitado em</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="requestsBody">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+
+    <!-- Busca de Usuários -->
+    <article class="card full">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-magnifying-glass"></i> Buscar Usuário</h3>
+        <span style="font-size:11px;color:var(--muted)">Redefinir senha diretamente por e-mail</span>
+      </div>
+      <div class="card-body">
+        <div class="search-row">
+          <input type="text" id="searchInput" placeholder="Buscar por e-mail, nome ou igreja..." onkeyup="onSearchKey(event)">
+          <button class="btn primary" onclick="searchUsers()"><i class="fa-solid fa-search"></i> Buscar</button>
+        </div>
+
+        <div class="table-wrap" id="usersTableWrap" style="display:none">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Igreja</th>
+                <th>Plano</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Painel de reset de senha -->
+        <div class="reset-panel" id="resetPanel">
+          <h4><i class="fa-solid fa-lock-open" style="color:var(--blue)"></i> Redefinir senha de: <span id="resetEmail" style="color:var(--blue)"></span></h4>
+          <div class="form-row">
+            <label>Nova senha (mínimo 8 caracteres)</label>
+            <input type="password" id="novaSenha" placeholder="••••••••" autocomplete="new-password">
+          </div>
+          <div class="form-row">
+            <label>Confirmar nova senha</label>
+            <input type="password" id="confirmarSenha" placeholder="••••••••" autocomplete="new-password">
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px">
+            <button class="btn secondary" onclick="closeResetPanel()">Cancelar</button>
+            <button class="btn primary" onclick="confirmarReset()"><i class="fa-solid fa-check"></i> Confirmar Redefinição</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </section>
+</main>
+
+<div id="toast"></div>
+<script src="session.js"></script>
+<script>
+const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
+const headers = () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() });
+
+function toast(msg, err) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = err ? '#dc2626' : '#0f172a';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function roleAllowed(u) {
+  const r = String(u?.role || '').toLowerCase();
+  const ig = String(u?.igreja || '').toLowerCase();
+  return ['super-admin','super_admin','superadmin','master','owner','root','super admin'].includes(r)
+    || (r === 'admin' && ig === 'ldfp master');
+}
+
+(function() {
+  if (!window.requireAuthSession || !window.requireAuthSession()) return;
+  const user = window.getStoredAuth?.()?.user;
+  if (!roleAllowed(user)) window.location.href = 'dashboard.html';
+})();
+
+// ── Solicitações Pendentes ─────────────────────────────────────────
+async function loadRequests() {
+  try {
+    const r = await fetch('/api/saas/reset-requests', { headers: headers() });
+    const data = await r.json();
+    const tbody = document.getElementById('requestsBody');
+    const pending = data.filter(d => d.status === 'pendente');
+
+    // badge
+    if (pending.length > 0) {
+      document.getElementById('pendingBadge').style.display = '';
+      document.getElementById('pendingCount').textContent = pending.length;
+    } else {
+      document.getElementById('pendingBadge').style.display = 'none';
+    }
+
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Nenhuma solicitação registrada.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(d => `
+      <tr>
+        <td>${d.id}</td>
+        <td>${d.nome || '—'}</td>
+        <td>${d.email}</td>
+        <td><span class="status ${d.status}">${d.status}</span></td>
+        <td>${new Date(d.created_at).toLocaleString('pt-BR')}</td>
+        <td>
+          ${d.status === 'pendente'
+            ? `<button class="btn primary sm" onclick="openResetFromRequest('${d.email}')"><i class="fa-solid fa-key"></i> Redefinir</button>`
+            : '<span style="color:var(--muted);font-size:11px">Resolvido</span>'}
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    toast('Erro ao carregar solicitações: ' + e.message, true);
+  }
+}
+
+// ── Busca de Usuários ─────────────────────────────────────────────
+function onSearchKey(e) { if (e.key === 'Enter') searchUsers(); }
+
+async function searchUsers() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+  try {
+    const r = await fetch(`/api/saas/usuarios?q=${encodeURIComponent(q)}`, { headers: headers() });
+    const data = await r.json();
+    const tbody = document.getElementById('usersBody');
+    document.getElementById('usersTableWrap').style.display = 'block';
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:16px">Nenhum usuário encontrado.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(u => `
+      <tr>
+        <td>${u.id}</td>
+        <td>${u.nome || '—'}</td>
+        <td>${u.email}</td>
+        <td>${u.igreja || '—'}</td>
+        <td>${u.plano || '—'}</td>
+        <td><span class="status ${u.status_assinatura || 'trial'}">${u.status_assinatura || '—'}</span></td>
+        <td><button class="btn primary sm" onclick="openResetPanel('${u.email}')"><i class="fa-solid fa-key"></i> Redefinir</button></td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    toast('Erro ao buscar usuários: ' + e.message, true);
+  }
+}
+
+// ── Reset de Senha ────────────────────────────────────────────────
+let currentEmail = '';
+
+function openResetPanel(email) {
+  currentEmail = email;
+  document.getElementById('resetEmail').textContent = email;
+  document.getElementById('novaSenha').value = '';
+  document.getElementById('confirmarSenha').value = '';
+  document.getElementById('resetPanel').classList.add('open');
+  document.getElementById('novaSenha').focus();
+  document.getElementById('resetPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function openResetFromRequest(email) {
+  document.getElementById('usersTableWrap').style.display = 'none';
+  openResetPanel(email);
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+function closeResetPanel() {
+  document.getElementById('resetPanel').classList.remove('open');
+  currentEmail = '';
+}
+
+async function confirmarReset() {
+  const nova = document.getElementById('novaSenha').value;
+  const confirmar = document.getElementById('confirmarSenha').value;
+  if (!nova || nova.length < 8) { toast('Nova senha deve ter pelo menos 8 caracteres.', true); return; }
+  if (nova !== confirmar) { toast('As senhas não coincidem.', true); return; }
+  try {
+    const r = await fetch('/api/saas/usuarios/reset-senha', {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify({ email: currentEmail, nova_senha: nova })
+    });
+    const data = await r.json();
+    if (!r.ok) { toast(data.error || 'Erro ao redefinir senha.', true); return; }
+    toast(`Senha de ${currentEmail} redefinida com sucesso.`);
+    closeResetPanel();
+    await loadRequests();
+  } catch(e) {
+    toast('Erro: ' + e.message, true);
+  }
+}
+
+async function loadAll() {
+  await loadRequests();
+}
+
+loadAll();
+</script>
+</body>
+</html>

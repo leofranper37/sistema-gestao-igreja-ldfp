@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notificações Push - LDFP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--dark:#0f172a;--panel:#1e293b;--blue:#2563eb;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--bg:#f8fafc;--white:#fff;--text:#334155;--muted:#64748b;--border:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--dark);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}
+.logo-icon{background:linear-gradient(135deg,var(--blue),#60a5fa);width:32px;height:32px;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:800;font-size:14px}
+.sidebar-header h2{font-size:17px;font-weight:800}.sidebar-header span{font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.menu{padding:16px 0;flex:1;overflow-y:auto}
+.menu-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:0 18px;margin:12px 0 6px;font-weight:600}
+.menu-item{padding:11px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.2s;border-left:3px solid transparent}
+.menu-item:hover{background:var(--panel);color:#fff}.menu-item.active{background:var(--panel);border-left-color:var(--blue);color:#fff;font-weight:600}
+.menu-item i{width:18px;text-align:center;font-size:15px}
+.main-content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.workspace{padding:26px;flex:1;overflow-y:auto;display:grid;grid-template-columns:1.1fr 1fr;gap:18px;align-content:start}
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.card.full{grid-column:1/-1}
+.card-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card-header h3{font-size:15px;font-weight:800;color:var(--dark)}
+.card-body{padding:18px}
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.form-row input,.form-row textarea,.form-row select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;color:var(--text);font-family:inherit}
+.form-row textarea{resize:vertical;min-height:80px}
+.form-row input:focus,.form-row textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.form-row small{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:16px}
+.btn{padding:9px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:8px;transition:.2s}
+.btn.primary{background:var(--blue);color:#fff}.btn.primary:hover{background:#1d4ed8}
+.btn.secondary{background:#fff;border:1px solid var(--border);color:var(--text)}.btn.secondary:hover{background:#f8fafc}
+.btn:disabled{opacity:.55;cursor:default}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:0}
+.kpi{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center}
+.kpi-val{font-size:24px;font-weight:900;color:var(--dark)}
+.kpi-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+.kpi.ok .kpi-val{color:var(--green)}
+.kpi.err .kpi-val{color:var(--red)}
+.kpi.info .kpi-val{color:var(--blue)}
+.result-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;font-size:13px;color:#166534;display:none}
+.result-box.error{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.preview-box{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px}
+.preview-title{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:4px}
+.preview-body{font-size:13px;color:var(--muted)}
+.hist-table-wrap{max-height:260px;overflow:auto;border:1px solid var(--border);border-radius:10px}
+table{width:100%;border-collapse:collapse;background:#fff}
+th,td{padding:9px 11px;border-bottom:1px solid var(--border);font-size:12px;text-align:left}
+th{position:sticky;top:0;background:#f8fafc;color:var(--muted);text-transform:uppercase;font-size:10px;letter-spacing:.5px}
+tr:last-child td{border-bottom:none}
+.badge-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px}
+.badge-status.ok{background:#dcfce7;color:#166534}
+.badge-status.err{background:#fee2e2;color:#991b1b}
+#toast{position:fixed;right:20px;bottom:20px;background:#0f172a;color:#fff;padding:12px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(10px);transition:.25s;z-index:50}
+</style>
+<script src="/session.js"></script>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">L</div>
+    <div><h2>LDFP Gestão</h2><span>Painel Admin</span></div>
+  </div>
+  <nav class="menu">
+    <div class="menu-label">Principal</div>
+    <a href="dashboard.html" class="menu-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+    <a href="membros.html" class="menu-item"><i class="fa-solid fa-users"></i> Membros</a>
+    <a href="agenda.html" class="menu-item"><i class="fa-solid fa-calendar-days"></i> Agenda</a>
+
+    <div class="menu-label">Comunicação</div>
+    <a href="admin-push.html" class="menu-item active"><i class="fa-solid fa-bell"></i> Notificações Push</a>
+    <a href="comunicacao_whatsapp.html" class="menu-item"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+    <a href="admin-novidades.html" class="menu-item"><i class="fa-solid fa-newspaper"></i> Novidades</a>
+
+    <div class="menu-label">Financeiro</div>
+    <a href="caixa.html" class="menu-item"><i class="fa-solid fa-cash-register"></i> Caixa</a>
+    <a href="dizimos.html" class="menu-item"><i class="fa-solid fa-hand-holding-dollar"></i> Dízimos</a>
+    <a href="contas_pagar.html" class="menu-item"><i class="fa-solid fa-file-invoice"></i> Contas a Pagar</a>
+
+    <div class="menu-label">Sistema</div>
+    <a href="configuracoes.html" class="menu-item"><i class="fa-solid fa-gear"></i> Configurações</a>
+    <a href="#" class="menu-item" id="sidebarLogout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+  </nav>
+</div>
+
+<div class="main-content">
+  <div class="topbar">
+    <h1><i class="fa-solid fa-bell" style="color:var(--blue);margin-right:10px"></i>Notificações Push</h1>
+    <div class="topbar-right">
+      <span id="userLabel" style="font-size:13px;color:var(--muted)"></span>
+    </div>
+  </div>
+
+  <div class="workspace">
+
+    <!-- Enviar notificação -->
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-paper-plane" style="color:var(--blue);margin-right:6px"></i>Enviar Notificação</h3>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <label>Título *</label>
+          <input id="pushTitulo" type="text" maxlength="80" placeholder="Ex.: Culto de hoje às 19h30" />
+          <small>Máx. 80 caracteres</small>
+        </div>
+        <div class="form-row">
+          <label>Mensagem</label>
+          <textarea id="pushCorpo" rows="3" maxlength="200" placeholder="Texto curto exibido na notificação..."></textarea>
+          <small>Máx. 200 caracteres</small>
+        </div>
+        <div class="form-row">
+          <label>Link (opcional)</label>
+          <input id="pushUrl" type="url" placeholder="https://ldfp.com.br/app_membro_v2.html" />
+          <small>Ao clicar na notificação, abrirá este endereço.</small>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-box" id="previewBox">
+          <div class="preview-title" id="previewTitulo">Título da notificação</div>
+          <div class="preview-body" id="previewCorpo">Mensagem da notificação aparecerá aqui…</div>
+        </div>
+
+        <div id="resultBox" class="result-box"></div>
+
+        <div class="actions">
+          <button class="btn secondary" onclick="resetForm()"><i class="fa-solid fa-eraser"></i> Limpar</button>
+          <button class="btn primary" id="btnEnviar" onclick="enviarPush()">
+            <i class="fa-solid fa-paper-plane"></i> Enviar para membros
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-chart-bar" style="color:var(--blue);margin-right:6px"></i>Assinantes</h3>
+        <button class="btn secondary" style="padding:5px 10px;font-size:12px" onclick="carregarStats()">
+          <i class="fa-solid fa-arrows-rotate"></i> Atualizar
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="kpi-grid">
+          <div class="kpi info">
+            <div class="kpi-val" id="kpiTotal">—</div>
+            <div class="kpi-lbl">Assinantes</div>
+          </div>
+          <div class="kpi ok">
+            <div class="kpi-val" id="kpiEnviados">—</div>
+            <div class="kpi-lbl">Último envio</div>
+          </div>
+          <div class="kpi err">
+            <div class="kpi-val" id="kpiFalhas">—</div>
+            <div class="kpi-lbl">Falhas</div>
+          </div>
+        </div>
+        <p style="margin-top:16px;font-size:12px;color:var(--muted);line-height:1.5">
+          <i class="fa-solid fa-circle-info" style="margin-right:4px"></i>
+          Os membros ativam as notificações no app. Subscrições expiradas são removidas automaticamente após falha de entrega.
+        </p>
+      </div>
+    </div>
+
+    <!-- Histórico de envios -->
+    <div class="card full">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-clock-rotate-left" style="color:var(--blue);margin-right:6px"></i>Histórico de Envios</h3>
+      </div>
+      <div class="card-body">
+        <div class="hist-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Título</th>
+                <th>Enviados</th>
+                <th>Falhas</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="histBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Nenhum envio registrado nesta sessão.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── Auth guard ───────────────────────────────────────────────────────────────
+(function(){
+  if (typeof requireAuthSession === 'function') requireAuthSession();
+  const auth = window.getStoredAuth ? window.getStoredAuth() : null;
+  if (!auth) { location.href = 'login.html'; return; }
+  const role = String(auth.user?.role || auth.role || '').toLowerCase();
+  const allowed = ['admin','super-admin','super_admin','master','owner','root'];
+  if (!allowed.includes(role)) { location.href = 'dashboard.html'; return; }
+  const nome = auth.user?.nome || auth.nome || 'Admin';
+  document.getElementById('userLabel').textContent = nome;
+})();
+
+document.getElementById('sidebarLogout').addEventListener('click', () => {
+  if (typeof logout === 'function') logout();
+  else { localStorage.clear(); location.href = 'login.html'; }
+});
+
+// ─── Preview em tempo real ─────────────────────────────────────────────────────
+document.getElementById('pushTitulo').addEventListener('input', updatePreview);
+document.getElementById('pushCorpo').addEventListener('input', updatePreview);
+
+function updatePreview() {
+  const t = document.getElementById('pushTitulo').value.trim() || 'Título da notificação';
+  const b = document.getElementById('pushCorpo').value.trim()  || 'Mensagem da notificação aparecerá aqui…';
+  document.getElementById('previewTitulo').textContent = t;
+  document.getElementById('previewCorpo').textContent  = b;
+}
+
+// ─── Enviar ────────────────────────────────────────────────────────────────────
+const _hist = [];
+
+async function enviarPush() {
+  const titulo = document.getElementById('pushTitulo').value.trim();
+  const corpo  = document.getElementById('pushCorpo').value.trim();
+  const url    = document.getElementById('pushUrl').value.trim();
+
+  if (!titulo) { toast('Informe o título da notificação.'); return; }
+
+  const btn = document.getElementById('btnEnviar');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando…';
+
+  const resultBox = document.getElementById('resultBox');
+  resultBox.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, corpo, url: url || undefined })
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.erro || 'Erro ao enviar');
+
+    // Atualizar KPIs
+    document.getElementById('kpiEnviados').textContent = data.enviados ?? '—';
+    document.getElementById('kpiFalhas').textContent   = data.falhas   ?? '—';
+
+    resultBox.className = 'result-box';
+    resultBox.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:6px"></i>
+      <strong>${data.enviados}</strong> notificação(ões) entregues com sucesso.
+      ${data.falhas ? `<br><small>${data.falhas} falha(s) (subscriptions expiradas foram removidas).</small>` : ''}
+      ${data.msg || ''}`;
+    resultBox.style.display = 'block';
+
+    // Histórico
+    const now = new Date().toLocaleString('pt-BR');
+    _hist.unshift({ ts: now, titulo, enviados: data.enviados, falhas: data.falhas, total: data.total });
+    renderHist();
+
+    toast('Notificação enviada!');
+  } catch (err) {
+    resultBox.className = 'result-box error';
+    resultBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="margin-right:6px"></i> ${err.message}`;
+    resultBox.style.display = 'block';
+    toast('Erro ao enviar', true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar para membros';
+  }
+}
+
+function resetForm() {
+  document.getElementById('pushTitulo').value = '';
+  document.getElementById('pushCorpo').value  = '';
+  document.getElementById('pushUrl').value    = '';
+  updatePreview();
+  document.getElementById('resultBox').style.display = 'none';
+}
+
+// ─── Stats ─────────────────────────────────────────────────────────────────────
+async function carregarStats() {
+  try {
+    // Usa o endpoint de envio com lista vazia apenas para contar — na verdade
+    // não temos um endpoint GET /api/push/stats, então fazemos um dry-run
+    // apontando para um endpoint inexistente ou simplesmente mostramos —
+    // Solução mais limpa: mostrar apenas o que foi retornado no último envio.
+    toast('Dados atualizados após o próximo envio.');
+  } catch (_) {}
+}
+
+function renderHist() {
+  const tbody = document.getElementById('histBody');
+  if (!_hist.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Nenhum envio registrado nesta sessão.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = _hist.map(h => `
+    <tr>
+      <td>${h.ts}</td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.titulo}</td>
+      <td><span class="badge-status ok">${h.enviados}</span></td>
+      <td><span class="badge-status ${h.falhas > 0 ? 'err' : 'ok'}">${h.falhas}</span></td>
+      <td>${h.total}</td>
+    </tr>`).join('');
+}
+
+// ─── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, err = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = err ? '#991b1b' : '#0f172a';
+  el.style.opacity = '1';
+  el.style.transform = 'translateY(0)';
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(10px)'; }, 3000);
+}
+</script>
+</body>
+</html>

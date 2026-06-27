@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuração Inicial — LDFP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{background:linear-gradient(135deg,#0f172a 0%,#134e4a 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:#fff;border-radius:20px;width:100%;max-width:560px;box-shadow:0 24px 64px rgba(0,0,0,.4);overflow:hidden}
+/* Progress bar */
+.progress-header{background:linear-gradient(90deg,#0f766e,#0e9f80);padding:28px 32px 0}
+.progress-header h1{color:#fff;font-size:22px;font-weight:800;margin-bottom:6px}
+.progress-header p{color:#99f6e4;font-size:13px;margin-bottom:20px}
+.steps-bar{display:flex;gap:0}
+.step-tab{flex:1;padding:10px 0;text-align:center;font-size:11px;font-weight:700;color:#99f6e4;border-bottom:3px solid transparent;cursor:default;transition:.2s}
+.step-tab.active{color:#fff;border-bottom-color:#fff}
+.step-tab.done{color:#6ee7b7;border-bottom-color:#6ee7b7}
+.step-tab i{display:block;font-size:18px;margin-bottom:4px}
+/* Body */
+.card-body{padding:32px}
+.step-panel{display:none}
+.step-panel.active{display:block}
+.field-label{font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.field-input{width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#1e293b;transition:.2s;outline:none}
+.field-input:focus{border-color:#0f766e;box-shadow:0 0 0 3px #ccfbf1}
+.field-group{margin-bottom:18px}
+.field-hint{font-size:11px;color:#94a3b8;margin-top:4px}
+.preview-logo{max-height:60px;border-radius:8px;margin-top:8px;display:none}
+/* Buttons */
+.btn-row{display:flex;gap:10px;margin-top:24px}
+.btn{padding:11px 22px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:.2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:#0f766e;color:#fff;flex:1;justify-content:center}
+.btn-primary:hover{background:#0e9f80}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-skip{background:#f1f5f9;color:#64748b;padding:11px 16px}
+.btn-skip:hover{background:#e2e8f0}
+/* Step intro */
+.step-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+.step-icon.teal{background:#ccfbf1;color:#0f766e}
+.step-icon.blue{background:#dbeafe;color:#1d4ed8}
+.step-icon.amber{background:#fef3c7;color:#b45309}
+.step-title{font-size:20px;font-weight:800;color:#0f172a;margin-bottom:6px}
+.step-desc{font-size:13px;color:#64748b;margin-bottom:22px;line-height:1.6}
+/* Completed screen */
+.done-screen{text-align:center;padding:16px 0}
+.done-icon{font-size:56px;color:#10b981;margin-bottom:16px}
+.done-title{font-size:24px;font-weight:800;color:#0f172a;margin-bottom:8px}
+.done-desc{font-size:14px;color:#64748b;line-height:1.7;margin-bottom:28px}
+/* Alert */
+.alert{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none}
+.alert-error{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.alert-success{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- Header + progress -->
+  <div class="progress-header">
+    <h1><i class="fa-solid fa-rocket" style="margin-right:8px"></i>Configuração Inicial</h1>
+    <p>Vamos preparar sua conta em 3 passos rápidos.</p>
+    <div class="steps-bar">
+      <div class="step-tab active" id="tab1"><i class="fa-solid fa-church"></i>Igreja</div>
+      <div class="step-tab" id="tab2"><i class="fa-solid fa-users"></i>Membros</div>
+      <div class="step-tab" id="tab3"><i class="fa-solid fa-wallet"></i>Caixa</div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- ── STEP 1: Igreja / Logo ───────────────────────────────────────── -->
+    <div class="step-panel active" id="step1">
+      <div class="step-icon teal"><i class="fa-solid fa-church"></i></div>
+      <div class="step-title">Perfil da Igreja</div>
+      <div class="step-desc">Personalize o nome, logo e contato da sua igreja para que os membros reconheçam o sistema.</div>
+      <div id="alert1" class="alert alert-error"></div>
+      <div class="field-group">
+        <div class="field-label">Nome da Igreja <span style="color:#ef4444">*</span></div>
+        <input id="nomeIgreja" class="field-input" type="text" placeholder="Ex.: Igreja Batista Central">
+      </div>
+      <div class="field-group">
+        <div class="field-label">URL do Logo</div>
+        <input id="logoUrl" class="field-input" type="url" placeholder="https://exemplo.com/logo.png" oninput="previewLogo()">
+        <img id="logoPreview" class="preview-logo" alt="Pré-visualização do logo">
+        <div class="field-hint">Cole o endereço de uma imagem hospedada na web (PNG, JPG ou SVG).</div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">WhatsApp da Igreja</div>
+        <input id="whatsapp" class="field-input" type="tel" placeholder="(11) 99999-9999">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Mensagem de Boas-Vindas no App</div>
+        <textarea id="msgBoasVindas" class="field-input" rows="3" placeholder="Seja bem-vindo(a)! Estamos felizes em ter você aqui."></textarea>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="btnStep1" onclick="saveStep1()">
+          <i class="fa-solid fa-arrow-right"></i> Próximo
+        </button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: Primeiro Membro ────────────────────────────────────── -->
+    <div class="step-panel" id="step2">
+      <div class="step-icon blue"><i class="fa-solid fa-user-plus"></i></div>
+      <div class="step-title">Adicionar Primeiro Membro</div>
+      <div class="step-desc">Cadastre o primeiro membro da sua igreja. Você pode pular e fazer isso depois na tela de Membros.</div>
+      <div id="alert2" class="alert alert-error"></div>
+      <div class="field-group">
+        <div class="field-label">Nome Completo <span style="color:#ef4444">*</span></div>
+        <input id="membroNome" class="field-input" type="text" placeholder="Ex.: João da Silva">
+      </div>
+      <div class="field-group">
+        <div class="field-label">E-mail</div>
+        <input id="membroEmail" class="field-input" type="email" placeholder="joao@email.com">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Telefone / WhatsApp</div>
+        <input id="membroTel" class="field-input" type="tel" placeholder="(11) 99999-9999">
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-skip" onclick="skipStep(3)"><i class="fa-solid fa-forward"></i> Pular</button>
+        <button type="button" class="btn btn-primary" id="btnStep2" onclick="saveStep2()">
+          <i class="fa-solid fa-user-plus"></i> Cadastrar e Avançar
+        </button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Saldo Inicial da Caixa ─────────────────────────────── -->
+    <div class="step-panel" id="step3">
+      <div class="step-icon amber"><i class="fa-solid fa-wallet"></i></div>
+      <div class="step-title">Saldo Inicial da Caixa</div>
+      <div class="step-desc">Informe o saldo inicial para começar a controlar as finanças da sua igreja. Pode ser R$ 0,00 ou o valor que já existe em caixa.</div>
+      <div id="alert3" class="alert alert-error"></div>
+      <div class="field-group">
+        <div class="field-label">Competência (mês/ano) <span style="color:#ef4444">*</span></div>
+        <input id="competencia" class="field-input" type="month" value="">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Saldo Inicial (R$) <span style="color:#ef4444">*</span></div>
+        <input id="saldoInicial" class="field-input" type="number" min="0" step="0.01" value="0" placeholder="0,00">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Descrição</div>
+        <input id="saldoDescricao" class="field-input" type="text" value="Saldo inicial" placeholder="Saldo inicial">
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-skip" onclick="finishOnboarding()"><i class="fa-solid fa-forward"></i> Pular</button>
+        <button type="button" class="btn btn-primary" id="btnStep3" onclick="saveStep3()">
+          <i class="fa-solid fa-check"></i> Salvar e Concluir
+        </button>
+      </div>
+    </div>
+
+    <!-- ── DONE ───────────────────────────────────────────────────────── -->
+    <div class="step-panel" id="stepDone">
+      <div class="done-screen">
+        <div class="done-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="done-title">Tudo pronto! 🎉</div>
+        <div class="done-desc">
+          Sua igreja está configurada.<br>
+          Agora você tem acesso completo ao sistema de gestão.
+        </div>
+        <button type="button" class="btn btn-primary" style="width:100%;justify-content:center" onclick="location.href='dashboard.html'">
+          <i class="fa-solid fa-house"></i> Ir para o Painel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="session.js?v=20260501"></script>
+<script>
+  requireAuthSession();
+
+  // Pré-preenche competência com mês atual
+  (function() {
+    const now = new Date();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    document.getElementById('competencia').value = `${now.getFullYear()}-${mm}`;
+  })();
+
+  // ── Navegação entre steps ──────────────────────────────────────────
+  let currentStep = 1;
+
+  function goStep(n) {
+    document.getElementById('step' + currentStep).classList.remove('active');
+    document.getElementById('tab'  + currentStep).classList.remove('active');
+    document.getElementById('tab'  + currentStep).classList.add('done');
+    currentStep = n;
+    if (n <= 3) {
+      document.getElementById('step' + n).classList.add('active');
+      document.getElementById('tab'  + n).classList.add('active');
+      document.getElementById('tab'  + n).classList.remove('done');
+    } else {
+      document.getElementById('stepDone').classList.add('active');
+    }
+  }
+
+  function skipStep(next) { goStep(next); }
+
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = 'alert alert-' + type;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 4000);
+  }
+
+  function setLoading(btnId, on) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = on;
+    if (on) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+  }
+
+  function previewLogo() {
+    const url = document.getElementById('logoUrl').value.trim();
+    const img = document.getElementById('logoPreview');
+    if (url) { img.src = url; img.style.display = 'block'; }
+    else img.style.display = 'none';
+  }
+
+  // ── Step 1 ────────────────────────────────────────────────────────
+  async function saveStep1() {
+    const nome = document.getElementById('nomeIgreja').value.trim();
+    if (!nome) { showAlert('alert1', 'Informe o nome da igreja.', 'error'); return; }
+    setLoading('btnStep1', true);
+    try {
+      const r = await fetch('/api/church/onboarding/step1', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nomeFantasia: nome,
+          logoUrl:      document.getElementById('logoUrl').value.trim() || null,
+          whatsapp:     document.getElementById('whatsapp').value.trim() || null,
+          msgBoasVindas:document.getElementById('msgBoasVindas').value.trim() || null
+        })
+      });
+      if (!r.ok) throw new Error((await r.json()).error || 'Erro ao salvar.');
+      goStep(2);
+    } catch (e) {
+      showAlert('alert1', e.message, 'error');
+    } finally {
+      document.getElementById('btnStep1').disabled = false;
+      document.getElementById('btnStep1').innerHTML = '<i class="fa-solid fa-arrow-right"></i> Próximo';
+    }
+  }
+
+  // ── Step 2 ────────────────────────────────────────────────────────
+  async function saveStep2() {
+    const nome = document.getElementById('membroNome').value.trim();
+    if (!nome) { showAlert('alert2', 'Informe o nome do membro.', 'error'); return; }
+    setLoading('btnStep2', true);
+    try {
+      const r = await fetch('/membros', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome,
+          email:    document.getElementById('membroEmail').value.trim() || null,
+          telefone: document.getElementById('membroTel').value.trim() || null
+        })
+      });
+      if (!r.ok) throw new Error((await r.json()).error || 'Erro ao cadastrar membro.');
+      goStep(3);
+    } catch (e) {
+      showAlert('alert2', e.message, 'error');
+    } finally {
+      document.getElementById('btnStep2').disabled = false;
+      document.getElementById('btnStep2').innerHTML = '<i class="fa-solid fa-user-plus"></i> Cadastrar e Avançar';
+    }
+  }
+
+  // ── Step 3 ────────────────────────────────────────────────────────
+  async function saveStep3() {
+    const competencia = document.getElementById('competencia').value;
+    const saldo       = parseFloat(document.getElementById('saldoInicial').value) || 0;
+    const descricao   = document.getElementById('saldoDescricao').value.trim() || 'Saldo inicial';
+    if (!competencia) { showAlert('alert3', 'Informe a competência (mês/ano).', 'error'); return; }
+    setLoading('btnStep3', true);
+    try {
+      const r = await fetch('/caixa/saldo-inicial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ competencia, saldo_inicial: saldo, descricao })
+      });
+      if (!r.ok) throw new Error((await r.json()).error || 'Erro ao salvar saldo.');
+      await finishOnboarding();
+    } catch (e) {
+      showAlert('alert3', e.message, 'error');
+    } finally {
+      document.getElementById('btnStep3').disabled = false;
+      document.getElementById('btnStep3').innerHTML = '<i class="fa-solid fa-check"></i> Salvar e Concluir';
+    }
+  }
+
+  // ── Finish ────────────────────────────────────────────────────────
+  async function finishOnboarding() {
+    try {
+      await fetch('/api/church/onboarding/complete', { method: 'POST' });
+      
+      // Atualiza o cache local para evitar que o dashboard redirecione de volta para o onboarding
+      try {
+        let authObj = null;
+        if (typeof window.getStoredAuth === 'function') {
+            authObj = window.getStoredAuth();
+        } else {
+            const raw = localStorage.getItem('ldfpAuth') || sessionStorage.getItem('ldfpAuth');
+            if (raw) authObj = JSON.parse(raw);
+        }
+        if (authObj && authObj.user) {
+            authObj.user.onboarding_completed = 1;
+            if (localStorage.getItem('ldfpAuth')) localStorage.setItem('ldfpAuth', JSON.stringify(authObj));
+            if (sessionStorage.getItem('ldfpAuth')) sessionStorage.setItem('ldfpAuth', JSON.stringify(authObj));
+        }
+      } catch (e) {}
+    } catch (_) {}
+    goStep(4);
+  }
+</script>
+</body>
+</html>

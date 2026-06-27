@@ -1,0 +1,257 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Planos de Estudo — LDFP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap { padding: 24px 30px 40px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .page-header h2 { margin: 0; font-size: 24px; color: #0f172a; }
+        .page-header small { color: #64748b; font-size: 13px; }
+        .btn-primary { background: linear-gradient(90deg, #8b5cf6 0%, #a855f7 100%); color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-secondary { background: #f1f5f9; color: #475569; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 700; cursor: pointer; }
+        .table-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 14px rgba(15,23,42,.03); }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: #334155; }
+        .data-table th { background: #f8fafc; font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: 700; }
+        .data-table tr:hover { background: #f8fafc; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .badge.ativo { background: #dcfce7; color: #166534; }
+        .badge.inativo { background: #f1f5f9; color: #475569; }
+        .badge.global { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .btn-icon { width: 32px; height: 32px; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; margin-right: 4px; }
+        .btn-edit { background: #eff6ff; color: #2563eb; }
+        .btn-del { background: #fef2f2; color: #dc2626; }
+        .btn-icon:disabled { opacity: 0.4; cursor: not-allowed; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #64748b; }
+        
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-overlay.open { display: flex; }
+        .modal-card { background: #fff; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { margin: 0; font-size: 18px; color: #0f172a; }
+        .btn-close { background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; }
+        .modal-body { padding: 24px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; text-transform: uppercase; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-family: inherit; box-sizing: border-box; outline: none; }
+        .form-group input:focus, .form-group textarea:focus { border-color: #0ea5e9; }
+        .form-row { display: flex; gap: 16px; }
+        .form-row .form-group { flex: 1; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; }
+        
+        .hint { font-size: 12px; color: #64748b; margin-top: 4px; line-height: 1.4; }
+        #toast { position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; transform: translateY(100px); opacity: 0; transition: 0.3s; z-index: 2000; }
+        #toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Gestão de Planos" data-shell-breadcrumb="LDFP / Ensino / Planos (Admin)" data-shell-active="admin-planos-estudo.html">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <div class="page-header">
+                <div class="title-area">
+                    <h2><i class="fa-solid fa-list-check" style="color:#8b5cf6;margin-right:8px;"></i>Gestão de Planos</h2>
+                    <small>Crie planos de leitura e estudos bíblicos personalizados para a sua igreja.</small>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> Novo Plano</button>
+                </div>
+            </div>
+            
+            <div class="table-card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Tipo</th>
+                            <th>Duração</th>
+                            <th>Status / Escopo</th>
+                            <th style="text-align:right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="5" class="empty-state"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p>Carregando...</p></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    
+    <div class="modal-overlay" id="modalForm">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle">Novo Plano</h3>
+                <button class="btn-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="planoId">
+                <div class="form-group">
+                    <label>Título do Plano *</label>
+                    <input type="text" id="planoTitulo" placeholder="Ex: 30 Dias no Livro de Provérbios">
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="planoDescricao" rows="2" placeholder="Descreva o propósito deste estudo..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo de Estudo</label>
+                        <select id="planoTipo">
+                            <option value="leitura">Leitura Bíblica</option>
+                            <option value="tematico">Estudo Temático</option>
+                            <option value="devocional">Devocional</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="planoAtivo">
+                            <option value="1">Ativo (Público)</option>
+                            <option value="0">Rascunho (Oculto)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Passos Diários (Um dia por linha) *</label>
+                    <textarea id="planoPassos" rows="8" placeholder="Gênesis 1&#10;Gênesis 2; Gênesis 3&#10;Gênesis 4"></textarea>
+                    <div class="hint"><strong>Dica:</strong> Escreva uma linha para cada dia do plano. Se houver mais de uma referência por dia, separe-as com ponto e vírgula (<code>;</code>). Exemplo: <code>Gênesis 1; Gênesis 2</code></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn-primary" onclick="salvarPlano()"><i class="fa-solid fa-check"></i> Salvar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast"></div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+        const tableBody = document.getElementById('tableBody');
+        
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+        
+        async function loadPlanos() {
+            try {
+                const res = await fetch('/api/estudo/admin/planos');
+                if (!res.ok) throw new Error('Erro ao buscar');
+                const data = await res.json();
+                if (data.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="empty-state"><i class="fa-solid fa-map-signs fa-3x" style="color:#cbd5e1;margin-bottom:16px;"></i><br>Nenhum plano cadastrado.</td></tr>`;
+                    return;
+                }
+                
+                tableBody.innerHTML = data.map(d => {
+                    const isGlobal = d.igreja_id === null;
+                    const statusLabel = isGlobal ? `<span class="badge global">Global LDFP</span>` : `<span class="badge ${d.ativo ? 'ativo' : 'inativo'}">${d.ativo ? 'Ativo' : 'Rascunho'}</span>`;
+                    const actions = isGlobal ? 
+                        `<button class="btn-icon" disabled title="Planos globais não podem ser alterados"><i class="fa-solid fa-lock"></i></button>` :
+                        `<button class="btn-icon btn-edit" onclick="editarPlano(${d.id})" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                         <button class="btn-icon btn-del" onclick="excluirPlano(${d.id})" title="Excluir"><i class="fa-solid fa-trash"></i></button>`;
+                         
+                    return `
+                    <tr>
+                        <td><strong>${d.titulo}</strong></td>
+                        <td style="text-transform: capitalize">${d.tipo}</td>
+                        <td>${d.dias_total} dias</td>
+                        <td>${statusLabel}</td>
+                        <td style="text-align:right">${actions}</td>
+                    </tr>
+                `}).join('');
+            } catch (err) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="empty-state" style="color:#ef4444">${err.message}</td></tr>`;
+            }
+        }
+        
+        function openModal() {
+            document.getElementById('modalTitle').textContent = 'Novo Plano';
+            document.getElementById('planoId').value = '';
+            document.getElementById('planoAtivo').value = '1';
+            document.getElementById('planoTitulo').value = '';
+            document.getElementById('planoDescricao').value = '';
+            document.getElementById('planoTipo').value = 'leitura';
+            document.getElementById('planoPassos').value = '';
+            document.getElementById('modalForm').classList.add('open');
+        }
+        
+        function closeModal() { document.getElementById('modalForm').classList.remove('open'); }
+        
+        async function editarPlano(id) {
+            try {
+                const res = await fetch(`/api/estudo/admin/planos/${id}`);
+                if (!res.ok) throw new Error('Erro ao buscar plano');
+                const d = await res.json();
+                
+                document.getElementById('modalTitle').textContent = 'Editar Plano';
+                document.getElementById('planoId').value = d.id;
+                document.getElementById('planoAtivo').value = d.ativo;
+                document.getElementById('planoTitulo').value = d.titulo;
+                document.getElementById('planoDescricao').value = d.descricao || '';
+                document.getElementById('planoTipo').value = d.tipo;
+                
+                // Transforma o array de passos do banco em linhas de texto
+                const textPassos = d.passos.map(p => p.refs.join('; ')).join('\n');
+                document.getElementById('planoPassos').value = textPassos;
+                
+                document.getElementById('modalForm').classList.add('open');
+            } catch (err) { showToast(err.message); }
+        }
+        
+        async function salvarPlano() {
+            const id = document.getElementById('planoId').value;
+            const titulo = document.getElementById('planoTitulo').value.trim();
+            const textoPassos = document.getElementById('planoPassos').value.trim();
+            
+            if (!titulo || !textoPassos) return alert('Preencha o título e os passos.');
+            
+            // Transforma o texto (cada linha um dia) de volta para o JSON esperado na API
+            const linhas = textoPassos.split('\n').filter(l => l.trim().length > 0);
+            const passosJson = linhas.map((linha, index) => {
+                const refs = linha.split(';').map(r => r.trim()).filter(r => r.length > 0);
+                return { dia: index + 1, refs: refs };
+            });
+            
+            const payload = {
+                titulo: titulo,
+                descricao: document.getElementById('planoDescricao').value,
+                tipo: document.getElementById('planoTipo').value,
+                ativo: parseInt(document.getElementById('planoAtivo').value),
+                passos: passosJson
+            };
+            
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/estudo/admin/planos/${id}` : `/api/estudo/admin/planos`;
+            
+            try {
+                const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!res.ok) throw new Error('Erro ao salvar');
+                showToast('Plano salvo com sucesso!');
+                closeModal();
+                loadPlanos();
+            } catch (err) { showToast(err.message); }
+        }
+        
+        async function excluirPlano(id) {
+            if (!confirm('Deseja realmente excluir este plano? Todo o progresso dos membros nele também será removido.')) return;
+            try {
+                const res = await fetch(`/api/estudo/admin/planos/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Erro ao excluir');
+                showToast('Plano removido.');
+                loadPlanos();
+            } catch (err) { showToast(err.message); }
+        }
+        
+        loadPlanos();
+    </script>
+</body>
+</html>

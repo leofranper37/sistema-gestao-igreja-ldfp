@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111827">
+    <title>LDFP - App de Mídia</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #101826;
+            --bg-card: #141d2b;
+            --bg-card-soft: #1b2433;
+            --accent: #f97316;    /* laranja */
+            --accent-soft: #fed7aa;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --border: #1f2933;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --shadow-soft: 0 8px 20px rgba(0,0,0,0.35);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            max-width: 600px; /* Limita a largura para simular app mobile */
+            margin: 0 auto;
+            width: 100%;
+            background-color: var(--bg-main);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--bg-card);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header .logo {
+            height: 35px;
+            width: auto;
+            border-radius: 4px;
+        }
+        .header h1 {
+            font-size: 1.2rem;
+            margin: 0;
+            color: var(--text);
+            flex-grow: 1;
+            text-align: center;
+        }
+        .header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header .user-info .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .header .user-info .logout-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+        .header .user-info .logout-btn:hover {
+            color: var(--accent);
+        }
+
+        /* Main Content Area */
+        .content-area {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Navigation (Bottom Bar) */
+        .bottom-nav {
+            background-color: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            position: sticky;
+            bottom: 0;
+            z-index: 1000;
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: color 0.2s;
+            padding: 5px;
+            border-radius: var(--radius-md);
+        }
+        .bottom-nav-item i {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+        .bottom-nav-item.active {
+            color: var(--accent);
+        }
+        .bottom-nav-item:hover:not(.active) {
+            color: var(--text);
+        }
+
+        /* Conteúdo das abas */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Cards de conteúdo */
+        .content-card {
+            background-color: var(--bg-card-soft);
+            border-radius: var(--radius-md);
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .content-card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+        .content-card p {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* Estilos para lista de vídeos/áudios/docs */
+        .media-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        .media-item {
+            background-color: var(--bg-card);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .media-item:hover {
+            transform: translateY(-3px);
+        }
+        .media-item .thumbnail {
+            width: 100%;
+            height: 180px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .media-item .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+        }
+        .media-item .thumbnail i {
+            position: absolute;
+            font-size: 3rem;
+            color: rgba(255,255,255,0.8);
+        }
+        .media-item .info {
+            padding: 12px 15px;
+        }
+        .media-item .info h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: var(--text);
+            line-height: 1.3;
+        }
+        .media-item .info p {
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.4;
+            display: -webkit-box;
+            line-clamp: 2;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Player de vídeo/áudio */
+        .media-player-modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 2000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .media-player-modal.active {
+            display: flex;
+        }
+        .media-player-content {
+            position: relative;
+            background-color: var(--bg-card);
+            margin: auto;
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .media-player-content .close-button {
+            color: var(--muted);
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .media-player-content .close-button:hover,
+        .media-player-content .close-button:focus {
+            color: var(--accent);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .media-player-content h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--text);
+            font-size: 1.3rem;
+        }
+        .media-player-content iframe,
+        .media-player-content audio {
+            width: 100%;
+            height: 400px; /* Altura padrão para vídeo */
+            border: none;
+            border-radius: var(--radius-md);
+            background-color: #000;
+        }
+        .media-player-content audio {
+            height: 50px; /* Altura menor para áudio */
+        }
+        .media-player-content .description {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* Login Screen (para quando não estiver logado) */
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            padding: 20px;
+            text-align: center;
+        }
+        .login-screen h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+        .login-screen p {
+            font-size: 1rem;
+            color: var(--muted);
+            margin-bottom: 30px;
+        }
+        .login-screen button {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .login-screen button:hover {
+            background-color: #e06a14;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            padding: 24px;
+            text-align: left;
+        }
+
+        .church-logo {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto 14px;
+            border: 2px solid var(--border);
+            background: #0b1320;
+        }
+
+        .login-card h2 {
+            font-size: 1.35rem;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .login-card p {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #0b1320;
+            color: var(--text);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background-color: var(--accent);
+            color: #0b1320;
+            border: none;
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #e06a14;
+        }
+
+        .status-message {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 0.86rem;
+            min-height: 20px;
+            color: var(--muted);
+        }
+
+        .status-message.error {
+            color: #f87171;
+        }
+
+        .status-message.success {
+            color: #22c55e;
+        }
+
+        .link-forgot-password,
+        .link-first-access {
+            display: block;
+            text-align: center;
+            margin-top: 8px;
+            color: var(--accent-soft);
+            text-decoration: none;
+            font-size: 0.84rem;
+        }
+
+        .link-forgot-password:hover,
+        .link-first-access:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="appContainer" class="app-container" style="display: none;">
+        <!-- Header -->
+        <div class="header">
+            <img id="churchLogo" src="https://via.placeholder.com/35x35?text=LDFP" alt="Logo da Igreja" class="logo">
+            <h1 id="churchNameHeader">App de Mídia</h1>
+            <div class="user-info">
+                <div class="avatar" id="userAvatar"></div>
+                <button class="logout-btn" id="logoutBtn" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-area" id="contentArea">
+            <!-- Conteúdo das abas será carregado aqui -->
+            <div id="videosTab" class="tab-content active">
+                <h2><i class="fa-solid fa-video"></i> Vídeos</h2>
+                <div class="media-list" id="videosList">
+                    <!-- Vídeos serão carregados aqui -->
+                </div>
+            </div>
+
+            <div id="audiosTab" class="tab-content">
+                <h2><i class="fa-solid fa-headphones"></i> Áudios</h2>
+                <div class="media-list" id="audiosList">
+                    <!-- Áudios serão carregados aqui -->
+                </div>
+            </div>
+
+            <div id="imagesTab" class="tab-content">
+                <h2><i class="fa-solid fa-image"></i> Imagens</h2>
+                <div class="media-list" id="imagesList">
+                    <!-- Imagens serão carregadas aqui -->
+                </div>
+            </div>
+
+            <div id="documentsTab" class="tab-content">
+                <h2><i class="fa-solid fa-file-alt"></i> Documentos</h2>
+                <div class="media-list" id="documentsList">
+                    <!-- Documentos serão carregados aqui -->
+                </div>
+            </div>
+
+            <div id="liveTab" class="tab-content">
+                <h2><i class="fa-solid fa-video"></i> Ao Vivo</h2>
+                <div class="content-card" id="liveStreamPlayer">
+                    <p>Nenhuma transmissão ao vivo disponível no momento.</p>
+                </div>
+            </div>
+
+            <div id="socialTab" class="tab-content">
+                <h2><i class="fa-solid fa-share-nodes"></i> Conecte-se</h2>
+                <div id="socialLinksGrid" class="media-list">
+                    <div class="content-card"><p>Nenhuma rede social configurada.</p></div>
+                </div>
+            </div>
+
+            <div id="gerenciarMidiasTab" class="tab-content">
+                <h2><i class="fa-solid fa-upload"></i> Gerenciar Mídias</h2>
+                <div class="content-card" id="gerenciarMidiasContent">
+                    <p>Carregando gerenciador...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="#" class="bottom-nav-item active" data-tab="videosTab">
+                <i class="fa-solid fa-video"></i>
+                <span>Vídeos</span>
+            </a>
+            <a href="#" class="bottom-nav-item" data-tab="audiosTab">
+                <i class="fa-solid fa-headphones"></i>
+                <span>Áudios</span>
+            </a>
+            <a href="#" class="bottom-nav-item" data-tab="imagesTab">
+                <i class="fa-solid fa-image"></i>
+                <span>Imagens</span>
+            </a>
+            <a href="#" class="bottom-nav-item" data-tab="documentsTab">
+                <i class="fa-solid fa-file-alt"></i>
+                <span>Docs</span>
+            </a>
+            <a href="#" class="bottom-nav-item" data-tab="liveTab" id="navLive" style="display:none;">
+                <i class="fa-solid fa-video"></i>
+                <span>Ao Vivo</span>
+            </a>
+            <a href="#" class="bottom-nav-item" data-tab="socialTab" id="navSocial">
+                <i class="fa-solid fa-share-nodes"></i>
+                <span>Conecte-se</span>
+            </a>
+            <a href="#" class="bottom-nav-item" data-tab="gerenciarMidiasTab" id="navGerenciarMidias" style="display:none;">
+                <i class="fa-solid fa-upload"></i>
+                <span>Gerenciar</span>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Tela de Login (fora do appContainer para nao sumir quando o app estiver oculto) -->
+    <div id="loginScreen" class="login-screen" style="display: none;">
+        <div class="login-card">
+            <img src="https://via.placeholder.com/100x100?text=LOGO" alt="Logo da Igreja" class="church-logo">
+            <h2>Acesso ao App de Mídia</h2>
+            <p>Entre com seu CPF e senha para acessar o conteúdo exclusivo.</p>
+
+            <div class="form-group">
+                <label for="loginCpf">CPF</label>
+                <input type="text" id="loginCpf" placeholder="___.___.___-__" maxlength="14">
+            </div>
+            <div class="form-group">
+                <label for="loginSenha">Senha</label>
+                <input type="password" id="loginSenha" placeholder="••••••••">
+            </div>
+
+            <button id="loginBtn" class="btn-primary">Entrar</button>
+            <p class="status-message" id="loginStatusMessage"></p>
+
+            <a href="#" class="link-forgot-password">Esqueceu a senha?</a>
+            <a href="#" class="link-first-access">Primeiro acesso?</a>
+        </div>
+    </div>
+
+    <!-- Media Player Modal -->
+    <div id="mediaPlayerModal" class="media-player-modal">
+        <div class="media-player-content">
+            <span class="close-button" id="closePlayerModal">&times;</span>
+            <h2 id="playerTitle"></h2>
+            <div id="playerArea"></div>
+            <p class="description" id="playerDescription"></p>
+        </div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+
+        // --- Funcoes de Autenticacao ---
+        function getAuthToken() {
+            return localStorage.getItem('ldfp_auth_token_midia');
+        }
+
+        function getCurrentUser() {
+            try {
+                const raw = localStorage.getItem('ldfp_user_data_midia');
+                return raw ? JSON.parse(raw) : null;
+            } catch (_e) {
+                return null;
+            }
+        }
+
+        function saveAuthSession(token, user) {
+            localStorage.setItem('ldfp_auth_token_midia', token);
+            localStorage.setItem('ldfp_user_data_midia', JSON.stringify(user));
+        }
+
+        function clearAuthSession() {
+            localStorage.removeItem('ldfp_auth_token_midia');
+            localStorage.removeItem('ldfp_user_data_midia');
+        }
+
+        function parseFlag(value, fallback = false) {
+            if (value === undefined || value === null || value === '') {
+                return fallback;
+            }
+            if (value === true || value === 1 || value === '1') {
+                return true;
+            }
+            const normalized = String(value).trim().toLowerCase();
+            return normalized === 'true' || normalized === 'sim';
+        }
+
+        function canManageMedia(user) {
+            return parseFlag(user?.gerenciar_midias || user?.gerenciarMidias, false);
+        }
+
+        function canAccessAppMidia(user) {
+            return parseFlag(user?.acesso_app_midia || user?.acessoAppMidia, true);
+        }
+
+        function redirectToLogin() {
+            if ($('appContainer')) $('appContainer').style.display = 'none';
+            if ($('loginScreen')) $('loginScreen').style.display = 'flex';
+            if ($('loginStatusMessage')) {
+                $('loginStatusMessage').textContent = '';
+                $('loginStatusMessage').className = 'status-message';
+            }
+            if ($('loginCpf')) $('loginCpf').value = '';
+            if ($('loginSenha')) $('loginSenha').value = '';
+        }
+
+        // --- Logica de Login ---
+        async function handleLogin() {
+            const cpfInput = $('loginCpf');
+            const senhaInput = $('loginSenha');
+            const statusMessage = $('loginStatusMessage');
+            const loginBtn = $('loginBtn');
+
+            if (!cpfInput || !senhaInput || !statusMessage || !loginBtn) {
+                return;
+            }
+
+            const cpf = cpfInput.value.replace(/\D/g, '');
+            const senha = senhaInput.value.trim();
+
+            if (cpf.length !== 11 || !senha) {
+                statusMessage.textContent = 'Informe CPF (11 digitos) e senha.';
+                statusMessage.className = 'status-message error';
+                return;
+            }
+
+            statusMessage.textContent = '';
+            statusMessage.className = 'status-message';
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Entrando...';
+
+            try {
+                let token = null;
+                let user = null;
+
+                try {
+                    const resp = await fetch('/app-membro/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cpf, senha })
+                    });
+                    const payload = await resp.json().catch(() => ({}));
+
+                    if (!resp.ok) {
+                        throw new Error(payload.error || 'CPF ou senha incorretos.');
+                    }
+
+                    token = payload.token;
+                    user = payload.membro || null;
+
+                    if (token) {
+                        const meResp = await fetch('/app-membro/meu-perfil', {
+                            headers: { Authorization: 'Bearer ' + token }
+                        });
+                        const meData = await meResp.json().catch(() => ({}));
+                        if (meResp.ok) {
+                            user = {
+                                ...(user || {}),
+                                ...meData,
+                                igrejaId: meData.igreja_id || user?.igrejaId,
+                                igrejaNome: meData.nome_igreja || user?.nome_igreja || user?.igrejaNome,
+                                acesso_app_midia: meData.acesso_app_midia,
+                                gerenciar_midias: meData.gerenciar_midias
+                            };
+                        }
+                    }
+                } catch (_realAuthError) {
+                    const mockUsers = {
+                        '11122233344': { nome: 'Joao Silva', cpf: '11122233344', senha: '123', acesso_app_midia: true, gerenciar_midias: true, igrejaId: 1 },
+                        '55566677788': { nome: 'Maria Souza', cpf: '55566677788', senha: '456', acesso_app_midia: false, gerenciar_midias: false, igrejaId: 1 },
+                        '99988877766': { nome: 'Pedro Lima', cpf: '99988877766', senha: '789', acesso_app_midia: true, gerenciar_midias: false, igrejaId: 1 }
+                    };
+                    const mockUser = Object.values(mockUsers).find((u) => u.cpf === cpf);
+                    if (!mockUser || mockUser.senha !== senha) {
+                        throw new Error('CPF ou senha incorretos.');
+                    }
+                    token = 'mock_token_midia_123';
+                    user = mockUser;
+                }
+
+                if (!canAccessAppMidia(user)) {
+                    throw new Error('Voce nao tem permissao para acessar o App de Midia. Contate a secretaria da igreja.');
+                }
+
+                saveAuthSession(token || 'mock_token_midia_123', user);
+
+                if ($('loginScreen')) $('loginScreen').style.display = 'none';
+                if ($('appContainer')) $('appContainer').style.display = 'flex';
+
+                if ($('userAvatar') && user.nome) {
+                    $('userAvatar').textContent = user.nome.charAt(0).toUpperCase();
+                }
+
+                if ($('navGerenciarMidias')) {
+                    $('navGerenciarMidias').style.display = canManageMedia(user) ? 'flex' : 'none';
+                }
+
+                loadChurchConfig();
+                loadMediaContent();
+            } catch (error) {
+                statusMessage.textContent = error.message || 'Erro ao autenticar.';
+                statusMessage.className = 'status-message error';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Entrar';
+            }
+        }
+
+        // --- Funcoes de UI e Conteudo ---
+        let currentTab = 'videosTab';
+        let managerContentLoaded = false;
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach((tab) => tab.classList.remove('active'));
+            if ($(tabId)) $(tabId).classList.add('active');
+
+            document.querySelectorAll('.bottom-nav-item').forEach((item) => item.classList.remove('active'));
+            const navItem = document.querySelector(`.bottom-nav-item[data-tab="${tabId}"]`);
+            if (navItem) {
+                navItem.classList.add('active');
+            }
+
+            if (tabId === 'gerenciarMidiasTab' && !managerContentLoaded) {
+                const user = getCurrentUser();
+                const igrejaId = Number(user?.igrejaId || user?.igreja_id || getChurchIdForMedia());
+                loadContentIntoApp('igreja_midias.html?id=' + igrejaId);
+            }
+
+            currentTab = tabId;
+        }
+
+        function buildLiveEmbedUrl(rawUrl) {
+            const url = String(rawUrl || '').trim();
+            if (!url) return '';
+            if (url.includes('/embed/')) return url;
+
+            if (url.includes('watch?v=')) {
+                const id = url.split('watch?v=')[1].split('&')[0];
+                return id ? ('https://www.youtube.com/embed/' + id) : url;
+            }
+
+            if (url.includes('youtu.be/')) {
+                const id = url.split('youtu.be/')[1].split('?')[0];
+                return id ? ('https://www.youtube.com/embed/' + id) : url;
+            }
+
+            return url;
+        }
+
+        function renderSocialLinks(config) {
+            const socialLinksGrid = $('socialLinksGrid');
+            if (!socialLinksGrid) return;
+
+            const links = [
+                { name: 'YouTube', icon: 'fa-brands fa-youtube', url: config.youtube },
+                { name: 'Facebook', icon: 'fa-brands fa-facebook', url: config.facebook },
+                { name: 'Instagram', icon: 'fa-brands fa-instagram', url: config.instagram },
+                { name: 'WhatsApp', icon: 'fa-brands fa-whatsapp', url: config.whatsapp }
+            ].filter((item) => String(item.url || '').trim());
+
+            if (!links.length) {
+                socialLinksGrid.innerHTML = '<div class="content-card"><p>Nenhuma rede social configurada.</p></div>';
+                return;
+            }
+
+            socialLinksGrid.innerHTML = links.map((item) => {
+                return '<a class="content-card" href="' + item.url + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:var(--text);display:flex;align-items:center;gap:10px;">'
+                    + '<i class="' + item.icon + '" style="font-size:1.3rem;color:var(--accent);"></i>'
+                    + '<strong>' + item.name + '</strong>'
+                    + '</a>';
+            }).join('');
+        }
+
+        async function loadContentIntoApp(url) {
+            const target = $('gerenciarMidiasContent');
+            if (!target) return;
+
+            target.innerHTML = '<p>Carregando gerenciador...</p>';
+
+            // Usa iframe para isolar estilos/scripts do gerenciador sem conflitar com o app.
+            target.innerHTML = '<iframe src="' + url + '" title="Gerenciar Mídias" style="width:100%;min-height:70vh;border:none;border-radius:12px;background:#fff;"></iframe>';
+            managerContentLoaded = true;
+        }
+
+        window.showMediaTabFromManager = function (tabId) {
+            showTab(tabId || 'videosTab');
+        };
+
+        function openMediaPlayer(type, url, title, description) {
+            const playerArea = $('playerArea');
+            const playerTitle = $('playerTitle');
+            const playerDescription = $('playerDescription');
+            const modal = $('mediaPlayerModal');
+
+            if (!playerArea || !playerTitle || !playerDescription || !modal) {
+                return;
+            }
+
+            playerArea.innerHTML = '';
+            playerTitle.textContent = title;
+            playerDescription.textContent = description;
+
+            if (type === 'video') {
+                const safeVideoUrl = buildVideoEmbedUrl(url);
+                playerArea.innerHTML = `<iframe width="100%" height="250" src="${safeVideoUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            } else if (type === 'audio') {
+                playerArea.innerHTML = `<audio controls autoplay style="width: 100%;"><source src="${url}" type="audio/mpeg">Seu navegador nao suporta o elemento de audio.</audio>`;
+            } else if (type === 'image') {
+                playerArea.innerHTML = `<img src="${url}" alt="${title}" style="max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: var(--radius-md);">`;
+            } else if (type === 'document') {
+                playerArea.innerHTML = `<iframe src="${url}" width="100%" height="400px" style="border: none;"></iframe>`;
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeMediaPlayer() {
+            if ($('mediaPlayerModal')) $('mediaPlayerModal').classList.remove('active');
+            if ($('playerArea')) $('playerArea').innerHTML = '';
+        }
+
+        // Simulacao de carregamento de configuracao da igreja
+        async function loadChurchConfig() {
+            const fallbackLogo = localStorage.getItem('church_logo_url') || 'https://via.placeholder.com/35x35?text=LDFP';
+            const fallbackName = localStorage.getItem('church_name') || 'App de Midia';
+            const igrejaId = getChurchIdForMedia();
+
+            try {
+                const resp = await fetch('/api/app/config?igrejaId=' + igrejaId);
+                const config = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    throw new Error(config.error || 'Erro ao carregar configuracao');
+                }
+
+                if ($('churchLogo')) $('churchLogo').src = config.logoUrl || fallbackLogo;
+                if ($('churchNameHeader')) $('churchNameHeader').textContent = fallbackName;
+
+                const embedLive = buildLiveEmbedUrl(config.liveStreamUrl);
+                if ($('navLive')) $('navLive').style.display = embedLive ? 'flex' : 'none';
+                if ($('liveStreamPlayer')) {
+                    $('liveStreamPlayer').innerHTML = embedLive
+                        ? '<iframe width="100%" height="250" src="' + embedLive + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+                        : '<p>Nenhuma transmissão ao vivo disponível no momento.</p>';
+                }
+
+                renderSocialLinks(config || {});
+                return;
+            } catch (_error) {
+                if ($('churchLogo')) $('churchLogo').src = fallbackLogo;
+                if ($('churchNameHeader')) $('churchNameHeader').textContent = fallbackName;
+                if ($('navLive')) $('navLive').style.display = 'none';
+                renderSocialLinks({});
+            }
+        }
+
+        function getChurchIdForMedia() {
+            const user = getCurrentUser();
+            return Number(user?.igrejaId || user?.igreja_id || 1);
+        }
+
+        function buildVideoEmbedUrl(rawUrl) {
+            const url = String(rawUrl || '').trim();
+            if (!url) return '';
+            if (url.includes('/embed/')) {
+                return url.includes('autoplay=1') ? url : (url + (url.includes('?') ? '&' : '?') + 'autoplay=1');
+            }
+
+            let videoId = '';
+            if (url.includes('watch?v=')) {
+                videoId = url.split('watch?v=')[1].split('&')[0];
+            } else if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1].split('?')[0];
+            }
+
+            if (videoId) {
+                return 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+            }
+
+            return url;
+        }
+
+        function inferVideoThumb(rawUrl) {
+            const url = String(rawUrl || '').trim();
+            let videoId = '';
+            if (url.includes('watch?v=')) {
+                videoId = url.split('watch?v=')[1].split('&')[0];
+            } else if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1].split('?')[0];
+            } else if (url.includes('/embed/')) {
+                videoId = url.split('/embed/')[1].split('?')[0];
+            }
+            return videoId ? ('https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg') : '';
+        }
+
+        // Carregamento de conteudo de midia (API real com fallback)
+        async function loadMediaContent() {
+            try {
+                const igrejaId = getChurchIdForMedia();
+                const resp = await fetch('/api/app/midias?igrejaId=' + igrejaId);
+                const payload = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    throw new Error(payload.error || 'Erro ao carregar mídias da igreja.');
+                }
+
+                const videos = (payload.videos || []).map((item) => ({ ...item, type: 'video' }));
+                const audios = (payload.audios || []).map((item) => ({ ...item, type: 'audio' }));
+                const images = (payload.images || []).map((item) => ({ ...item, type: 'image' }));
+                const documents = (payload.documents || []).map((item) => ({ ...item, type: 'document' }));
+
+                renderMediaList('videosList', videos);
+                renderMediaList('audiosList', audios);
+                renderMediaList('imagesList', images);
+                renderMediaList('documentsList', documents);
+            } catch (_error) {
+                renderMediaList('videosList', []);
+                renderMediaList('audiosList', []);
+                renderMediaList('imagesList', []);
+                renderMediaList('documentsList', []);
+            }
+        }
+
+        function renderMediaList(listId, mediaItems) {
+            const listElement = $(listId);
+            if (!listElement) return;
+
+            if (!Array.isArray(mediaItems) || !mediaItems.length) {
+                listElement.innerHTML = '<div class="content-card"><p>Nenhum conteúdo disponível nesta seção.</p></div>';
+                return;
+            }
+
+            listElement.innerHTML = mediaItems.map((item) => {
+                const safeType = String(item.type || '').replace(/'/g, "\\'");
+                const safeUrl = String(item.url || '').replace(/'/g, "\\'");
+                const safeTitle = String(item.title || '').replace(/'/g, "\\'");
+                const safeDescription = String(item.description || '').replace(/'/g, "\\'");
+
+                return `
+                <div class="media-item" onclick="openMediaPlayer('${safeType}', '${safeUrl}', '${safeTitle}', '${safeDescription}')">
+                    <div class="thumbnail">
+                        ${item.type === 'video' ? `<img src="${inferVideoThumb(item.url) || 'https://via.placeholder.com/400x250?text=VIDEO'}" alt="${item.title}"><i class="fa-solid fa-play-circle"></i>` : ''}
+                        ${item.type === 'audio' ? `<i class="fa-solid fa-headphones"></i>` : ''}
+                        ${item.type === 'image' ? `<img src="${item.url}" alt="${item.title}">` : ''}
+                        ${item.type === 'document' ? `<i class="fa-solid fa-file-alt"></i>` : ''}
+                    </div>
+                    <div class="info">
+                        <h3>${item.title}</h3>
+                        <p>${item.description}</p>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        // --- Inicializacao ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if ($('loginCpf')) {
+                $('loginCpf').addEventListener('input', (e) => {
+                    let value = e.target.value.replace(/\D/g, '').slice(0, 11);
+                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                    e.target.value = value;
+                });
+            }
+
+            if ($('loginBtn')) {
+                $('loginBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    handleLogin();
+                });
+            }
+
+            if ($('logoutBtn')) {
+                $('logoutBtn').addEventListener('click', () => {
+                    clearAuthSession();
+                    redirectToLogin();
+                });
+            }
+
+            if ($('closePlayerModal')) {
+                $('closePlayerModal').addEventListener('click', closeMediaPlayer);
+            }
+
+            document.querySelectorAll('.bottom-nav-item').forEach((item) => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showTab(item.dataset.tab);
+                });
+            });
+
+            const token = getAuthToken();
+            const user = getCurrentUser();
+
+            if (!token || !user) {
+                redirectToLogin();
+            } else if (!canAccessAppMidia(user)) {
+                redirectToLogin();
+                if ($('loginStatusMessage')) {
+                    $('loginStatusMessage').textContent = 'Voce nao tem permissao para acessar o App de Midia. Contate a secretaria da igreja.';
+                    $('loginStatusMessage').className = 'status-message error';
+                }
+            } else {
+                if ($('appContainer')) $('appContainer').style.display = 'flex';
+                if ($('loginScreen')) $('loginScreen').style.display = 'none';
+
+                if ($('userAvatar') && user.nome) {
+                    $('userAvatar').textContent = user.nome.charAt(0).toUpperCase();
+                }
+
+                if ($('navGerenciarMidias')) {
+                    $('navGerenciarMidias').style.display = canManageMedia(user) ? 'flex' : 'none';
+                }
+
+                loadChurchConfig();
+                loadMediaContent();
+            }
+
+            showTab(currentTab);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conta Bloqueada — LDFP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f1f5f9;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .card { background: #1e293b; border-radius: 20px; padding: 50px 40px; max-width: 480px;
+            width: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.08); }
+        .icon-wrap { width: 80px; height: 80px; border-radius: 50%; background: rgba(239,68,68,.12);
+            border: 2px solid rgba(239,68,68,.3); display: inline-flex; align-items: center;
+            justify-content: center; font-size: 36px; color: #ef4444; margin-bottom: 28px; }
+        h1 { font-size: 26px; font-weight: 800; margin-bottom: 12px; }
+        .subtitle { color: #94a3b8; font-size: 15px; line-height: 1.6; margin-bottom: 32px; }
+        .trial-info { background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.2);
+            border-radius: 10px; padding: 14px 18px; margin-bottom: 28px; font-size: 14px;
+            color: #fbbf24; display: none; }
+        .btn-primary { display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #111; font-weight: 800; font-size: 16px; padding: 16px 36px; border-radius: 12px;
+            text-decoration: none; margin-bottom: 14px; width: 100%; }
+        .btn-primary:hover { filter: brightness(1.1); }
+        .btn-secondary { display: inline-block; color: #94a3b8; font-size: 13px; text-decoration: none;
+            margin-top: 8px; }
+        .btn-secondary:hover { color: #f1f5f9; }
+        .divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 24px 0; }
+        .support { font-size: 13px; color: #64748b; }
+        .support a { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon-wrap"><i class="fa-solid fa-lock"></i></div>
+        <h1 id="titulo">Acesso Suspenso</h1>
+        <p class="subtitle" id="subtitulo">
+            Sua assinatura está inativa. Para continuar usando o LDFP, escolha um dos planos disponíveis.
+        </p>
+        <div class="trial-info" id="trialInfo"></div>
+        <a href="assinar.html" class="btn-primary">
+            <i class="fa-solid fa-crown"></i> Ver Planos e Assinar
+        </a>
+        <br>
+        <a href="login.html" class="btn-secondary">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair e trocar de conta
+        </a>
+        <hr class="divider">
+        <p class="support">Dúvidas? Fale conosco: <a href="mailto:contato@ldfp.com.br">contato@ldfp.com.br</a></p>
+    </div>
+
+    <script src="session.js"></script>
+    <script>
+        (function () {
+            const auth = window.getStoredAuth?.();
+            const user = auth?.user;
+            if (!user) { window.location.href = 'login.html'; return; }
+
+            const status = user.statusAssinatura || '';
+            const trialEndsAt = user.trialEndsAt ? new Date(user.trialEndsAt) : null;
+
+            const titulo = document.getElementById('titulo');
+            const subtitulo = document.getElementById('subtitulo');
+            const trialInfo = document.getElementById('trialInfo');
+
+            if (status === 'trial' && trialEndsAt && trialEndsAt < new Date()) {
+                titulo.textContent = 'Período de Teste Encerrado';
+                subtitulo.textContent = 'Seu trial gratuito de 7 dias chegou ao fim. Assine um plano para continuar com acesso completo.';
+                trialInfo.style.display = 'block';
+                trialInfo.innerHTML = `<i class="fa-solid fa-clock"></i> Trial expirou em ${trialEndsAt.toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'})}`;
+            } else if (status === 'suspensa') {
+                titulo.textContent = 'Conta Suspensa';
+                subtitulo.textContent = 'Sua conta foi suspensa por falta de pagamento. Regularize sua assinatura para restaurar o acesso.';
+            } else if (status === 'cancelado') {
+                titulo.textContent = 'Assinatura Cancelada';
+                subtitulo.textContent = 'Sua assinatura foi cancelada. Escolha um plano para reativar sua conta.';
+            }
+        })();
+    </script>
+</body>
+</html>

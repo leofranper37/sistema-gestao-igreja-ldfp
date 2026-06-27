@@ -1,0 +1,49 @@
+{
+  "updatedAt": "2026-04-27T21:47:45.208Z",
+  "branding": {
+    "brandName": "LDFP",
+    "masterTitle": "LDFP Master",
+    "globalAnnouncementEnabled": false,
+    "globalAnnouncementText": "",
+    "globalAnnouncementTone": "info"
+  },
+  "plans": {
+    "siaoCustomProfileEnabled": true,
+    "siaoCustomProfileLabel": "Perfil Personalizado Sião",
+    "siaoInnovationNotes": "Recursos premium para personalização avançada e inovações exclusivas."
+  },
+  "operations": {
+    "autoBackupEnabled": true,
+    "backupRetentionDays": 30
+  },
+  "factory": {
+    "title": "Fabrica de Inovacoes LDFP",
+    "description": "Criacao central de menus e modulos para evolucao continua do produto.",
+    "modules": [
+      {
+        "id": "fin-conciliacao-extrato",
+        "name": "Importacao de Extrato",
+        "description": "Concilia arquivos bancarios em lote com rastreabilidade.",
+        "route": "construcao.html?pag=Importacao%20de%20Extrato",
+        "enabled": true,
+        "status": "lab",
+        "targetPlans": [
+          "siao"
+        ],
+        "updatedAt": "2026-04-27T21:47:45.208Z"
+      },
+      {
+        "id": "contab-lancamentos",
+        "name": "Lancamentos Contabeis",
+        "description": "Modulo operacional para debito e credito com consistencia.",
+        "route": "construcao.html?pag=Lancamentos%20Contabeis",
+        "enabled": true,
+        "status": "idea",
+        "targetPlans": [
+          "siao"
+        ],
+        "updatedAt": "2026-04-27T21:47:45.208Z"
+      }
+    ]
+  }
+}

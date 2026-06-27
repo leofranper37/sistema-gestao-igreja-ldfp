@@ -1,0 +1,1109 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - EBD · Turmas & Revistas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --purple:  #7c3aed;
+            --indigo:  #4f46e5;
+            --green:   #10b981;
+            --red:     #dc2626;
+            --yellow:  #f59e0b;
+            --surface: #ffffff;
+            --bg:      #f1f5f9;
+            --border:  #e2e8f0;
+            --text:    #0f172a;
+            --muted:   #64748b;
+            --radius:  14px;
+            --shadow:  0 4px 16px rgba(15,23,42,.08);
+            --shadow-lg: 0 12px 32px rgba(15,23,42,.14);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .page-wrap {
+            padding: 24px 28px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Cabeçalho */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-header-left h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-header-left h2 i { color: var(--purple); }
+        .page-header-left p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-primary { background: var(--purple); color: #fff; }
+        .btn-primary:hover { background: #6d28d9; }
+        .btn-ghost { background: var(--bg); color: var(--muted); border: 1.5px solid var(--border); }
+        .btn-ghost:hover { background: var(--border); }
+        .btn-danger { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+        .btn-danger:hover { background: var(--red); color: #fff; }
+        .btn-sm { padding: 7px 11px; font-size: 12px; border-radius: 7px; }
+
+        /* Layout dois painéis */
+        .two-col {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+        /* Painel base */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 13px 15px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-count {
+            font-size: 11px;
+            background: #ede9fe;
+            color: var(--purple);
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        /* Busca */
+        .search-box { position: relative; }
+        .search-box i {
+            position: absolute;
+            left: 10px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: .8rem;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 9px 11px 9px 30px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--purple);
+            background: #fff;
+        }
+
+        /* Lista de turmas */
+        .turma-list {
+            overflow-y: auto;
+            max-height: calc(100vh - 290px);
+        }
+
+        .turma-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .turma-item:last-child { border-bottom: none; }
+        .turma-item:hover { background: #fafafa; }
+        .turma-item.is-active {
+            background: #ede9fe;
+            box-shadow: inset 4px 0 0 var(--purple);
+        }
+
+        .t-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: var(--purple);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            flex-shrink: 0;
+        }
+
+        .t-info { flex: 1; min-width: 0; }
+        .t-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .t-sub { font-size: 11px; color: var(--muted); }
+
+        .t-badge {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .badge-ativo   { background: #d1fae5; color: #065f46; }
+        .badge-inativo { background: #fee2e2; color: #991b1b; }
+
+        .empty-list {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .empty-list i { font-size: 1.8rem; margin-bottom: 10px; color: #cbd5e1; display: block; }
+
+        /* Painel direito */
+        .right-panel { display: flex; flex-direction: column; gap: 16px; }
+
+        /* Hero */
+        .turma-hero {
+            border-radius: var(--radius);
+            padding: 22px 26px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+            transition: background .4s;
+        }
+        .turma-hero::before {
+            content:'';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.08);
+        }
+
+        .hero-icon {
+            width: 62px; height: 62px;
+            border-radius: 14px;
+            border: 3px solid rgba(255,255,255,.3);
+            background: rgba(255,255,255,.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .hero-body { flex: 1; min-width: 160px; }
+        .hero-name {
+            font-size: 19px;
+            font-weight: 800;
+            color: #fff;
+        }
+        .hero-name.ph {
+            color: rgba(255,255,255,.55);
+            font-style: italic;
+            font-weight: 400;
+            font-size: 15px;
+        }
+        .hero-sub { font-size: 12px; color: rgba(255,255,255,.8); margin-top: 4px; }
+
+        .hero-stats {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .hero-stat {
+            background: rgba(255,255,255,.15);
+            border-radius: 10px;
+            padding: 8px 14px;
+            text-align: center;
+            min-width: 70px;
+        }
+        .hero-stat-val { font-size: 18px; font-weight: 800; color: #fff; }
+        .hero-stat-lbl { font-size: 10px; color: rgba(255,255,255,.75); margin-top: 2px; }
+
+        .hero-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .hero-btn {
+            padding: 8px 13px;
+            border-radius: 8px;
+            border: none;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            transition: background .2s;
+        }
+        .hero-btn:hover { background: rgba(255,255,255,.35); }
+
+        /* Abas */
+        .tabs-bar {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border);
+            padding: 0 4px;
+            background: var(--surface);
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
+        .tab-btn {
+            padding: 11px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color .15s;
+        }
+        .tab-btn:hover { color: var(--purple); }
+        .tab-btn.active { color: var(--purple); border-bottom-color: var(--purple); }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Form */
+        .form-wrap {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--purple);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ede9fe;
+            margin-bottom: 14px;
+        }
+
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+        @media (max-width: 700px) {
+            .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+        }
+
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+        .field input,
+        .field select,
+        .field textarea {
+            padding: 9px 11px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text);
+            background: #f8fafc;
+            transition: border-color .15s;
+        }
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--purple);
+            background: #fff;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding-top: 4px;
+        }
+
+        .status-msg {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 7px 12px;
+            border-radius: 7px;
+            display: none;
+        }
+        .status-msg.ok  { display: block; background: #d1fae5; color: #065f46; }
+        .status-msg.err { display: block; background: #fee2e2; color: #991b1b; }
+
+        /* Tabelas internas */
+        .inner-table-wrap {
+            padding: 16px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        .inner-table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .inner-table-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        table.inner { width: 100%; border-collapse: collapse; font-size: 13px; }
+        table.inner th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        table.inner td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text);
+        }
+        table.inner tr:last-child td { border-bottom: none; }
+
+        .empty-table {
+            text-align: center;
+            color: var(--muted);
+            padding: 28px !important;
+            font-style: italic;
+        }
+
+        /* Lições da revista */
+        .licao-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 140px 110px auto;
+            gap: 8px;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .licao-row:last-child { border-bottom: none; }
+        .licao-row input, .licao-row select {
+            padding: 7px 9px;
+            border: 1.5px solid var(--border);
+            border-radius: 7px;
+            font-size: 12px;
+            background: #f8fafc;
+        }
+        .licao-row input:focus, .licao-row select:focus {
+            outline: none;
+            border-color: var(--purple);
+        }
+        .licao-num {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--purple);
+            text-align: center;
+        }
+        .btn-remove-licao {
+            background: none;
+            border: none;
+            color: var(--red);
+            cursor: pointer;
+            font-size: .85rem;
+            padding: 4px 6px;
+            border-radius: 6px;
+        }
+        .btn-remove-licao:hover { background: #fee2e2; }
+
+        .licao-header {
+            display: grid;
+            grid-template-columns: 60px 1fr 140px 110px auto;
+            gap: 8px;
+            padding: 6px 0;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--muted);
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page"
+      data-shell-title="Turmas & Revistas"
+      data-shell-breadcrumb="LDFP / Secretaria / EBD / Turmas & Revistas"
+      data-shell-active="ebd_turmas.html"
+      data-shell-chip="Ambiente autenticado"
+      data-shell-role="Administrador">
+
+<main class="main-content enterprise-main">
+<div class="page-wrap">
+
+    <!-- Cabeçalho -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h2><i class="fa-solid fa-people-group"></i> Turmas & Revistas</h2>
+            <p>Gerencie as turmas da EBD, suas revistas e grade de lições</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" id="btnRecarregar">
+                <i class="fa-solid fa-rotate-right"></i> Atualizar
+            </button>
+            <button class="btn btn-primary" id="btnNovaTurma">
+                <i class="fa-solid fa-plus"></i> Nova Turma
+            </button>
+        </div>
+    </div>
+
+    <!-- Dois painéis -->
+    <div class="two-col">
+
+        <!-- Painel esquerdo: lista -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span>Turmas cadastradas</span>
+                    <span class="panel-count" id="turmasCount">0</span>
+                </div>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar turma ou professor...">
+                </div>
+            </div>
+            <div class="turma-list" id="turmaList"></div>
+        </div>
+
+        <!-- Painel direito -->
+        <div class="right-panel">
+
+            <!-- Hero -->
+            <div class="turma-hero" id="turmaHero">
+                <div class="hero-icon"><i class="fa-solid fa-people-group"></i></div>
+                <div class="hero-body">
+                    <div class="hero-name ph" id="heroNome">Selecione ou crie uma turma</div>
+                    <div class="hero-sub" id="heroSub">EBD · Turmas & Revistas</div>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-val" id="heroAlunos">0</div>
+                        <div class="hero-stat-lbl">Alunos</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-val" id="heroLicoes">0</div>
+                        <div class="hero-stat-lbl">Lições</div>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <button class="hero-btn" id="btnSalvarHero">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar
+                    </button>
+                    <button class="hero-btn" id="btnExcluirHero">
+                        <i class="fa-solid fa-trash"></i> Excluir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="status-msg" id="statusMsg"></div>
+
+            <!-- Abas -->
+            <div class="tabs-bar">
+                <button class="tab-btn active" data-tab="tabDados">
+                    <i class="fa-solid fa-chalkboard-user"></i> Dados da Turma
+                </button>
+                <button class="tab-btn" data-tab="tabRevista">
+                    <i class="fa-solid fa-book-open"></i> Revista & Lições
+                </button>
+                <button class="tab-btn" data-tab="tabAlunos">
+                    <i class="fa-solid fa-user-graduate"></i> Alunos
+                </button>
+            </div>
+
+            <!-- Aba Dados -->
+            <div class="tab-panel active" id="tabDados">
+                <form class="form-wrap" id="turmaForm" autocomplete="off">
+                    <div>
+                        <div class="section-title">Identificação</div>
+                        <div class="form-grid-2">
+                            <div class="field">
+                                <label>Nome da Turma *</label>
+                                <input type="text" name="nomeTurma" placeholder="Ex: Adolescentes, Jovens...">
+                            </div>
+                            <div class="field">
+                                <label>Ano</label>
+                                <input type="text" name="ano" placeholder="Ex: 2026">
+                            </div>
+                            <div class="field">
+                                <label>Estágio</label>
+                                <select name="estagio">
+                                    <option value="">Selecione...</option>
+                                    <option>Berçário</option>
+                                    <option>Maternal</option>
+                                    <option>Jardim</option>
+                                    <option>Primários</option>
+                                    <option>Juniores</option>
+                                    <option>Adolescentes</option>
+                                    <option>Jovens</option>
+                                    <option>Adultos</option>
+                                    <option>3ª Idade</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Situação</label>
+                                <select name="situacao">
+                                    <option value="Ativo">Ativo</option>
+                                    <option value="Inativo">Inativo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title">Professores</div>
+                        <div class="form-grid-2">
+                            <div class="field">
+                                <label>Professor Principal</label>
+                                <input type="text" name="professor" placeholder="Nome do professor">
+                            </div>
+                            <div class="field">
+                                <label>Segundo Professor</label>
+                                <input type="text" name="segundoProfessor" placeholder="Nome do segundo professor">
+                            </div>
+                            <div class="field">
+                                <label>Telefone do Professor</label>
+                                <input type="text" name="telefoneProfessor" placeholder="(00) 00000-0000">
+                            </div>
+                            <div class="field">
+                                <label>Email do Professor</label>
+                                <input type="email" name="emailProfessor" placeholder="professor@email.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title">Horário & Local</div>
+                        <div class="form-grid-3">
+                            <div class="field">
+                                <label>Dia da Semana</label>
+                                <select name="diaSemana">
+                                    <option value="">Selecione...</option>
+                                    <option>Domingo</option>
+                                    <option>Segunda</option>
+                                    <option>Terça</option>
+                                    <option>Quarta</option>
+                                    <option>Quinta</option>
+                                    <option>Sexta</option>
+                                    <option>Sábado</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Horário</label>
+                                <input type="time" name="horario">
+                            </div>
+                            <div class="field">
+                                <label>Sala / Local</label>
+                                <input type="text" name="sala" placeholder="Ex: Sala 3, Templo...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-primary" id="btnSalvar">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar Turma
+                        </button>
+                        <button type="button" class="btn btn-ghost" id="btnLimpar">
+                            <i class="fa-solid fa-eraser"></i> Limpar
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" id="btnExcluir">
+                            <i class="fa-solid fa-trash"></i> Excluir
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Aba Revista & Lições -->
+            <div class="tab-panel" id="tabRevista">
+                <form class="form-wrap" id="revistaForm" autocomplete="off">
+                    <div>
+                        <div class="section-title">Dados da Revista</div>
+                        <div class="form-grid-2">
+                            <div class="field">
+                                <label>Título da Revista</label>
+                                <input type="text" name="revistaTitulo" placeholder="Ex: Jovens em Ação">
+                            </div>
+                            <div class="field">
+                                <label>Editora</label>
+                                <input type="text" name="revistaEditora" placeholder="Ex: CPAD, Betânia...">
+                            </div>
+                            <div class="field">
+                                <label>Trimestre / Período</label>
+                                <input type="text" name="revistaTrimestre" placeholder="Ex: 1º Trimestre 2026">
+                            </div>
+                            <div class="field">
+                                <label>Faixa Etária</label>
+                                <input type="text" name="revistaFaixa" placeholder="Ex: 15 a 25 anos">
+                            </div>
+                            <div class="field">
+                                <label>Início do Trimestre</label>
+                                <input type="date" name="revistaInicio">
+                            </div>
+                            <div class="field">
+                                <label>Fim do Trimestre</label>
+                                <input type="date" name="revistaFim">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span>Lições do Trimestre</span>
+                            <button type="button" class="btn btn-primary btn-sm" id="btnAddLicao">
+                                <i class="fa-solid fa-plus"></i> Adicionar Lição
+                            </button>
+                        </div>
+
+                        <div class="licao-header">
+                            <span style="text-align:center">Nº</span>
+                            <span>Título</span>
+                            <span>Data (Domingo)</span>
+                            <span>Status</span>
+                            <span></span>
+                        </div>
+                        <div id="licoesWrap"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-primary" id="btnSalvarRevista">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar Revista & Lições
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Aba Alunos -->
+            <div class="tab-panel" id="tabAlunos">
+                <div class="inner-table-wrap">
+                    <div class="inner-table-header">
+                        <span class="inner-table-title">Alunos desta turma</span>
+                        <button class="btn btn-primary btn-sm" id="btnIrAlunos">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Gerenciar em Alunos
+                        </button>
+                    </div>
+                    <table class="inner">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Estágio</th>
+                                <th>Situação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alunosTurmaBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div><!-- /right-panel -->
+    </div><!-- /two-col -->
+
+</div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+    requireAuthSession?.();
+
+    /* ── Estado ── */
+    let turmas      = [];
+    let selecionado = null; // id numérico
+    let filtroTexto = '';
+    let licoes      = [];
+
+    const $ = (id) => document.getElementById(id);
+
+    /* ── Status ── */
+    const setStatus = (msg, err = false) => {
+        const el = $('statusMsg');
+        el.textContent = msg;
+        el.className = 'status-msg ' + (msg ? (err ? 'err' : 'ok') : '');
+    };
+
+    /* ── Cores hero ── */
+    const heroColors = {
+        'Berçário':    'linear-gradient(135deg,#ec4899,#f43f5e)',
+        'Maternal':    'linear-gradient(135deg,#f97316,#fbbf24)',
+        'Jardim':      'linear-gradient(135deg,#84cc16,#10b981)',
+        'Primários':   'linear-gradient(135deg,#06b6d4,#0284c7)',
+        'Juniores':    'linear-gradient(135deg,#6366f1,#8b5cf6)',
+        'Adolescentes':'linear-gradient(135deg,#7c3aed,#4f46e5)',
+        'Jovens':      'linear-gradient(135deg,#0f766e,#0284c7)',
+        'Adultos':     'linear-gradient(135deg,#334155,#475569)',
+        '3ª Idade':    'linear-gradient(135deg,#92400e,#b45309)',
+    };
+
+    /* ── Hero ── */
+    const updateHero = (t) => {
+        const hero = $('turmaHero');
+        if (!t) {
+            hero.style.background = 'linear-gradient(135deg,#7c3aed,#4f46e5)';
+            $('heroNome').textContent = 'Selecione ou crie uma turma';
+            $('heroNome').className = 'hero-name ph';
+            $('heroSub').textContent = 'EBD · Turmas & Revistas';
+            $('heroAlunos').textContent = '0';
+            $('heroLicoes').textContent = '0';
+            return;
+        }
+        hero.style.background = heroColors[t.estagio] || 'linear-gradient(135deg,#7c3aed,#4f46e5)';
+        $('heroNome').textContent = t.nome || 'Sem nome';
+        $('heroNome').className = 'hero-name';
+        $('heroSub').textContent = [t.estagio, t.professor ? '· Prof. ' + t.professor : '', t.ano ? '· ' + t.ano : ''].filter(Boolean).join(' ');
+        $('heroAlunos').textContent = t.totalAlunos || 0;
+        $('heroLicoes').textContent = Array.isArray(t.licoes) ? t.licoes.length : 0;
+    };
+
+    /* ── Renderizar lista ── */
+    const renderLista = () => {
+        const list  = $('turmaList');
+        const count = $('turmasCount');
+        const filtradas = turmas.filter(t =>
+            (t.nome + ' ' + (t.professor || '')).toLowerCase().includes(filtroTexto)
+        );
+        count.textContent = filtradas.length;
+
+        if (!filtradas.length) {
+            list.innerHTML = `<div class="empty-list"><i class="fa-solid fa-people-group"></i>Nenhuma turma encontrada.</div>`;
+            return;
+        }
+        list.innerHTML = filtradas.map(t => {
+            const ativo = selecionado === t.id ? 'is-active' : '';
+            const badge = t.situacao === 'Inativo' ? 'badge-inativo' : 'badge-ativo';
+            return `
+                <div class="turma-item ${ativo}" data-id="${t.id}">
+                    <div class="t-icon" style="background-image:${heroColors[t.estagio] || 'none'};background:${heroColors[t.estagio] ? 'transparent' : '#7c3aed'};">
+                        <i class="fa-solid fa-people-group"></i>
+                    </div>
+                    <div class="t-info">
+                        <div class="t-name">${t.nome || '-'}</div>
+                        <div class="t-sub">${t.estagio || 'Sem estágio'}${t.professor ? ' · ' + t.professor : ''}</div>
+                    </div>
+                    <span class="t-badge ${badge}">${t.situacao || 'Ativo'}</span>
+                </div>
+            `;
+        }).join('');
+        list.querySelectorAll('.turma-item').forEach(el => {
+            el.addEventListener('click', () => selecionarTurma(el.dataset.id));
+        });
+    };
+
+    /* ── Preencher form ── */
+    const preencherForm = (t) => {
+        const form = document.forms.turmaForm;
+        const rev  = document.forms.revistaForm;
+        if (!t) {
+            form.reset(); rev.reset();
+            licoes = []; renderLicoes(); return;
+        }
+        form.nomeTurma.value        = t.nome             || '';
+        form.ano.value              = t.ano              || '';
+        form.estagio.value          = t.estagio          || '';
+        form.situacao.value         = t.situacao         || 'Ativo';
+        form.professor.value        = t.professor        || '';
+        form.segundoProfessor.value = t.segundoProfessor || '';
+        form.telefoneProfessor.value= t.telefoneProfessor|| '';
+        form.emailProfessor.value   = t.emailProfessor   || '';
+        form.diaSemana.value        = t.diaSemana        || '';
+        form.horario.value          = t.horario          || '';
+        form.sala.value             = t.sala             || '';
+
+        const ri = t.revistaInfo || {};
+        rev.revistaTitulo.value    = ri.revistaTitulo    || '';
+        rev.revistaEditora.value   = ri.revistaEditora   || '';
+        rev.revistaTrimestre.value = ri.revistaTrimestre || '';
+        rev.revistaFaixa.value     = ri.revistaFaixa     || '';
+        rev.revistaInicio.value    = ri.revistaInicio    || '';
+        rev.revistaFim.value       = ri.revistaFim       || '';
+
+        licoes = Array.isArray(t.licoes) ? JSON.parse(JSON.stringify(t.licoes)) : [];
+        renderLicoes();
+    };
+
+    /* ── Selecionar turma ── */
+    const selecionarTurma = async (idStr) => {
+        selecionado = Number(idStr);
+        const t = turmas.find(x => x.id === selecionado);
+        updateHero(t);
+        preencherForm(t);
+        setStatus('');
+        renderLista();
+        await renderAlunosTurma(t);
+    };
+
+    /* ── Alunos da turma (via API) ── */
+    const renderAlunosTurma = async (t) => {
+        const tbody = $('alunosTurmaBody');
+        if (!t) {
+            tbody.innerHTML = `<tr><td colspan="3" class="empty-table">Selecione uma turma.</td></tr>`;
+            return;
+        }
+        try {
+            const alunos = await fetch(`/api/ebd/alunos?turma_id=${t.id}`).then(r => r.json());
+            if (!alunos.length) {
+                tbody.innerHTML = `<tr><td colspan="3" class="empty-table">Nenhum aluno nesta turma.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = alunos.map(a => `
+                <tr>
+                    <td>${a.nome || '-'}</td>
+                    <td>${a.estagio || '-'}</td>
+                    <td>${a.situacao || 'Ativo'}</td>
+                </tr>
+            `).join('');
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="3" class="empty-table">Erro ao carregar alunos.</td></tr>`;
+        }
+    };
+
+    /* ── Lições ── */
+    const renderLicoes = () => {
+        const wrap = $('licoesWrap');
+        if (!licoes.length) {
+            wrap.innerHTML = `<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">
+                Nenhuma lição adicionada. Clique em "Adicionar Lição".
+            </div>`;
+            return;
+        }
+        wrap.innerHTML = licoes.map((l, i) => `
+            <div class="licao-row" data-idx="${i}">
+                <div class="licao-num">${i + 1}</div>
+                <input type="text"   class="l-titulo"  value="${l.titulo || ''}"  placeholder="Título da lição">
+                <input type="date"   class="l-data"    value="${l.data || ''}">
+                <select class="l-status">
+                    <option value="planejada" ${l.status==='planejada' ?'selected':''}>Planejada</option>
+                    <option value="realizada" ${l.status==='realizada' ?'selected':''}>Realizada</option>
+                    <option value="cancelada" ${l.status==='cancelada' ?'selected':''}>Cancelada</option>
+                </select>
+                <button type="button" class="btn-remove-licao" data-rm="${i}">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        `).join('');
+        wrap.querySelectorAll('.btn-remove-licao').forEach(btn => {
+            btn.addEventListener('click', () => { licoes.splice(Number(btn.dataset.rm), 1); renderLicoes(); });
+        });
+    };
+
+    const coletarLicoes = () =>
+        Array.from($('licoesWrap').querySelectorAll('.licao-row')).map((row, i) => ({
+            numero: i + 1,
+            titulo: row.querySelector('.l-titulo').value.trim(),
+            data:   row.querySelector('.l-data').value,
+            status: row.querySelector('.l-status').value,
+        }));
+
+    /* ── Coletar payload ── */
+    const getPayload = () => {
+        const form = document.forms.turmaForm;
+        const rev  = document.forms.revistaForm;
+        return {
+            nome:             form.nomeTurma.value.trim(),
+            ano:              form.ano.value.trim(),
+            estagio:          form.estagio.value,
+            situacao:         form.situacao.value || 'Ativo',
+            professor:        form.professor.value.trim(),
+            segundoProfessor: form.segundoProfessor.value.trim(),
+            telefoneProfessor:form.telefoneProfessor.value.trim(),
+            emailProfessor:   form.emailProfessor.value.trim(),
+            diaSemana:        form.diaSemana.value,
+            horario:          form.horario.value,
+            sala:             form.sala.value.trim(),
+            revistaInfo: {
+                revistaTitulo:   rev.revistaTitulo.value.trim(),
+                revistaEditora:  rev.revistaEditora.value.trim(),
+                revistaTrimestre:rev.revistaTrimestre.value.trim(),
+                revistaFaixa:    rev.revistaFaixa.value.trim(),
+                revistaInicio:   rev.revistaInicio.value,
+                revistaFim:      rev.revistaFim.value,
+            },
+            licoes: coletarLicoes(),
+        };
+    };
+
+    /* ── Salvar ── */
+    const salvar = async () => {
+        setStatus('');
+        const payload = getPayload();
+        if (!payload.nome) { setStatus('Informe o nome da turma.', true); return; }
+
+        const url    = selecionado ? `/api/ebd/turmas/${selecionado}` : '/api/ebd/turmas';
+        const method = selecionado ? 'PUT' : 'POST';
+        try {
+            const res  = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+            if (!res.ok) { setStatus(json.error || 'Erro ao salvar.', true); return; }
+            if (!selecionado) selecionado = json.id;
+            setStatus('Turma salva com sucesso!');
+            await carregarDados();
+            const t = turmas.find(x => x.id === selecionado);
+            updateHero(t);
+            renderLista();
+            await renderAlunosTurma(t);
+        } catch (e) {
+            setStatus('Erro de comunicação.', true);
+        }
+    };
+
+    /* ── Excluir ── */
+    const excluir = async () => {
+        if (!selecionado) { setStatus('Selecione uma turma para excluir.', true); return; }
+        const t = turmas.find(x => x.id === selecionado);
+        if (!confirm(`Excluir a turma "${t?.nome}"? Esta ação não pode ser desfeita.`)) return;
+        try {
+            const res = await fetch(`/api/ebd/turmas/${selecionado}`, { method: 'DELETE' });
+            const json = await res.json();
+            if (!res.ok) { setStatus(json.error || 'Erro ao excluir.', true); return; }
+            selecionado = null;
+            await carregarDados();
+            preencherForm(null);
+            updateHero(null);
+            renderLista();
+            renderAlunosTurma(null);
+            setStatus('Turma excluída.');
+        } catch (e) {
+            setStatus('Erro de comunicação.', true);
+        }
+    };
+
+    /* ── Limpar ── */
+    const limpar = () => {
+        selecionado = null;
+        preencherForm(null);
+        updateHero(null);
+        setStatus('');
+        renderLista();
+        renderAlunosTurma(null);
+    };
+
+    /* ── Carregar turmas da API ── */
+    const carregarDados = async () => {
+        try {
+            const data = await fetch('/api/ebd/turmas').then(r => r.json());
+            turmas = Array.isArray(data) ? data : [];
+        } catch (e) {
+            turmas = [];
+        }
+    };
+
+    /* ── Eventos ── */
+    $('btnNovaTurma').addEventListener('click', limpar);
+    $('btnLimpar').addEventListener('click', limpar);
+    $('btnSalvar').addEventListener('click', salvar);
+    $('btnSalvarHero').addEventListener('click', salvar);
+    $('btnExcluir').addEventListener('click', excluir);
+    $('btnExcluirHero').addEventListener('click', excluir);
+    $('btnRecarregar').addEventListener('click', async () => { await carregarDados(); renderLista(); });
+    $('btnSalvarRevista').addEventListener('click', salvar);
+
+    $('btnAddLicao').addEventListener('click', () => {
+        licoes.push({ titulo: '', data: '', status: 'planejada' });
+        renderLicoes();
+    });
+
+    $('btnIrAlunos').addEventListener('click', () => {
+        window.location.href = 'ebd_alunos.html';
+    });
+
+    $('searchInput').addEventListener('input', (e) => {
+        filtroTexto = e.target.value.toLowerCase().trim();
+        renderLista();
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            $(btn.dataset.tab)?.classList.add('active');
+        });
+    });
+
+    /* ── Init ── */
+    (async () => { await carregarDados(); renderLista(); })();
+</script>
+</body>
+</html>

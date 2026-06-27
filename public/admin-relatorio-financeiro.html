@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório Financeiro — LDFP Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--dark:#0f172a;--panel:#1e293b;--blue:#2563eb;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--bg:#f8fafc;--white:#fff;--text:#334155;--muted:#64748b;--border:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--dark);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}
+.logo-icon{background:linear-gradient(135deg,var(--blue),#60a5fa);width:32px;height:32px;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:800;font-size:14px}
+.sidebar-header h2{font-size:17px;font-weight:800}.sidebar-header span{font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.menu{padding:16px 0;flex:1;overflow-y:auto}
+.menu-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:0 18px;margin:12px 0 6px;font-weight:600}
+.menu-item{padding:11px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.2s;border-left:3px solid transparent}
+.menu-item:hover{background:var(--panel);color:#fff}.menu-item.active{background:var(--panel);border-left-color:var(--blue);color:#fff;font-weight:600}
+.menu-item i{width:18px;text-align:center;font-size:15px}
+.main-content{flex:1;display:flex;flex-direction:column;overflow-y:auto}
+.topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-success{background:var(--green);color:#fff}.btn-success:hover{background:#059669}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:var(--bg)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.workspace{padding:28px;width:100%}
+/* FILTRO */
+.filter-bar{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.filter-bar label{font-size:13px;font-weight:600;color:var(--muted)}
+.filter-bar input[type=month]{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:var(--bg)}
+.filter-bar input[type=month]:focus{outline:none;border-color:var(--blue)}
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.kpi-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px 22px}
+.kpi-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi-value{font-size:26px;font-weight:800;color:var(--dark);line-height:1}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:5px}
+/* TABLE */
+.panel-card{background:var(--white);border-radius:12px;border:1px solid var(--border);overflow:hidden}
+.panel-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.panel-header h3{font-size:15px;font-weight:700}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--bg);padding:11px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:.15s}
+tbody tr:hover{background:#f8fafc}
+tbody td{padding:11px 14px;vertical-align:middle}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.badge-pago{background:#d1fae5;color:#065f46}
+.badge-pendente{background:#fef3c7;color:#92400e}
+.badge-cancelado{background:#fee2e2;color:#991b1b}
+.badge-default{background:#f1f5f9;color:#475569}
+.empty-state{text-align:center;padding:48px;color:var(--muted);font-size:13px}
+.loading{text-align:center;padding:60px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">L</div>
+    <div><h2>LDFP Master</h2><span>Painel SaaS</span></div>
+  </div>
+  <div class="menu">
+    <div class="menu-label">Negócio</div>
+    <a href="super-admin.html" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="admin-metricas.html" class="menu-item"><i class="fa-solid fa-chart-pie"></i> Métricas SaaS</a>
+    <a href="admin-relatorio-financeiro.html" class="menu-item active"><i class="fa-solid fa-file-invoice-dollar"></i> Relatório Financeiro</a>
+    <a href="admin-igrejas.html" class="menu-item"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+    <a href="admin-assinaturas.html" class="menu-item"><i class="fa-solid fa-file-invoice"></i> Assinaturas & Faturas</a>
+    <a href="admin-usuarios.html" class="menu-item"><i class="fa-solid fa-users-gear"></i> Usuários & Senhas</a>
+    <a href="admin-modulos.html" class="menu-item"><i class="fa-solid fa-puzzle-piece"></i> Catálogo de Módulos</a>
+    <a href="admin-retomada.html" class="menu-item"><i class="fa-solid fa-rocket"></i> Retomada Inteligente</a>
+    <div class="menu-label">Configurações SaaS</div>
+    <a href="admin-planos.html" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+    <a href="admin-novidades.html" class="menu-item"><i class="fa-solid fa-newspaper"></i> Novidades</a>
+    <a href="admin-inovacoes.html" class="menu-item"><i class="fa-solid fa-lightbulb"></i> Fábrica de Inovações</a>
+    <a href="admin-sistema.html" class="menu-item"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
+    <a href="admin-backup.html" class="menu-item"><i class="fa-solid fa-database"></i> Backup & Recuperação</a>
+    <div class="menu-label" style="margin-top:auto">Sessão</div>
+    <a href="login.html" class="menu-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <header class="topbar">
+    <h1><i class="fa-solid fa-file-invoice-dollar" style="color:var(--blue);margin-right:8px"></i>Relatório Financeiro</h1>
+    <div class="topbar-actions">
+      <button class="btn btn-success" id="btnCsv" onclick="exportarCsv()" disabled>
+        <i class="fa-solid fa-file-csv"></i> Exportar CSV
+      </button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <div class="filter-bar">
+      <label for="inputMes"><i class="fa-solid fa-calendar-days" style="margin-right:4px"></i> Mês de referência:</label>
+      <input type="month" id="inputMes">
+      <button class="btn btn-primary" onclick="carregar()"><i class="fa-solid fa-magnifying-glass"></i> Gerar relatório</button>
+    </div>
+
+    <div id="kpisArea"></div>
+    <div id="tabelaArea"></div>
+  </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script>
+// Role guard
+(function() {
+  const raw = sessionStorage.getItem('user') || localStorage.getItem('user');
+  const p = raw ? JSON.parse(raw) : (window.getStoredAuth?.()?.user || null);
+  const role = String(p?.role || p?.perfil || '').toLowerCase();
+  const superRoles = ['super-admin','super_admin','superadmin','master','owner','root'];
+  if (!superRoles.includes(role)) location.href = 'dashboard.html';
+})();
+
+const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
+const hdrs = () => ({ 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() });
+const fmtBRL = v => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const fmtDt = v => v ? new Date(v).toLocaleString('pt-BR') : '—';
+
+// Preenche mês atual como padrão
+(function() {
+  const now = new Date();
+  const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  document.getElementById('inputMes').value = mes;
+})();
+
+let mesAtual = null;
+
+function badgeStatus(s) {
+  const cls = s === 'pago' ? 'badge-pago'
+            : s === 'pendente' ? 'badge-pendente'
+            : s === 'cancelado' ? 'badge-cancelado'
+            : 'badge-default';
+  return `<span class="badge ${cls}">${s}</span>`;
+}
+
+async function carregar() {
+  const mes = document.getElementById('inputMes').value;
+  if (!mes) { alert('Selecione um mês.'); return; }
+  mesAtual = mes;
+
+  document.getElementById('kpisArea').innerHTML = '<div class="loading"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>';
+  document.getElementById('tabelaArea').innerHTML = '';
+  document.getElementById('btnCsv').disabled = true;
+
+  try {
+    const r = await fetch(`/api/saas/relatorio-financeiro?mes=${mes}`, { headers: hdrs() });
+    if (r.status === 401) { location.href = 'login.html'; return; }
+    if (!r.ok) throw new Error('Erro ' + r.status);
+    const d = await r.json();
+    renderKpis(d.totais);
+    renderTabela(d.lancamentos, mes);
+    document.getElementById('btnCsv').disabled = false;
+  } catch (e) {
+    document.getElementById('kpisArea').innerHTML =
+      `<div style="color:var(--red);padding:16px">Erro ao carregar: ${e.message}</div>`;
+  }
+}
+
+function renderKpis(t) {
+  document.getElementById('kpisArea').innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Arrecadado</div>
+        <div class="kpi-value" style="color:var(--green)">${fmtBRL(t.totalArrecadado)}</div>
+        <div class="kpi-sub">${t.qtdPago} pagamento(s) confirmado(s)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Pendente</div>
+        <div class="kpi-value" style="color:var(--gold)">${fmtBRL(t.totalPendente)}</div>
+        <div class="kpi-sub">${t.qtdPendente} pagamento(s) em aberto</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Igrejas no período</div>
+        <div class="kpi-value">${t.totalIgrejas}</div>
+        <div class="kpi-sub">igrejas com movimentação</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total de Lançamentos</div>
+        <div class="kpi-value">${t.qtdPago + t.qtdPendente}</div>
+        <div class="kpi-sub">no mês selecionado</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTabela(lancamentos, mes) {
+  const [y, m] = mes.split('-');
+  const nomeMes = new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+  if (!lancamentos.length) {
+    document.getElementById('tabelaArea').innerHTML =
+      `<div class="panel-card"><div class="empty-state"><i class="fa-solid fa-inbox fa-2x" style="margin-bottom:10px;display:block"></i>Nenhum lançamento em ${nomeMes}.</div></div>`;
+    return;
+  }
+
+  const linhas = lancamentos.map(l => `
+    <tr>
+      <td>${l.id}</td>
+      <td><strong>${l.igreja}</strong><br><span style="font-size:11px;color:var(--muted)">${l.email_admin || ''}</span></td>
+      <td><span style="font-size:11px;background:#ede9fe;color:#5b21b6;padding:2px 8px;border-radius:20px;font-weight:600">${l.plano || '—'}</span></td>
+      <td>${l.descricao}</td>
+      <td style="font-weight:700">${fmtBRL(l.valor)}</td>
+      <td>${badgeStatus(l.status)}</td>
+      <td style="font-size:12px;color:var(--muted)">${l.payment_method || '—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${fmtDt(l.paid_at)}</td>
+      <td style="font-size:12px;color:var(--muted)">${fmtDt(l.created_at)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('tabelaArea').innerHTML = `
+    <div class="panel-card">
+      <div class="panel-header">
+        <h3><i class="fa-solid fa-list" style="color:var(--blue);margin-right:8px"></i>Lançamentos — ${nomeMes}</h3>
+        <span style="font-size:12px;color:var(--muted)">${lancamentos.length} registro(s)</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Igreja</th><th>Plano</th><th>Descrição</th>
+              <th>Valor</th><th>Status</th><th>Método</th><th>Pago em</th><th>Criado em</th>
+            </tr>
+          </thead>
+          <tbody>${linhas}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function exportarCsv() {
+  if (!mesAtual) return;
+  const url = `/api/saas/relatorio-financeiro?mes=${mesAtual}&formato=csv`;
+  // Cria link temporário com header auth via formulário hidden (fetch + blob)
+  fetch(url, { headers: hdrs() })
+    .then(r => {
+      if (!r.ok) throw new Error('Erro ' + r.status);
+      return r.blob();
+    })
+    .then(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `relatorio-financeiro-${mesAtual}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    })
+    .catch(e => alert('Erro ao exportar: ' + e.message));
+}
+
+// Carrega automaticamente ao abrir
+carregar();
+</script>
+</body>
+</html>

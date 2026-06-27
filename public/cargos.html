@@ -1,0 +1,468 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Cargos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .pagina-conteudo {
+            padding: 24px 30px 30px;
+        }
+
+        .pagina-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .breadcrumb {
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .pagina-topo h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #0f172a;
+        }
+
+        .pagina-topo h1 span {
+            font-weight: 400;
+            color: #64748b;
+            font-size: 17px;
+        }
+
+        .btn-primario,
+        .btn-secundario,
+        .btn-linha,
+        .btn-acao {
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+
+        .btn-primario {
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+            color: #fff;
+            padding: 10px 16px;
+        }
+
+        .btn-secundario {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 10px 16px;
+        }
+
+        .btn-linha {
+            background: #f1f5f9;
+            color: #334155;
+            padding: 9px 12px;
+        }
+
+        .filtros-card,
+        .tabela-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            margin-bottom: 16px;
+        }
+
+        .filtros-card {
+            padding: 16px;
+        }
+
+        .filtros-header h2,
+        .tabela-topo h2 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 15px;
+        }
+
+        .filtros-grid {
+            margin-top: 10px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .campo label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
+        .campo-icone {
+            position: relative;
+        }
+
+        .campo-icone i {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            color: #94a3b8;
+        }
+
+        .campo input {
+            width: 100%;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 9px 10px 9px 32px;
+            font-size: 13px;
+        }
+
+        .filtros-acoes {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .tabela-card {
+            padding: 14px;
+        }
+
+        .tabela-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .tabela-topo-acoes {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tabela-topo-acoes input {
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 13px;
+        }
+
+        .form-add-cargo {
+            display: none;
+            gap: 8px;
+            margin: 10px 0;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .form-add-cargo.active {
+            display: flex;
+        }
+
+        .form-add-cargo input {
+            flex: 1;
+            min-width: 240px;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 9px 10px;
+            font-size: 13px;
+        }
+
+        .form-status {
+            font-size: 13px;
+            color: #047857;
+        }
+
+        .form-status.error {
+            color: #b91c1c;
+        }
+
+        .tabela-wrapper {
+            overflow-x: auto;
+        }
+
+        .tabela-lista {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tabela-lista th,
+        .tabela-lista td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eef2f7;
+            text-align: left;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        .tabela-lista th {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            background: #f8fafc;
+        }
+
+        .col-acoes {
+            width: 130px;
+        }
+
+        .btn-acao {
+            padding: 6px 8px;
+            margin-right: 6px;
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .btn-acao.excluir {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .tabela-vazia {
+            display: none;
+            padding: 24px 10px;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .tabela-rodape {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Cargos" data-shell-breadcrumb="LDFP / Secretaria / Cargos" data-shell-active="cargos.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="pagina-conteudo">
+            <div class="pagina-topo">
+                <div>
+                    <div class="breadcrumb">Secretaria / Cargos</div>
+                    <h1>Cargos <span>Lista</span></h1>
+                </div>
+                <button class="btn-primario" type="button" onclick="abrirFormulario()">
+                    <i class="fa-solid fa-plus"></i> Novo Cargo
+                </button>
+            </div>
+
+            <section class="filtros-card">
+                <div class="filtros-header"><h2>Filtrar Cargos</h2></div>
+                <div class="filtros-grid">
+                    <div class="campo">
+                        <label for="filtroDescricao">Descrição</label>
+                        <div class="campo-icone">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="filtroDescricao" placeholder="Buscar por descrição">
+                        </div>
+                    </div>
+                </div>
+                <div class="filtros-acoes">
+                    <button class="btn-secundario" type="button" id="btnLimpar">Limpar</button>
+                    <button class="btn-primario" type="button" id="btnFiltrar">Filtrar</button>
+                </div>
+            </section>
+
+            <section class="tabela-card">
+                <div class="tabela-topo">
+                    <h2>Resultado</h2>
+                    <div class="tabela-topo-acoes">
+                        <input type="text" id="buscaRapida" placeholder="Pesquisar rápido...">
+                        <button class="btn-linha" type="button" id="btnRecarregar"><i class="fa-solid fa-rotate-right"></i> Recarregar</button>
+                    </div>
+                </div>
+
+                <form id="form-cargo" class="form-add-cargo">
+                    <input id="desc-cargo" type="text" placeholder="Digite a descrição do cargo...">
+                    <button type="submit" class="btn-primario" id="btnSalvarCargo">Salvar Cargo</button>
+                    <button type="button" class="btn-secundario" onclick="abrirFormulario()">Cancelar</button>
+                </form>
+                <div id="cargoStatus" class="form-status"></div>
+
+                <div class="tabela-wrapper">
+                    <table class="tabela-lista" id="tabelaCargos">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th class="col-acoes">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpoTabelaCargos"></tbody>
+                    </table>
+                    <div class="tabela-vazia" id="estadoVazio">Nenhum cargo encontrado.</div>
+                </div>
+
+                <div class="tabela-rodape" id="info-cargos">Carregando itens...</div>
+            </section>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        function abrirFormulario() {
+            const form = document.getElementById('form-cargo');
+            form.classList.toggle('active');
+            if (form.classList.contains('active')) {
+                document.getElementById('desc-cargo').focus();
+            }
+        }
+
+        const cargosState = { all: [], filtered: [] };
+        const cargoStatus = document.getElementById('cargoStatus');
+
+        const setStatus = (text, isError = false) => {
+            cargoStatus.textContent = text;
+            cargoStatus.classList.toggle('error', isError);
+        };
+
+        const extractErrorMessage = (data, fallbackMessage) => {
+            if (!data) return fallbackMessage;
+            return data.error || data.message || fallbackMessage;
+        };
+
+        const renderTabela = (lista) => {
+            const corpo = document.getElementById('corpoTabelaCargos');
+            const vazio = document.getElementById('estadoVazio');
+            const info = document.getElementById('info-cargos');
+            corpo.innerHTML = '';
+
+            if (!lista.length) {
+                vazio.style.display = 'block';
+                info.textContent = 'Nenhum item para exibir.';
+                return;
+            }
+
+            vazio.style.display = 'none';
+            corpo.innerHTML = lista.map((cargo) => `
+                <tr>
+                    <td>${cargo.descricao}</td>
+                    <td class="col-acoes">
+                        <button class="btn-acao" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn-acao excluir" title="Excluir" onclick="excluirCargo(${cargo.id})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+
+            info.textContent = `Exibindo 1-${lista.length} de ${lista.length} itens.`;
+        };
+
+        async function listarCargos() {
+            const corpo = document.getElementById('corpoTabelaCargos');
+            corpo.innerHTML = '<tr><td colspan="2" class="muted">Carregando...</td></tr>';
+            setStatus('');
+
+            try {
+                const resp = await fetch('/cargos');
+                const cargos = await resp.json().catch(() => []);
+
+                if (!resp.ok) {
+                    throw new Error(extractErrorMessage(cargos, 'Erro ao carregar cargos.'));
+                }
+
+                if (!Array.isArray(cargos) || cargos.length === 0) {
+                    cargosState.all = [];
+                    cargosState.filtered = [];
+                    renderTabela(cargosState.filtered);
+                    return;
+                }
+
+                cargosState.all = cargos;
+                cargosState.filtered = [...cargos];
+                renderTabela(cargosState.filtered);
+            } catch (err) {
+                corpo.innerHTML = '<tr><td colspan="2" class="muted">Erro ao carregar cargos do banco de dados.</td></tr>';
+                document.getElementById('info-cargos').textContent = 'Erro de conexão.';
+                setStatus(err.message || 'Erro ao carregar cargos.', true);
+            }
+        }
+
+        const aplicarFiltros = () => {
+            const filtroDescricao = document.getElementById('filtroDescricao').value.trim().toLowerCase();
+            const buscaRapida = document.getElementById('buscaRapida').value.trim().toLowerCase();
+
+            cargosState.filtered = cargosState.all.filter((cargo) => {
+                const descricao = (cargo.descricao || '').toLowerCase();
+                const matchDescricao = !filtroDescricao || descricao.includes(filtroDescricao);
+                const matchBusca = !buscaRapida || descricao.includes(buscaRapida);
+                return matchDescricao && matchBusca;
+            });
+
+            renderTabela(cargosState.filtered);
+        };
+
+        document.getElementById('form-cargo').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const desc = document.getElementById('desc-cargo').value.trim();
+            const btnSalvarCargo = document.getElementById('btnSalvarCargo');
+
+            setStatus('');
+
+            if (!desc) {
+                setStatus('Digite a descrição do cargo.', true);
+                return;
+            }
+
+            btnSalvarCargo.disabled = true;
+            btnSalvarCargo.textContent = 'Salvando...';
+
+            try {
+                const resp = await fetch('/cargos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ descricao: desc })
+                });
+
+                const payload = await resp.json().catch(() => ({}));
+                if (!resp.ok) throw new Error(extractErrorMessage(payload, 'Erro ao cadastrar cargo.'));
+
+                document.getElementById('desc-cargo').value = '';
+                setStatus('Cargo cadastrado com sucesso!');
+                abrirFormulario();
+                listarCargos();
+            } catch (err) {
+                setStatus(err.message || 'Erro ao cadastrar cargo.', true);
+            } finally {
+                btnSalvarCargo.disabled = false;
+                btnSalvarCargo.textContent = 'Salvar Cargo';
+            }
+        });
+
+        window.excluirCargo = async function(id) {
+            if (!confirm('Deseja realmente excluir este cargo?')) return;
+
+            setStatus('');
+            try {
+                const resp = await fetch(`/cargos/${id}`, { method: 'DELETE' });
+                const payload = await resp.json().catch(() => ({}));
+                if (!resp.ok) throw new Error(extractErrorMessage(payload, 'Erro ao excluir cargo.'));
+                setStatus('Cargo excluído com sucesso!');
+                listarCargos();
+            } catch (err) {
+                setStatus(err.message || 'Erro ao excluir cargo.', true);
+            }
+        };
+
+        document.getElementById('btnFiltrar').addEventListener('click', aplicarFiltros);
+        document.getElementById('btnLimpar').addEventListener('click', () => {
+            document.getElementById('filtroDescricao').value = '';
+            document.getElementById('buscaRapida').value = '';
+            cargosState.filtered = [...cargosState.all];
+            renderTabela(cargosState.filtered);
+        });
+        document.getElementById('buscaRapida').addEventListener('input', aplicarFiltros);
+        document.getElementById('btnRecarregar').addEventListener('click', listarCargos);
+
+        listarCargos();
+    </script>
+</body>
+</html>

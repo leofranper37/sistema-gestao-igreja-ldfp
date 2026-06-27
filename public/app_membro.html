@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f766e">
+    <title>LDFP - App do Membro</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos base para o PWA */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            width: 100%; /* Garante que ocupe a largura total em telas menores */
+        }
+
+        /* Header */
+        .app-header {
+            background-color: #0f766e;
+            color: #fff;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .app-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .avatar-circle {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #dbeafe;
+            border: 1px solid rgba(255,255,255,0.35);
+        }
+        .header-title {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .header-title span {
+            font-size: 0.72rem;
+            color: #ccfbf1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .header-title strong {
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .app-header-right a {
+            color: #ecfeff;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0.95;
+        }
+        .app-header-right a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        /* Navegação inferior */
+        .app-nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #fff;
+            border-top: 1px solid #eee;
+            padding: 8px 0;
+            position: sticky;
+            bottom: 0;
+            width: 100%;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+            z-index: 1000;
+            margin-top: auto; /* Empurra para o final */
+        }
+        .app-nav-item {
+            flex: 1;
+            text-align: center;
+            color: #666;
+            text-decoration: none;
+            padding: 8px 0;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+        }
+        .app-nav-item i {
+            font-size: 1.2rem;
+        }
+        .app-nav-item.active {
+            color: #0f766e;
+            font-weight: bold;
+        }
+        .app-nav-item:hover {
+            color: #0d9488;
+        }
+
+        /* Conteúdo principal */
+        .app-content {
+            flex-grow: 1; /* Permite que o conteúdo ocupe o espaço restante */
+            padding: 20px;
+            overflow-y: auto; /* Para rolagem do conteúdo */
+        }
+        .app-panel {
+            display: none;
+        }
+        .app-panel.active {
+            display: block;
+        }
+
+        /* Cards e Listas */
+        .card {
+            background-color: #f8f8f8;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .card h2 {
+            font-size: 1.1rem;
+            color: #0f766e;
+            margin-top: 0;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .list-item {
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        .list-item:last-child {
+            margin-bottom: 0;
+        }
+        .list-item .status-badge {
+            background-color: #e0f2f7;
+            color: #0f766e;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .list-item .status-badge.pendente { background-color: #ffe0b2; color: #e65100; }
+        .list-item .status-badge.respondida { background-color: #c8e6c9; color: #2e7d32; }
+
+        /* Formulários */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input[type="text"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .btn-primary {
+            background-color: #0f766e;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #0d9488;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: none; /* Escondido por padrão */
+        }
+        .message.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+        .message.error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+        .message.active {
+            display: block;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 30px 0;
+        }
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        .empty-state p {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* Home Panel Specific */
+        .home-hero {
+            background: linear-gradient(135deg, #115e59, #0f766e 60%, #0891b2);
+            color: #ecfeff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.2);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .home-hero h2 {
+            margin: 0 0 8px;
+            font-size: 1.8rem;
+        }
+        .home-hero p {
+            margin: 0;
+            font-size: 1rem;
+            color: #ccfbf1;
+        }
+        .shortcut-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .shortcut-item {
+            background-color: #f8f8f8;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            text-decoration: none;
+            color: #333;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .shortcut-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .shortcut-item i {
+            font-size: 2rem;
+            color: #0f766e;
+            margin-bottom: 10px;
+        }
+        .shortcut-item span {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Profile Panel Specific */
+        .profile-info {
+            background-color: #f8f8f8;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .profile-info h3 {
+            font-size: 1.2rem;
+            color: #0f766e;
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .profile-detail {
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        .profile-detail strong {
+            color: #555;
+            display: inline-block;
+            width: 100px; /* Alinha os valores */
+        }
+        .profile-detail span {
+            color: #333;
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 480px) {
+            .app-header {
+                padding: 10px 12px;
+            }
+            .header-title span {
+                font-size: 0.68rem;
+            }
+            .header-title strong {
+                font-size: 0.84rem;
+            }
+            .app-header-right a {
+                font-size: 0.78rem;
+            }
+            .app-content {
+                padding: 15px;
+            }
+            .app-nav-item {
+                font-size: 0.7rem;
+            }
+            .app-nav-item i {
+                font-size: 1rem;
+            }
+            .home-hero h2 {
+                font-size: 1.5rem;
+            }
+            .home-hero p {
+                font-size: 0.9rem;
+            }
+            .shortcut-item {
+                padding: 10px;
+            }
+            .shortcut-item i {
+                font-size: 1.5rem;
+            }
+            .shortcut-item span {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="app-header-left">
+                <img id="churchLogoHeader" src="https://via.placeholder.com/34x34?text=Logo" alt="Logo" class="avatar-circle">
+                <div class="header-title">
+                    <span>Mural da Igreja</span>
+                    <strong id="memberGreeting">Olá, Membro!</strong>
+                </div>
+            </div>
+            <div class="app-header-right">
+                <a href="#" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+            </div>
+        </header>
+
+        <main class="app-content">
+            <!-- Home Panel -->
+            <section id="panel-home" class="app-panel active">
+                <div class="home-hero">
+                    <h2 id="homeGreeting">Olá, Membro!</h2>
+                    <p>Bem-vindo(a) ao seu aplicativo da igreja.</p>
+                </div>
+
+                <div class="shortcut-grid">
+                    <a href="#" class="shortcut-item" data-target-panel="panel-oracoes">
+                        <i class="fa-solid fa-hands-praying"></i>
+                        <span>Orações</span>
+                    </a>
+                    <a href="#" class="shortcut-item" data-target-panel="panel-agenda">
+                        <i class="fa-solid fa-calendar-alt"></i>
+                        <span>Agenda</span>
+                    </a>
+                    <a href="#" class="shortcut-item" data-target-panel="panel-perfil">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Meu Perfil</span>
+                    </a>
+                    <a href="#" class="shortcut-item">
+                        <i class="fa-solid fa-bullhorn"></i>
+                        <span>Avisos</span>
+                    </a>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fa-solid fa-bell"></i> Últimos Avisos</h2>
+                    <div id="listaAvisos">
+                        <div class="list-item">
+                            <div>
+                                <strong>Campanha de Doação de Alimentos</strong><br>
+                                <span style="color:#666;font-size:0.85rem;">Até 30/05/2026 - Ajude sua comunidade!</span>
+                            </div>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <strong>Novo Horário de Culto</strong><br>
+                                <span style="color:#666;font-size:0.85rem;">A partir de Junho, cultos às 19h.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Orações Panel -->
+            <section id="panel-oracoes" class="app-panel">
+                <div class="card">
+                    <h2><i class="fa-solid fa-hands-praying"></i> Meus Pedidos de Oração</h2>
+                    <div id="listaOracoes">
+                        <!-- Orações serão renderizadas aqui -->
+                    </div>
+                    <div class="message" id="msgListaOracoes"></div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fa-solid fa-plus-circle"></i> Novo Pedido</h2>
+                    <form id="formOracao">
+                        <div class="form-group">
+                            <label for="assuntoOracao">Assunto</label>
+                            <input type="text" id="assuntoOracao" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tipoOracao">Tipo</label>
+                            <select id="tipoOracao">
+                                <option value="saude">Saúde</option>
+                                <option value="familia">Família</option>
+                                <option value="financeiro">Financeiro</option>
+                                <option value="espiritual">Espiritual</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="descricaoOracao">Descrição</label>
+                            <textarea id="descricaoOracao" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary">Enviar Pedido</button>
+                        <div class="message" id="msgFormOracao"></div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Agenda Panel -->
+            <section id="panel-agenda" class="app-panel">
+                <div class="card">
+                    <h2><i class="fa-solid fa-calendar-alt"></i> Próximos Eventos</h2>
+                    <div id="listaEventos">
+                        <!-- Eventos serão renderizados aqui -->
+                    </div>
+                    <div class="message" id="msgListaEventos"></div>
+                </div>
+            </section>
+
+            <!-- Meu Perfil Panel -->
+            <section id="panel-perfil" class="app-panel">
+                <div class="card profile-info">
+                    <h3><i class="fa-solid fa-user-circle"></i> Minhas Informações</h3>
+                    <div class="profile-detail">
+                        <strong>Nome:</strong> <span id="profileNome"></span>
+                    </div>
+                    <div class="profile-detail">
+                        <strong>Email:</strong> <span id="profileEmail"></span>
+                    </div>
+                    <div class="profile-detail">
+                        <strong>Telefone:</strong> <span id="profileTelefone"></span>
+                    </div>
+                    <div class="profile-detail">
+                        <strong>Membro Desde:</strong> <span id="profileMembroDesde"></span>
+                    </div>
+                    <button class="btn-primary" style="margin-top: 15px;">Editar Perfil</button>
+                </div>
+            </section>
+        </main>
+
+        <nav class="app-nav">
+            <a href="#" class="app-nav-item active" data-panel="panel-home">
+                <i class="fa-solid fa-home"></i>
+                <span>Início</span>
+            </a>
+            <a href="#" class="app-nav-item" data-panel="panel-oracoes">
+                <i class="fa-solid fa-hands-praying"></i>
+                <span>Orações</span>
+            </a>
+            <a href="#" class="app-nav-item" data-panel="panel-agenda">
+                <i class="fa-solid fa-calendar-alt"></i>
+                <span>Agenda</span>
+            </a>
+            <a href="#" class="app-nav-item" data-panel="panel-perfil">
+                <i class="fa-solid fa-user"></i>
+                <span>Perfil</span>
+            </a>
+        </nav>
+    </div>
+
+    <script>
+        const $ = id => document.getElementById(id);
+
+        // --- Funções de Autenticação e Carregamento de Logo ---
+        const memberGreetingEl = document.getElementById('memberGreeting');
+        const churchLogoHeaderEl = document.getElementById('churchLogoHeader');
+        const logoutButton = document.getElementById('logoutButton');
+
+        function checkLogin() {
+            const token = localStorage.getItem('app_member_token');
+            const userRaw = localStorage.getItem('app_member_user');
+
+            if (!token || !userRaw) {
+                window.location.href = 'app_login.html';
+                return null;
+            }
+
+            try {
+                return JSON.parse(userRaw);
+            } catch (_e) {
+                localStorage.removeItem('app_member_token');
+                localStorage.removeItem('app_member_user');
+                window.location.href = 'app_login.html';
+                return null;
+            }
+        }
+
+        async function loadChurchLogoHeader() {
+            const logoUrl = localStorage.getItem('church_logo_url') || 'https://via.placeholder.com/34x34?text=Logo';
+            churchLogoHeaderEl.src = logoUrl;
+        }
+
+        function setupLogout() {
+            logoutButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('app_member_token');
+                localStorage.removeItem('app_member_user');
+                window.location.href = 'app_login.html';
+            });
+        }
+
+        const loggedInUser = checkLogin();
+        const currentUser = loggedInUser || {
+            id: 'membro_123',
+            nome: 'Membro',
+            cpf: '',
+            email: '',
+            telefone: '',
+            membroDesde: ''
+        };
+
+        // Elementos DOM
+        const homeGreetingEl = $('homeGreeting');
+        const listaOracoesEl = $('listaOracoes');
+        const msgListaOracoesEl = $('msgListaOracoes');
+        const formOracaoEl = $('formOracao');
+        const msgFormOracaoEl = $('msgFormOracao');
+        const listaEventosEl = $('listaEventos');
+        const msgListaEventosEl = $('msgListaEventos');
+
+        // Funções de utilidade
+        function showMessage(element, text, type) {
+            element.textContent = text;
+            element.className = `message active ${type}`;
+            setTimeout(() => {
+                element.className = 'message';
+            }, 5000);
+        }
+
+        // --- Funções de Orações ---
+        function getOracoes() {
+            const oracoes = JSON.parse(localStorage.getItem(`ldfp_oracoes_${currentUser.id}`)) || [];
+            return oracoes.sort((a, b) => new Date(b.data) - new Date(a.data)); // Mais recentes primeiro
+        }
+
+        function saveOracao(oracao) {
+            const oracoes = getOracoes();
+            oracoes.push(oracao);
+            localStorage.setItem(`ldfp_oracoes_${currentUser.id}`, JSON.stringify(oracoes));
+        }
+
+        function renderOracoes() {
+            const oracoes = getOracoes();
+            if (oracoes.length === 0) {
+                listaOracoesEl.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-hands-praying"></i>
+                        <p>Você ainda não fez nenhum pedido de oração.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listaOracoesEl.innerHTML = oracoes.map(oracao => {
+                const data = new Date(oracao.data).toLocaleDateString('pt-BR');
+                const statusClass = oracao.status === 'respondida' ? 'respondida' : 'pendente';
+                const statusText = oracao.status === 'respondida' ? 'Respondida' : 'Pendente';
+                return `
+                    <div class="list-item">
+                        <div>
+                            <strong>${oracao.assunto}</strong><br>
+                            <span style="color:#666;font-size:0.85rem;">${oracao.descricao.substring(0, 50)}${oracao.descricao.length > 50 ? '...' : ''}</span><br>
+                            <span style="color:#999;font-size:0.75rem;">${data}</span>
+                        </div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        formOracaoEl.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const novaOracao = {
+                id: `oracao_${Date.now()}`,
+                assunto: $('assuntoOracao').value,
+                tipo: $('tipoOracao').value,
+                descricao: $('descricaoOracao').value,
+                data: new Date().toISOString(),
+                status: 'pendente' // Sempre começa como pendente
+            };
+            saveOracao(novaOracao);
+            renderOracoes();
+            formOracaoEl.reset();
+            showMessage(msgFormOracaoEl, 'Pedido de oração enviado com sucesso!', 'success');
+        });
+
+        // --- Funções de Agenda ---
+        function getEventos() {
+            // Dados mockados para simular uma API
+            return [
+                { id: 'evt1', titulo: 'Culto de Celebração', data: '2026-05-18T19:00:00', local: 'Templo Principal', descricao: 'Nosso culto semanal de celebração e louvor.' },
+                { id: 'evt2', titulo: 'Reunião de Célula', data: '2026-05-20T20:00:00', local: 'Online (Zoom)', descricao: 'Encontro semanal das células para estudo e comunhão.' },
+                { id: 'evt3', titulo: 'Estudo Bíblico', data: '2026-05-22T19:30:00', local: 'Sala de Estudo', descricao: 'Estudo aprofundado sobre o livro de Gênesis.' },
+                { id: 'evt4', titulo: 'Vigília de Oração', data: '2026-05-25T22:00:00', local: 'Templo Principal', descricao: 'Noite de clamor e intercessão pela igreja e nações.' },
+                { id: 'evt5', titulo: 'Ensaio do Ministério de Louvor', data: '2026-05-26T19:00:00', local: 'Sala de Música', descricao: 'Ensaio geral para o próximo culto.' },
+            ].filter(e => new Date(e.data) >= new Date()); // Filtra eventos futuros
+        }
+
+        function renderEventos() {
+            const eventos = getEventos();
+            if (eventos.length === 0) {
+                listaEventosEl.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-calendar-xmark"></i>
+                        <p>Nenhum evento próximo.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listaEventosEl.innerHTML = eventos.map(evento => {
+                const data = new Date(evento.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const hora = new Date(evento.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                return `
+                    <div class="list-item">
+                        <div>
+                            <strong>${evento.titulo}</strong><br>
+                            <span style="color:#666;font-size:0.85rem;">${data} às ${hora} • ${evento.local}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- Navegação entre painéis ---
+        document.querySelectorAll('.app-nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.app-nav-item').forEach(nav => nav.classList.remove('active'));
+                document.querySelectorAll('.app-panel').forEach(panel => panel.classList.remove('active'));
+
+                item.classList.add('active');
+                $(item.dataset.panel).classList.add('active');
+
+                // Se for um atalho da home, também ativa o item da nav
+                const navItemForPanel = document.querySelector(`.app-nav-item[data-panel="${item.dataset.panel}"]`);
+                if (navItemForPanel) {
+                    navItemForPanel.classList.add('active');
+                }
+            });
+        });
+
+        document.querySelectorAll('.shortcut-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetPanelId = item.dataset.targetPanel;
+                document.querySelectorAll('.app-nav-item').forEach(nav => nav.classList.remove('active'));
+                document.querySelectorAll('.app-panel').forEach(panel => panel.classList.remove('active'));
+
+                $(targetPanelId).classList.add('active');
+                // Ativa o item correspondente na navegação inferior
+                const navItem = document.querySelector(`.app-nav-item[data-panel="${targetPanelId}"]`);
+                if (navItem) {
+                    navItem.classList.add('active');
+                }
+            });
+        });
+
+
+        // --- Inicialização ---
+        function initApp() {
+            if (!loggedInUser) return;
+
+            memberGreetingEl.textContent = `Olá, ${currentUser.nome}!`;
+            homeGreetingEl.textContent = `Olá, ${currentUser.nome}!`;
+            loadChurchLogoHeader();
+            setupLogout();
+
+            // Preenche dados do perfil
+            $('profileNome').textContent = currentUser.nome;
+            $('profileEmail').textContent = currentUser.email || '-';
+            $('profileTelefone').textContent = currentUser.telefone || '-';
+            $('profileMembroDesde').textContent = currentUser.membroDesde || '-';
+
+            renderOracoes();
+            renderEventos();
+        }
+
+        initApp();
+    </script>
+</body>
+</html>

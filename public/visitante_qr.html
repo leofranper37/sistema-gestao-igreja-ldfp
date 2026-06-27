@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro do Visitante</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at 20% 10%, #0ea5e9, #0f172a 70%);
+            color: #e2e8f0;
+            display: grid;
+            place-items: center;
+            padding: 16px;
+        }
+
+        .card {
+            width: min(680px, 96vw);
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 16px;
+            box-shadow: 0 24px 60px rgba(2, 6, 23, 0.45);
+            overflow: hidden;
+        }
+
+        .hero {
+            padding: 18px 20px;
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.25), rgba(45, 212, 191, 0.18));
+            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .hero p {
+            margin: 8px 0 0;
+            color: #cbd5e1;
+            font-size: 0.92rem;
+        }
+
+        form {
+            padding: 18px 20px 20px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #7dd3fc;
+            font-weight: 700;
+        }
+
+        input,
+        textarea,
+        select {
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(15, 23, 42, 0.62);
+            color: #f8fafc;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .actions {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #0c4a6e;
+            background: linear-gradient(90deg, #67e8f9, #22d3ee);
+        }
+
+        .status {
+            font-size: 13px;
+            color: #67e8f9;
+        }
+
+        .status.error {
+            color: #fda4af;
+        }
+
+        .switch-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #bae6fd;
+        }
+
+        .switch-line input {
+            width: auto;
+        }
+
+        @media (max-width: 740px) {
+            form {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="card">
+        <header class="hero">
+            <h1><i class="fa-solid fa-qrcode"></i> Cadastro do visitante</h1>
+            <p id="eventoLabel">Validando seu QR...</p>
+        </header>
+
+        <form id="formVisitanteQr">
+            <div class="field">
+                <label for="nome">Nome</label>
+                <input id="nome" required placeholder="Seu nome completo">
+            </div>
+
+            <div class="field">
+                <label for="telefone">Telefone</label>
+                <input id="telefone" placeholder="(11) 99999-9999">
+            </div>
+
+            <div class="field">
+                <label for="email">E-mail</label>
+                <input id="email" type="email" placeholder="voce@email.com">
+            </div>
+
+            <div class="field">
+                <label for="cidade">Cidade</label>
+                <input id="cidade" placeholder="Sua cidade">
+            </div>
+
+            <div class="field full">
+                <label for="pedidoOracao">Pedido de oração (opcional)</label>
+                <textarea id="pedidoOracao" placeholder="Se desejar, deixe seu pedido."></textarea>
+            </div>
+
+            <div class="field full">
+                <label>Privacidade</label>
+                <div class="switch-line">
+                    <input id="autorizaTelao" type="checkbox">
+                    <span>Autorizo mostrar meu nome no telão da igreja.</span>
+                </div>
+            </div>
+
+            <div class="actions">
+                <span id="statusMsg" class="status"></span>
+                <button id="btnEnviar" class="btn" type="submit">Enviar cadastro</button>
+            </div>
+        </form>
+    </section>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const token = (params.get('token') || '').trim();
+        const statusMsg = document.getElementById('statusMsg');
+        const btnEnviar = document.getElementById('btnEnviar');
+        const eventoLabel = document.getElementById('eventoLabel');
+
+        function setStatus(message, error) {
+            statusMsg.className = error ? 'status error' : 'status';
+            statusMsg.textContent = message || '';
+        }
+
+        async function validarQr() {
+            if (!token) {
+                setStatus('QR invalido.', true);
+                btnEnviar.disabled = true;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/portaria/qr-sessoes/${encodeURIComponent(token)}/public`);
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.error || 'QR invalido ou expirado.');
+                }
+                eventoLabel.textContent = `Evento: ${data.evento}`;
+            } catch (error) {
+                setStatus(error.message, true);
+                btnEnviar.disabled = true;
+            }
+        }
+
+        document.getElementById('formVisitanteQr').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            setStatus('');
+            btnEnviar.disabled = true;
+            btnEnviar.textContent = 'Enviando...';
+
+            try {
+                const response = await fetch(`/portaria/qr-sessoes/${encodeURIComponent(token)}/visitantes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome: document.getElementById('nome').value.trim(),
+                        telefone: document.getElementById('telefone').value.trim(),
+                        email: document.getElementById('email').value.trim(),
+                        cidade: document.getElementById('cidade').value.trim(),
+                        pedidoOracao: document.getElementById('pedidoOracao').value.trim(),
+                        autorizaTelao: document.getElementById('autorizaTelao').checked
+                    })
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.error || 'Nao foi possivel enviar o cadastro.');
+                }
+
+                setStatus('Cadastro enviado. Deus abencoe!');
+                event.target.reset();
+            } catch (error) {
+                setStatus(error.message, true);
+            } finally {
+                btnEnviar.disabled = false;
+                btnEnviar.textContent = 'Enviar cadastro';
+            }
+        });
+
+        validarQr();
+    </script>
+</body>
+</html>

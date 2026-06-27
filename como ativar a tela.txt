@@ -1,0 +1,31 @@
+PS C:\Users\LEO\sistema-gestao-igreja> npm run dev
+
+> sistema-gestao-igreja@1.0.0 dev
+> sistema-gestao-igreja@1.0.0 dev
+> nodemon index.js/index.js
+
+[nodemon] 3.1.14
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching path(s): *.*
+[nodemon] watching extensions: js,mjs,cjs,json
+[nodemon] starting `node index.js/index.js`
+[dotenv@17.3.1] injecting env (10) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+🚀 Servidor LDFP rodando na porta 3001
+❌ Erro ao conectar no banco de dados:
+⚠️ Verifique se o XAMPP/MySQL está ligado e se o nome do banco está correto.
+[nodemon] restarting due to changes...
+❌ Erro ao conting `node index.js/index.js`❌ Erro ao conectar no banco de dados: Unknown database 'sistemaigreja'
+⚠️ Verifique se o XAMPP/MySQL está ligado e se o nome do banco está correto.
+[nodemon] restarting due to changes...
+[nodemon] restarting due to changes...
+[nodemon] starting `node index.js/index.js`
+[dotenv@17.3.1] injecting env (10) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+🚀 Servidor LDFP rodando na porta 3001
+❌ Erro ao conectar no banco de dados: Unknown database 'sistemaigreja'      
+⚠️ Verifique se o XAMPP/MySQL está ligado e se o nome do banco está correto.
+[nodemon] restarting due to changes...
+[nodemon] starting `node index.js/index.js`
+[dotenv@17.3.1] injecting env (10) from .env -- tip: ⚙️  override existing env vars with { override: true }
+🚀 Servidor LDFP rodando na porta 3001
+❌ Erro ao conectar no banco de dados: Unknown database 'sistemaigreja'
+⚠️ Verifique se o XAMPP/MySQL está ligado e se o nome do banco está correto.

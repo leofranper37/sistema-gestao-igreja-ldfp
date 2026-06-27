@@ -1,0 +1,238 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Reuniões de Grupos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap {
+            padding: 24px 30px 30px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            border: none;
+            border-radius: 8px;
+            padding: 9px 14px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            border: 1px solid #dbe3ef;
+            padding: 8px 12px;
+            border-radius: 8px;
+            min-width: 260px;
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .table-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .actions-col {
+            width: 120px;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .icon-btn {
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #64748b;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-left: 6px;
+        }
+
+        .icon-btn:hover {
+            background: #f8fafc;
+            color: #0f766e;
+            border-color: #bae6fd;
+        }
+
+        .muted {
+            color: #94a3b8;
+        }
+
+        .num-col {
+            text-align: center;
+            width: 120px;
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Reuniões de Grupos" data-shell-breadcrumb="LDFP / Secretaria / Grupos / Reuniões" data-shell-active="grupos_reunioes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <div class="page-header">
+                <button class="btn-primary" type="button" id="btnNovaReuniao"><i class="fa-solid fa-plus"></i> Nova Reunião</button>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Pesquisar reunião...">
+                </div>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Grupo</th>
+                            <th>Assunto</th>
+                            <th class="num-col">Participantes</th>
+                            <th class="num-col">Visitantes</th>
+                            <th class="actions-col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="meetingsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const STORAGE_KEY = 'ldfpGroupMeetings';
+        const meetingsBody = document.getElementById('meetingsBody');
+        const searchInput = document.getElementById('searchInput');
+
+        document.getElementById('btnNovaReuniao').addEventListener('click', () => {
+            window.location.href = 'grupo_reuniao_nova.html';
+        });
+
+        function readMeetings() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        }
+
+        function writeMeetings(list) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        }
+
+        function formatDate(isoDate) {
+            if (!isoDate) {
+                return '-';
+            }
+            const date = new Date(`${isoDate}T00:00:00`);
+            if (Number.isNaN(date.getTime())) {
+                return isoDate;
+            }
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function renderRows() {
+            const meetings = readMeetings();
+
+            if (!meetings.length) {
+                meetingsBody.innerHTML = '<tr><td colspan="6" class="muted">Nenhum resultado foi encontrado.</td></tr>';
+                return;
+            }
+
+            meetingsBody.innerHTML = meetings.map((item) => `
+                <tr data-search="${(item.data || '').toLowerCase()} ${(item.grupo || '').toLowerCase()} ${(item.assunto || '').toLowerCase()}">
+                    <td>${formatDate(item.data)}</td>
+                    <td>${item.grupo || '-'}</td>
+                    <td>${item.assunto || '-'}</td>
+                    <td class="num-col">${item.participantes ?? 0}</td>
+                    <td class="num-col">${item.visitantes ?? 0}</td>
+                    <td class="actions-col">
+                        <button class="icon-btn" type="button" title="Editar" data-edit="${item.id}"><i class="fa-regular fa-pen-to-square"></i></button>
+                        <button class="icon-btn" type="button" title="Excluir" data-delete="${item.id}"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function handleTableAction(event) {
+            const editId = event.target.closest('[data-edit]')?.getAttribute('data-edit');
+            if (editId) {
+                window.location.href = `grupo_reuniao_nova.html?edit=${encodeURIComponent(editId)}`;
+                return;
+            }
+
+            const deleteId = event.target.closest('[data-delete]')?.getAttribute('data-delete');
+            if (!deleteId) {
+                return;
+            }
+
+            const meetings = readMeetings();
+            const next = meetings.filter((item) => String(item.id) !== String(deleteId));
+            writeMeetings(next);
+            renderRows();
+            applyFilter();
+        }
+
+        function applyFilter() {
+            const term = searchInput.value.trim().toLowerCase();
+            const rows = Array.from(meetingsBody.querySelectorAll('tr'));
+            rows.forEach((row) => {
+                const text = row.getAttribute('data-search') || row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        }
+
+        meetingsBody.addEventListener('click', handleTableAction);
+        searchInput.addEventListener('input', applyFilter);
+
+        window.addEventListener('storage', () => {
+            renderRows();
+            applyFilter();
+        });
+
+        renderRows();
+    </script>
+</body>
+</html>

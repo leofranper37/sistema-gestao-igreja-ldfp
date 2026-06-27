@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assinaturas & Faturas - LDFP Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--dark:#0f172a;--panel:#1e293b;--blue:#2563eb;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--bg:#f8fafc;--white:#fff;--text:#334155;--muted:#64748b;--border:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--dark);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}
+.logo-icon{background:linear-gradient(135deg,var(--blue),#60a5fa);width:32px;height:32px;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:800;font-size:14px}
+.sidebar-header h2{font-size:17px;font-weight:800}.sidebar-header span{font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.menu{padding:16px 0;flex:1;overflow-y:auto}.menu-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:0 18px;margin:12px 0 6px;font-weight:600}
+.menu-item{padding:11px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.2s;border-left:3px solid transparent}
+.menu-item:hover{background:var(--panel);color:#fff}.menu-item.active{background:var(--panel);border-left-color:var(--blue);color:#fff;font-weight:600}
+.menu-item i{width:18px;text-align:center;font-size:15px}
+.main{flex:1;display:flex;flex-direction:column;overflow-y:auto}
+.topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
+.btn{padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:7px}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:#f1f5f9}
+.btn-success{background:var(--green);color:#fff}.btn-success:hover{background:#059669}
+.workspace{padding:24px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.filters input,.filters select{padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text)}
+.panel{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;text-align:left}
+th{background:#f8fafc;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+.badge{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase}
+.s-pago{background:#dcfce7;color:#166534}.s-pendente{background:#fef9c3;color:#854d0e}.s-rejeitado{background:#fee2e2;color:#991b1b}
+.toast{position:fixed;right:24px;bottom:24px;background:var(--green);color:#fff;padding:12px 18px;border-radius:8px;opacity:0;transform:translateY(10px);transition:.2s}
+.toast.show{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="logo-icon">L</div><div><h2>LDFP Master</h2><span>Painel SaaS</span></div></div>
+  <div class="menu">
+    <div class="menu-label">Negócio</div>
+    <a href="super-admin.html" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="admin-metricas.html" class="menu-item"><i class="fa-solid fa-chart-pie"></i> Métricas SaaS</a>
+    <a href="admin-relatorio-financeiro.html" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Relatório Financeiro</a>
+    <a href="admin-igrejas.html" class="menu-item"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+    <a href="admin-assinaturas.html" class="menu-item active"><i class="fa-solid fa-file-invoice"></i> Assinaturas & Faturas</a>
+    <a href="admin-usuarios.html" class="menu-item"><i class="fa-solid fa-users-gear"></i> Usuários & Senhas</a>
+    <a href="admin-modulos.html" class="menu-item"><i class="fa-solid fa-puzzle-piece"></i> Catálogo de Módulos</a>
+    <a href="admin-retomada.html" class="menu-item"><i class="fa-solid fa-rocket"></i> Retomada Inteligente</a>
+    <div class="menu-label">Configurações SaaS</div>
+    <a href="admin-planos.html" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+    <a href="admin-novidades.html" class="menu-item"><i class="fa-solid fa-newspaper"></i> Novidades</a>
+    <a href="admin-inovacoes.html" class="menu-item"><i class="fa-solid fa-lightbulb"></i> Fábrica de Inovações</a>
+    <a href="admin-sistema.html" class="menu-item"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
+    <div class="menu-label" style="margin-top:auto">Sessão</div>
+    <a href="login.html" class="menu-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+  </div>
+</nav>
+
+<main class="main">
+  <header class="topbar">
+    <h1><i class="fa-solid fa-file-invoice-dollar" style="color:var(--blue);margin-right:8px"></i>Assinaturas & Faturas</h1>
+    <button class="btn btn-outline" onclick="load()"><i class="fa-solid fa-rotate-right"></i>Atualizar</button>
+  </header>
+  <div class="workspace">
+    <div class="filters">
+      <input id="q" type="text" placeholder="Buscar igreja, referência, descrição..." oninput="render()">
+      <select id="status" onchange="render()">
+        <option value="">Todos os status</option>
+        <option value="pendente">Pendente</option>
+        <option value="pago">Pago</option>
+        <option value="rejeitado">Rejeitado</option>
+      </select>
+    </div>
+
+    <div class="panel">
+      <table>
+        <thead>
+          <tr><th>Igreja</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Plano</th><th>Criado em</th><th>Ações</th></tr>
+        </thead>
+        <tbody id="tbody"><tr><td colspan="7" style="text-align:center;color:#64748b">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script src="session.js?v=20260501"></script>
+<script>
+const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
+const hdr = () => ({Authorization:'Bearer ' + token(), 'Content-Type':'application/json'});
+let rows = [];
+
+async function load() {
+  try {
+    const r = await fetch('/api/saas/assinaturas', {headers: hdr()});
+    if (r.status === 401) { location.href = 'login.html'; return; }
+    rows = await r.json();
+    render();
+  } catch (e) {
+    toast('Erro ao carregar faturas', false);
+  }
+}
+
+function render() {
+  const q = document.getElementById('q').value.toLowerCase();
+  const st = document.getElementById('status').value;
+  const out = rows.filter(r => {
+    const txt = [r.igreja_nome, r.reference_code, r.descricao].join(' ').toLowerCase();
+    return (!q || txt.includes(q)) && (!st || r.status === st);
+  });
+  const tb = document.getElementById('tbody');
+  if (!out.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b">Sem resultados</td></tr>'; return; }
+  tb.innerHTML = out.map(r => {
+    const v = Number(r.valor || 0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    const dt = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '-';
+    const stClass = r.status === 'pago' ? 's-pago' : (r.status === 'pendente' ? 's-pendente' : 's-rejeitado');
+    const payBtn = r.status === 'pago' ? '' : `<button class="btn btn-success" style="padding:6px 10px;font-size:12px" onclick="markPaid(${r.id})">Marcar Pago</button>`;
+    return `<tr>
+      <td>${esc(r.igreja_nome || '-')}</td>
+      <td>${esc(r.descricao || '-')}<br><small style="color:#64748b">${esc(r.reference_code || '')}</small></td>
+      <td>${v}</td>
+      <td><span class="badge ${stClass}">${esc(r.status || '-')}</span></td>
+      <td>${esc(r.plano || '-')}</td>
+      <td>${dt}</td>
+      <td>${payBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function markPaid(id) {
+  try {
+    const r = await fetch('/api/saas/assinaturas/' + id + '/pago', {method:'PUT', headers: hdr()});
+    if (!r.ok) throw new Error(await r.text());
+    await load();
+    toast('Fatura marcada como paga', true);
+  } catch (e) {
+    toast('Erro ao atualizar fatura', false);
+  }
+}
+
+function esc(s) { return String(s || '').replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(msg, ok) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok ? '#10b981' : '#ef4444';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+(function () {
+  const t = token();
+  if (!t) { location.href = 'login.html'; return; }
+  try {
+    const p = JSON.parse(atob(t.split('.')[1]));
+    if (!['super-admin','super_admin','superadmin','master'].includes(p.role)) location.href = 'login.html';
+  } catch (_) {}
+})();
+
+load();
+</script>
+</body>
+</html>

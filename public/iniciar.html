@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração Inicial — LDFP</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0f172a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        .icon { font-size: 48px; margin-bottom: 20px; }
+        h1 { color: #f1f5f9; font-size: 22px; margin-bottom: 10px; }
+        p { color: #94a3b8; font-size: 14px; margin-bottom: 30px; line-height: 1.6; }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:hover:not(:disabled) { background: #1d4ed8; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .result {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+        }
+        .result.ok { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+        .result.erro { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+        .link-login {
+            display: none;
+            margin-top: 20px;
+            padding: 12px;
+            background: #10b981;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="icon">🔐</div>
+    <h1>Configuração do Painel Master</h1>
+    <p>Clique no botão abaixo para criar a conta de administrador do sistema LDFP.</p>
+
+    <button class="btn" id="btn" onclick="criar()">Criar conta de administrador</button>
+
+    <div class="result" id="result"></div>
+    <a class="link-login" id="linkLogin" href="/super_admin_login">Ir para o login do painel →</a>
+</div>
+
+<script>
+async function criar() {
+    const btn = document.getElementById('btn');
+    const result = document.getElementById('result');
+    const linkLogin = document.getElementById('linkLogin');
+
+    btn.disabled = true;
+    btn.textContent = 'Criando conta...';
+    result.style.display = 'none';
+    linkLogin.style.display = 'none';
+
+    try {
+        const resp = await fetch('/api/firstrun/super-admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nome: 'Leo Pereira',
+                email: 'leopereita31@gmail.com',
+                senha: 'L&o190528'
+            })
+        });
+
+        const data = await resp.json();
+
+        if (resp.status === 201 || resp.status === 200) {
+            result.className = 'result ok';
+            result.textContent = '✅ Conta criada com sucesso! Agora faça login no painel.';
+            result.style.display = 'block';
+            linkLogin.style.display = 'block';
+            btn.textContent = 'Conta criada!';
+        } else if (resp.status === 403) {
+            result.className = 'result erro';
+            result.textContent = '⚠️ Já existe um administrador cadastrado. Tente fazer login normalmente.';
+            result.style.display = 'block';
+            linkLogin.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Criar conta de administrador';
+        } else {
+            result.className = 'result erro';
+            result.textContent = '❌ Erro: ' + (data.error || JSON.stringify(data));
+            result.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Tentar novamente';
+        }
+    } catch (err) {
+        result.className = 'result erro';
+        result.textContent = '❌ Erro de conexão: ' + err.message;
+        result.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Tentar novamente';
+    }
+}
+</script>
+</body>
+</html>

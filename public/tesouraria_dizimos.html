@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Dízimos & Ofertas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Seus estilos CSS personalizados */
+        :root {
+            --brand:   #0f766e;
+            --teal:    #0d9488;
+            --blue:    #0284c7;
+            --green:   #16a34a;
+            --red:     #dc2626;
+            --yellow:  #f59e0b;
+            --purple:  #7c3aed;
+            --surface: #ffffff;
+            --bg:      #f1f5f9;
+            --border:  #e2e8f0;
+            --text:    #0f172a;
+            --muted:   #64748b;
+            --radius:  14px;
+            --shadow:  0 4px 16px rgba(15,23,42,.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body[data-shell-active="tesouraria_dizimos.html"] .enterprise-top-header {
+            display: none;
+        }
+
+        body[data-shell-active="tesouraria_dizimos.html"] .enterprise-page-shell {
+            padding-top: 18px;
+        }
+
+        .metric-stash {
+            display: none;
+        }
+
+        .surface-shell {
+            padding: 0;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        /* ── KPIs ── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: 210px repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 10px 14px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #2f6d69 0%, #2b837d 52%, #327f73 100%);
+            box-shadow: 0 18px 34px rgba(15, 23, 42, .10);
+            align-items: stretch;
+        }
+
+        .kpi-head {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 10px 8px;
+            color: #ecfeff;
+        }
+
+        .kpi-head small {
+            display: block;
+            font-size: 30px;
+            font-weight: 700;
+            text-transform: none;
+            letter-spacing: 0;
+            opacity: 1;
+            margin-bottom: 8px;
+            line-height: 1.05;
+        }
+
+        .kpi-head strong {
+            display: none;
+        }
+
+        .kpi-head span {
+            font-size: 13px;
+            opacity: .92;
+            line-height: 1.4;
+            max-width: 170px;
+        }
+
+        .kpi-card {
+            background: transparent;
+            border: none;
+            border-left: 1px solid rgba(255,255,255,.14);
+            border-radius: 0;
+            box-shadow: none;
+            padding: 22px 18px;
+            position: relative;
+            overflow: hidden;
+            min-height: 92px;
+        }
+
+        .kpi-card::before {
+            display: none;
+        }
+
+        .kpi-card::after {
+            content: '\f061';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,.46);
+            font-size: 15px;
+        }
+
+        .kpi-card small {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255,255,255,.72);
+            text-transform: none;
+            letter-spacing: 0;
+            margin-bottom: 4px;
+        }
+
+        .kpi-card strong {
+            display: block;
+            font-size: 2.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .kpi-card .kpi-sub {
+            display: none;
+        }
+
+        .kpi-total   { --kpi-color: #0f766e; }
+        .kpi-dizimo  { --kpi-color: #0284c7; }
+        .kpi-oferta  { --kpi-color: #16a34a; }
+        .kpi-missoes { --kpi-color: #2563eb; }
+        .kpi-outros  { --kpi-color: #64748b; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 114px minmax(0, 1fr) 198px;
+            gap: 14px;
+            align-items: start;
+            margin-bottom: 14px;
+        }
+
+        .filter-card,
+        .management-card,
+        .quick-card,
+        .list-card {
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        }
+
+        .filter-card {
+            padding: 0;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .filter-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e8edf3;
+            font-weight: 800;
+            color: #1f2937;
+        }
+
+        .filter-card-body {
+            padding: 14px 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .filter-card .btn {
+            width: 100%;
+        }
+
+        .management-card {
+            padding: 0;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .management-card .card-header,
+        .list-card .card-header {
+            padding: 14px 16px;
+            margin-bottom: 0;
+            border-bottom: 1px solid #e8edf3;
+        }
+
+        .management-body {
+            padding: 14px 14px 10px;
+        }
+
+        .quick-form {
+            display: none;
+            margin-bottom: 14px;
+            padding: 14px;
+            border: 1px solid #d8eee9;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #f4fbfa 0%, #eef7f6 100%);
+        }
+
+        .quick-form.open {
+            display: block;
+        }
+
+        .quick-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .quick-form-grid .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .mini-table th,
+        .mini-table td {
+            padding: 8px 8px;
+            font-size: 11px;
+        }
+
+        .mini-table th {
+            background: #f5f8fb;
+        }
+
+        .table-link {
+            border: none;
+            background: none;
+            color: #0f766e;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 66px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .management-footer {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) 170px;
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .summary-list {
+            border: 1px solid #e5edf5;
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: #fbfdff;
+        }
+
+        .summary-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 12px;
+            color: #334155;
+            padding: 4px 0;
+        }
+
+        .summary-line strong {
+            color: #0f172a;
+        }
+
+        .mini-chart {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 10px;
+            min-height: 138px;
+            padding: 12px 10px 8px;
+            border: 1px solid #e5edf5;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #fcfeff 0%, #f6fafc 100%);
+        }
+
+        .chart-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .chart-bar-shell {
+            width: 24px;
+            height: 88px;
+            display: flex;
+            align-items: end;
+        }
+
+        .chart-bar {
+            width: 100%;
+            min-height: 6px;
+            border-radius: 8px 8px 4px 4px;
+            background: linear-gradient(180deg, #4db6ac 0%, #2f7e78 100%);
+            transition: height .25s ease;
+        }
+
+        .chart-col small {
+            font-size: 10px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .chart-col span {
+            font-size: 10px;
+            color: #475569;
+        }
+
+        .quick-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quick-card {
+            padding: 14px 16px;
+            border-radius: 12px;
+        }
+
+        .quick-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .quick-card-head h4 {
+            font-size: 14px;
+            color: #1f2937;
+        }
+
+        .quick-card-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e6f7f4;
+            color: #0f766e;
+        }
+
+        .quick-card strong {
+            display: block;
+            font-size: 2rem;
+            color: #2b6a66;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .quick-card p {
+            font-size: 12px;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+
+        .quick-card a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f766e;
+            text-decoration: none;
+        }
+
+        .list-card {
+            padding: 0;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .soft-divider {
+            height: 1px;
+            background: #e8edf3;
+            margin: 10px 0 8px;
+        }
+
+        .list-card .table-container,
+        .list-card .pagination,
+        .list-card #msgLista {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .list-card .table-container {
+            margin-top: 0;
+            padding-top: 12px;
+        }
+
+        /* ── Tabs internas ── */
+        .inner-tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: none;
+            margin-bottom: 10px;
+            justify-content: flex-end;
+        }
+
+        .inner-tab {
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            border: 1px solid #dbe5ec;
+            background: #ffffff;
+            cursor: pointer;
+            border-bottom: 1px solid #dbe5ec;
+            margin-bottom: 0;
+            border-radius: 10px;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .inner-tab:hover { color: var(--text); background: var(--bg); }
+        .inner-tab.active { color: var(--brand); border-color: #c9e7e2; background: #f0fdfa; }
+
+        .inner-panel { display: none; }
+        .inner-panel.active { display: block; }
+
+        /* ── Layout principal ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 7px 22px rgba(15,23,42,.07);
+            padding: 18px;
+        }
+
+        .table td.actions-cell {
+            white-space: nowrap;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .card-header h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header h3 i { color: var(--teal); }
+
+        /* Filtros */
+        .filter-bar {
+            display: grid;
+            grid-template-columns: 160px 150px 1fr auto;
+            gap: 8px;
+            margin-bottom: 14px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-group label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
+            width: 100%;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #fff;
+        }
+
+        /* Botões */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary { background: var(--brand); color: #fff; }
+        .btn-primary:hover { background: #0c5f58; }
+
+        .btn-secondary { background: var(--bg); color: var(--text); border-color: var(--border); }
+        .btn-secondary:hover { background: var(--border); }
+
+        .btn-blue { background: var(--blue); color: #fff; }
+        .btn-blue:hover { background: #026ca0; }
+
+        .btn-red { background: var(--red); color: #fff; }
+        .btn-red:hover { background: #b91c1c; }
+
+        .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+        /* Tabela */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 14px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .table th, .table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .table th {
+            background: var(--bg);
+            color: var(--muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table tbody tr:hover { background: var(--bg); }
+
+        .table .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .table .badge-dizimo { background: #e0f2fe; color: #0284c7; }
+        .table .badge-oferta { background: #dcfce7; color: #16a34a; }
+        .table .badge-missoes { background: #e0e7ff; color: #4f46e5; }
+        .table .badge-outros { background: #f1f5f9; color: var(--muted); }
+
+        .table .empty-row td {
+            text-align: center;
+            color: var(--muted);
+            padding: 20px;
+        }
+
+        /* Paginação */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .pagination button {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all .2s;
+        }
+
+        .pagination button:hover:not(:disabled) { background: var(--border); }
+        .pagination button:disabled { opacity: .5; cursor: not-allowed; }
+        .pagination span { font-size: 12px; color: var(--muted); }
+
+        /* Formulários */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="month"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 14px;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--brand);
+            background: #fff;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* Preview */
+        .preview-card {
+            background: var(--bg);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .preview-card h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .preview-card p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .preview-card p strong {
+            color: var(--text);
+        }
+
+        /* Mensagens */
+        .msg {
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .msg.ok { background: #dcfce7; color: #15803d; border: 1px solid #a7f3d0; }
+        .msg.error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+
+        /* Badges de Tipo de Receita */
+        .tipo-natureza {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 7px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .natureza-e { background: #dcfce7; color: #15803d; } /* Verde para entrada */
+        .natureza-s { background: #fee2e2; color: #dc2626; } /* Vermelho para saída */
+
+        .enterprise-page-shell {
+            min-width: 1030px;
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page"
+      data-shell-title="Dízimos e Ofertas"
+      data-shell-breadcrumb="LDFP / Tesouraria / Dízimos"
+      data-shell-active="tesouraria_dizimos.html"
+      data-shell-chip="Tesouraria ativa"
+      data-shell-role="Admin financeiro">
+
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
+            <div class="kpi-grid">
+                <div class="kpi-head">
+                    <small>Resumo Geral</small>
+                    <strong id="kpiTotal">R$ 0,00</strong>
+                    <span>Visão consolidada do período com foco em movimentações e pendências operacionais.</span>
+                </div>
+                <div class="kpi-card kpi-oferta">
+                    <small>Ofertas</small>
+                    <strong id="kpiOfertas">R$ 0,00</strong>
+                    <span class="kpi-sub" id="kpiOfertasSub"></span>
+                </div>
+                <div class="kpi-card kpi-missoes">
+                    <small>Missões</small>
+                    <strong id="kpiMissoes">R$ 0,00</strong>
+                    <span class="kpi-sub" id="kpiMissoesSub"></span>
+                </div>
+                <div class="kpi-card kpi-outros">
+                    <small>Outros</small>
+                    <strong id="kpiOutros">R$ 0,00</strong>
+                    <span class="kpi-sub" id="kpiOutrosSub"></span>
+                </div>
+            </div>
+
+            <div class="metric-stash" aria-hidden="true">
+                <span id="kpiTotalSub">Mês: -</span>
+                <span id="kpiDizimos">R$ 0,00</span>
+                <span id="kpiDizimosSub">Mês: -</span>
+            </div>
+
+            <div class="surface-shell enterprise-surface">
+                <div class="inner-tabs">
+                    <button class="inner-tab active" data-tab="lancamentos">
+                        <i class="fa-solid fa-file-invoice"></i> Lançamentos
+                    </button>
+                    <button class="inner-tab" data-tab="tipos">
+                        <i class="fa-solid fa-tags"></i> Tipos de Receitas
+                    </button>
+                </div>
+
+                <div id="panel-lancamentos" class="inner-panel active">
+                    <div class="dashboard-grid">
+                        <aside class="card filter-card">
+                            <div class="filter-card-header">
+                                <span>Filtrar</span>
+                                <i class="fa-solid fa-angle-up"></i>
+                            </div>
+                            <div class="filter-card-body">
+                                <div class="filter-group">
+                                    <label for="filtroComp">Competência</label>
+                                    <input type="month" id="filtroComp">
+                                </div>
+                                <div class="filter-group">
+                                    <label for="filtroTipo">Tipo</label>
+                                    <select id="filtroTipo">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="filtroNome">Nome</label>
+                                    <input type="text" id="filtroNome" placeholder="Buscar por nome...">
+                                </div>
+                                <button class="btn btn-primary" id="btnFiltrar"><i class="fa-solid fa-filter"></i> Filtrar</button>
+                            </div>
+                        </aside>
+
+                        <section class="card management-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-coins"></i> Gestão de Dízimos</h3>
+                                <button class="btn btn-primary btn-sm" id="btnNovoDizimo"><i class="fa-solid fa-plus"></i> Novo Dízimo</button>
+                            </div>
+                            <div class="management-body">
+                                <div id="novoLancamentoWrap" class="quick-form">
+                                    <div id="msgNovoLancamento" class="msg" style="display:none;"></div>
+                                    <form id="formNovoLancamento">
+                                        <div class="quick-form-grid">
+                                            <div class="form-group">
+                                                <label for="novoMembroNome">Membro</label>
+                                                <input type="text" id="novoMembroNome" placeholder="Nome do membro" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="novoValor">Valor</label>
+                                                <input type="number" id="novoValor" min="0" step="0.01" placeholder="0,00" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="novoCompetencia">Competência</label>
+                                                <input type="month" id="novoCompetencia" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="novoTipo">Tipo</label>
+                                                <select id="novoTipo" required></select>
+                                            </div>
+                                            <div class="form-group full">
+                                                <label for="novoObservacao">Observação</label>
+                                                <textarea id="novoObservacao" placeholder="Detalhes adicionais do lançamento"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="button" class="btn btn-secondary" id="btnCancelarNovoDizimo">Cancelar</button>
+                                            <button type="submit" class="btn btn-primary">Salvar lançamento</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="table-container">
+                                    <table class="table mini-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Nome do membro</th>
+                                                <th>Método Pagamento</th>
+                                                <th>Conta</th>
+                                                <th>Valor</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbResumoDizimos">
+                                            <tr class="empty-row"><td colspan="6">Carregando...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="management-footer">
+                                    <div class="summary-list">
+                                        <div class="summary-line"><span>Total Dízimos</span><strong id="boardTotalDizimos">R$ 0,00</strong></div>
+                                        <div class="summary-line"><span>Total Ofertas</span><strong id="boardTotalOfertas">R$ 0,00</strong></div>
+                                        <div class="summary-line"><span>Total Missões</span><strong id="boardTotalMissoes">R$ 0,00</strong></div>
+                                        <div class="summary-line"><span>Total Outros</span><strong id="boardTotalOutros">R$ 0,00</strong></div>
+                                    </div>
+                                    <div class="mini-chart">
+                                        <div class="chart-col">
+                                            <span id="chartDizimosValor">0%</span>
+                                            <div class="chart-bar-shell"><div class="chart-bar" id="chartDizimos"></div></div>
+                                            <small>Díz.</small>
+                                        </div>
+                                        <div class="chart-col">
+                                            <span id="chartOfertasValor">0%</span>
+                                            <div class="chart-bar-shell"><div class="chart-bar" id="chartOfertas"></div></div>
+                                            <small>Oferta</small>
+                                        </div>
+                                        <div class="chart-col">
+                                            <span id="chartMissoesValor">0%</span>
+                                            <div class="chart-bar-shell"><div class="chart-bar" id="chartMissoes"></div></div>
+                                            <small>Missões</small>
+                                        </div>
+                                        <div class="chart-col">
+                                            <span id="chartOutrosValor">0%</span>
+                                            <div class="chart-bar-shell"><div class="chart-bar" id="chartOutros"></div></div>
+                                            <small>Outros</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <aside class="quick-stack">
+                            <section class="card quick-card">
+                                <div class="quick-card-head">
+                                    <h4>Contas a Pagar</h4>
+                                    <span class="quick-card-icon"><i class="fa-solid fa-wallet"></i></span>
+                                </div>
+                                <strong id="quickContasPagar">0</strong>
+                                <p id="quickContasPagarLinha1">Contas vencem hoje</p>
+                                <div class="soft-divider"></div>
+                                <p id="quickContasPagarLinha2">Next: sem alerta</p>
+                            </section>
+
+                            <section class="card quick-card">
+                                <div class="quick-card-head">
+                                    <h4>Contas a Pagar</h4>
+                                    <span class="quick-card-icon"><i class="fa-solid fa-file-invoice-dollar"></i></span>
+                                </div>
+                                <p id="quickPendenciasLinha1">Recibos pendentes</p>
+                                <div class="soft-divider"></div>
+                                <p id="quickPendenciasLinha2">Sem vencidos</p>
+                            </section>
+
+                            <section class="card quick-card">
+                                <div class="quick-card-head">
+                                    <h4>Bancos</h4>
+                                    <span class="quick-card-icon"><i class="fa-solid fa-building-columns"></i></span>
+                                </div>
+                                <strong id="quickBancos">0</strong>
+                                <p id="quickBancosLinha1">Bancos pendentes: 0</p>
+                                <div class="soft-divider"></div>
+                                <p id="quickBancosLinha2">Contas vendedoras: 0</p>
+                            </section>
+
+                            <section class="card quick-card">
+                                <div class="quick-card-head">
+                                    <h4>Recibos</h4>
+                                    <span class="quick-card-icon"><i class="fa-solid fa-receipt"></i></span>
+                                </div>
+                                <strong id="quickRecibos">0</strong>
+                                <p id="quickRecibosLinha1">Recibos pendentes: 0</p>
+                                <div class="soft-divider"></div>
+                                <p id="quickRecibosLinha2">Recibos emitidos: 0</p>
+                            </section>
+                        </aside>
+                    </div>
+
+                    <section class="card list-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-list"></i> Lançamentos Registrados</h3>
+                        </div>
+
+                        <div id="msgLista" class="msg" style="display:none;"></div>
+
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Competência</th>
+                                        <th>Nome do membro</th>
+                                        <th>Pagamento</th>
+                                        <th>Conta</th>
+                                        <th>Valor</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbDizimos">
+                                    <!-- Dados carregados via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination">
+                            <button id="btnAnterior" disabled><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+                            <span id="pageInfo">Página 1 de 1</span>
+                            <button id="btnProximo" disabled>Próximo <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </section>
+                </div>
+
+                <div id="panel-tipos" class="inner-panel">
+                    <div class="main-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 id="tipoFormTitle"><i class="fa-solid fa-plus"></i> Novo tipo</h3>
+                            </div>
+                            <div id="msgTiposForm" class="msg" style="display:none;"></div>
+                            <form id="formTipo">
+                                <input type="hidden" id="tipoEditId">
+                                <div class="form-group">
+                                    <label for="tipoNome">Nome do Tipo</label>
+                                    <input type="text" id="tipoNome" required placeholder="Ex: Dízimo, Oferta Missionária, etc.">
+                                </div>
+                                <div class="form-group">
+                                    <label for="tipoNatureza">Natureza</label>
+                                    <select id="tipoNatureza" required>
+                                        <option value="entrada">Entrada</option>
+                                        <option value="saida">Saída</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tipoCategoria">Categoria</label>
+                                    <select id="tipoCategoria" required>
+                                        <option value="dizimo">Dízimo</option>
+                                        <option value="oferta">Oferta</option>
+                                        <option value="missoes">Missões</option>
+                                        <option value="campanha">Campanha</option>
+                                        <option value="social">Social</option>
+                                        <option value="manutencao">Manutenção</option>
+                                        <option value="outros">Outros</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tipoDescricao">Descrição (opcional)</label>
+                                    <textarea id="tipoDescricao" placeholder="Detalhes sobre este tipo de receita/despesa"></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-secondary" id="btnCancelarTipo" style="display:none;">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary"><span id="tipoSubmitLabel">Criar tipo</span></button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-tags"></i> Tipos Cadastrados</h3>
+                            </div>
+                            <div id="msgTiposLista" class="msg" style="display:none;"></div>
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Natureza</th>
+                                            <th>Categoria</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbTipos">
+                                        <!-- Tipos carregados via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js"></script>
+    <script src="enterprise-shell.js"></script>
+    <script>
+    // Função auxiliar para pegar elementos por ID
+    const $ = id => document.getElementById(id);
+
+    // Função para exibir mensagens
+    function setMsg(id, text, type = 'ok') {
+        const el = $(id);
+        if (el) {
+            el.textContent = text;
+            el.className = `msg ${type}`;
+            el.style.display = text ? 'flex' : 'none';
+            if (text) {
+                setTimeout(() => el.style.display = 'none', 5000);
+            }
+        }
+    }
+
+    // Formatação de moeda
+    const formatCurrency = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+    const state = {
+        kpis: {
+            totalGeral: 0,
+            totalDizimos: 0,
+            totalOfertas: 0,
+            totalMissoes: 0,
+            totalOutros: 0
+        },
+        totalLancamentos: 0,
+        lancamentosPagina: []
+    };
+
+    // Converte YYYY-MM para YYYYMM
+    const monthToComp = month => month ? month.replace('-', '') : '';
+
+    // Converte YYYYMM para MM/YYYY
+    const compToMonth = comp => comp && comp.length === 6 ? `${comp.substring(4, 6)}/${comp.substring(0, 4)}` : '-';
+
+    function getTipoKey(tipo) {
+        const normalizado = String(tipo || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+
+        if (normalizado.includes('diz')) return 'dizimo';
+        if (normalizado.includes('ofert')) return 'oferta';
+        if (normalizado.includes('miss')) return 'missoes';
+        return 'outros';
+    }
+
+    function inferMetodoPagamento(lancamento) {
+        const texto = String(lancamento?.observacao || '').toLowerCase();
+        if (texto.includes('pix')) return 'Pix';
+        if (texto.includes('cart')) return 'Cartão';
+        if (texto.includes('transf')) return 'Transferência';
+        if (texto.includes('dinh')) return 'Dinheiro';
+        return 'Cartão';
+    }
+
+    function inferContaFinanceira(lancamento) {
+        const texto = String(lancamento?.observacao || '').toLowerCase();
+        if (texto.includes('itau') || texto.includes('itaú')) return 'Banco Itaú';
+        if (texto.includes('caixa')) return 'Caixa';
+        if (texto.includes('bradesco')) return 'Bradesco';
+        if (texto.includes('santander')) return 'Santander';
+        return 'Banco Itaú';
+    }
+
+    function preencherResumoFinanceiro() {
+        $('boardTotalDizimos').textContent = formatCurrency(state.kpis.totalDizimos || 0);
+        $('boardTotalOfertas').textContent = formatCurrency(state.kpis.totalOfertas || 0);
+        $('boardTotalMissoes').textContent = formatCurrency(state.kpis.totalMissoes || 0);
+        $('boardTotalOutros').textContent = formatCurrency(state.kpis.totalOutros || 0);
+
+        const total = state.kpis.totalGeral || 0;
+        const chartMap = [
+            ['chartDizimos', 'chartDizimosValor', state.kpis.totalDizimos || 0],
+            ['chartOfertas', 'chartOfertasValor', state.kpis.totalOfertas || 0],
+            ['chartMissoes', 'chartMissoesValor', state.kpis.totalMissoes || 0],
+            ['chartOutros', 'chartOutrosValor', state.kpis.totalOutros || 0]
+        ];
+
+        const max = Math.max(...chartMap.map(([, , value]) => value), 1);
+        chartMap.forEach(([barId, valueId, value]) => {
+            const percent = total ? Math.round((value / total) * 100) : 0;
+            $(barId).style.height = `${Math.max(8, Math.round((value / max) * 88))}px`;
+            $(valueId).textContent = `${percent}%`;
+        });
+    }
+
+    function preencherCardsLaterais() {
+        const total = state.totalLancamentos || 0;
+        const nomesUnicos = new Set(state.lancamentosPagina.map(item => item.membroNome).filter(Boolean)).size;
+        const contasEmUso = new Set(state.lancamentosPagina.map(item => getTipoKey(item.tipo))).size;
+        const pendencias = state.lancamentosPagina.filter(item => getTipoKey(item.tipo) === 'outros').length;
+
+        $('quickContasPagar').textContent = String(pendencias);
+        $('quickContasPagarLinha1').textContent = pendencias ? `${pendencias} contas vencem hoje` : 'Contas vencem hoje';
+        $('quickContasPagarLinha2').textContent = pendencias ? 'Next: revisar agenda' : 'Next: sem alerta';
+
+        $('quickPendenciasLinha1').textContent = total ? `Recibos Pendentes: ${total}` : 'Recibos pendentes';
+        $('quickPendenciasLinha2').textContent = pendencias ? `Pendências: ${pendencias}` : 'Sem vencidos';
+
+        $('quickBancos').textContent = String(contasEmUso);
+        $('quickBancosLinha1').textContent = `Bancos Pendentes: ${contasEmUso}`;
+        $('quickBancosLinha2').textContent = nomesUnicos ? `Contas vendedoras: ${nomesUnicos}` : 'Contas vendedoras: 0';
+
+        $('quickRecibos').textContent = String(total);
+        $('quickRecibosLinha1').textContent = `Recibos Pendentes: ${total}`;
+        $('quickRecibosLinha2').textContent = pendencias ? `Recibos Emitidos: ${Math.max(0, total - pendencias)}` : 'Recibos Emitidos: 0';
+    }
+
+    function renderResumoLancamentos(lancamentos) {
+        const rows = (lancamentos || []).slice(0, 4);
+
+        if (!rows.length) {
+            $('tbResumoDizimos').innerHTML = '<tr class="empty-row"><td colspan="6">Nenhum lançamento no resumo.</td></tr>';
+            preencherCardsLaterais();
+            return;
+        }
+
+        $('tbResumoDizimos').innerHTML = rows.map((item) => {
+            const tipoBadgeClass = {
+                dizimo: 'badge-dizimo',
+                oferta: 'badge-oferta',
+                missoes: 'badge-missoes'
+            }[getTipoKey(item.tipo)] || 'badge-outros';
+
+            const nome = String(item.membroNome || '').replace(/"/g, '&quot;');
+            return `
+                <tr>
+                    <td>${new Date(item.data).toLocaleDateString('pt-BR')}</td>
+                    <td>${item.membroNome || '-'}</td>
+                    <td>${inferMetodoPagamento(item)}</td>
+                    <td>${inferContaFinanceira(item)}</td>
+                    <td>${formatCurrency(item.valor || 0)}</td>
+                    <td class="actions-cell">
+                        <button type="button" class="table-link" data-quick-filter="${nome}">Edit / View</button>
+                        <span class="status-chip">Receita</span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        preencherCardsLaterais();
+    }
+
+    /* ══════════════════════════════════════
+       ABAS
+    ══════════════════════════════════════ */
+    document.querySelectorAll('.inner-tab').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.inner-tab').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.inner-panel').forEach(panel => panel.classList.remove('active'));
+
+            button.classList.add('active');
+            $(`panel-${button.dataset.tab}`).classList.add('active');
+
+            // Atualiza a URL sem recarregar a página
+            const url = new URL(window.location);
+            url.searchParams.set('tab', button.dataset.tab);
+            window.history.pushState({}, '', url);
+
+            // Recarrega dados se for a aba de tipos
+            if (button.dataset.tab === 'tipos') {
+                loadTipos();
+            } else if (button.dataset.tab === 'lancamentos') {
+                refresh();
+            }
+        });
+    });
+
+    // A tela abre sempre em Lançamentos para manter a composição do dashboard.
+
+    /* ══════════════════════════════════════
+       KPIs
+    ══════════════════════════════════════ */
+    async function loadKPIs() {
+        try {
+            const comp = monthToComp($('filtroComp').value);
+            const r = await fetch(`/dizimos/totais?competencia=${comp}`);
+            const data = await r.json().catch(() => ({}));
+
+            if (!r.ok) {
+                setMsg('msgLista', data.error || 'Erro ao carregar KPIs.', 'error');
+                return;
+            }
+
+            state.kpis = {
+                totalGeral: data.totalGeral || 0,
+                totalDizimos: data.totalDizimos || 0,
+                totalOfertas: data.totalOfertas || 0,
+                totalMissoes: data.totalMissoes || 0,
+                totalOutros: data.totalOutros || 0
+            };
+
+            $('kpiTotal').textContent = formatCurrency(data.totalGeral || 0);
+            $('kpiDizimos').textContent = formatCurrency(data.totalDizimos || 0);
+            $('kpiOfertas').textContent = formatCurrency(data.totalOfertas || 0);
+            $('kpiMissoes').textContent = formatCurrency(data.totalMissoes || 0);
+            $('kpiOutros').textContent = formatCurrency(data.totalOutros || 0);
+
+            // Sub-textos dos KPIs (ex: "Mês atual")
+            const compFormatada = compToMonth(comp);
+            $('kpiTotalSub').textContent = `Mês: ${compFormatada}`;
+            $('kpiDizimosSub').textContent = `Mês: ${compFormatada}`;
+            $('kpiOfertasSub').textContent = `Mês: ${compFormatada}`;
+            $('kpiMissoesSub').textContent = `Mês: ${compFormatada}`;
+            $('kpiOutrosSub').textContent = `Mês: ${compFormatada}`;
+            preencherResumoFinanceiro();
+            preencherCardsLaterais();
+
+        } catch (e) {
+            setMsg('msgLista', 'Falha de conexão ao carregar KPIs.', 'error');
+            console.error('Erro ao carregar KPIs:', e);
+        }
+    }
+
+    /* ══════════════════════════════════════
+       LANÇAMENTOS
+    ══════════════════════════════════════ */
+    let currentPage = 1;
+    let totalPages = 1;
+    const limit = 50; // Itens por página
+
+    async function loadLista(page = 1) {
+        setMsg('msgLista', '');
+        $('tbDizimos').innerHTML = `<tr><td colspan="6" class="empty-row">Carregando...</td></tr>`;
+
+        const comp = monthToComp($('filtroComp').value);
+        const tipo = $('filtroTipo').value;
+        const nome = $('filtroNome').value.trim();
+
+        let url = `/dizimos?page=${page}&limit=${limit}&competencia=${comp}`;
+        if (tipo) url += `&tipo=${tipo}`;
+        if (nome) url += `&nome=${encodeURIComponent(nome)}`;
+
+        try {
+            const r = await fetch(url);
+            const data = await r.json().catch(() => ({}));
+
+            if (!r.ok) {
+                setMsg('msgLista', data.error || 'Erro ao carregar lançamentos.', 'error');
+                $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="6">Erro ao carregar.</td></tr>`;
+                return;
+            }
+
+            const { lancamentos, total } = data;
+            state.lancamentosPagina = lancamentos || [];
+            state.totalLancamentos = total || 0;
+            totalPages = Math.max(1, Math.ceil((total || 0) / limit));
+            currentPage = page;
+
+            $('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
+            $('btnAnterior').disabled = currentPage === 1;
+            $('btnProximo').disabled = currentPage === totalPages;
+
+            if (!lancamentos || lancamentos.length === 0) {
+                renderResumoLancamentos([]);
+                $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="6">Nenhum lançamento encontrado.</td></tr>`;
+                return;
+            }
+
+            renderResumoLancamentos(lancamentos);
+
+            $('tbDizimos').innerHTML = lancamentos.map(l => {
+                const tipoBadgeClass = {
+                    dizimo: 'badge-dizimo',
+                    oferta: 'badge-oferta',
+                    missoes: 'badge-missoes'
+                }[getTipoKey(l.tipo)] || 'badge-outros';
+
+                return `
+                    <tr>
+                        <td>${compToMonth(monthToComp($('filtroComp').value))}</td>
+                        <td>${l.membroNome}</td>
+                        <td>${inferMetodoPagamento(l)}</td>
+                        <td>${inferContaFinanceira(l)}</td>
+                        <td>${formatCurrency(l.valor)}</td>
+                        <td class="actions-cell"><button type="button" class="table-link" data-quick-filter="${String(l.membroNome || '').replace(/"/g, '&quot;')}">Editar</button> <span class="status-chip">Receita</span></td>
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (e) {
+            setMsg('msgLista', 'Falha de conexão ao carregar lançamentos.', 'error');
+            $('tbDizimos').innerHTML = `<tr class="empty-row"><td colspan="6">Falha de conexão.</td></tr>`;
+            console.error('Erro ao carregar lançamentos:', e);
+        }
+    }
+
+    async function loadTiposParaFiltro() {
+        try {
+            const r = await fetch('/tipos-receita'); // Rota corrigida aqui!
+            const tipos = await r.json().catch(() => []);
+
+            if (!r.ok) {
+                console.error('Erro ao carregar tipos para filtro:', tipos.error || 'Erro desconhecido');
+                return;
+            }
+
+            const filtroTipoSelect = $('filtroTipo');
+            filtroTipoSelect.innerHTML = '<option value="">Todos</option>'; // Resetar opções
+            const novoTipoSelect = $('novoTipo');
+            if (novoTipoSelect) {
+                novoTipoSelect.innerHTML = '';
+            }
+            tipos.forEach(t => {
+                if (t.natureza === 'entrada' && t.ativo !== false) { // Apenas tipos de entrada ativos
+                    const option = document.createElement('option');
+                    option.value = t.nome;
+                    option.textContent = t.nome;
+                    filtroTipoSelect.appendChild(option);
+
+                    if (novoTipoSelect) {
+                        const quickOption = document.createElement('option');
+                        quickOption.value = t.nome;
+                        quickOption.textContent = t.nome;
+                        novoTipoSelect.appendChild(quickOption);
+                    }
+                }
+            });
+        } catch (e) {
+            console.error('Falha de conexão ao carregar tipos para filtro:', e);
+        }
+    }
+
+    function refresh() {
+        loadKPIs();
+        loadLista(currentPage);
+        loadTiposParaFiltro(); // Carrega os tipos para o filtro
+    }
+
+    $('filtroComp').addEventListener('change', () => { currentPage = 1; refresh(); });
+    $('filtroTipo').addEventListener('change', () => { currentPage = 1; refresh(); });
+    $('btnFiltrar').addEventListener('click', () => { currentPage = 1; refresh(); });
+    $('filtroNome').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') { currentPage = 1; refresh(); }
+    });
+
+    document.addEventListener('click', (event) => {
+        const quickFilterButton = event.target.closest('[data-quick-filter]');
+        if (!quickFilterButton) {
+            return;
+        }
+
+        $('filtroNome').value = quickFilterButton.dataset.quickFilter || '';
+        currentPage = 1;
+        refresh();
+    });
+
+    $('btnAnterior').addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadLista(currentPage); } });
+    $('btnProximo').addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; loadLista(currentPage); } });
+
+    function toggleNovoLancamento(open) {
+        const wrap = $('novoLancamentoWrap');
+        const shouldOpen = typeof open === 'boolean' ? open : !wrap.classList.contains('open');
+        wrap.classList.toggle('open', shouldOpen);
+        if (shouldOpen) {
+            $('novoMembroNome').focus();
+        }
+    }
+
+    $('btnNovoDizimo').addEventListener('click', () => toggleNovoLancamento());
+    $('btnCancelarNovoDizimo').addEventListener('click', () => {
+        $('formNovoLancamento').reset();
+        $('novoCompetencia').value = $('filtroComp').value;
+        setMsg('msgNovoLancamento', '');
+        toggleNovoLancamento(false);
+    });
+
+    $('formNovoLancamento').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        setMsg('msgNovoLancamento', '');
+
+        const valor = parseFloat(($('novoValor').value || '').replace(',', '.'));
+        if (!valor || valor <= 0) {
+            setMsg('msgNovoLancamento', 'Informe um valor válido.', 'error');
+            return;
+        }
+
+        if (!$('novoCompetencia').value) {
+            setMsg('msgNovoLancamento', 'Selecione a competência.', 'error');
+            return;
+        }
+
+        const payload = {
+            membroNome: $('novoMembroNome').value.trim(),
+            valor,
+            competencia: monthToComp($('novoCompetencia').value),
+            tipo: $('novoTipo').value,
+            observacao: $('novoObservacao').value.trim() || null
+        };
+
+        try {
+            const response = await fetch('/dizimos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setMsg('msgNovoLancamento', result.error || 'Erro ao salvar lançamento.', 'error');
+                return;
+            }
+
+            setMsg('msgNovoLancamento', 'Lançamento salvo com sucesso!', 'ok');
+            $('formNovoLancamento').reset();
+            $('novoCompetencia').value = $('filtroComp').value;
+            currentPage = 1;
+            refresh();
+            window.setTimeout(() => toggleNovoLancamento(false), 600);
+        } catch (error) {
+            setMsg('msgNovoLancamento', 'Falha de conexão ao salvar lançamento.', 'error');
+        }
+    });
+
+    /* ══════════════════════════════════════
+       TIPOS DE RECEITAS (CRUD)
+    ══════════════════════════════════════ */
+    const natLabel = { entrada: 'Entrada', saida: 'Saída' };
+    const catLabel = { dizimo: 'Dízimo', oferta: 'Oferta', missoes: 'Missões', campanha: 'Campanha', social: 'Social', manutencao: 'Manutenção', outros: 'Outros' };
+
+    async function loadTipos() {
+        try {
+            const r = await fetch('/tipos-receita'); // Rota corrigida aqui!
+            const rows = await r.json().catch(() => []);
+
+            if (!r.ok) { setMsg('msgTiposLista', rows.error || 'Erro ao carregar tipos.', 'error'); return; }
+
+            if (!rows.length) {
+                $('tbTipos').innerHTML = `<tr class="empty-row"><td colspan="5">Nenhum tipo cadastrado.</td></tr>`;
+                return;
+            }
+
+            $('tbTipos').innerHTML = rows.map(t => `
+                <tr>
+                    <td><strong>${t.nome}</strong>${t.descricao ? `<br><small style="color:var(--muted)">${t.descricao}</small>` : ''}</td>
+                    <td>
+                        <span class="tipo-natureza ${t.natureza === 'entrada' ? 'natureza-e' : 'natureza-s'}">
+                            <i class="fa-solid ${t.natureza === 'entrada' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                            ${natLabel[t.natureza] || t.natureza}
+                        </span>
+                    </td>
+                    <td>${catLabel[t.categoria] || t.categoria || '-'}</td>
+                    <td>
+                        <span class="badge" style="background:${t.ativo !== false ? '#dcfce7' : '#f1f5f9'};color:${t.ativo !== false ? '#15803d' : '#64748b'}">
+                            ${t.ativo !== false ? 'Ativo' : 'Inativo'}
+                        </span>
+                    </td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn btn-blue btn-sm" onclick="editarTipo(${t.id})" title="Editar">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn btn-red btn-sm" onclick="excluirTipo(${t.id})" title="Excluir">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            window._tiposCache = rows;
+            setMsg('msgTiposLista', '');
+        } catch (e) {
+            setMsg('msgTiposLista', 'Falha de conexão ao carregar tipos.', 'error');
+            console.error('Erro ao carregar tipos:', e);
+        }
+    }
+
+    window.editarTipo = function(id) {
+        const t = (window._tiposCache || []).find(x => x.id === id);
+        if (!t) return;
+        $('tipoEditId').value = id;
+        $('tipoNome').value = t.nome;
+        $('tipoNatureza').value = t.natureza || 'entrada';
+        $('tipoCategoria').value = t.categoria || 'outros';
+        $('tipoDescricao').value = t.descricao || '';
+        $('tipoFormTitle').innerHTML = '<i class="fa-solid fa-pen"></i> Editar tipo';
+        $('tipoSubmitLabel').textContent = 'Salvar alterações';
+        $('btnCancelarTipo').style.display = '';
+    };
+
+    window.excluirTipo = async function(id) {
+        if (!confirm('Remover este tipo de receita?')) return;
+        const r = await fetch(`/tipos-receita/${id}`, { method: 'DELETE' }); // Rota corrigida aqui!
+        if (r.ok) { setMsg('msgTiposLista', 'Tipo removido.', 'ok'); loadTipos(); }
+        else { const d = await r.json().catch(() => ({})); setMsg('msgTiposLista', d.error || 'Erro ao remover.', 'error'); }
+    };
+
+    function cancelarTipo() {
+        $('formTipo').reset();
+        $('tipoEditId').value = '';
+        $('tipoFormTitle').innerHTML = '<i class="fa-solid fa-plus"></i> Novo tipo';
+        $('tipoSubmitLabel').textContent = 'Criar tipo';
+        $('btnCancelarTipo').style.display = 'none';
+        setMsg('msgTiposForm', '');
+    }
+
+    $('formTipo').addEventListener('submit', async e => {
+        e.preventDefault();
+        const editId = $('tipoEditId').value;
+        const body = {
+            nome: $('tipoNome').value.trim(),
+            natureza: $('tipoNatureza').value,
+            categoria: $('tipoCategoria').value,
+            descricao: $('tipoDescricao').value.trim() || null
+        };
+
+        const r = await fetch(editId ? `/tipos-receita/${editId}` : '/tipos-receita', { // Rota corrigida aqui!
+            method: editId ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const d = await r.json().catch(() => ({}));
+
+        if (!r.ok) { setMsg('msgTiposForm', d.error || 'Erro ao salvar.', 'error'); return; }
+
+        setMsg('msgTiposForm', editId ? 'Tipo atualizado!' : 'Tipo criado!', 'ok');
+        cancelarTipo();
+        loadTipos();
+    });
+
+    /* ══════════════════════════════════════
+       INIT
+    ══════════════════════════════════════ */
+    const hoje = new Date();
+    const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+    $('filtroComp').value = mesAtual;
+    $('novoCompetencia').value = mesAtual;
+
+    // Chamadas iniciais
+    refresh(); // Carrega KPIs, lista de lançamentos e tipos para filtro
+    </script>
+</body>
+</html>

@@ -1,0 +1,1135 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Grupos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --brand:      #0f766e;
+            --blue:       #0284c7;
+            --blue-light: #e0f2fe;
+            --green:      #10b981;
+            --red:        #dc2626;
+            --yellow:     #f59e0b;
+            --purple:     #8b5cf6;
+            --orange:     #f97316;
+            --surface:    #ffffff;
+            --bg:         #f1f5f9;
+            --border:     #e2e8f0;
+            --text:       #0f172a;
+            --muted:      #64748b;
+            --radius:     14px;
+            --shadow:     0 4px 16px rgba(15,23,42,.08);
+            --shadow-lg:  0 12px 32px rgba(15,23,42,.14);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .page-wrap {
+            padding: 24px 28px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ── Cabeçalho ── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-header-left h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-header-left h2 i { color: var(--orange); }
+
+        .page-header-left p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* ── Layout dois painéis ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 960px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        /* ── Painel base ── */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-count {
+            font-size: 11px;
+            background: #fff7ed;
+            color: var(--orange);
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        /* ── Busca ── */
+        .search-box {
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: .8rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 9px 12px 9px 32px;
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
+            transition: border-color .15s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--orange);
+            background: #fff;
+        }
+
+        /* ── Lista de grupos ── */
+        .group-list {
+            overflow-y: auto;
+            max-height: calc(100vh - 300px);
+        }
+
+        .group-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .group-item:last-child { border-bottom: none; }
+        .group-item:hover { background: #fafafa; }
+
+        .group-item.is-active {
+            background: #fff7ed;
+            box-shadow: inset 4px 0 0 var(--orange);
+        }
+
+        .g-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .g-info { flex: 1; min-width: 0; }
+
+        .g-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .g-sub {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .g-badge {
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .badge-ativo   { background: #d1fae5; color: #065f46; }
+        .badge-inativo { background: #fee2e2; color: #991b1b; }
+        .badge-outro   { background: #f1f5f9; color: #475569; }
+
+        .empty-list {
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .empty-list i {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: block;
+            color: #cbd5e1;
+        }
+
+        /* ── Painel direito ── */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* ── Hero do grupo ── */
+        .group-hero {
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%);
+            transition: background .4s;
+        }
+
+        .group-hero::before {
+            content: '';
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.07);
+        }
+
+        .hero-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 16px;
+            border: 3px solid rgba(255,255,255,.3);
+            background: rgba(255,255,255,.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .hero-body { flex: 1; min-width: 160px; }
+
+        .hero-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .hero-name.ph {
+            color: rgba(255,255,255,.5);
+            font-style: italic;
+            font-weight: 400;
+            font-size: 15px;
+        }
+
+        .hero-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,.75);
+            margin-top: 4px;
+        }
+
+        .hero-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .hero-tag {
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(255,255,255,.2);
+            color: #fff;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* ── Botões ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 18px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+
+        .btn:disabled { opacity: .55; cursor: not-allowed; }
+        .btn-white  { background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.3); }
+        .btn-white:hover { background: rgba(255,255,255,.3); }
+        .btn-solid  { background: #fff; color: var(--orange); }
+        .btn-solid:hover { background: #fff7ed; }
+        .btn-primary { background: var(--blue); color: #fff; }
+        .btn-primary:hover { background: #0369a1; }
+        .btn-success { background: var(--green); color: #fff; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger  { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+        .btn-danger:hover { background: var(--red); color: #fff; }
+        .btn-ghost   { background: var(--bg); color: var(--muted); }
+        .btn-ghost:hover { background: var(--border); }
+        .btn-orange  { background: var(--orange); color: #fff; }
+        .btn-orange:hover { background: #ea580c; }
+        .btn-sm { padding: 7px 13px; font-size: 12px; border-radius: 7px; }
+
+        /* ── Form card ── */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .form-body {
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .fg {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px 16px;
+        }
+
+        .fg .g-full { grid-column: span 2; }
+
+        @media (max-width: 640px) {
+            .fg { grid-template-columns: 1fr; }
+            .fg .g-full { grid-column: span 1; }
+        }
+
+        .f {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .f label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--muted);
+            letter-spacing: .03em;
+        }
+
+        .f input,
+        .f select,
+        .f textarea {
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 11px;
+            font-size: 13px;
+            color: var(--text);
+            background: #fafbfc;
+            transition: border-color .15s;
+            font-family: inherit;
+        }
+
+        .f input:focus,
+        .f select:focus,
+        .f textarea:focus {
+            outline: none;
+            border-color: var(--orange);
+            background: #fff;
+        }
+
+        .f textarea { resize: vertical; min-height: 72px; }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--orange);
+            letter-spacing: .06em;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed #fed7aa;
+        }
+
+        .form-footer {
+            padding: 14px 22px 18px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .form-status {
+            font-size: 13px;
+            font-weight: 600;
+            color: #059669;
+        }
+
+        .form-status.error { color: var(--red); }
+
+        /* ── Abas de membros do grupo ── */
+        .tabs-nav {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            padding: 8px 16px 0;
+            gap: 4px;
+            scrollbar-width: none;
+        }
+
+        .tabs-nav::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px 11px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            border-radius: 8px 8px 0 0;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all .2s;
+        }
+
+        .tab-btn:hover { color: var(--text); background: #f1f5f9; }
+
+        .tab-btn.active {
+            color: var(--orange);
+            background: #fff;
+            border-bottom-color: var(--orange);
+        }
+
+        .tab-panel { display: none; padding: 20px 22px; }
+        .tab-panel.active { display: block; }
+
+        /* ── Tabela de membros do grupo ── */
+        .members-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .members-table th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .members-table td {
+            padding: 11px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text);
+        }
+
+        .members-table tr:last-child td { border-bottom: none; }
+
+        .members-table tr:hover td { background: #f8fafc; }
+
+        .empty-table {
+            text-align: center;
+            color: var(--muted);
+            padding: 32px !important;
+        }
+
+        /* ── Cor do hero por categoria ── */
+        .hero-ministerio { background: linear-gradient(135deg, #0f766e 0%, #0284c7 100%); }
+        .hero-jovens     { background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); }
+        .hero-mulheres   { background: linear-gradient(135deg, #be185d 0%, #f472b6 100%); }
+        .hero-homens     { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+        .hero-celula     { background: linear-gradient(135deg, #065f46 0%, #10b981 100%); }
+        .hero-default    { background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%); }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page"
+      data-shell-title="Grupos"
+      data-shell-breadcrumb="LDFP / Secretaria / Grupos"
+      data-shell-active="grupos.html"
+      data-shell-chip="Ambiente autenticado"
+      data-shell-role="Administrador">
+
+<main class="main-content enterprise-main">
+<div class="page-wrap">
+
+    <!-- Cabeçalho -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h2><i class="fa-solid fa-people-group"></i> Grupos</h2>
+            <p>Gerencie grupos, células e ministérios da igreja</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" id="btnRecarregar">
+                <i class="fa-solid fa-rotate-right"></i> Atualizar
+            </button>
+            <button class="btn btn-orange" id="btnNovoGrupo">
+                <i class="fa-solid fa-plus"></i> Novo Grupo
+            </button>
+        </div>
+    </div>
+
+    <!-- Dois painéis -->
+    <div class="two-col">
+
+        <!-- ESQUERDA: lista -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span>Todos os Grupos</span>
+                    <span class="panel-count" id="listCount">0</span>
+                </div>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar grupo...">
+                </div>
+            </div>
+            <div class="group-list" id="groupList">
+                <div class="empty-list">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Carregando...
+                </div>
+            </div>
+        </div>
+
+        <!-- DIREITA: hero + formulário -->
+        <div class="right-panel">
+
+            <!-- Hero -->
+            <div class="group-hero hero-default" id="groupHero">
+                <div class="hero-icon" id="heroIcon">
+                    <i class="fa-solid fa-people-group"></i>
+                </div>
+                <div class="hero-body">
+                    <div class="hero-name ph" id="heroName">Nenhum grupo selecionado</div>
+                    <div class="hero-sub" id="heroSub">Selecione um grupo ou crie um novo</div>
+                    <div class="hero-tags" id="heroTags">
+                        <span class="hero-tag"><i class="fa-solid fa-church" style="margin-right:4px;"></i>LDFP</span>
+                    </div>
+                </div>
+                <div class="hero-btns">
+                    <button class="btn btn-white btn-sm" id="btnLimpar">
+                        <i class="fa-solid fa-plus"></i> Novo
+                    </button>
+                    <button class="btn btn-white btn-sm" id="btnExcluir">
+                        <i class="fa-solid fa-trash"></i> Excluir
+                    </button>
+                    <button class="btn btn-solid btn-sm" id="btnSalvar">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formulário -->
+            <div class="form-card">
+                <div class="tabs-nav">
+                    <button class="tab-btn active" data-tab="tab-dados">
+                        <i class="fa-solid fa-pen-to-square"></i> Dados do Grupo
+                    </button>
+                    <button class="tab-btn" data-tab="tab-membros">
+                        <i class="fa-solid fa-users"></i> Membros
+                    </button>
+                    <button class="tab-btn" data-tab="tab-reunioes">
+                        <i class="fa-regular fa-calendar"></i> Reuniões
+                    </button>
+                </div>
+
+                <form id="groupForm">
+
+                    <!-- Aba: Dados do Grupo -->
+                    <div class="tab-panel active" id="tab-dados">
+                        <div class="form-body">
+                            <div class="section-label">Identificação</div>
+                            <div class="fg">
+                                <div class="f g-full">
+                                    <label>Nome do Grupo *</label>
+                                    <input type="text" name="nome" placeholder="Ex: Célula Norte, Ministério de Louvor...">
+                                </div>
+                                <div class="f">
+                                    <label>Categoria</label>
+                                    <select name="categoria" id="selectCategoria">
+                                        <option value="">-- Selecione --</option>
+                                        <option value="Célula">Célula</option>
+                                        <option value="Ministério">Ministério</option>
+                                        <option value="Jovens">Jovens</option>
+                                        <option value="Mulheres">Mulheres</option>
+                                        <option value="Homens">Homens</option>
+                                        <option value="EBD">EBD</option>
+                                        <option value="Outro">Outro</option>
+                                    </select>
+                                </div>
+                                <div class="f">
+                                    <label>Situação</label>
+                                    <select name="situacao">
+                                        <option value="Ativo">Ativo</option>
+                                        <option value="Inativo">Inativo</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="section-label">Liderança</div>
+                            <div class="fg">
+                                <div class="f">
+                                    <label>Líder</label>
+                                    <input type="text" name="lider" placeholder="Nome do líder">
+                                </div>
+                                <div class="f">
+                                    <label>Co-Líder</label>
+                                    <input type="text" name="colider" placeholder="Nome do co-líder">
+                                </div>
+                                <div class="f">
+                                    <label>Telefone do Líder</label>
+                                    <input type="text" name="telefoneLider" placeholder="(00) 00000-0000">
+                                </div>
+                                <div class="f">
+                                    <label>E-mail do Líder</label>
+                                    <input type="email" name="emailLider" placeholder="email@exemplo.com">
+                                </div>
+                            </div>
+
+                            <div class="section-label">Detalhes</div>
+                            <div class="fg">
+                                <div class="f">
+                                    <label>Dia de Reunião</label>
+                                    <select name="diaSemana">
+                                        <option value="">-- Selecione --</option>
+                                        <option>Segunda-feira</option>
+                                        <option>Terça-feira</option>
+                                        <option>Quarta-feira</option>
+                                        <option>Quinta-feira</option>
+                                        <option>Sexta-feira</option>
+                                        <option>Sábado</option>
+                                        <option>Domingo</option>
+                                    </select>
+                                </div>
+                                <div class="f">
+                                    <label>Horário</label>
+                                    <input type="time" name="horario">
+                                </div>
+                                <div class="f">
+                                    <label>Local</label>
+                                    <input type="text" name="local" placeholder="Endereço ou local de reunião">
+                                </div>
+                                <div class="f">
+                                    <label>Máx. de Membros</label>
+                                    <input type="number" name="maxMembros" placeholder="0 = ilimitado" min="0">
+                                </div>
+                                <div class="f g-full">
+                                    <label>Descrição / Observações</label>
+                                    <textarea name="descricao" placeholder="Descreva o propósito do grupo..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba: Membros do grupo -->
+                    <div class="tab-panel" id="tab-membros">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                            <span style="font-size:13px;font-weight:700;color:var(--text);">Membros do grupo</span>
+                            <button type="button" class="btn btn-orange btn-sm" id="btnAdicionarMembro">
+                                <i class="fa-solid fa-plus"></i> Adicionar Membro
+                            </button>
+                        </div>
+                        <table class="members-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Função</th>
+                                    <th>Desde</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="groupMembersBody">
+                                <tr><td colspan="4" class="empty-table">Selecione um grupo para ver os membros.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Aba: Reuniões -->
+                    <div class="tab-panel" id="tab-reunioes">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                            <span style="font-size:13px;font-weight:700;color:var(--text);">Reuniões registradas</span>
+                            <button type="button" class="btn btn-orange btn-sm" id="btnNovaReuniao">
+                                <i class="fa-solid fa-plus"></i> Nova Reunião
+                            </button>
+                        </div>
+                        <table class="members-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Tema</th>
+                                    <th>Presentes</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="groupReuniaoBody">
+                                <tr><td colspan="4" class="empty-table">Selecione um grupo para ver as reuniões.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </form>
+
+                <div class="form-footer">
+                    <button class="btn btn-orange" id="btnSalvarForm">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar Grupo
+                    </button>
+                    <button class="btn btn-ghost" id="btnLimparForm">
+                        <i class="fa-solid fa-broom"></i> Limpar
+                    </button>
+                    <button class="btn btn-danger" id="btnExcluirForm">
+                        <i class="fa-solid fa-trash"></i> Excluir
+                    </button>
+                    <span class="form-status" id="formStatus"></span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+    requireAuthSession();
+
+    /* ── Helpers ── */
+    const $ = (id) => document.getElementById(id);
+
+    const getUser = () => {
+        if (typeof window.getStoredAuth === 'function') return window.getStoredAuth()?.user || null;
+        try { return JSON.parse(localStorage.getItem('ldfpUser') || 'null'); } catch { return null; }
+    };
+
+    const extractError = (data, fallback) =>
+        data?.message || data?.error || data?.msg || fallback;
+
+    const setStatus = (msg, isError = false) => {
+        const el = $('formStatus');
+        el.textContent = msg;
+        el.className = 'form-status' + (isError ? ' error' : '');
+    };
+
+    /* ── Cores por categoria ── */
+    const categoryConfig = {
+        'Célula':      { heroClass: 'hero-celula',    icon: 'fa-solid fa-house-chimney', color: '#065f46' },
+        'Ministério':  { heroClass: 'hero-ministerio', icon: 'fa-solid fa-hands-praying', color: '#0f766e' },
+        'Jovens':      { heroClass: 'hero-jovens',    icon: 'fa-solid fa-bolt',           color: '#7c3aed' },
+        'Mulheres':    { heroClass: 'hero-mulheres',  icon: 'fa-solid fa-heart',          color: '#be185d' },
+        'Homens':      { heroClass: 'hero-homens',    icon: 'fa-solid fa-shield-halved',  color: '#1e40af' },
+        'EBD':         { heroClass: 'hero-ministerio', icon: 'fa-solid fa-book-open',     color: '#0284c7' },
+        'default':     { heroClass: 'hero-default',   icon: 'fa-solid fa-people-group',   color: '#ea580c' },
+    };
+
+    const getCatConfig = (cat) => categoryConfig[cat] || categoryConfig['default'];
+
+    /* ── Abas ── */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            $(btn.dataset.tab)?.classList.add('active');
+        });
+    });
+
+    /* ── Hero ── */
+    const updateHero = (row) => {
+        const hero  = $('groupHero');
+        const nameEl = $('heroName');
+        const subEl  = $('heroSub');
+        const tagsEl = $('heroTags');
+        const iconEl = $('heroIcon');
+
+        hero.className = 'group-hero';
+
+        if (row) {
+            const cat = row.categoria || row.category || '';
+            const cfg = getCatConfig(cat);
+            hero.classList.add(cfg.heroClass);
+            iconEl.innerHTML = `<i class="${cfg.icon}"></i>`;
+            nameEl.textContent = row.nome || row.name || 'Sem nome';
+            nameEl.className = 'hero-name';
+            subEl.textContent = row.lider ? `Líder: ${row.lider}` : 'Sem líder definido';
+            const sit = row.situacao || 'Ativo';
+            const sitBg = sit === 'Ativo' ? '#d1fae5' : '#fee2e2';
+            const sitFg = sit === 'Ativo' ? '#065f46' : '#991b1b';
+            tagsEl.innerHTML = `
+                ${cat ? `<span class="hero-tag">${cat}</span>` : ''}
+                <span class="hero-tag" style="background:${sitBg};color:${sitFg};">${sit}</span>
+                ${row.diaSemana ? `<span class="hero-tag">${row.diaSemana}</span>` : ''}
+            `;
+        } else {
+            hero.classList.add('hero-default');
+            iconEl.innerHTML = `<i class="fa-solid fa-people-group"></i>`;
+            nameEl.textContent = 'Nenhum grupo selecionado';
+            nameEl.className = 'hero-name ph';
+            subEl.textContent = 'Selecione um grupo ou crie um novo';
+            tagsEl.innerHTML = `<span class="hero-tag"><i class="fa-solid fa-church" style="margin-right:4px;"></i>LDFP</span>`;
+        }
+    };
+
+    updateHero(null);
+
+    /* ── Estado ── */
+    let loadedGroups   = [];
+    let filteredGroups = [];
+    let selectedId     = null;
+
+    const groupIdOf = (r) => Number(r?.id || r?.grupo_id || r?.group_id || 0);
+
+    /* ── Preencher formulário ── */
+    const fillForm = (row) => {
+        if (!row) return;
+        const set = (name, val) => {
+            const el = document.querySelector(`[name="${name}"]`);
+            if (el) el.value = val ?? '';
+        };
+        set('nome',         row.nome || row.name);
+        set('categoria',    row.categoria || row.category);
+        set('situacao',     row.situacao || 'Ativo');
+        set('lider',        row.lider || row.leader);
+        set('colider',      row.colider || row.co_leader);
+        set('telefoneLider',row.telefoneLider || row.leader_phone);
+        set('emailLider',   row.emailLider || row.leader_email);
+        set('diaSemana',    row.diaSemana || row.day_of_week);
+        set('horario',      row.horario || row.meeting_time);
+        set('local',        row.local || row.location);
+        set('maxMembros',   row.maxMembros || row.max_members || '');
+        set('descricao',    row.descricao || row.description);
+        updateHero(row);
+        setStatus(`Editando: ${row.nome || row.name || 'Sem nome'}`);
+    };
+
+    /* ── Selecionar grupo ── */
+    const selectGroup = (id) => {
+        selectedId = Number(id) || null;
+        document.querySelectorAll('.group-item').forEach(el => {
+            el.classList.toggle('is-active', Number(el.dataset.gid) === selectedId);
+        });
+        const found = loadedGroups.find(r => groupIdOf(r) === selectedId);
+        if (found) fillForm(found);
+        loadGroupMembers();
+        loadGroupReunioes();
+    };
+
+    /* ── Badge de situação ── */
+    const badgeClass = (sit) => {
+        if (!sit) return 'badge-outro';
+        const s = sit.toLowerCase();
+        if (s === 'ativo') return 'badge-ativo';
+        if (s === 'inativo') return 'badge-inativo';
+        return 'badge-outro';
+    };
+
+    /* ── Renderizar lista ── */
+    const renderList = (groups) => {
+        const listEl = $('groupList');
+        $('listCount').textContent = groups.length;
+
+        if (!groups.length) {
+            listEl.innerHTML = `<div class="empty-list"><i class="fa-solid fa-people-group"></i>Nenhum grupo encontrado.</div>`;
+            return;
+        }
+
+        listEl.innerHTML = groups.map(row => {
+            const id   = groupIdOf(row);
+            const nome = row.nome || row.name || 'Sem nome';
+            const cat  = row.categoria || row.category || '';
+            const lider = row.lider || row.leader || '';
+            const sit  = row.situacao || 'Ativo';
+            const bc   = badgeClass(sit);
+            const cfg  = getCatConfig(cat);
+            const sel  = selectedId === id ? 'is-active' : '';
+
+            return `
+                <div class="group-item ${sel}" data-gid="${id}">
+                    <div class="g-icon" style="background:${cfg.color};">
+                        <i class="${cfg.icon}"></i>
+                    </div>
+                    <div class="g-info">
+                        <div class="g-name">${nome}</div>
+                        <div class="g-sub">${cat}${lider ? ' · ' + lider : ''}</div>
+                    </div>
+                    <span class="g-badge ${bc}">${sit}</span>
+                </div>
+            `;
+        }).join('');
+
+        listEl.querySelectorAll('.group-item').forEach(el => {
+            el.addEventListener('click', () => selectGroup(Number(el.dataset.gid)));
+        });
+    };
+
+    /* ── Busca ── */
+    $('searchInput').addEventListener('input', () => {
+        const q = $('searchInput').value.toLowerCase().trim();
+        filteredGroups = q
+            ? loadedGroups.filter(r =>
+                (r.nome || r.name || '').toLowerCase().includes(q) ||
+                (r.categoria || r.category || '').toLowerCase().includes(q) ||
+                (r.lider || r.leader || '').toLowerCase().includes(q))
+            : [...loadedGroups];
+        renderList(filteredGroups);
+    });
+
+    /* ── Carregar grupos ── */
+    const carregarGrupos = async () => {
+        $('groupList').innerHTML = `<div class="empty-list"><i class="fa-solid fa-spinner fa-spin"></i>Carregando...</div>`;
+        const churchId = getUser()?.churchId || 1;
+        try {
+            const resp = await fetch('/api/grupos');
+            const data = await resp.json().catch(() => []);
+            if (!resp.ok) throw new Error(extractError(data, 'Erro ao carregar grupos.'));
+            loadedGroups   = Array.isArray(data) ? data : (data.groups || data.data || []);
+            filteredGroups = [...loadedGroups];
+            renderList(filteredGroups);
+        } catch (err) {
+            $('groupList').innerHTML = `<div class="empty-list"><i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i>${err.message}</div>`;
+        }
+    };
+
+    /* ── Carregar membros do grupo ── */
+    const loadGroupMembers = async () => {
+        const tbody = $('groupMembersBody');
+        if (!selectedId) {
+            tbody.innerHTML = `<tr><td colspan="4" class="empty-table">Selecione um grupo para ver os membros.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = `<tr><td colspan="4" class="empty-table"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</td></tr>`;
+        try {
+            const resp = await fetch(`/api/grupos/${selectedId}/membros`);
+            const data = await resp.json().catch(() => []);
+            if (!resp.ok || !data.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-table">Nenhum membro neste grupo.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = data.map(m => `
+                <tr>
+                    <td>${m.nome || m.full_name || m.name || '-'}</td>
+                    <td>${m.funcao || m.role || '-'}</td>
+                    <td>${m.desde || m.since || '-'}</td>
+                    <td><button class="btn btn-ghost btn-sm" style="padding:4px 10px;font-size:11px;">Remover</button></td>
+                </tr>
+            `).join('');
+        } catch {
+            tbody.innerHTML = `<tr><td colspan="4" class="empty-table">Erro ao carregar membros.</td></tr>`;
+        }
+    };
+
+    /* ── Carregar reuniões do grupo ── */
+    const loadGroupReunioes = async () => {
+        const tbody = $('groupReuniaoBody');
+        if (!selectedId) {
+            tbody.innerHTML = `<tr><td colspan="4" class="empty-table">Selecione um grupo para ver as reuniões.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = `<tr><td colspan="4" class="empty-table"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</td></tr>`;
+        try {
+            const resp = await fetch(`/api/grupos/${selectedId}/reunioes`);
+            const data = await resp.json().catch(() => []);
+            if (!resp.ok || !data.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-table">Nenhuma reunião registrada.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = data.map(r => `
+                <tr>
+                    <td>${r.data || r.date || '-'}</td>
+                    <td>${r.tema || r.theme || '-'}</td>
+                    <td>${r.presentes || r.attendees || '-'}</td>
+                    <td><button class="btn btn-ghost btn-sm" style="padding:4px 10px;font-size:11px;">Ver</button></td>
+                </tr>
+            `).join('');
+        } catch {
+            tbody.innerHTML = `<tr><td colspan="4" class="empty-table">Erro ao carregar reuniões.</td></tr>`;
+        }
+    };
+
+    /* ── Payload ── */
+    const getPayload = () => {
+        const all = {};
+        document.querySelectorAll('#groupForm [name]').forEach(el => {
+            if (!all[el.name]) all[el.name] = el.value.trim();
+        });
+        return {
+            churchId:     getUser()?.churchId || 1,
+            nome:         all.nome        || '',
+            categoria:    all.categoria   || '',
+            situacao:     all.situacao    || 'Ativo',
+            lider:        all.lider       || '',
+            colider:      all.colider     || '',
+            telefoneLider:all.telefoneLider || '',
+            emailLider:   all.emailLider  || '',
+            diaSemana:    all.diaSemana   || '',
+            horario:      all.horario     || '',
+            local:        all.local       || '',
+            maxMembros:   all.maxMembros  ? Number(all.maxMembros) : 0,
+            descricao:    all.descricao   || '',
+        };
+    };
+
+    /* ── Salvar ── */
+    const salvar = async () => {
+        setStatus('');
+        const payload = getPayload();
+        if (!payload.nome) { setStatus('Informe o nome do grupo.', true); return; }
+
+        const saveBtns = [$('btnSalvar'), $('btnSalvarForm')];
+        saveBtns.forEach(b => { if (b) { b.disabled = true; b.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...'; }});
+
+        try {
+            const url    = selectedId ? `/api/grupos/${selectedId}` : '/api/grupos';
+            const method = selectedId ? 'PUT' : 'POST';
+            const resp   = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+            const data   = await resp.json().catch(() => ({}));
+            if (!resp.ok) throw new Error(extractError(data, 'Não foi possível salvar o grupo.'));
+            setStatus(selectedId ? 'Grupo atualizado!' : 'Grupo cadastrado com sucesso!');
+            if (!selectedId) limpar();
+            await carregarGrupos();
+        } catch (err) {
+            setStatus(err.message || 'Erro inesperado.', true);
+        } finally {
+            saveBtns.forEach(b => { if (b) { b.disabled = false; b.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Grupo'; }});
+        }
+    };
+
+    /* ── Excluir ── */
+    const excluir = async () => {
+        if (!selectedId) { setStatus('Selecione um grupo para excluir.', true); return; }
+        const found = loadedGroups.find(r => groupIdOf(r) === selectedId);
+        const nome  = found?.nome || found?.name || `ID ${selectedId}`;
+        if (!confirm(`Excluir o grupo "${nome}"? Esta ação não pode ser desfeita.`)) return;
+        try {
+            const resp = await fetch(`/api/grupos/${selectedId}`, { method: 'DELETE' });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) throw new Error(extractError(data, 'Erro ao excluir.'));
+            selectedId = null;
+            limpar();
+            setStatus('Grupo excluído com sucesso.');
+            await carregarGrupos();
+        } catch (err) {
+            setStatus(err.message, true);
+        }
+    };
+
+    /* ── Limpar ── */
+    const limpar = () => {
+        document.querySelectorAll('#groupForm [name]').forEach(el => { el.value = ''; });
+        const sit = document.querySelector('[name="situacao"]');
+        if (sit) sit.value = 'Ativo';
+        selectedId = null;
+        updateHero(null);
+        setStatus('');
+        document.querySelectorAll('.group-item').forEach(el => el.classList.remove('is-active'));
+        $('groupMembersBody').innerHTML = `<tr><td colspan="4" class="empty-table">Selecione um grupo para ver os membros.</td></tr>`;
+        $('groupReuniaoBody').innerHTML = `<tr><td colspan="4" class="empty-table">Selecione um grupo para ver as reuniões.</td></tr>`;
+    };
+
+    /* ── Eventos ── */
+    $('btnSalvar').addEventListener('click', salvar);
+    $('btnSalvarForm').addEventListener('click', salvar);
+    $('btnExcluir').addEventListener('click', excluir);
+    $('btnExcluirForm').addEventListener('click', excluir);
+    $('btnNovoGrupo').addEventListener('click', limpar);
+    $('btnLimpar').addEventListener('click', limpar);
+    $('btnLimparForm').addEventListener('click', limpar);
+    $('btnRecarregar').addEventListener('click', carregarGrupos);
+
+    $('btnAdicionarMembro').addEventListener('click', () => {
+        if (!selectedId) { setStatus('Salve o grupo antes de adicionar membros.', true); return; }
+        alert('Modal de adicionar membro ao grupo — integrar com membros.html');
+    });
+
+    $('btnNovaReuniao').addEventListener('click', () => {
+        if (!selectedId) { setStatus('Salve o grupo antes de registrar uma reunião.', true); return; }
+        alert('Modal de nova reunião — pode integrar com grupos_reunioes.html');
+    });
+
+    /* ── Atualizar hero ao digitar categoria ── */
+    document.querySelector('[name="categoria"]').addEventListener('change', () => {
+        const payload = getPayload();
+        if (payload.nome || selectedId) updateHero(payload);
+    });
+
+    carregarGrupos();
+</script>
+</body>
+</html>

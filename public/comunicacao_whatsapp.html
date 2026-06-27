@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp e Templates</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 16px 12px 28px; }
+        .card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:14px; box-shadow:0 8px 20px rgba(15,23,42,.08); margin-bottom:12px; }
+        .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        input, select, textarea { width:100%; box-sizing:border-box; border:1px solid #dbe3ef; border-radius:8px; padding:10px; font-size:14px; }
+        textarea { min-height:100px; }
+        .btn { border:0; border-radius:8px; background:#0f766e; color:#fff; padding:10px 12px; font-weight:700; cursor:pointer; }
+        .msg { font-size:13px; color:#0f766e; }
+        .msg.error { color:#b91c1c; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { border-bottom:1px solid #e2e8f0; padding:8px; font-size:12px; text-align:left; }
+        th { background:#f8fafc; color:#64748b; text-transform:uppercase; font-size:11px; }
+        @media (max-width: 900px) { .grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="WhatsApp" data-shell-breadcrumb="LDFP / Comunicação / WhatsApp" data-shell-active="comunicacao_whatsapp.html" data-shell-chip="Ambiente autenticado" data-shell-role="Secretaria">
+    <main class="main-content enterprise-main">
+        <div class="wrap">
+            <section class="card">
+                <h2 style="margin:0 0 10px;">Templates e gatilhos</h2>
+                <form id="formTemplate" class="grid">
+                    <input type="text" id="tplNome" placeholder="Nome do template" required>
+                    <select id="tplGatilho">
+                        <option value="visitante_boas_vindas">visitante_boas_vindas</option>
+                        <option value="evento_lembrete">evento_lembrete</option>
+                        <option value="oracao_resposta">oracao_resposta</option>
+                        <option value="manual">manual</option>
+                    </select>
+                    <textarea id="tplConteudo" class="full" placeholder="Ex: Ola {{nome}}, seja bem-vindo(a)!" required></textarea>
+                    <button class="btn" type="submit">Salvar template</button>
+                </form>
+                <p id="statusTpl" class="msg"></p>
+                <table>
+                    <thead><tr><th>Nome</th><th>Gatilho</th><th>Ativo</th></tr></thead>
+                    <tbody id="tbTemplates"></tbody>
+                </table>
+            </section>
+
+            <section class="card">
+                <h2 style="margin:0 0 10px;">Disparo manual (com log)</h2>
+                <form id="formDisparo" class="grid">
+                    <select id="dispGatilho">
+                        <option value="manual">manual</option>
+                        <option value="visitante_boas_vindas">visitante_boas_vindas</option>
+                        <option value="evento_lembrete">evento_lembrete</option>
+                        <option value="oracao_resposta">oracao_resposta</option>
+                    </select>
+                    <input type="text" id="dispDestino" placeholder="Telefone destino" required>
+                    <input type="text" id="dispNome" placeholder="Variável nome (opcional)">
+                    <input type="text" id="dispEvento" placeholder="Variável evento (opcional)">
+                    <textarea id="dispMensagem" placeholder="Mensagem opcional para gatilho manual"></textarea>
+                    <button class="btn" type="submit">Disparar</button>
+                </form>
+                <p id="statusDisp" class="msg"></p>
+                <table>
+                    <thead><tr><th>Gatilho</th><th>Destino</th><th>Status</th><th>Data</th></tr></thead>
+                    <tbody id="tbLogs"></tbody>
+                </table>
+            </section>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        function setStatus(nodeId, message, error) {
+            const node = document.getElementById(nodeId);
+            node.className = error ? 'msg error' : 'msg';
+            node.textContent = message || '';
+        }
+
+        async function loadTemplates() {
+            const response = await fetch('/comunicacao/whatsapp/templates');
+            const data = await response.json().catch(() => []);
+            if (!response.ok) throw new Error(data.error || 'Erro ao carregar templates.');
+            document.getElementById('tbTemplates').innerHTML = data.map((item) => `
+                <tr><td>${item.nome}</td><td>${item.gatilho}</td><td>${Number(item.ativo) ? 'Sim' : 'Não'}</td></tr>
+            `).join('');
+        }
+
+        async function loadLogs() {
+            const response = await fetch('/comunicacao/whatsapp/logs?limit=20');
+            const data = await response.json().catch(() => []);
+            if (!response.ok) throw new Error(data.error || 'Erro ao carregar logs.');
+            document.getElementById('tbLogs').innerHTML = data.map((item) => `
+                <tr><td>${item.gatilho}</td><td>${item.destino}</td><td>${item.status}</td><td>${new Date(item.created_at).toLocaleString('pt-BR')}</td></tr>
+            `).join('');
+        }
+
+        document.getElementById('formTemplate').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            setStatus('statusTpl', '');
+            try {
+                const response = await fetch('/comunicacao/whatsapp/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome: document.getElementById('tplNome').value.trim(),
+                        gatilho: document.getElementById('tplGatilho').value,
+                        conteudo: document.getElementById('tplConteudo').value.trim(),
+                        ativo: true
+                    })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || 'Erro ao salvar template.');
+                setStatus('statusTpl', 'Template salvo com sucesso.');
+                event.target.reset();
+                await loadTemplates();
+            } catch (error) {
+                setStatus('statusTpl', error.message, true);
+            }
+        });
+
+        document.getElementById('formDisparo').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            setStatus('statusDisp', '');
+            try {
+                const response = await fetch('/comunicacao/whatsapp/disparar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        gatilho: document.getElementById('dispGatilho').value,
+                        destino: document.getElementById('dispDestino').value.trim(),
+                        mensagem: document.getElementById('dispMensagem').value.trim(),
+                        variaveis: {
+                            nome: document.getElementById('dispNome').value.trim(),
+                            evento: document.getElementById('dispEvento').value.trim()
+                        }
+                    })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || 'Erro ao disparar mensagem.');
+                setStatus('statusDisp', `Enviado com sucesso para ${data.destino}.`);
+                await loadLogs();
+            } catch (error) {
+                setStatus('statusDisp', error.message, true);
+            }
+        });
+
+        Promise.all([loadTemplates(), loadLogs()]).catch((error) => {
+            setStatus('statusTpl', error.message, true);
+            setStatus('statusDisp', error.message, true);
+        });
+    </script>
+</body>
+</html>

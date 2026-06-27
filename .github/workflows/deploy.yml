@@ -1,0 +1,82 @@
+name: 🚀 Deploy & Monitoring
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy-note:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: ✅ Deploy model (cPanel)
+      run: |
+        echo "✅ Repositório atualizado no GitHub."
+        echo "📌 Produção em cPanel é pull-based: execute Pull/Update no Git Version Control e Restart no Setup Node.js App."
+
+  health-check:
+    runs-on: ubuntu-latest
+    needs: deploy-note
+    
+    steps:
+    - name: 🏥 Health Check
+      run: |
+        echo "Checking site health..."
+        for i in {1..5}; do
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://www.ldfp.com.br/index.html)
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Site is up! HTTP $STATUS"
+            exit 0
+          fi
+          echo "⏳ Attempt $i: HTTP $STATUS - retrying..."
+          sleep 5
+        done
+        echo "❌ Site health check failed"
+        exit 1
+    
+    - name: 🔍 Check key endpoints
+      run: |
+        ENDPOINTS=("/login.html" "/planos.html" "/criar_conta.html")
+        for endpoint in "${ENDPOINTS[@]}"; do
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://www.ldfp.com.br$endpoint")
+          echo "  $endpoint: HTTP $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "  ❌ Endpoint $endpoint failed!"
+            exit 1
+          fi
+        done
+        echo "✅ All key endpoints are accessible"
+
+  performance-check:
+    runs-on: ubuntu-latest
+    needs: health-check
+    
+    steps:
+    - name: ⚡ Performance Metrics
+      run: |
+        echo "Use Google Search Console e/ou Cloudflare Web Analytics para Core Web Vitals em produção cPanel."
+
+  notify-success:
+    if: success()
+    runs-on: ubuntu-latest
+    needs: [deploy-note, health-check, performance-check]
+    
+    steps:
+    - name: 📢 Deployment Success
+      run: |
+        echo "✅ Pipeline de validação concluída!"
+        echo "🌐 Site: https://www.ldfp.com.br"
+        echo "📊 Produção: cPanel (pull + restart)"
+        echo "⏱️ Deployment Time: $(date)"
+
+  notify-failure:
+    if: failure()
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📢 Deployment Failed
+      run: |
+        echo "❌ Deployment Failed!"
+        echo "Check logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Lançamentos do Caixa</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .lancamentos-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card-bloco {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            padding: 16px;
+        }
+
+        .card-bloco h2 {
+            margin: 0 0 10px;
+            font-size: 16px;
+        }
+
+        .field {
+            margin-bottom: 10px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .saldo-valor {
+            margin-top: 6px;
+            font-size: 34px;
+            font-weight: 800;
+            color: #15803d;
+        }
+
+        .saldo-valor.negativo {
+            color: #b91c1c;
+        }
+
+        .status-msg {
+            font-size: 13px;
+            margin-top: 10px;
+            color: #065f46;
+        }
+
+        .status-msg.error {
+            color: #b91c1c;
+        }
+
+        @media (max-width: 900px) {
+            .lancamentos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="theme-azul-verde">
+    <aside class="sidebar">
+        <div class="sidebar-profile">
+            <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
+            <div class="profile-info">
+                <h4>LEONARDO FRANCISCO...</h4>
+                <span>Online</span>
+            </div>
+        </div>
+
+        <nav class="menu">
+            <div class="menu-section-label">Meu LDFP</div>
+            <button class="dropdown-btn">
+                <span><i class="fa-solid fa-house icon-left"></i> Visão Geral</span>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </button>
+            <div class="dropdown-container">
+                <a href="dashboard.html">Painel</a>
+                <a href="novidades.html">Novidades</a>
+                <a href="meu_plano.html">Meu Plano</a>
+                <a href="configuracoes.html">Configurações</a>
+                <a href="index.html">Sair</a>
+            </div>
+
+            <div class="menu-section-label">Tesouraria</div>
+            <button class="dropdown-btn tesouraria-btn active">
+                <span><i class="fa-solid fa-money-bill-1 icon-left"></i> Tesouraria</span>
+                <i class="fa-solid fa-chevron-right arrow"></i>
+            </button>
+            <div class="dropdown-container tesouraria-menu" style="display:block;">
+                <a href="dizimos.html"><i class="fa-solid fa-coins"></i> Dízimos</a>
+                <a href="financeiro.html"><i class="fa-solid fa-cash-register"></i> Caixa</a>
+                <a href="caixa_lancamentos.html" class="current-page"><i class="fa-solid fa-file-invoice"></i> Lançamentos do Caixa</a>
+                <a href="caixa_saldo_inicial.html"><i class="fa-solid fa-circle-dollar-to-slot"></i> Saldo Inicial do Caixa</a>
+                <a href="banco.html"><i class="fa-solid fa-building-columns"></i> Banco</a>
+                <a href="contas_pagar.html"><i class="fa-solid fa-file-invoice-dollar"></i> Contas a Pagar</a>
+                <a href="recibo.html"><i class="fa-solid fa-receipt"></i> Recibo</a>
+                <a href="transferencias.html"><i class="fa-solid fa-right-left"></i> Transferências</a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            Copyright © 2026 LDFP.<br>Todos os Direitos Reservados.
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <div class="header-left"><i class="fa-solid fa-bars"></i></div>
+            <div class="header-right"><span>LEONARDO FRANCISCO PEREIRA</span><i class="fa-solid fa-user-circle"></i></div>
+        </header>
+
+        <div class="pagina-conteudo">
+            <div class="pagina-topo">
+                <div>
+                    <div class="breadcrumb">Meu LDFP <span>/</span> Tesouraria <span>/</span> Caixa <span>/</span> Lançamentos do Caixa</div>
+                    <h1>Lançamentos do Caixa <span>Movimentações</span></h1>
+                </div>
+            </div>
+
+            <div class="lancamentos-grid">
+                <section class="card-bloco">
+                    <h2>Saldo Atual</h2>
+                    <div class="saldo-valor" id="saldoAtual">R$ 0,00</div>
+                </section>
+
+                <section class="card-bloco">
+                    <h2>Novo Lançamento</h2>
+                    <form id="formLancamento">
+                        <div class="field">
+                            <label for="desc">Descrição</label>
+                            <input id="desc" type="text" placeholder="Ex: Oferta culto domingo" required>
+                        </div>
+                        <div class="field">
+                            <label for="valor">Valor</label>
+                            <input id="valor" type="text" placeholder="0,00" required>
+                        </div>
+                        <div class="field">
+                            <label for="tipo">Tipo</label>
+                            <select id="tipo" required>
+                                <option value="entrada">Entrada (+)</option>
+                                <option value="saida">Saída (-)</option>
+                            </select>
+                        </div>
+                        <button class="btn-primario" type="submit">Registrar</button>
+                        <div class="status-msg" id="statusMsg"></div>
+                    </form>
+                </section>
+            </div>
+
+            <section class="tabela-card">
+                <div class="tabela-topo">
+                    <h2>Histórico</h2>
+                    <div class="tabela-topo-acoes">
+                        <input id="buscaRapida" type="text" placeholder="Pesquisar descrição...">
+                        <button class="btn-linha" type="button" id="btnRecarregar"><i class="fa-solid fa-rotate-right"></i> Recarregar</button>
+                    </div>
+                </div>
+                <div class="tabela-wrapper">
+                    <table class="tabela-lista">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpoTabela"></tbody>
+                    </table>
+                    <div class="tabela-vazia" id="estadoVazio">Nenhum lançamento encontrado.</div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const botoes = document.querySelectorAll('.dropdown-btn');
+        botoes.forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const conteudo = this.nextElementSibling;
+                if (conteudo && conteudo.classList.contains('dropdown-container')) {
+                    conteudo.style.display = conteudo.style.display === 'block' ? 'none' : 'block';
+                }
+            });
+        });
+
+        document.querySelector('.header-left i.fa-bars').addEventListener('click', function() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.style.display = sidebar.style.display === 'none' || sidebar.style.display === '' ? 'flex' : 'none';
+        });
+
+        function checkSidebarVisibility() {
+            const sidebar = document.querySelector('.sidebar');
+            if (window.innerWidth <= 900) {
+                sidebar.style.display = 'none';
+            } else {
+                sidebar.style.display = 'flex';
+            }
+        }
+
+        window.addEventListener('resize', checkSidebarVisibility);
+        checkSidebarVisibility();
+
+        const saldoAtualEl = document.getElementById('saldoAtual');
+        const form = document.getElementById('formLancamento');
+        const statusMsg = document.getElementById('statusMsg');
+        const corpoTabela = document.getElementById('corpoTabela');
+        const estadoVazio = document.getElementById('estadoVazio');
+        const buscaRapida = document.getElementById('buscaRapida');
+
+        const formatCurrency = (value) => {
+            const number = Number(value || 0);
+            return number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
+        const parseCurrency = (value) => {
+            const normalized = String(value || '').replace(/\./g, '').replace(',', '.').replace(/[^0-9.-]/g, '');
+            return Number(normalized);
+        };
+
+        document.getElementById('valor').addEventListener('input', (e) => {
+            const digits = e.target.value.replace(/\D/g, '');
+            const amount = Number(digits || 0) / 100;
+            e.target.value = formatCurrency(amount);
+        });
+
+        let transacoes = [];
+
+        const renderTabela = (lista) => {
+            corpoTabela.innerHTML = '';
+            if (!lista.length) {
+                estadoVazio.style.display = 'block';
+                return;
+            }
+
+            estadoVazio.style.display = 'none';
+            corpoTabela.innerHTML = lista.map((t) => {
+                const isEntrada = t.type === 'entrada';
+                const classe = isEntrada ? 'entrada' : 'saida';
+                const sinal = isEntrada ? '+' : '-';
+                const data = new Date(t.created_at).toLocaleDateString('pt-BR');
+                return `
+                    <tr>
+                        <td>${t.description}</td>
+                        <td class="${classe}">${isEntrada ? 'ENTRADA' : 'SAÍDA'}</td>
+                        <td class="${classe}">${sinal} R$ ${formatCurrency(t.amount)}</td>
+                        <td>${data}</td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        async function carregarSaldo() {
+            try {
+                const resp = await fetch('/saldo');
+                const data = await resp.json();
+                const valor = parseCurrency(data.saldo);
+                saldoAtualEl.textContent = `R$ ${formatCurrency(valor)}`;
+                saldoAtualEl.classList.toggle('negativo', valor < 0);
+            } catch (error) {
+                console.error('Erro ao carregar saldo:', error);
+                saldoAtualEl.textContent = 'Erro';
+            }
+        }
+
+        async function carregarTransacoes() {
+            try {
+                const resp = await fetch('/transacoes');
+                const data = await resp.json();
+                transacoes = data.transacoes || [];
+                renderTabela(transacoes);
+            } catch (error) {
+                console.error('Erro ao carregar transações:', error);
+                renderTabela([]);
+            }
+        }
+
+        async function registrarLancamento(e) {
+            e.preventDefault();
+            statusMsg.textContent = '';
+            statusMsg.classList.remove('error');
+
+            const desc = document.getElementById('desc').value.trim();
+            const valor = parseCurrency(document.getElementById('valor').value);
+            const tipo = document.getElementById('tipo').value;
+
+            if (!desc || valor <= 0) {
+                statusMsg.textContent = 'Preencha a descrição e um valor válido.';
+                statusMsg.classList.add('error');
+                return;
+            }
+
+            try {
+                const resp = await fetch('/transacoes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description: desc, amount: valor, type: tipo })
+                });
+                const data = await resp.json();
+
+                if (resp.ok) {
+                    statusMsg.textContent = 'Lançamento registrado com sucesso!';
+                    form.reset();
+                    await carregarSaldo();
+                    await carregarTransacoes();
+                } else {
+                    statusMsg.textContent = data.error || 'Erro ao registrar lançamento.';
+                    statusMsg.classList.add('error');
+                }
+            } catch (error) {
+                console.error('Erro de rede:', error);
+                statusMsg.textContent = 'Erro de conexão ao registrar lançamento.';
+                statusMsg.classList.add('error');
+            }
+        }
+
+        form.addEventListener('submit', registrarLancamento);
+        document.getElementById('btnRecarregar').addEventListener('click', () => {
+            carregarSaldo();
+            carregarTransacoes();
+        });
+        buscaRapida.addEventListener('input', () => {
+            const termo = buscaRapida.value.toLowerCase();
+            const filtrado = transacoes.filter(t => t.description.toLowerCase().includes(termo));
+            renderTabela(filtrado);
+        });
+
+        carregarSaldo();
+        carregarTransacoes();
+    </script>
+</body>
+</html>

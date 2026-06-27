@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Histórico Pastoral</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap {
+            padding: 24px 30px 30px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .btn-primary {
+            border: none;
+            border-radius: 8px;
+            padding: 9px 14px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(90deg, #0ea5e9 0%, #10b981 100%);
+        }
+
+        .panel {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .panel-head {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: #f8fafc;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 7px 10px;
+            background: #fff;
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            font-size: 13px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        th {
+            background: #f8fafc;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
+        .muted {
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Histórico Pastoral" data-shell-breadcrumb="LDFP / Secretaria / Histórico Pastoral" data-shell-active="historico_pastoral.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <div class="page-header">
+                <div>
+                    <h2 style="margin:0;color:#0f172a;">Histórico Pastoral</h2>
+                    <small class="muted">Registro de movimentações pastorais dos membros</small>
+                </div>
+                <button class="btn-primary" type="button" id="btnNovoTipo">
+                    <i class="fa-solid fa-plus"></i> Novo Tipo de Histórico
+                </button>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <strong style="color:#0f172a;font-size:14px;">Lançamentos Recentes</strong>
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Pesquisar...">
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Membro</th>
+                            <th>Tipo</th>
+                            <th>Data</th>
+                            <th>Observação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        <tr>
+                            <td colspan="4" class="muted">Nenhum resultado foi encontrado.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        document.getElementById('btnNovoTipo').addEventListener('click', () => {
+            window.location.href = 'tipos_historico.html#cadastro';
+        });
+
+        const searchInput = document.getElementById('searchInput');
+        const historyBody = document.getElementById('historyBody');
+        const baseRows = Array.from(historyBody.querySelectorAll('tr'));
+
+        searchInput.addEventListener('input', () => {
+            const term = searchInput.value.trim().toLowerCase();
+            baseRows.forEach((row) => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

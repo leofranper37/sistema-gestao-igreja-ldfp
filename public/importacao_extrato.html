@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Importacao de Extrato</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); }
+        .grid { display:grid; grid-template-columns: 1fr; gap:16px; }
+        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
+        .btn:disabled { opacity:.6; cursor:not-allowed; }
+        .table { width:100%; border-collapse:collapse; }
+        .table th, .table td { border-bottom:1px solid #e5e7eb; text-align:left; padding:10px; font-size:13px; }
+        .muted { color:#64748b; font-size:13px; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="importacao_extrato.html" data-shell-title="Importacao de Extrato" data-shell-breadcrumb="LDFP / Tesouraria / Bancos / Importacao de Extrato" data-shell-chip="Bancos" data-shell-role="Tesouraria">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Importacao de Extrato</h2>
+                <p>Importe um CSV bancario (data, descricao, valor, tipo) e confira os lancamentos antes de salvar.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-file-import"></i> Operacao ativa</div>
+        </div>
+
+        <div class="grid">
+            <section class="card">
+                <h3>Arquivo CSV</h3>
+                <p class="muted">Formato esperado: data,descricao,valor,tipo (entrada ou saida).</p>
+                <input id="csvFile" type="file" accept=".csv" style="margin:10px 0 14px 0;">
+                <button id="btnProcessar" class="btn" type="button">Processar arquivo</button>
+                <p id="status" class="muted" style="margin-top:10px"></p>
+            </section>
+
+            <section class="card">
+                <h3>Pre-visualizacao</h3>
+                <table class="table">
+                    <thead>
+                        <tr><th>Data</th><th>Descricao</th><th>Valor</th><th>Tipo</th></tr>
+                    </thead>
+                    <tbody id="previewBody">
+                        <tr><td colspan="4" class="muted">Nenhum arquivo processado.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+requireAuthSession();
+
+function sanitize(text) {
+    return String(text || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+document.getElementById('btnProcessar').addEventListener('click', async () => {
+    const fileInput = document.getElementById('csvFile');
+    const status = document.getElementById('status');
+    const body = document.getElementById('previewBody');
+    const file = fileInput.files && fileInput.files[0];
+
+    if (!file) {
+        status.textContent = 'Selecione um arquivo CSV para continuar.';
+        return;
+    }
+
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+
+    if (lines.length <= 1) {
+        status.textContent = 'Arquivo sem registros suficientes.';
+        return;
+    }
+
+    const rows = lines.slice(1).map((line) => line.split(',').map((v) => v.trim()));
+    const valid = rows.filter((r) => r.length >= 4);
+
+    if (!valid.length) {
+        body.innerHTML = '<tr><td colspan="4" class="muted">Nenhum registro valido encontrado.</td></tr>';
+        status.textContent = 'Nenhum registro valido encontrado.';
+        return;
+    }
+
+    body.innerHTML = valid.slice(0, 200).map((r) => {
+        return '<tr>' +
+            '<td>' + sanitize(r[0]) + '</td>' +
+            '<td>' + sanitize(r[1]) + '</td>' +
+            '<td>R$ ' + sanitize(r[2]) + '</td>' +
+            '<td>' + sanitize(r[3]) + '</td>' +
+            '</tr>';
+    }).join('');
+
+    status.textContent = 'Arquivo processado com sucesso: ' + valid.length + ' linha(s) reconhecida(s).';
+});
+</script>
+</body>
+</html>

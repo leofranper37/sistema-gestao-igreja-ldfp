@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo de Módulos — LDFP Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--dark:#0f172a;--panel:#1e293b;--blue:#2563eb;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--bg:#f8fafc;--white:#fff;--text:#334155;--muted:#64748b;--border:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--dark);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}
+.logo-icon{background:linear-gradient(135deg,var(--blue),#60a5fa);width:32px;height:32px;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:800;font-size:14px}
+.sidebar-header h2{font-size:17px;font-weight:800}.sidebar-header span{font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.menu{padding:16px 0;flex:1;overflow-y:auto}.menu-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:0 18px;margin:12px 0 6px;font-weight:600}
+.menu-item{padding:11px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.2s;border-left:3px solid transparent}
+.menu-item:hover{background:var(--panel);color:#fff}.menu-item.active{background:var(--panel);border-left-color:var(--blue);color:#fff;font-weight:600}
+.menu-item i{width:18px;text-align:center;font-size:15px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
+.btn{padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:#f1f5f9}
+.btn-sm{padding:7px 11px;font-size:12px}
+.workspace{padding:24px;display:grid;grid-template-columns:320px 1fr;gap:20px;overflow:auto}
+.panel{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.panel-header{padding:18px 20px;border-bottom:1px solid var(--border)}
+.panel-header h2{font-size:16px;font-weight:800;color:var(--dark)}
+.panel-header p{margin-top:6px;font-size:13px;color:var(--muted)}
+.panel-body{padding:18px 20px}
+.search{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:13px;color:var(--text);margin-bottom:14px}
+.church-list{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 220px);overflow:auto}
+.church-item{padding:14px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;transition:.2s}
+.church-item:hover{border-color:#bfdbfe;background:#f8fbff}
+.church-item.active{border-color:var(--blue);background:#eff6ff}
+.church-item strong{display:block;font-size:14px;color:var(--dark);margin-bottom:4px}
+.church-item span{display:block;font-size:12px;color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase}
+.b-trial{background:#fef3c7;color:#92400e}.b-ativa{background:#dcfce7;color:#166534}.b-outro{background:#e2e8f0;color:#475569}
+.hero{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:18px;flex-wrap:wrap}
+.hero h3{font-size:22px;color:var(--dark)}
+.hero p{font-size:13px;color:var(--muted);margin-top:6px}
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:20px}
+.module-card{border:1px solid var(--border);border-radius:14px;padding:16px;background:#fff}
+.module-card.on{border-color:#86efac;background:#f0fdf4}
+.module-card.off{border-color:#fecaca;background:#fef2f2}
+.module-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.module-top h4{font-size:14px;color:var(--dark)}
+.module-top small{display:block;font-size:11px;color:var(--muted);margin-top:4px}
+.switch{position:relative;width:46px;height:26px;display:inline-block}.switch input{display:none}
+.slider{position:absolute;inset:0;background:#cbd5e1;border-radius:999px;transition:.2s}
+.slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch input:checked + .slider{background:var(--green)}
+.switch input:checked + .slider:before{transform:translateX(20px)}
+.module-card p{font-size:12px;line-height:1.45;color:var(--muted)}
+.empty-state{padding:32px 18px;text-align:center;color:var(--muted);font-size:13px}
+.notice{padding:14px 16px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:13px;line-height:1.5;margin-bottom:18px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:20px}
+.control-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.field{padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font-size:13px}
+.field-sm{padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text)}
+.new-module{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.new-module .full{grid-column:1/-1}
+.toast{position:fixed;right:24px;bottom:24px;padding:12px 18px;border-radius:8px;color:#fff;font-weight:700;opacity:0;transform:translateY(10px);transition:.2s}
+.toast.show{opacity:1;transform:translateY(0)}.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+@media (max-width:980px){.workspace{grid-template-columns:1fr}.church-list{max-height:none}}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="logo-icon">L</div><div><h2>LDFP Master</h2><span>Painel SaaS</span></div></div>
+  <div class="menu">
+    <div class="menu-label">Negócio</div>
+    <a href="super-admin.html" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="admin-metricas.html" class="menu-item"><i class="fa-solid fa-chart-pie"></i> Métricas SaaS</a>
+    <a href="admin-relatorio-financeiro.html" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Relatório Financeiro</a>
+    <a href="admin-igrejas.html" class="menu-item"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+    <a href="admin-assinaturas.html" class="menu-item"><i class="fa-solid fa-file-invoice"></i> Assinaturas & Faturas</a>
+    <a href="admin-usuarios.html" class="menu-item"><i class="fa-solid fa-users-gear"></i> Usuários & Senhas</a>
+    <a href="admin-modulos.html" class="menu-item active"><i class="fa-solid fa-puzzle-piece"></i> Catálogo de Módulos</a>
+    <a href="admin-retomada.html" class="menu-item"><i class="fa-solid fa-rocket"></i> Retomada Inteligente</a>
+    <div class="menu-label">Configurações SaaS</div>
+    <a href="admin-planos.html" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+    <a href="admin-novidades.html" class="menu-item"><i class="fa-solid fa-newspaper"></i> Novidades</a>
+    <a href="admin-inovacoes.html" class="menu-item"><i class="fa-solid fa-lightbulb"></i> Fábrica de Inovações</a>
+    <a href="admin-sistema.html" class="menu-item"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
+    <div class="menu-label" style="margin-top:auto">Sessão</div>
+    <a href="login.html" class="menu-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+  </div>
+</nav>
+<main class="main">
+  <header class="topbar">
+    <h1><i class="fa-solid fa-puzzle-piece" style="color:var(--blue);margin-right:8px"></i>Catálogo de Módulos</h1>
+    <button class="btn btn-outline" onclick="loadAllData()"><i class="fa-solid fa-rotate-right"></i> Atualizar</button>
+  </header>
+  <div class="workspace">
+    <section class="panel">
+      <div class="panel-header"><h2>Igrejas</h2><p>Escolha uma igreja para controlar os módulos liberados.</p></div>
+      <div class="panel-body">
+        <input id="searchInput" class="search" type="text" placeholder="Buscar igreja, responsável, e-mail..." oninput="renderChurches()">
+        <div id="churchList" class="church-list"><div class="empty-state">Carregando clientes...</div></div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-header"><h2>Controle Master</h2><p>Gerencie catálogo, vínculo por plano e override por igreja.</p></div>
+      <div class="panel-body">
+        <div class="notice">Tudo de módulo agora fica no super-admin: você cria módulo novo, vincula por plano e ajusta por igreja quando precisar.</div>
+
+        <div class="new-module">
+          <input id="newSlug" class="field" type="text" placeholder="Slug (ex: app_ensino)">
+          <input id="newNome" class="field" type="text" placeholder="Nome (ex: App de Ensino)">
+          <input id="newFeature" class="field" type="text" placeholder="Feature key (ex: app_ensino)">
+          <input id="newRoute" class="field" type="text" placeholder="Rota (ex: app_ensino.html)">
+          <input id="newIcon" class="field full" type="text" placeholder="Ícone Font Awesome (ex: fa-graduation-cap)">
+          <textarea id="newDescricao" class="field full" rows="2" placeholder="Descrição do módulo"></textarea>
+          <button class="btn btn-primary full" onclick="createModule()"><i class="fa-solid fa-plus"></i> Criar módulo no catálogo</button>
+        </div>
+
+        <div class="control-row">
+          <label for="planSelect" style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase">Plano base:</label>
+          <select id="planSelect" class="field" onchange="onPlanChange()"></select>
+        </div>
+
+        <div id="moduleEditorEmpty" class="empty-state">Selecione uma igreja para editar os módulos liberados.</div>
+        <div id="moduleEditor" style="display:none">
+          <div class="hero">
+            <div>
+              <h3 id="churchTitle">Igreja</h3>
+              <p id="churchMeta">Sem dados carregados.</p>
+            </div>
+            <span id="churchStatus" class="badge b-outro">Sem status</span>
+          </div>
+          <div id="catalogGrid" class="catalog-grid"></div>
+          <div class="toolbar">
+            <span style="font-size:12px;color:var(--muted)">Cada módulo pode ter regra por plano e override por igreja.</span>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-outline btn-sm" onclick="openContract()"><i class="fa-solid fa-file-contract"></i> Abrir contrato</button>
+              <button class="btn btn-primary btn-sm" onclick="saveModules()"><i class="fa-solid fa-floppy-disk"></i> Salvar regras</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+<div id="toast" class="toast"></div>
+<script src="session.js?v=20260501"></script>
+<script>
+const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
+const headers = () => ({ 'Content-Type':'application/json', Authorization:'Bearer ' + token() });
+let churches = [];
+let plans = [];
+let catalog = [];
+let selectedChurch = null;
+let selectedPlan = '';
+let churchModuleRows = [];
+let planModuleRows = [];
+function toast(message, type = 'success') { const el = document.getElementById('toast'); el.textContent = message; el.className = 'toast ' + type + ' show'; setTimeout(() => { el.className = 'toast ' + type; }, 3000); }
+function esc(value) { return String(value || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function statusBadge(status) { const normalized = String(status || '').toLowerCase(); if (normalized === 'trial') return { label: 'Trial', className: 'b-trial' }; if (normalized === 'ativa') return { label: 'Ativa', className: 'b-ativa' }; return { label: normalized || 'Sem status', className: 'b-outro' }; }
+
+async function loadAllData() {
+  try {
+    const [churchRes, planRes, catalogRes] = await Promise.all([
+      fetch('/api/saas/igrejas', { headers: headers() }),
+      fetch('/api/saas/planos', { headers: headers() }),
+      fetch('/api/saas/modulos', { headers: headers() })
+    ]);
+
+    if (churchRes.status === 401 || planRes.status === 401 || catalogRes.status === 401) { location.href = 'login.html'; return; }
+    if (!churchRes.ok || !planRes.ok || !catalogRes.ok) throw new Error('Falha ao carregar dados de módulos.');
+
+    churches = await churchRes.json();
+    plans = await planRes.json();
+    catalog = await catalogRes.json();
+    fillPlanSelect();
+    renderChurches();
+
+    if (selectedChurch) {
+      const updated = churches.find((item) => Number(item.id) === Number(selectedChurch.id));
+      if (updated) await selectChurch(updated.id);
+    }
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+function fillPlanSelect() {
+  const select = document.getElementById('planSelect');
+  const current = selectedPlan;
+  select.innerHTML = plans.map((plan) => `<option value="${esc(plan.slug)}">${esc(plan.nome)} (${esc(plan.slug)})</option>`).join('');
+  if (current && plans.some((p) => p.slug === current)) {
+    select.value = current;
+  }
+}
+
+async function onPlanChange() {
+  selectedPlan = document.getElementById('planSelect').value;
+  if (selectedChurch) {
+    await loadChurchModuleMatrix();
+    renderModuleEditor();
+  }
+}
+
+async function loadPlanModules(slug) {
+  const response = await fetch('/api/saas/planos/' + encodeURIComponent(slug) + '/modulos', { headers: headers() });
+  if (!response.ok) throw new Error('Falha ao carregar módulos do plano.');
+  planModuleRows = await response.json();
+}
+
+async function loadChurchOverrides(id) {
+  const response = await fetch('/api/saas/igrejas/' + id + '/modulos', { headers: headers() });
+  if (!response.ok) throw new Error('Falha ao carregar módulos da igreja.');
+  churchModuleRows = await response.json();
+}
+
+async function loadChurchesOnly() {
+  try {
+    const response = await fetch('/api/saas/igrejas', { headers: headers() });
+    if (response.status === 401) { location.href = 'login.html'; return; }
+    if (!response.ok) throw new Error('Falha ao carregar clientes.');
+    churches = await response.json();
+    renderChurches();
+  } catch (error) { toast(error.message, 'error'); }
+}
+function renderChurches() {
+  const list = document.getElementById('churchList');
+  const term = String(document.getElementById('searchInput').value || '').trim().toLowerCase();
+  const filtered = churches.filter((item) => [item.nome, item.responsavel, item.email_admin].filter(Boolean).some((value) => String(value).toLowerCase().includes(term)));
+  if (!filtered.length) { list.innerHTML = '<div class="empty-state">Nenhuma igreja encontrada.</div>'; return; }
+  list.innerHTML = filtered.map((item) => {
+    const active = selectedChurch && Number(selectedChurch.id) === Number(item.id) ? ' active' : '';
+    return `<button type="button" class="church-item${active}" onclick="selectChurch(${Number(item.id)})"><strong>${esc(item.nome || 'Sem nome')}</strong><span>${esc(item.responsavel || item.email_admin || 'Sem responsável')}</span><span>${esc(item.plano || 'Sem plano')} · ${esc(item.status_assinatura || 'sem status')}</span></button>`;
+  }).join('');
+}
+async function selectChurch(id) {
+  try {
+    const response = await fetch('/api/saas/igrejas/' + id, { headers: headers() });
+    if (!response.ok) throw new Error('Falha ao carregar contrato da igreja.');
+    selectedChurch = await response.json();
+    selectedPlan = selectedChurch.plano || selectedPlan || plans[0]?.slug || 'eden';
+    document.getElementById('planSelect').value = selectedPlan;
+    await loadChurchModuleMatrix();
+    renderChurches();
+    renderModuleEditor();
+  } catch (error) { toast(error.message, 'error'); }
+}
+
+async function loadChurchModuleMatrix() {
+  await Promise.all([
+    loadPlanModules(selectedPlan),
+    loadChurchOverrides(selectedChurch.id)
+  ]);
+}
+
+function renderModuleEditor() {
+  if (!selectedChurch) return;
+  document.getElementById('moduleEditorEmpty').style.display = 'none';
+  document.getElementById('moduleEditor').style.display = 'block';
+  document.getElementById('churchTitle').textContent = selectedChurch.nome || 'Sem nome';
+  document.getElementById('churchMeta').textContent = [selectedChurch.responsavel || 'Sem responsável', selectedChurch.email_admin || 'Sem e-mail', selectedChurch.plano || 'Sem plano'].join(' · ');
+  const badge = statusBadge(selectedChurch.status_assinatura);
+  const badgeEl = document.getElementById('churchStatus');
+  badgeEl.textContent = badge.label;
+  badgeEl.className = 'badge ' + badge.className;
+  const planMap = new Map(planModuleRows.map((row) => [row.slug, !!row.enabled]));
+  const churchMap = new Map(churchModuleRows.map((row) => [row.slug, row]));
+
+  document.getElementById('catalogGrid').innerHTML = catalog.map((module) => {
+    const planEnabled = planMap.get(module.slug) === true;
+    const churchRow = churchMap.get(module.slug) || {};
+    const override = churchRow.override_enabled;
+    const effective = churchRow.effective_enabled !== undefined ? !!churchRow.effective_enabled : planEnabled;
+    const overrideMode = override === true ? 'on' : (override === false ? 'off' : 'inherit');
+
+    return `<article class="module-card ${effective ? 'on' : 'off'}" data-module="${module.slug}">
+      <div class="module-top">
+        <div>
+          <h4><i class="fa-solid ${esc(module.icon || 'fa-puzzle-piece')}" style="margin-right:8px;color:var(--blue)"></i>${esc(module.nome)}</h4>
+          <small>${esc(module.slug)} · feature: ${esc(module.feature_key || '-')}</small>
+        </div>
+      </div>
+      <p>${esc(module.descricao || 'Sem descricao')}</p>
+      <div class="control-row" style="margin-top:10px">
+        <label style="font-size:12px;color:var(--muted)">Plano</label>
+        <label class="switch"><input type="checkbox" id="plan-${esc(module.slug)}" ${planEnabled ? 'checked' : ''} onchange="refreshModuleCard('${esc(module.slug)}')"><span class="slider"></span></label>
+        <label style="font-size:12px;color:var(--muted)">Igreja</label>
+        <select id="church-${esc(module.slug)}" class="field-sm" onchange="refreshModuleCard('${esc(module.slug)}')">
+          <option value="inherit" ${overrideMode === 'inherit' ? 'selected' : ''}>Herdar</option>
+          <option value="on" ${overrideMode === 'on' ? 'selected' : ''}>Forcar ON</option>
+          <option value="off" ${overrideMode === 'off' ? 'selected' : ''}>Forcar OFF</option>
+        </select>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+function refreshModuleCard(slug) {
+  const planChecked = document.getElementById('plan-' + slug)?.checked;
+  const churchMode = document.getElementById('church-' + slug)?.value || 'inherit';
+  const card = document.querySelector('[data-module="' + slug + '"]');
+  if (!card) return;
+  const effective = churchMode === 'on' ? true : (churchMode === 'off' ? false : !!planChecked);
+  card.classList.toggle('on', effective);
+  card.classList.toggle('off', !effective);
+}
+
+function openContract() { if (selectedChurch) location.href = 'admin-edicao-cliente.html?id=' + selectedChurch.id; }
+
+async function createModule() {
+  const payload = {
+    slug: document.getElementById('newSlug').value,
+    nome: document.getElementById('newNome').value,
+    feature_key: document.getElementById('newFeature').value,
+    route_path: document.getElementById('newRoute').value,
+    icon: document.getElementById('newIcon').value,
+    descricao: document.getElementById('newDescricao').value
+  };
+
+  try {
+    const response = await fetch('/api/saas/modulos', {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Falha ao criar modulo.');
+    }
+
+    document.getElementById('newSlug').value = '';
+    document.getElementById('newNome').value = '';
+    document.getElementById('newFeature').value = '';
+    document.getElementById('newRoute').value = '';
+    document.getElementById('newIcon').value = '';
+    document.getElementById('newDescricao').value = '';
+
+    await loadAllData();
+    if (selectedChurch) {
+      await loadChurchModuleMatrix();
+      renderModuleEditor();
+    }
+    toast('Modulo criado no catalogo.');
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+async function saveModules() {
+  if (!selectedChurch) return;
+
+  const planPayload = catalog.map((module) => ({
+    slug: module.slug,
+    ativo: !!document.getElementById('plan-' + module.slug)?.checked
+  }));
+
+  const churchPayload = catalog.map((module) => {
+    const mode = document.getElementById('church-' + module.slug)?.value || 'inherit';
+    if (mode === 'inherit') {
+      return { slug: module.slug, mode: 'inherit', ativo: null };
+    }
+    return { slug: module.slug, mode, ativo: mode === 'on' };
+  });
+
+  try {
+    const [planResponse, churchResponse] = await Promise.all([
+      fetch('/api/saas/planos/' + encodeURIComponent(selectedPlan) + '/modulos', {
+        method: 'PUT',
+        headers: headers(),
+        body: JSON.stringify({ modules: planPayload })
+      }),
+      fetch('/api/saas/igrejas/' + selectedChurch.id + '/modulos', {
+        method: 'PUT',
+        headers: headers(),
+        body: JSON.stringify({ modules: churchPayload })
+      })
+    ]);
+
+    if (!planResponse.ok || !churchResponse.ok) {
+      throw new Error('Falha ao salvar vinculos de modulo.');
+    }
+
+    planModuleRows = await planResponse.json();
+    churchModuleRows = await churchResponse.json();
+    renderModuleEditor();
+    toast('Regras de modulo atualizadas com sucesso.');
+  } catch (error) { toast(error.message, 'error'); }
+}
+(function () { if (!window.requireAuthSession || !window.requireAuthSession()) return; const role = String(window.getStoredAuth?.()?.user?.role || '').toLowerCase(); if (!['super-admin','super_admin','superadmin','master'].includes(role)) location.href = 'dashboard.html'; })();
+loadAllData();
+</script>
+</body>
+</html>

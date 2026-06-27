@@ -1,0 +1,453 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Orações</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .oracoes-wrap { padding: 24px 30px 30px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .tab-btn { border: 1px solid #dbe3ef; background: #fff; border-radius: 8px; padding: 8px 12px; font-weight: 600; cursor: pointer; }
+        .tab-btn.active { background: #0f766e; color: #fff; border-color: #0f766e; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #eef2f7; background: #f8fafc; }
+        .card-header h3 { margin: 0; font-size: 15px; color: #1f2937; }
+        .btn { border: 1px solid #dbe3ef; background: #fff; border-radius: 7px; padding: 8px 10px; cursor: pointer; font-weight: 600; }
+        .btn.primary { background: #0f172a; color: #fff; border-color: #0f172a; }
+        .btn.success { background: #16a34a; color: #fff; border-color: #16a34a; }
+
+        .table-wrap { overflow: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 760px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eef2f7; font-size: 13px; text-align: left; }
+        th { background: #f8fafc; color: #475569; font-size: 12px; text-transform: uppercase; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; }
+        .badge.pendente { background: #fef3c7; color: #92400e; }
+        .badge.respondido { background: #dcfce7; color: #166534; }
+
+        .status-msg { margin: 10px 0 14px; font-size: 13px; color: #0f766e; }
+        .status-msg.error { color: #b91c1c; }
+        .status-msg:empty { display: none; }
+
+        .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .row-actions button { border: 1px solid #dbe3ef; background: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; }
+        .row-actions .delete { border-color: #fecaca; color: #b91c1c; background: #fef2f2; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.65); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal { background: white; padding: 22px; border-radius: 12px; width: min(92vw, 640px); max-height: 88vh; overflow: auto; box-shadow: 0 12px 28px rgba(2, 6, 23, 0.24); }
+        .modal h3 { margin: 0 0 12px; }
+        .field { margin-bottom: 10px; }
+        .field label { display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 4px; text-transform: uppercase; }
+        .field textarea,
+        .field select { width: 100%; box-sizing: border-box; border: 1px solid #dbe3ef; border-radius: 8px; padding: 10px; font-family: inherit; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+
+        @media (max-width: 780px) {
+            .oracoes-wrap { padding: 18px 16px 22px; }
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Orações" data-shell-breadcrumb="LDFP / Secretaria / Orações" data-shell-active="oracoes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="oracoes-wrap">
+            <div class="tabs">
+                <button type="button" class="tab-btn active" data-tab="meus">Meus Pedidos</button>
+                <button type="button" class="tab-btn" data-tab="mural">Mural de Orações</button>
+            </div>
+
+            <div id="pageStatus" class="status-msg"></div>
+
+            <section id="panel-meus" class="panel active">
+                <article class="card">
+                    <header class="card-header">
+                        <h3>Meus pedidos de oração</h3>
+                        <button type="button" class="btn success" id="btnNovoPedido"><i class="fa-solid fa-plus"></i> Novo Pedido</button>
+                    </header>
+                    <div class="table-wrap">
+                        <table id="tabelaMeusPedidos">
+                            <thead>
+                                <tr>
+                                    <th>Pedido</th>
+                                    <th>Situação</th>
+                                    <th>Privado</th>
+                                    <th>Resposta</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </article>
+            </section>
+
+            <section id="panel-mural" class="panel">
+                <article class="card">
+                    <header class="card-header">
+                        <h3>Mural de Orações</h3>
+                        <button type="button" class="btn" id="btnAtualizarMural"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+                    </header>
+                    <div class="table-wrap">
+                        <table id="tabelaMuralOracoes">
+                            <thead>
+                                <tr>
+                                    <th>Autor</th>
+                                    <th>Pedido</th>
+                                    <th>Situação</th>
+                                    <th>Resposta</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </article>
+            </section>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalPedido">
+        <div class="modal">
+            <h3 id="modalPedidoTitulo">Novo Pedido de Oração</h3>
+            <input type="hidden" id="oracaoId">
+            <div class="field">
+                <label>Pedido</label>
+                <textarea id="pedidoTexto" rows="4" placeholder="Descreva seu pedido"></textarea>
+            </div>
+            <div class="field">
+                <label>Privado</label>
+                <select id="pedidoPrivado">
+                    <option value="0">Não</option>
+                    <option value="1">Sim</option>
+                </select>
+            </div>
+            <div id="modalPedidoStatus" class="status-msg"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn" id="btnCancelarPedido">Cancelar</button>
+                <button type="button" class="btn primary" id="btnSalvarPedido">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalResposta">
+        <div class="modal">
+            <h3>Responder Pedido</h3>
+            <input type="hidden" id="respostaOracaoId">
+            <div class="field">
+                <label>Resposta</label>
+                <textarea id="respostaTexto" rows="4" placeholder="Digite a resposta"></textarea>
+            </div>
+            <div class="field">
+                <label>Situação</label>
+                <select id="respostaStatus">
+                    <option value="pendente">Pendente</option>
+                    <option value="respondido">Respondido</option>
+                </select>
+            </div>
+            <div id="modalRespostaStatusMsg" class="status-msg"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn" id="btnCancelarResposta">Cancelar</button>
+                <button type="button" class="btn primary" id="btnSalvarResposta">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        let meusPedidosCache = [];
+        let muralCache = [];
+
+        function mapField(id) { return document.getElementById(id); }
+
+        function sanitizeText(value) {
+            return String(value || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function extractErrorMessage(data, fallback) {
+            if (!data) return fallback;
+            return data.error || data.message || fallback;
+        }
+
+        function setStatus(id, text, isError = false) {
+            const el = mapField(id);
+            if (!el) return;
+            el.textContent = text;
+            el.classList.toggle('error', isError);
+        }
+
+        function getUserRole() {
+            const auth = typeof getStoredAuth === 'function' ? getStoredAuth() : null;
+            const role = auth?.user?.role || '';
+            return String(role).toLowerCase();
+        }
+
+        function canReply() {
+            const role = getUserRole();
+            return role === 'admin' || role === 'secretaria';
+        }
+
+        function renderMeusPedidos(rows) {
+            const tbody = document.querySelector('#tabelaMeusPedidos tbody');
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="color:#64748b;">Nenhum pedido registrado.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = rows.map((row) => {
+                const status = String(row.status || 'pendente').toLowerCase();
+                const badgeClass = status === 'respondido' ? 'respondido' : 'pendente';
+                const privado = Number(row.is_private) === 1 ? 'Sim' : 'Não';
+
+                return `
+                    <tr>
+                        <td>${sanitizeText(row.pedido || '-')}</td>
+                        <td><span class="badge ${badgeClass}">${sanitizeText(status)}</span></td>
+                        <td>${privado}</td>
+                        <td>${sanitizeText(row.resposta || '-')}</td>
+                        <td>
+                            <div class="row-actions">
+                                <button type="button" onclick="abrirModalPedido(${Number(row.id)})">Editar</button>
+                                <button type="button" class="delete" onclick="excluirPedido(${Number(row.id)})">Excluir</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderMural(rows) {
+            const tbody = document.querySelector('#tabelaMuralOracoes tbody');
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="color:#64748b;">Nenhum pedido público no mural.</td></tr>';
+                return;
+            }
+
+            const allowReply = canReply();
+            tbody.innerHTML = rows.map((row) => {
+                const status = String(row.status || 'pendente').toLowerCase();
+                const badgeClass = status === 'respondido' ? 'respondido' : 'pendente';
+                const actionHtml = allowReply
+                    ? `<button type="button" onclick="abrirModalResposta(${Number(row.id)})">Responder</button>`
+                    : '-';
+
+                return `
+                    <tr>
+                        <td>${sanitizeText(row.user_name || '-')}</td>
+                        <td>${sanitizeText(row.pedido || '-')}</td>
+                        <td><span class="badge ${badgeClass}">${sanitizeText(status)}</span></td>
+                        <td>${sanitizeText(row.resposta || '-')}</td>
+                        <td><div class="row-actions">${actionHtml}</div></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function carregarMeusPedidos() {
+            const tbody = document.querySelector('#tabelaMeusPedidos tbody');
+            tbody.innerHTML = '<tr><td colspan="5" style="color:#64748b;">Carregando pedidos...</td></tr>';
+
+            try {
+                const response = await fetch('/oracoes/meus');
+                const data = await response.json().catch(() => []);
+
+                if (!response.ok) {
+                    throw new Error(extractErrorMessage(data, 'Não foi possível carregar seus pedidos.'));
+                }
+
+                meusPedidosCache = Array.isArray(data) ? data : [];
+                renderMeusPedidos(meusPedidosCache);
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="5" style="color:#b91c1c;">${sanitizeText(error.message || 'Erro ao carregar pedidos.')}</td></tr>`;
+            }
+        }
+
+        async function carregarMural() {
+            const tbody = document.querySelector('#tabelaMuralOracoes tbody');
+            tbody.innerHTML = '<tr><td colspan="5" style="color:#64748b;">Carregando mural...</td></tr>';
+
+            try {
+                const response = await fetch('/oracoes/mural');
+                const data = await response.json().catch(() => []);
+
+                if (!response.ok) {
+                    throw new Error(extractErrorMessage(data, 'Não foi possível carregar o mural.'));
+                }
+
+                muralCache = Array.isArray(data) ? data : [];
+                renderMural(muralCache);
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="5" style="color:#b91c1c;">${sanitizeText(error.message || 'Erro ao carregar mural.')}</td></tr>`;
+            }
+        }
+
+        function abrirModalPedido(id = null) {
+            setStatus('modalPedidoStatus', '', false);
+            mapField('oracaoId').value = '';
+            mapField('pedidoTexto').value = '';
+            mapField('pedidoPrivado').value = '0';
+            mapField('modalPedidoTitulo').textContent = 'Novo Pedido de Oração';
+
+            if (id) {
+                const row = meusPedidosCache.find((item) => Number(item.id) === Number(id));
+                if (!row) return;
+                mapField('modalPedidoTitulo').textContent = 'Editar Pedido de Oração';
+                mapField('oracaoId').value = String(row.id);
+                mapField('pedidoTexto').value = row.pedido || '';
+                mapField('pedidoPrivado').value = Number(row.is_private) === 1 ? '1' : '0';
+            }
+
+            mapField('modalPedido').style.display = 'flex';
+        }
+
+        function fecharModalPedido() {
+            mapField('modalPedido').style.display = 'none';
+            setStatus('modalPedidoStatus', '', false);
+        }
+
+        async function salvarPedido() {
+            const id = mapField('oracaoId').value;
+            const payload = {
+                pedido: mapField('pedidoTexto').value.trim(),
+                privado: mapField('pedidoPrivado').value
+            };
+
+            if (!payload.pedido) {
+                setStatus('modalPedidoStatus', 'Informe o pedido de oração.', true);
+                return;
+            }
+
+            setStatus('modalPedidoStatus', '', false);
+
+            try {
+                const response = await fetch(id ? `/oracoes/${id}` : '/oracoes', {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(extractErrorMessage(data, 'Não foi possível salvar o pedido.'));
+                }
+
+                setStatus('pageStatus', id ? 'Pedido atualizado com sucesso.' : 'Pedido registrado com sucesso.');
+                fecharModalPedido();
+                await carregarMeusPedidos();
+                await carregarMural();
+            } catch (error) {
+                setStatus('modalPedidoStatus', error.message || 'Erro ao salvar pedido.', true);
+            }
+        }
+
+        async function excluirPedido(id) {
+            if (!confirm('Deseja excluir este pedido de oração?')) {
+                return;
+            }
+
+            setStatus('pageStatus', '', false);
+
+            try {
+                const response = await fetch(`/oracoes/${id}`, { method: 'DELETE' });
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(extractErrorMessage(data, 'Não foi possível excluir o pedido.'));
+                }
+
+                setStatus('pageStatus', 'Pedido removido com sucesso.');
+                await carregarMeusPedidos();
+                await carregarMural();
+            } catch (error) {
+                setStatus('pageStatus', error.message || 'Erro ao excluir pedido.', true);
+            }
+        }
+
+        function abrirModalResposta(id) {
+            if (!canReply()) {
+                setStatus('pageStatus', 'Apenas administração/secretaria pode responder pedidos.', true);
+                return;
+            }
+
+            const row = muralCache.find((item) => Number(item.id) === Number(id));
+            if (!row) return;
+
+            setStatus('modalRespostaStatusMsg', '', false);
+            mapField('respostaOracaoId').value = String(row.id);
+            mapField('respostaTexto').value = row.resposta || '';
+            mapField('respostaStatus').value = (row.status || 'pendente').toLowerCase();
+            mapField('modalResposta').style.display = 'flex';
+        }
+
+        function fecharModalResposta() {
+            mapField('modalResposta').style.display = 'none';
+            setStatus('modalRespostaStatusMsg', '', false);
+        }
+
+        async function salvarResposta() {
+            const id = mapField('respostaOracaoId').value;
+            const payload = {
+                resposta: mapField('respostaTexto').value.trim(),
+                status: mapField('respostaStatus').value
+            };
+
+            setStatus('modalRespostaStatusMsg', '', false);
+
+            try {
+                const response = await fetch(`/oracoes/${id}/resposta`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(extractErrorMessage(data, 'Não foi possível salvar a resposta.'));
+                }
+
+                setStatus('pageStatus', 'Resposta salva com sucesso.');
+                fecharModalResposta();
+                await carregarMeusPedidos();
+                await carregarMural();
+            } catch (error) {
+                setStatus('modalRespostaStatusMsg', error.message || 'Erro ao salvar resposta.', true);
+            }
+        }
+
+        function bindTabs() {
+            document.querySelectorAll('.tab-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach((item) => item.classList.remove('active'));
+                    document.querySelectorAll('.panel').forEach((item) => item.classList.remove('active'));
+                    btn.classList.add('active');
+                    const panel = document.getElementById(`panel-${btn.dataset.tab}`);
+                    if (panel) panel.classList.add('active');
+                });
+            });
+        }
+
+        mapField('btnNovoPedido').addEventListener('click', () => abrirModalPedido());
+        mapField('btnAtualizarMural').addEventListener('click', carregarMural);
+        mapField('btnCancelarPedido').addEventListener('click', fecharModalPedido);
+        mapField('btnSalvarPedido').addEventListener('click', salvarPedido);
+        mapField('btnCancelarResposta').addEventListener('click', fecharModalResposta);
+        mapField('btnSalvarResposta').addEventListener('click', salvarResposta);
+        mapField('modalPedido').addEventListener('click', (event) => { if (event.target === mapField('modalPedido')) fecharModalPedido(); });
+        mapField('modalResposta').addEventListener('click', (event) => { if (event.target === mapField('modalResposta')) fecharModalResposta(); });
+
+        bindTabs();
+        carregarMeusPedidos();
+        carregarMural();
+    </script>
+</body>
+</html>

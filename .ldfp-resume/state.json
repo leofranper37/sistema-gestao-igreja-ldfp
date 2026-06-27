@@ -1,0 +1,71 @@
+{
+  "trigger": "LDFP_CONTINUAR",
+  "updatedAt": "2026-04-26T00:23:08.946Z",
+  "focus": {
+    "currentObjective": "Produzir e evoluir o LDFP com controle comercial por plano/modulos e UX premium padrao.",
+    "nextSteps": [
+      "Padronizar telas fora do estilo LDFP (modulos legados/confusos).",
+      "Concluir modulo de Contabilidade (plano de contas, balancete real, lancamentos, encerramento).",
+      "Expandir admin SaaS com matriz visual de modulos por igreja para venda e upsell.",
+      "Validar bloqueios de contrato em producao com contas de teste por plano."
+    ]
+  },
+  "environment": {
+    "productionUrl": "https://www.ldfp.com.br",
+    "cloudIdeUrl": "https://improved-funicular-5xjvrqxg4q9hpv6r.github.dev/"
+  },
+  "checkpoints": [
+    {
+      "at": "2026-04-26T00:23:08.946Z",
+      "note": "checkpoint manual checkpoint validado apos criar gatilho",
+      "git": {
+        "branch": "main",
+        "head": "2f82bc91e56879eb34dec4510d2b7bc31ef34fb0",
+        "shortHead": "2f82bc9",
+        "dirty": true,
+        "changedFiles": [
+          "M package.json",
+          "?? .ldfp-resume/",
+          "?? scripts/gatilho-retomada.js"
+        ]
+      }
+    },
+    {
+      "at": "2026-04-25T21:30:00.000Z",
+      "note": "Baseline de retomada inicial",
+      "git": {
+        "branch": "main",
+        "head": "2f82bc91e56879eb34dec4510d2b7bc31ef34fb0",
+        "shortHead": "2f82bc9",
+        "dirty": false,
+        "changedFiles": []
+      }
+    }
+  ],
+  "lastCheckpoint": {
+    "at": "2026-04-26T00:23:08.946Z",
+    "note": "checkpoint manual checkpoint validado apos criar gatilho",
+    "git": {
+      "branch": "main",
+      "head": "2f82bc91e56879eb34dec4510d2b7bc31ef34fb0",
+      "shortHead": "2f82bc9",
+      "dirty": true,
+      "changedFiles": [
+        "M package.json",
+        "?? .ldfp-resume/",
+        "?? scripts/gatilho-retomada.js"
+      ]
+    }
+  },
+  "git": {
+    "branch": "main",
+    "head": "2f82bc91e56879eb34dec4510d2b7bc31ef34fb0",
+    "shortHead": "2f82bc9",
+    "dirty": true,
+    "changedFiles": [
+      "M package.json",
+      "?? .ldfp-resume/",
+      "?? scripts/gatilho-retomada.js"
+    ]
+  }
+}

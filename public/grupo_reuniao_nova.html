@@ -1,0 +1,327 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Nova Reunião de Grupo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-wrap {
+            padding: 24px 30px 30px;
+        }
+
+        .form-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+            max-width: 860px;
+        }
+
+        .form-head {
+            padding: 12px 14px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .form-body {
+            padding: 16px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field label {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .field input,
+        .field textarea,
+        .field select {
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        .field textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%);
+        }
+
+        .btn-ghost {
+            border: 1px solid #dbe3ef;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .status {
+            font-size: 12px;
+            font-weight: 600;
+            color: #047857;
+        }
+
+        .status.error {
+            color: #b91c1c;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Nova Reunião" data-shell-breadcrumb="LDFP / Secretaria / Grupos / Reuniões / Nova Reunião" data-shell-active="grupos_reunioes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="page-wrap">
+            <div class="form-card">
+                <div class="form-head" id="formHead">Nova Reunião</div>
+                <form id="meetingForm" class="form-body">
+                    <div class="grid-2">
+                        <div class="field">
+                            <label for="dataReuniao">Data da Reunião</label>
+                            <input type="date" id="dataReuniao" required>
+                        </div>
+                        <div class="field">
+                            <label for="grupoReuniao">Grupo</label>
+                            <select id="grupoReuniao" required>
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="assuntoReuniao">Assunto</label>
+                        <input type="text" id="assuntoReuniao" placeholder="Assunto da reunião" required>
+                    </div>
+
+                    <div class="grid-3">
+                        <div class="field">
+                            <label for="participantesReuniao">Participantes</label>
+                            <input type="number" id="participantesReuniao" min="0" value="0">
+                        </div>
+                        <div class="field">
+                            <label for="visitantesReuniao">Visitantes</label>
+                            <input type="number" id="visitantesReuniao" min="0" value="0">
+                        </div>
+                        <div class="field">
+                            <label for="categoriaReuniao">Categoria</label>
+                            <select id="categoriaReuniao">
+                                <option value="">Sem categoria</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="notasReuniao">Notas</label>
+                        <textarea id="notasReuniao" placeholder="Observações da reunião"></textarea>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn-primary" type="submit" id="btnSalvar">Salvar</button>
+                        <button class="btn-ghost" type="button" id="btnVoltar">Voltar</button>
+                        <span class="status" id="statusMsg"></span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const STORAGE_MEETINGS = 'ldfpGroupMeetings';
+        const STORAGE_GROUPS = 'ldfpGroups';
+        const STORAGE_CATEGORIES = 'ldfpGroupCategories';
+
+        const form = document.getElementById('meetingForm');
+        const statusMsg = document.getElementById('statusMsg');
+        const formHead = document.getElementById('formHead');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const grupoSelect = document.getElementById('grupoReuniao');
+        const categoriaSelect = document.getElementById('categoriaReuniao');
+
+        const params = new URLSearchParams(window.location.search);
+        const editingId = params.get('edit');
+
+        function readStorage(key) {
+            return JSON.parse(localStorage.getItem(key) || '[]');
+        }
+
+        function writeMeetings(list) {
+            localStorage.setItem(STORAGE_MEETINGS, JSON.stringify(list));
+        }
+
+        function makeId() {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                return window.crypto.randomUUID();
+            }
+            return String(Date.now());
+        }
+
+        function fillGroupOptions() {
+            const groups = readStorage(STORAGE_GROUPS);
+            const options = groups.map((item) => {
+                const nome = (item.nome || '').trim();
+                if (!nome) {
+                    return '';
+                }
+                return `<option value="${nome}">${nome}</option>`;
+            }).join('');
+            grupoSelect.insertAdjacentHTML('beforeend', options);
+        }
+
+        function fillCategoryOptions() {
+            const categories = readStorage(STORAGE_CATEGORIES);
+            const options = categories.map((item) => {
+                const nome = (item.nome || '').trim();
+                if (!nome) {
+                    return '';
+                }
+                return `<option value="${nome}">${nome}</option>`;
+            }).join('');
+            categoriaSelect.insertAdjacentHTML('beforeend', options);
+        }
+
+        function loadEditData() {
+            if (!editingId) {
+                return;
+            }
+
+            const item = readStorage(STORAGE_MEETINGS).find((entry) => String(entry.id) === String(editingId));
+            if (!item) {
+                statusMsg.textContent = 'Reunião não encontrada para edição.';
+                statusMsg.classList.add('error');
+                return;
+            }
+
+            document.getElementById('dataReuniao').value = item.data || '';
+            grupoSelect.value = item.grupo || '';
+            document.getElementById('assuntoReuniao').value = item.assunto || '';
+            document.getElementById('participantesReuniao').value = Number(item.participantes ?? 0);
+            document.getElementById('visitantesReuniao').value = Number(item.visitantes ?? 0);
+            categoriaSelect.value = item.categoria || '';
+            document.getElementById('notasReuniao').value = item.notas || '';
+
+            formHead.textContent = 'Editar Reunião';
+            btnSalvar.textContent = 'Atualizar';
+        }
+
+        document.getElementById('btnVoltar').addEventListener('click', () => {
+            window.location.href = 'grupos_reunioes.html';
+        });
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const data = document.getElementById('dataReuniao').value;
+            const grupo = grupoSelect.value.trim();
+            const assunto = document.getElementById('assuntoReuniao').value.trim();
+            const participantes = Math.max(0, Number(document.getElementById('participantesReuniao').value || 0));
+            const visitantes = Math.max(0, Number(document.getElementById('visitantesReuniao').value || 0));
+            const categoria = categoriaSelect.value.trim();
+            const notas = document.getElementById('notasReuniao').value.trim();
+
+            if (!data || !grupo || !assunto) {
+                statusMsg.textContent = 'Preencha Data, Grupo e Assunto.';
+                statusMsg.classList.add('error');
+                return;
+            }
+
+            const meetings = readStorage(STORAGE_MEETINGS);
+
+            if (editingId) {
+                const index = meetings.findIndex((entry) => String(entry.id) === String(editingId));
+                if (index >= 0) {
+                    meetings[index] = {
+                        ...meetings[index],
+                        data,
+                        grupo,
+                        assunto,
+                        participantes,
+                        visitantes,
+                        categoria,
+                        notas,
+                        updatedAt: new Date().toISOString()
+                    };
+                }
+                statusMsg.textContent = 'Reunião atualizada com sucesso!';
+            } else {
+                meetings.push({
+                    id: makeId(),
+                    data,
+                    grupo,
+                    assunto,
+                    participantes,
+                    visitantes,
+                    categoria,
+                    notas,
+                    createdAt: new Date().toISOString()
+                });
+                statusMsg.textContent = 'Reunião salva com sucesso!';
+                form.reset();
+            }
+
+            statusMsg.classList.remove('error');
+            writeMeetings(meetings);
+        });
+
+        fillGroupOptions();
+        fillCategoryOptions();
+        loadEditData();
+    </script>
+</body>
+</html>

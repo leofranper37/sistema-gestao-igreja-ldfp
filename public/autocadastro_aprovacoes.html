@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprovação de Autocadastros</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .wrap { max-width: 980px; margin:0 auto; padding: 16px 12px 26px; }
+        .card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding: 14px; box-shadow:0 8px 22px rgba(15,23,42,.08); }
+        table { width:100%; border-collapse:collapse; }
+        th, td { border-bottom:1px solid #e2e8f0; padding:8px; font-size:12px; text-align:left; }
+        th { background:#f8fafc; text-transform:uppercase; color:#64748b; font-size:11px; }
+        .btn { border:0; border-radius:8px; padding:6px 10px; font-weight:700; cursor:pointer; }
+        .ok { background:#16a34a; color:#fff; }
+        .no { background:#dc2626; color:#fff; }
+        .msg { font-size:13px; color:#0f766e; margin-top:8px; }
+        .msg.error { color:#b91c1c; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Autocadastros" data-shell-breadcrumb="LDFP / Secretaria / Autocadastros" data-shell-active="autocadastro_aprovacoes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Secretaria">
+    <main class="main-content enterprise-main">
+        <div class="wrap">
+            <section class="card">
+                <h2 style="margin:0 0 10px;">Fila de aprovação</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Contato</th>
+                            <th>Cidade</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbItems"></tbody>
+                </table>
+                <p id="statusMsg" class="msg"></p>
+            </section>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const tbItems = document.getElementById('tbItems');
+        const statusMsg = document.getElementById('statusMsg');
+
+        function setStatus(message, error) {
+            statusMsg.className = error ? 'msg error' : 'msg';
+            statusMsg.textContent = message || '';
+        }
+
+        async function loadItems() {
+            const response = await fetch('/autocadastro?status=pendente');
+            const data = await response.json().catch(() => []);
+            if (!response.ok) {
+                throw new Error(data.error || 'Nao foi possivel carregar autocadastros.');
+            }
+
+            tbItems.innerHTML = data.map((item) => `
+                <tr>
+                    <td>${item.nome}</td>
+                    <td>${item.email || '-'}<br>${item.telefone || '-'}</td>
+                    <td>${item.cidade || '-'}</td>
+                    <td>${item.status}</td>
+                    <td>
+                        <button class="btn ok" onclick="aprovar(${item.id})">Aprovar</button>
+                        <button class="btn no" onclick="rejeitar(${item.id})">Rejeitar</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (!data.length) {
+                tbItems.innerHTML = '<tr><td colspan="5">Sem itens pendentes no momento.</td></tr>';
+            }
+        }
+
+        async function aprovar(id) {
+            const criarAcesso = window.confirm('Deseja aprovar e criar acesso de membro?');
+
+            try {
+                const response = await fetch(`/autocadastro/${id}/aprovar`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ criarAcesso })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || 'Erro ao aprovar.');
+                setStatus('Autocadastro aprovado com sucesso.');
+                await loadItems();
+            } catch (error) {
+                setStatus(error.message, true);
+            }
+        }
+
+        async function rejeitar(id) {
+            const motivo = window.prompt('Motivo da rejeição (opcional):') || '';
+            try {
+                const response = await fetch(`/autocadastro/${id}/rejeitar`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ observacao: motivo })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || 'Erro ao rejeitar.');
+                setStatus('Autocadastro rejeitado.');
+                await loadItems();
+            } catch (error) {
+                setStatus(error.message, true);
+            }
+        }
+
+        window.aprovar = aprovar;
+        window.rejeitar = rejeitar;
+
+        loadItems().catch((error) => setStatus(error.message, true));
+    </script>
+</body>
+</html>

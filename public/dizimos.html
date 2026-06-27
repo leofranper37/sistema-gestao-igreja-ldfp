@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Dízimos & Ofertas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Seus estilos CSS personalizados */
+        :root {
+            --brand:   #0f766e;
+            --teal:    #0d9488;
+            --blue:    #0284c7;
+            --green:   #16a34a;
+            --red:     #dc2626;
+            --yellow:  #f59e0b;
+            --purple:  #7c3aed;
+            --surface: #ffffff;
+            --bg:      #f1f5f9;
+            --border:  #e2e8f0;
+            --text:    #0f172a;
+            --muted:   #64748b;
+            --radius:  14px;
+            --shadow:  0 4px 16px rgba(15,23,42,.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── KPIs ── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--kpi-color, var(--teal));
+        }
+
+        .kpi-card small {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 8px;
+        }
+
+        .kpi-card strong {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--kpi-color, var(--text));
+            line-height: 1;
+        }
+
+        .kpi-card .kpi-sub {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .kpi-total   { --kpi-color: #0f766e; }
+        .kpi-dizimo  { --kpi-color: #0284c7; }
+        .kpi-oferta  { --kpi-color: #16a34a; }
+        .kpi-missoes { --kpi-color: #2563eb; }
+        .kpi-outros  { --kpi-color: #64748b; }
+
+        /* ── Tabs internas ── */
+        .inner-tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 18px;
+        }
+
+        .inner-tab {
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--muted);
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            border-radius: 8px 8px 0 0;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .inner-tab:hover { color: var(--text); background: var(--bg); }
+        .inner-tab.active { color: var(--brand); border-bottom-color: var(--brand); background: #f0fdfa; }
+
+        .inner-panel { display: none; }
+        .inner-panel.active { display: block; }
+
+        /* ── Layout principal ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .card-header h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header h3 i { color: var(--teal); }
+
+        /* Filtros */
+        .filter-bar {
+            display: grid;
+            grid-template-columns: 160px 150px 1fr auto;
+            gap: 8px;
+            margin-bottom: 14px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-group label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
+            width: 100%;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #fff;
+        }
+
+        /* Botões */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+            color: #fff;
+        }
+
+        .btn-primary { background: var(--brand); }
+        .btn-blue { background: var(--blue); }
+        .btn-red { background: var(--red); }
+        .btn-slate { background: #64748b; }
+        .btn-sm { padding: 5px 9px; font-size: 11px; border-radius: 6px; }
+        .btn-full { width: 100%; justify-content: center; margin-top: 6px; }
+        .btn-mt-8 { margin-top: 8px; }
+        .btn-primary:hover { opacity: .9; }
+        .btn-blue:hover { background: #0369a1; }
+        .btn-red:hover { background: #b91c1c; }
+        .btn-slate:hover { background: #475569; }
+
+        /* Tabela */
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 9px 10px;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            color: var(--text);
+        }
+
+        tbody tr:hover { background: #f8fafc; }
+
+        .empty-row td {
+            text-align: center;
+            color: var(--muted);
+            padding: 32px;
+            font-size: 13px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 99px;
+            font-size: 10.5px;
+            font-weight: 700;
+        }
+
+        .badge-dizimo  { background: #dbeafe; color: #1d4ed8; }
+        .badge-oferta  { background: #dcfce7; color: #15803d; }
+        .badge-missoes { background: #e0f2fe; color: #0369a1; }
+        .badge-outros  { background: #f1f5f9; color: #475569; }
+
+        /* Paginação */
+        .pag {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pag-info { font-size: 12px; color: var(--muted); }
+
+        .pag-btns { display: flex; gap: 6px; }
+
+        .pag-btn {
+            padding: 6px 12px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text);
+            transition: all .2s;
+        }
+
+        .pag-btn:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); }
+        .pag-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+        /* Formulário */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13.5px;
+            color: var(--text);
+            background: var(--bg);
+            width: 100%;
+            transition: border-color .2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #fff;
+        }
+
+        .form-group textarea { resize: vertical; min-height: 60px; }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Status msg */
+        .status-msg {
+            font-size: 12.5px;
+            min-height: 18px;
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-msg.ok { background: #dcfce7; color: #15803d; }
+        .status-msg.error { background: #fee2e2; color: #dc2626; }
+
+        /* Preview */
+        .preview-box {
+            background: var(--bg);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--text);
+        }
+        .preview-box strong { color: var(--brand); }
+        .preview-box small { display: block; color: var(--muted); margin-top: 4px; }
+
+        /* Tipos de Receitas */
+        .tipo-natureza {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .natureza-e { background: #dcfce7; color: #15803d; }
+        .natureza-s { background: #fee2e2; color: #dc2626; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page"
+    data-shell-title="Dízimos & Ofertas"
+    data-shell-breadcrumb="LDFP / Tesouraria / Dízimos"
+    data-shell-active="dizimos.html"
+    data-shell-chip="Tesouraria"
+    data-shell-role="Financeiro">
+
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
+            <div class="enterprise-container">
+
+                <!-- Hero Section -->
+                <div class="finance-hero">
+                    <div class="finance-hero-content">
+                        <h1 class="finance-hero-title">Dízimos & Ofertas</h1>
+                        <p class="finance-hero-description">Gerencie todas as entradas financeiras da igreja.</p>
+                    </div>
+                    <div class="finance-hero-badge">
+                        <span class="badge-outstanding">
+                            <i class="fa-solid fa-lock"></i>
+                            Ciclo Ativo: ABR/2026
+                        </span>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="kpi-grid">
+                    <div class="kpi-card kpi-total">
+                        <small>Total Geral</small>
+                        <strong id="kpiTotal">R$ 0,00</strong>
+                        <span id="kpiCount">0 lançamentos</span>
+                    </div>
+                    <div class="kpi-card kpi-dizimo">
+                        <small>Dízimos</small>
+                        <strong id="kpiDizimo">R$ 0,00</strong>
+                    </div>
+                    <div class="kpi-card kpi-oferta">
+                        <small>Ofertas</small>
+                        <strong id="kpiOferta">R$ 0,00</strong>
+                    </div>
+                    <div class="kpi-card kpi-missoes">
+                        <small>Missões</small>
+                        <strong id="kpiMissoes">R$ 0,00</strong>
+                    </div>
+                    <div class="kpi-card kpi-outros">
+                        <small>Outros</small>
+                        <strong id="kpiOutros">R$ 0,00</strong>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="inner-tabs">
+                    <button class="inner-tab active" data-tab="lancamentos">
+                        <i class="fa-solid fa-hand-holding-dollar"></i> Lançamentos
+                    </button>
+                    <button class="inner-tab" data-tab="tipos">
+                        <i class="fa-solid fa-tags"></i> Tipos de Receitas
+                    </button>
+                </div>
+
+                <!-- Lançamentos Panel -->
+                <div class="inner-panel active" id="panel-lancamentos">
+                    <div class="main-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-list"></i> Lançamentos Recentes</h3>
+                            </div>
+                            <div class="filter-bar">
+                                <div class="filter-group">
+                                    <label for="filtroComp">Competência</label>
+                                    <input type="text" id="filtroComp" placeholder="AAAA-MM" pattern="\\d{4}-\\d{2}">
+                                </div>
+                                <div class="filter-group">
+                                    <label for="filtroTipo">Tipo</label>
+                                    <select id="filtroTipo">
+                                        <option value="">Todos</option>
+                                        <option value="dizimo">Dízimo</option>
+                                        <option value="oferta">Oferta</option>
+                                        <option value="missoes">Missões</option>
+                                        <option value="outros">Outros</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="filtroNome">Membro</label>
+                                    <input type="text" id="filtroNome" placeholder="Nome do membro">
+                                </div>
+                                <button class="btn btn-blue" id="btnFiltrar">
+                                    <i class="fa-solid fa-filter"></i> Filtrar
+                                </button>
+                            </div>
+
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Membro</th>
+                                            <th>Competência</th>
+                                            <th>Tipo</th>
+                                            <th>Valor</th>
+                                            <th>Observação</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbDizimos">
+                                        <!-- Dados carregados via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="pag">
+                                <span id="pagInfo" class="pag-info">Pág 1 de 1</span>
+                                <div class="pag-btns">
+                                    <button class="pag-btn" id="btnAnterior" disabled><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+                                    <button class="pag-btn" id="btnProximo" disabled>Próximo <i class="fa-solid fa-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            <div id="msgLista" class="status-msg"></div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-plus"></i> Novo Lançamento</h3>
+                            </div>
+                            <form id="formDizimo">
+                                <div class="form-group">
+                                    <label for="membroNome">Membro</label>
+                                    <input type="text" id="membroNome" placeholder="Nome do membro" required>
+                                </div>
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label for="valor">Valor</label>
+                                        <input type="number" id="valor" step="0.01" placeholder="0,00" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tipo">Tipo</label>
+                                        <select id="tipo" required>
+                                            <option value="dizimo">Dízimo</option>
+                                            <option value="oferta">Oferta</option>
+                                            <option value="missoes">Missões</option>
+                                            <option value="outros">Outros</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="competencia">Competência</label>
+                                    <input type="text" id="competencia" placeholder="AAAA-MM" pattern="\\d{4}-\\d{2}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="observacao">Observação (opcional)</label>
+                                    <textarea id="observacao" rows="2"></textarea>
+                                </div>
+                                <div class="preview-box">
+                                    Registrar: <strong id="previewValor">R$ 0,00</strong> (<span id="previewTipo">Dízimo</span>) de <strong id="previewMembro">Membro</strong> para <strong id="previewComp">Mês/Ano</strong>.
+                                    <small id="previewObs"></small>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-full">
+                                    <i class="fa-solid fa-circle-plus"></i> Registrar Lançamento
+                                </button>
+                                <div id="msgForm" class="status-msg"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tipos de Receitas Panel -->
+                <div class="inner-panel" id="panel-tipos">
+                    <div class="main-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-tags"></i> Tipos Cadastrados</h3>
+                            </div>
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Natureza</th>
+                                            <th>Categoria</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbTipos">
+                                        <!-- Dados carregados via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="msgTiposLista" class="status-msg"></div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 id="tipoFormTitle"><i class="fa-solid fa-plus"></i> Novo Tipo</h3>
+                            </div>
+                            <form id="formTipo">
+                                <input type="hidden" id="tipoEditId">
+                                <div class="form-group">
+                                    <label for="tipoNome">Nome do Tipo</label>
+                                    <input type="text" id="tipoNome" placeholder="Ex: Dízimo, Oferta de Missões" required>
+                                </div>
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label for="tipoNatureza">Natureza</label>
+                                        <select id="tipoNatureza" required>
+                                            <option value="entrada">Entrada</option>
+                                            <option value="saida">Saída</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tipoCategoria">Categoria</label>
+                                        <select id="tipoCategoria" required>
+                                            <option value="dizimo">Dízimo</option>
+                                            <option value="oferta">Oferta</option>
+                                            <option value="missoes">Missões</option>
+                                            <option value="campanha">Campanha</option>
+                                            <option value="social">Social</option>
+                                            <option value="manutencao">Manutenção</option>
+                                            <option value="outros">Outros</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tipoDescricao">Descrição (opcional)</label>
+                                    <textarea id="tipoDescricao" rows="2"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-full">
+                                    <i class="fa-solid fa-save"></i> <span id="tipoSubmitLabel">Criar Tipo</span>
+                                </button>
+                                <button type="button" class="btn btn-slate btn-full btn-mt-8" id="btnCancelarTipo" hidden onclick="cancelarTipo()">
+                                    <i class="fa-solid fa-xmark"></i> Cancelar
+                                </button>
+                                <div id="msgTiposForm" class="status-msg"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js?v=20260516"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Recibo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); }
+        .field { width:100%; padding:10px; border:1px solid #dbe3ef; border-radius:8px; margin-top:8px; }
+        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; margin-top:10px; }
+        .preview { background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:14px; line-height:1.7; }
+        @media (max-width: 900px) { .grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="recibo.html" data-shell-title="Recibo" data-shell-breadcrumb="LDFP / Tesouraria / Recibo" data-shell-chip="Financeiro" data-shell-role="Tesouraria">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Geracao de Recibo</h2>
+                <p>Preencha os dados e gere um recibo simples para impressao e conferencia.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-receipt"></i> Documento</div>
+        </div>
+
+        <div class="grid">
+            <section class="card">
+                <h3>Dados do Recibo</h3>
+                <input id="favorecido" class="field" type="text" placeholder="Nome do favorecido">
+                <input id="referente" class="field" type="text" placeholder="Referente a (ex: contribuicao mensal)">
+                <input id="valor" class="field" type="number" step="0.01" placeholder="Valor">
+                <input id="data" class="field" type="date">
+                <button id="btnGerar" class="btn" type="button">Gerar recibo</button>
+                <button id="btnImprimir" class="btn" type="button" style="background:#1e293b">Imprimir</button>
+            </section>
+
+            <section class="card">
+                <h3>Pre-visualizacao</h3>
+                <div id="reciboPreview" class="preview">
+                    Recibo ainda nao gerado.
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+requireAuthSession();
+
+function moeda(v) {
+    return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+document.getElementById('btnGerar').addEventListener('click', () => {
+    const nome = document.getElementById('favorecido').value.trim();
+    const ref = document.getElementById('referente').value.trim();
+    const valor = document.getElementById('valor').value;
+    const data = document.getElementById('data').value;
+    const alvo = document.getElementById('reciboPreview');
+
+    if (!nome || !ref || !valor || !data) {
+        alvo.textContent = 'Preencha todos os campos para gerar o recibo.';
+        return;
+    }
+
+    alvo.innerHTML = [
+        '<strong>RECIBO</strong><br>',
+        'Recebi de <strong>' + nome + '</strong> o valor de <strong>' + moeda(valor) + '</strong>.<br>',
+        'Referente a: <strong>' + ref + '</strong>.<br>',
+        'Data: <strong>' + new Date(data + 'T00:00:00').toLocaleDateString('pt-BR') + '</strong>.<br><br>',
+        'Assinatura: ______________________________'
+    ].join('');
+});
+
+document.getElementById('btnImprimir').addEventListener('click', () => window.print());
+</script>
+</body>
+</html>

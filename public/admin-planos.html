@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planos & Preços — LDFP Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--dark:#0f172a;--panel:#1e293b;--blue:#2563eb;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--bg:#f8fafc;--white:#fff;--text:#334155;--muted:#64748b;--border:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+/* SIDEBAR */
+.sidebar{width:260px;background:var(--dark);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}
+.logo-icon{background:linear-gradient(135deg,var(--blue),#60a5fa);width:32px;height:32px;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:800;font-size:14px}
+.sidebar-header h2{font-size:17px;font-weight:800}.sidebar-header span{font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.menu{padding:16px 0;flex:1;overflow-y:auto}
+.menu-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:0 18px;margin:12px 0 6px;font-weight:600}
+.menu-item{padding:11px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.2s;border-left:3px solid transparent}
+.menu-item:hover{background:var(--panel);color:#fff}.menu-item.active{background:var(--panel);border-left-color:var(--blue);color:#fff;font-weight:600}
+.menu-item i{width:18px;text-align:center;font-size:15px}
+/* MAIN */
+.main-content{flex:1;display:flex;flex-direction:column;overflow-y:auto}
+.topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.2s;display:flex;align-items:center;gap:7px}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:var(--bg);border-color:#cbd5e1}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#059669}
+.workspace{padding:28px;max-width:1300px;margin:0 auto;width:100%}
+/* PLAN CARDS GRID */
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px;margin-bottom:36px}
+.plan-edit-card{background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;transition:.2s;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.plan-edit-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.08);transform:translateY(-2px)}
+.plan-edit-card.featured{border:2px solid var(--gold);box-shadow:0 0 0 3px rgba(245,158,11,.08)}
+.plan-card-header{padding:20px 22px 16px;border-bottom:1px solid var(--border)}
+.plan-card-header .plan-slug{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(37,99,235,.08);color:var(--blue);padding:3px 10px;border-radius:100px;margin-bottom:8px}
+.plan-card-header h3{font-size:20px;font-weight:800;color:var(--dark);margin-bottom:4px}
+.plan-card-header .price-display{font-size:26px;font-weight:900;color:var(--blue)}.plan-card-header .price-display small{font-size:13px;color:var(--muted);font-weight:500}
+.plan-card-body{padding:18px 22px}
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:var(--bg);transition:.2s;font-family:inherit}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-row textarea{resize:vertical;min-height:80px;font-size:12px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.features-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.feature-row{display:flex;align-items:center;gap:8px}
+.feature-row input[type=text]{flex:1;padding:7px 10px;font-size:12px}
+.feature-row .btn-remove{padding:6px 10px;background:rgba(239,68,68,.1);color:var(--red);border:none;border-radius:6px;cursor:pointer;font-size:12px;flex-shrink:0}
+.btn-add-feat{background:rgba(16,185,129,.08);color:var(--green);border:1px dashed var(--green);width:100%;padding:8px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:.2s}
+.btn-add-feat:hover{background:rgba(16,185,129,.16)}
+.plan-card-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}.status-dot.on{background:var(--green)}.status-dot.off{background:var(--red)}
+.saved-msg{font-size:12px;color:var(--green);font-weight:600;opacity:0;transition:.3s;margin-left:auto}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:16px;padding:32px;width:min(540px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.2)}
+.modal h2{font-size:20px;font-weight:800;margin-bottom:20px;color:var(--dark)}
+.modal .form-row{margin-bottom:16px}
+.modal-footer{display:flex;gap:12px;margin-top:24px;justify-content:flex-end}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;padding:14px 22px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;z-index:2000;opacity:0;transform:translateY(16px);transition:.3s}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">L</div>
+    <div><h2>LDFP Master</h2><span>Painel SaaS</span></div>
+  </div>
+  <div class="menu">
+    <div class="menu-label">Negócio</div>
+    <a href="super-admin.html" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="admin-igrejas.html" class="menu-item"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+    <a href="admin-assinaturas.html" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Assinaturas & Faturas</a>
+    <a href="admin-usuarios.html" class="menu-item"><i class="fa-solid fa-users-gear"></i> Usuários & Senhas</a>
+    <a href="admin-modulos.html" class="menu-item"><i class="fa-solid fa-puzzle-piece"></i> Catálogo de Módulos</a>
+    <a href="admin-retomada.html" class="menu-item"><i class="fa-solid fa-rocket"></i> Retomada Inteligente</a>
+    <div class="menu-label">Configurações SaaS</div>
+    <a href="admin-planos.html" class="menu-item active"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+    <a href="admin-novidades.html" class="menu-item"><i class="fa-solid fa-newspaper"></i> Novidades</a>
+    <a href="admin-inovacoes.html" class="menu-item"><i class="fa-solid fa-lightbulb"></i> Fábrica de Inovações</a>
+    <a href="admin-sistema.html" class="menu-item"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
+    <div class="menu-label" style="margin-top:auto">Sessão</div>
+    <a href="login.html" class="menu-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <header class="topbar">
+    <h1><i class="fa-solid fa-tags" style="color:var(--blue);margin-right:8px"></i>Gestão de Planos</h1>
+    <div class="topbar-right">
+      <button class="btn btn-green" onclick="openCreateModal()"><i class="fa-solid fa-plus"></i> Novo plano</button>
+      <button class="btn btn-outline" onclick="loadPlanos()"><i class="fa-solid fa-rotate-right"></i> Atualizar</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <p style="color:var(--muted);font-size:14px;margin-bottom:24px">Edite nomes, preços e benefícios de cada plano. As alterações refletem imediatamente na página pública.</p>
+    <div class="plans-grid" id="plansGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)">
+        <i class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>Carregando planos...
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="modal-overlay" id="createPlanModal">
+  <div class="modal">
+    <h2><i class="fa-solid fa-layer-group"></i> Criar novo plano</h2>
+    <div class="form-row">
+      <label>Slug (único)</label>
+      <input id="create-slug" type="text" placeholder="ex: monte-santo">
+    </div>
+    <div class="form-row">
+      <label>Nome do plano</label>
+      <input id="create-nome" type="text" placeholder="Nome exibido">
+    </div>
+    <div class="form-row">
+      <label>Subtítulo</label>
+      <input id="create-subtitulo" type="text" placeholder="Ex: Igrejas em expansão">
+    </div>
+    <div class="two-col">
+      <div class="form-row">
+        <label>Preço mensal (R$)</label>
+        <input id="create-preco-mensal" type="number" min="0" step="0.01" value="0">
+      </div>
+      <div class="form-row">
+        <label>Preço anual (R$)</label>
+        <input id="create-preco-anual" type="number" min="0" step="0.01" value="0">
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="form-row">
+        <label>Máx. cadastros</label>
+        <input id="create-max-cad" type="number" min="0" value="30">
+      </div>
+      <div class="form-row">
+        <label>Máx. congregações</label>
+        <input id="create-max-cong" type="number" min="0" value="1">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>App do Membro</label>
+      <select id="create-app-membro">
+        <option value="0">Não incluso</option>
+        <option value="1">Incluso</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeCreateModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="createPlano()"><i class="fa-solid fa-check"></i> Criar plano</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="session.js?v=20260501"></script>
+<script>
+const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
+const headers = () => ({ 'Content-Type':'application/json', Authorization: 'Bearer ' + token() });
+
+let planosData = [];
+
+async function loadPlanos() {
+  try {
+    const r = await fetch('/api/saas/planos', { headers: headers() });
+    if (r.status === 401) { location.href = 'login.html'; return; }
+    planosData = await r.json();
+    renderPlanos(planosData);
+  } catch (e) {
+    toast('Erro ao carregar planos.', 'error');
+  }
+}
+
+function renderPlanos(planos) {
+  const grid = document.getElementById('plansGrid');
+  const hiddenSlugs = new Set(['eden', 'edon']);
+  const planosVisiveis = (planos || []).filter(p => !hiddenSlugs.has(String(p.slug || '').toLowerCase()));
+  if (!planosVisiveis.length) { grid.innerHTML = '<p>Nenhum plano encontrado.</p>'; return; }
+  grid.innerHTML = planosVisiveis.map(p => planCard(p)).join('');
+}
+
+function planCard(p) {
+  const featured = p.slug === 'betel';
+  const featureRows = (p.features || []).map((f, i) => `
+    <div class="feature-row" id="feat-row-${p.slug}-${i}">
+      <input type="text" value="${escHtml(f)}" id="feat-${p.slug}-${i}" placeholder="Benefício...">
+      <button class="btn-remove" onclick="removeFeat('${p.slug}',${i})"><i class="fa-solid fa-trash"></i></button>
+    </div>`).join('');
+
+  return `
+  <div class="plan-edit-card${featured?' featured':''}">
+    <div class="plan-card-header">
+      <span class="plan-slug">${p.slug}</span>
+      <h3 id="nome-display-${p.slug}">${escHtml(p.nome)}</h3>
+      <div class="price-display">R$ <span id="preco-display-${p.slug}">${fmt(p.preco_mensal)}</span><small>/mês</small></div>
+    </div>
+    <div class="plan-card-body">
+      <div class="form-row"><label>Nome do Plano</label>
+        <input type="text" id="nome-${p.slug}" value="${escHtml(p.nome)}" oninput="document.getElementById('nome-display-'+this.dataset.slug).textContent=this.value" data-slug="${p.slug}">
+      </div>
+      <div class="form-row"><label>Subtítulo</label>
+        <input type="text" id="subtitulo-${p.slug}" value="${escHtml(p.subtitulo||'')}">
+      </div>
+      <div class="form-row"><label>Versículo Bíblico</label>
+        <input type="text" id="versiculo-${p.slug}" value="${escHtml(p.versiculo||'')}">
+      </div>
+      <div class="two-col">
+        <div class="form-row"><label>Preço Mensal (R$)</label>
+          <input type="number" min="0" step="0.01" id="preco-mensal-${p.slug}" value="${fmt(p.preco_mensal)}" oninput="document.getElementById('preco-display-${p.slug}').textContent=parseFloat(this.value||0).toFixed(0)">
+        </div>
+        <div class="form-row"><label>Preço Anual (R$)</label>
+          <input type="number" min="0" step="0.01" id="preco-anual-${p.slug}" value="${fmt(p.preco_anual)}">
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="form-row"><label>Máx. Cadastros</label>
+          <input type="number" min="0" id="max-cad-${p.slug}" value="${p.max_cadastros}">
+        </div>
+        <div class="form-row"><label>Máx. Congregações</label>
+          <input type="number" min="0" id="max-cong-${p.slug}" value="${p.max_congregacoes}">
+        </div>
+      </div>
+      <div class="form-row"><label>App do Membro</label>
+        <select id="app-membro-${p.slug}">
+          <option value="1" ${p.modulo_app_membro?'selected':''}>Incluso</option>
+          <option value="0" ${!p.modulo_app_membro?'selected':''}>Não incluso</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Benefícios <small style="font-weight:400;text-transform:none">(arraste para reordenar)</small></label>
+        <div class="features-list" id="feats-${p.slug}">${featureRows}</div>
+        <button class="btn-add-feat" onclick="addFeat('${p.slug}')"><i class="fa-solid fa-plus"></i> Adicionar benefício</button>
+      </div>
+    </div>
+    <div class="plan-card-footer">
+      <span class="status-dot ${p.ativo?'on':'off'}"></span>
+      <span style="font-size:12px;color:var(--muted)">${p.ativo?'Ativo':'Inativo'}</span>
+      <span class="saved-msg" id="saved-${p.slug}">✓ Salvo!</span>
+      <button class="btn btn-primary" style="margin-left:auto" onclick="savePlano('${p.slug}')">
+        <i class="fa-solid fa-floppy-disk"></i> Salvar
+      </button>
+    </div>
+  </div>`;
+}
+
+function addFeat(slug) {
+  const list = document.getElementById('feats-' + slug);
+  const idx = list.children.length;
+  const div = document.createElement('div');
+  div.className = 'feature-row';
+  div.id = `feat-row-${slug}-${idx}`;
+  div.innerHTML = `<input type="text" id="feat-${slug}-${idx}" placeholder="Novo benefício...">
+    <button class="btn-remove" onclick="removeFeat('${slug}',${idx})"><i class="fa-solid fa-trash"></i></button>`;
+  list.appendChild(div);
+}
+
+function removeFeat(slug, idx) {
+  const el = document.getElementById(`feat-row-${slug}-${idx}`);
+  if (el) el.remove();
+}
+
+function collectFeats(slug) {
+  const list = document.getElementById('feats-' + slug);
+  return Array.from(list.querySelectorAll('input[type=text]'))
+    .map(i => i.value.trim()).filter(Boolean);
+}
+
+async function savePlano(slug) {
+  const body = {
+    nome: v('nome-' + slug),
+    subtitulo: v('subtitulo-' + slug),
+    versiculo: v('versiculo-' + slug),
+    preco_mensal: parseFloat(v('preco-mensal-' + slug)) || 0,
+    preco_anual: parseFloat(v('preco-anual-' + slug)) || 0,
+    max_cadastros: parseInt(v('max-cad-' + slug)) || 0,
+    max_congregacoes: parseInt(v('max-cong-' + slug)) || 0,
+    modulo_app_membro: v('app-membro-' + slug) === '1',
+    features: collectFeats(slug)
+  };
+  try {
+    const r = await fetch('/api/saas/planos/' + slug, {
+      method: 'PUT', headers: headers(), body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const saved = document.getElementById('saved-' + slug);
+    saved.style.opacity = '1';
+    setTimeout(() => { saved.style.opacity = '0'; }, 2500);
+    toast('Plano "' + body.nome + '" salvo com sucesso!', 'success');
+  } catch (e) {
+    toast('Erro ao salvar: ' + e.message, 'error');
+  }
+}
+
+function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+function fmt(n) { return Number(n || 0).toFixed(2); }
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + type + ' show';
+  setTimeout(() => { el.className = 'toast ' + type; }, 3000);
+}
+
+function openCreateModal() {
+  const modal = document.getElementById('createPlanModal');
+  if (modal) modal.classList.add('open');
+}
+
+function closeCreateModal() {
+  const modal = document.getElementById('createPlanModal');
+  if (modal) modal.classList.remove('open');
+}
+
+async function createPlano() {
+  const slug = v('create-slug').trim().toLowerCase().replace(/\s+/g, '-');
+  const nome = v('create-nome').trim();
+
+  if (!slug || !nome) {
+    toast('Preencha pelo menos slug e nome do plano.', 'error');
+    return;
+  }
+
+  const body = {
+    slug,
+    nome,
+    subtitulo: v('create-subtitulo').trim(),
+    preco_mensal: parseFloat(v('create-preco-mensal')) || 0,
+    preco_anual: parseFloat(v('create-preco-anual')) || 0,
+    max_cadastros: parseInt(v('create-max-cad')) || 0,
+    max_congregacoes: parseInt(v('create-max-cong')) || 0,
+    modulo_app_membro: v('create-app-membro') === '1',
+    features: [],
+    ativo: true
+  };
+
+  try {
+    const r = await fetch('/api/saas/planos', {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify(body)
+    });
+
+    const payload = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      throw new Error(payload.error || payload.message || 'Falha ao criar plano.');
+    }
+
+    closeCreateModal();
+    toast('Plano criado com sucesso!', 'success');
+    await loadPlanos();
+  } catch (e) {
+    toast('Erro ao criar plano: ' + e.message, 'error');
+  }
+}
+
+document.getElementById('createPlanModal')?.addEventListener('click', (e) => {
+  if (e.target.id === 'createPlanModal') closeCreateModal();
+});
+
+// Auth guard
+(function() {
+  const t = token();
+  if (!t) { location.href = 'login.html'; return; }
+  try {
+    const p = JSON.parse(atob(t.split('.')[1]));
+    if (!['super-admin','super_admin','superadmin','master'].includes(p.role)) { location.href = 'login.html'; }
+  } catch(_) { location.href = 'login.html'; }
+})();
+
+loadPlanos();
+</script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Lista de Planos</title>
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --brand: #0f766e;
+            --teal: #0d9488;
+            --blue: #0284c7;
+            --green: #16a34a;
+            --red: #dc2626;
+            --yellow: #f59e0b;
+            --surface: #ffffff;
+            --bg: #f1f5f9;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --muted: #64748b;
+            --radius: 14px;
+            --shadow: 0 4px 16px rgba(15,23,42,.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .enterprise-page-shell { padding: 16px; }
+
+        .main-content {
+            padding: 20px;
+            max-width: 1000px;
+            margin: 20px auto;
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .top-header {
+            background: var(--surface);
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+            border-radius: var(--radius) var(--radius) 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .top-header h1 {
+            font-size: 1.5rem;
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .top-header .add-button {
+            background-color: var(--brand);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.2s;
+        }
+
+        .top-header .add-button:hover { background-color: #0d635c; }
+
+        .planos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .plano-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .plano-card.destaque {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px var(--brand), var(--shadow);
+        }
+
+        .plano-card h2 {
+            font-size: 1.6rem;
+            color: var(--brand);
+            margin-bottom: 10px;
+        }
+
+        .plano-card .preco {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 15px;
+        }
+
+        .plano-card .preco small {
+            font-size: 1rem;
+            color: var(--muted);
+            font-weight: normal;
+        }
+
+        .plano-card .descricao {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .plano-card ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .plano-card ul li {
+            font-size: 0.9rem;
+            color: var(--text);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plano-card ul li i { color: var(--green); }
+
+        .plano-card .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .plano-card .actions .btn-edit,
+        .plano-card .actions .btn-delete {
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            border: none;
+        }
+
+        .plano-card .actions .btn-edit {
+            background-color: var(--blue);
+            color: #fff;
+        }
+
+        .plano-card .actions .btn-edit:hover { background-color: #0c4a6e; }
+
+        .plano-card .actions .btn-delete {
+            background-color: var(--red);
+            color: #fff;
+        }
+
+        .plano-card .actions .btn-delete:hover { background-color: #991b1b; }
+
+        .empty-state {
+            text-align: center;
+            color: var(--muted);
+            padding: 50px 20px;
+            font-size: 1.1rem;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--border);
+        }
+    </style>
+</head>
+<body class="enterprise-shell-page"
+      data-shell-active="planos_lista.html"
+      data-shell-title="Gerenciar Planos"
+      data-shell-breadcrumb="LDFP / Administração / Planos"
+      data-shell-chip="Administração"
+      data-shell-role="Master">
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
+            <div class="main-content">
+                <div class="top-header">
+                    <h1><i class="fa-solid fa-boxes-stacked"></i> Gerenciar Planos LDFP</h1>
+                    <a href="planos_editar.html" class="add-button">
+                        <i class="fa-solid fa-plus"></i> Novo Plano
+                    </a>
+                </div>
+
+                <div id="planosGrid" class="planos-grid"></div>
+
+                <div id="emptyState" class="empty-state" style="display:none;">
+                    <i class="fa-solid fa-box-open"></i>
+                    <p>Nenhum plano cadastrado ainda. Clique em "Novo Plano" para começar!</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        const $ = (id) => document.getElementById(id);
+
+        function renderPlanos() {
+            const planosGrid = $('planosGrid');
+            const emptyState = $('emptyState');
+            const planos = JSON.parse(localStorage.getItem('ldfp_planos')) || [];
+
+            if (planos.length === 0) {
+                planosGrid.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            planosGrid.innerHTML = planos.map((plano) => {
+                const nome = plano.nome || 'Plano';
+                const preco = Number(plano.precoMensal || 0);
+                const descricao = plano.descricao || 'Sem descrição.';
+                const beneficios = Array.isArray(plano.beneficios) ? plano.beneficios : [];
+                const destaque = nome.toLowerCase().includes('premium') ? 'destaque' : '';
+
+                return `
+                    <div class="plano-card ${destaque}">
+                        <div>
+                            <h2>${nome}</h2>
+                            <div class="preco">R$ ${preco.toFixed(2)} <small>/mês</small></div>
+                            <p class="descricao">${descricao}</p>
+                            <ul>
+                                ${beneficios.map((b) => `<li><i class="fa-solid fa-check"></i> ${b}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="actions">
+                            <a href="planos_editar.html?id=${plano.id}" class="btn-edit">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar
+                            </a>
+                            <button class="btn-delete" data-id="${plano.id}">
+                                <i class="fa-solid fa-trash-can"></i> Excluir
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            planosGrid.querySelectorAll('.btn-delete').forEach((btn) => {
+                btn.addEventListener('click', () => deletePlano(btn.dataset.id));
+            });
+        }
+
+        function deletePlano(id) {
+            if (!confirm('Tem certeza que deseja excluir este plano?')) return;
+
+            let planos = JSON.parse(localStorage.getItem('ldfp_planos')) || [];
+            planos = planos.filter((plano) => String(plano.id) !== String(id));
+            localStorage.setItem('ldfp_planos', JSON.stringify(planos));
+            renderPlanos();
+        }
+
+        renderPlanos();
+    </script>
+</body>
+</html>

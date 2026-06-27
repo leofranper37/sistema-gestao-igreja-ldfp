@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Zeke - GestÃ£o de Escalas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ESTILOS EXCLUSIVOS DESTA TELA */
+        
+        .details-container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+        /* 1. O Banner Principal do Topo */
+        .module-banner {
+            background: #fffbeb; /* Fundo creme claro */
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .banner-content h2 { margin: 0 0 10px 0; color: #1f2937; font-size: 24px; }
+        .banner-content p { margin: 0; color: #6b7280; font-size: 14px; }
+
+        /* As Caixinhas de MÃ©tricas (100% / 7) */
+        .metrics-box { display: flex; gap: 15px; }
+        .metric-item {
+            background: white;
+            border: 2px solid #fcd34d;
+            border-radius: 8px;
+            padding: 10px 20px;
+            text-align: center;
+            min-width: 80px;
+        }
+        .metric-value { font-size: 24px; font-weight: bold; color: #111; display: block; }
+        .metric-label { font-size: 11px; font-weight: bold; color: #d97706; text-transform: uppercase; }
+
+        /* 2. O Grid de Funcionalidades (CartÃµes Amarelos) */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Duas colunas iguais */
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden; /* Para o cabeÃ§alho nÃ£o sair da borda */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .feature-header {
+            background-color: #fcd34d; /* Amarelo Forte */
+            padding: 12px 20px;
+            font-weight: bold;
+            color: #78350f;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-body { padding: 20px; }
+        .feature-desc { font-size: 13px; color: #6b7280; margin-bottom: 15px; font-style: italic; }
+
+        /* Lista de itens com Ã­cones */
+        .feature-list { list-style: none; padding: 0; margin: 0; }
+        .feature-list li {
+            font-size: 13px;
+            color: #4b5563;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .feature-list li i { color: #f59e0b; font-size: 10px; } /* Ãcone laranja */
+
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Gestão de Escalas" data-shell-breadcrumb="LDFP / Secretaria / Escalas / Detalhes" data-shell-active="escalas.html?tab=dashboard" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="details-container">
+            
+            <div style="margin-bottom: 20px; font-size: 14px; color: #666;">
+                Gestão de Escalas <span style="color: #ccc;">/</span> Detalhes
+            </div>
+
+            <div class="module-banner">
+                <div class="banner-content">
+                    <h2>Módulo de Gestão de Escalas</h2>
+                    <p>Sistema profissional completo para gestão de escalas e eventos</p>
+                    <p style="margin-top: 10px; font-size: 12px; color: #9ca3af;">
+                        Com o novo módulo de Gestão de Escalas, você terá controle total...
+                    </p>
+                </div>
+                <div class="metrics-box">
+                    <div class="metric-item">
+                        <span class="metric-value">100%</span>
+                        <span class="metric-label">Integrado</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-value">7</span>
+                        <span class="metric-label">Funcionalidades</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="features-grid">
+
+                <div class="feature-card">
+                    <div class="feature-header"><i class="fa-regular fa-calendar"></i> Eventos Recorrentes</div>
+                    <div class="feature-body">
+                        <p class="feature-desc">Crie eventos que se repetem automaticamente.</p>
+                        <ul class="feature-list">
+                            <li><i class="fa-solid fa-circle"></i> Configuração de recorrência semanal, quinzenal ou mensal</li>
+                            <li><i class="fa-solid fa-circle"></i> Edição em massa de eventos da série</li>
+                            <li><i class="fa-solid fa-circle"></i> Exclusão seletiva de eventos específicos</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-header"><i class="fa-solid fa-users-gear"></i> Funções por Grupos</div>
+                    <div class="feature-body">
+                        <p class="feature-desc">Organização de funções estruturadas por grupos.</p>
+                        <ul class="feature-list">
+                            <li><i class="fa-solid fa-circle"></i> Estruture hierarquia entre grupos e Ã¡reas</li>
+                            <li><i class="fa-solid fa-circle"></i> Defina funÃ§Ãµes especÃ­ficas por grupo</li>
+                            <li><i class="fa-solid fa-circle"></i> PermissÃµes personalizadas por funÃ§Ã£o</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-header"><i class="fa-solid fa-user-check"></i> AtribuiÃ§Ã£o de Membros</div>
+                    <div class="feature-body">
+                        <p class="feature-desc">Sistema completo de atribuiÃ§Ã£o e gestÃ£o.</p>
+                        <ul class="feature-list">
+                            <li><i class="fa-solid fa-circle"></i> AtribuiÃ§Ã£o visual com interface intuitiva</li>
+                            <li><i class="fa-solid fa-circle"></i> GestÃ£o de conflitos de horÃ¡rios</li>
+                            <li><i class="fa-solid fa-circle"></i> NotificaÃ§Ã£o automÃ¡tica aos escalados</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-header"><i class="fa-solid fa-list-ol"></i> GestÃ£o de Quantidades</div>
+                    <div class="feature-body">
+                        <p class="feature-desc">Controle preciso de quantidades por funÃ§Ã£o.</p>
+                        <ul class="feature-list">
+                            <li><i class="fa-solid fa-circle"></i> Alerta de limites de voluntÃ¡rios</li>
+                            <li><i class="fa-solid fa-circle"></i> ValidaÃ§Ã£o automÃ¡tica de vagas</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-header"><i class="fa-solid fa-chart-pie"></i> Dashboard e VisualizaÃ§Ãµes</div>
+                    <div class="feature-body">
+                        <p class="feature-desc">VisÃ£o completa e estatÃ­sticas em tempo real.</p>
+                        <ul class="feature-list">
+                            <li><i class="fa-solid fa-circle"></i> EstatÃ­sticas de participaÃ§Ã£o por membro</li>
+                            <li><i class="fa-solid fa-circle"></i> VisualizaÃ§Ã£o em matriz de escalas</li>
+                        </ul>
+                    </div>
+                </div>
+
+                 <div class="feature-card">
+                    <div class="feature-header"><i class="fa-solid fa-tags"></i> Nomes Personalizados</div>
+                    <div class="feature-body">
+                        <p class="feature-desc">Personalize nomes de funÃ§Ãµes por evento.</p>
+                        <ul class="feature-list">
+                            <li><i class="fa-solid fa-circle"></i> Mude a nomenclatura conforme a necessidade</li>
+                            <li><i class="fa-solid fa-circle"></i> Flexibilidade na comunicaÃ§Ã£o</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+    </script>
+</body>
+</html>

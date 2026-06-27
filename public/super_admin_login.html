@@ -3,210 +3,497 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acesso Master — LDFP</title>
+    <title>Central de Controle — LDFP</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+        :root {
+            --bg: #050a0f;
+            --panel: #0a1628;
+            --border: #0d2444;
+            --accent: #00d4ff;
+            --accent2: #0066cc;
+            --danger: #ff3b3b;
+            --text: #e2f0ff;
+            --muted: #4a6785;
+            --green: #00ff88;
+        }
+
         body {
             min-height: 100vh;
+            background: var(--bg);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #0f172a;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            position: relative;
         }
 
-        .card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 16px;
-            padding: 48px 40px;
+        /* Grid animado de fundo */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridPulse 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Brilho central */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(0, 102, 204, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            max-width: 460px;
+            padding: 16px;
         }
 
-        .logo {
+        /* Cabeçalho com ID do sistema */
+        .sys-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 32px;
+            justify-content: space-between;
+            margin-bottom: 24px;
         }
 
-        .logo-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #2563eb, #60a5fa);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .logo-text h1 {
-            font-size: 18px;
-            font-weight: 800;
-            color: #f1f5f9;
-            letter-spacing: 0.3px;
-        }
-
-        .logo-text span {
+        .sys-id {
             font-size: 11px;
-            color: #10b981;
-            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 2px;
             text-transform: uppercase;
+        }
+
+        .sys-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--green);
             letter-spacing: 1px;
         }
 
-        h2 {
-            font-size: 22px;
+        .sys-status::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Painel principal */
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Linha de destaque superior */
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        /* Barra de título estilo terminal */
+        .terminal-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(0, 212, 255, 0.05);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .terminal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ff5f57; }
+        .dot-yellow { background: #febc2e; }
+        .dot-green { background: #28c840; }
+
+        .terminal-title {
+            flex: 1;
+            text-align: center;
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-right: 28px;
+        }
+
+        /* Conteúdo do painel */
+        .panel-body {
+            padding: 40px 36px 36px;
+        }
+
+        /* Escudo / ícone master */
+        .master-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .master-icon svg {
+            width: 64px;
+            height: 64px;
+            filter: drop-shadow(0 0 12px rgba(0, 212, 255, 0.4));
+        }
+
+        .master-heading {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .master-heading h1 {
+            font-size: 20px;
             font-weight: 700;
-            color: #f1f5f9;
+            color: var(--text);
+            letter-spacing: 4px;
+            text-transform: uppercase;
             margin-bottom: 6px;
         }
 
-        .subtitle {
-            font-size: 13px;
-            color: #64748b;
-            margin-bottom: 28px;
+        .master-heading .tagline {
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: 3px;
+            text-transform: uppercase;
         }
 
+        /* Linha separadora com label */
+        .divider-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .divider-label::before,
+        .divider-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider-label span {
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            white-space: nowrap;
+        }
+
+        /* Campos */
         .field {
             margin-bottom: 16px;
         }
 
-        label {
-            display: block;
+        .field-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .field-label svg {
+            width: 12px;
+            height: 12px;
+            opacity: 0.6;
+        }
+
+        .field-input {
+            position: relative;
+        }
+
+        .field-input::before {
+            content: '>';
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
             font-size: 13px;
-            font-weight: 600;
-            color: #94a3b8;
-            margin-bottom: 6px;
+            pointer-events: none;
         }
 
         input {
             width: 100%;
-            padding: 12px 14px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #f1f5f9;
+            padding: 12px 14px 12px 30px;
+            background: rgba(0, 212, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            font-size: 13px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--text);
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            letter-spacing: 1px;
         }
 
         input:focus {
-            border-color: #2563eb;
+            border-color: var(--accent2);
+            box-shadow: 0 0 0 1px rgba(0, 102, 204, 0.3), inset 0 0 20px rgba(0, 212, 255, 0.03);
         }
 
         input::placeholder {
-            color: #475569;
+            color: #1e3a5f;
+            letter-spacing: 0;
         }
 
-        .btn {
+        input[type="password"] {
+            letter-spacing: 3px;
+        }
+
+        input[type="password"]::placeholder {
+            letter-spacing: 0;
+        }
+
+        /* Botão */
+        .btn-execute {
             width: 100%;
-            padding: 13px;
+            padding: 14px;
             margin-top: 8px;
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            background: transparent;
+            border: 1px solid var(--accent2);
+            border-radius: 2px;
+            font-size: 12px;
+            font-family: 'Courier New', Courier, monospace;
             font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--accent);
             cursor: pointer;
-            transition: background 0.2s, opacity 0.2s;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s;
         }
 
-        .btn:hover:not(:disabled) {
-            background: #1d4ed8;
+        .btn-execute::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.08), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s;
         }
 
-        .btn:disabled {
-            opacity: 0.6;
+        .btn-execute:hover::before {
+            transform: translateX(100%);
+        }
+
+        .btn-execute:hover:not(:disabled) {
+            background: rgba(0, 102, 204, 0.15);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+        }
+
+        .btn-execute:disabled {
+            opacity: 0.4;
             cursor: not-allowed;
         }
 
-        .error-msg {
+        /* Erro */
+        .alert-error {
             display: none;
             margin-top: 14px;
-            padding: 11px 14px;
-            background: rgba(239,68,68,0.15);
-            border: 1px solid rgba(239,68,68,0.3);
-            border-radius: 8px;
-            color: #fca5a5;
-            font-size: 13px;
-            text-align: center;
-        }
-
-        .error-msg.show { display: block; }
-
-        .divider {
-            border-top: 1px solid #1e293b;
-            margin: 28px 0 16px;
-        }
-
-        .back-link {
-            display: block;
-            text-align: center;
+            padding: 12px 14px;
+            background: rgba(255, 59, 59, 0.08);
+            border: 1px solid rgba(255, 59, 59, 0.25);
+            border-left: 3px solid var(--danger);
+            border-radius: 2px;
             font-size: 12px;
-            color: #475569;
-            text-decoration: none;
+            color: #ff8080;
+            letter-spacing: 0.5px;
         }
 
-        .back-link:hover { color: #64748b; }
+        .alert-error.show { display: flex; align-items: center; gap: 8px; }
+
+        .alert-error::before {
+            content: '⚠';
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* Rodapé do painel */
+        .panel-footer {
+            padding: 16px 36px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-code {
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .footer-code span { color: var(--accent2); }
 
         .spinner {
             display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-top-color: var(--accent);
             border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+            animation: spin 0.6s linear infinite;
             vertical-align: middle;
-            margin-right: 6px;
+            margin-right: 8px;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Canto decorativo */
+        .corner {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-color: var(--accent);
+            border-style: solid;
+            opacity: 0.4;
+        }
+
+        .corner-tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .corner-tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+        .corner-bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+        .corner-br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="logo">
-            <div class="logo-icon">L</div>
-            <div class="logo-text">
-                <h1>LDFP Master</h1>
-                <span>Área Restrita</span>
-            </div>
+    <div class="container">
+        <div class="sys-header">
+            <span class="sys-id">SYS // LDFP-MASTER-v2</span>
+            <span class="sys-status">ONLINE</span>
         </div>
 
-        <h2>Acesso ao Painel</h2>
-        <p class="subtitle">Exclusivo para o administrador do sistema LDFP.</p>
+        <div class="panel">
+            <div class="corner corner-tl"></div>
+            <div class="corner corner-tr"></div>
+            <div class="corner corner-bl"></div>
+            <div class="corner corner-br"></div>
 
-        <form id="loginForm" autocomplete="off">
-            <div class="field">
-                <label for="email">E-mail</label>
-                <input id="email" type="email" placeholder="seu@email.com" required autocomplete="username">
+            <div class="terminal-bar">
+                <div class="terminal-dot dot-red"></div>
+                <div class="terminal-dot dot-yellow"></div>
+                <div class="terminal-dot dot-green"></div>
+                <div class="terminal-title">SECURE ACCESS — RESTRICTED</div>
             </div>
-            <div class="field">
-                <label for="senha">Senha</label>
-                <input id="senha" type="password" placeholder="••••••••" required autocomplete="current-password">
-            </div>
-            <button type="submit" class="btn" id="submitBtn">Entrar</button>
-            <div class="error-msg" id="errorMsg"></div>
-        </form>
 
-        <div class="divider"></div>
-        <a class="back-link" href="login.html">← Voltar para login de clientes</a>
+            <div class="panel-body">
+                <div class="master-icon">
+                    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M32 4L8 16v16c0 13.3 10.3 25.7 24 28 13.7-2.3 24-14.7 24-28V16L32 4z"
+                              stroke="#00d4ff" stroke-width="2" fill="rgba(0,212,255,0.06)"/>
+                        <path d="M22 32l8 8 14-14" stroke="#00ff88" stroke-width="2.5"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="32" cy="28" r="6" stroke="#00d4ff" stroke-width="1.5"
+                                fill="rgba(0,212,255,0.1)"/>
+                        <line x1="32" y1="34" x2="32" y2="40" stroke="#00d4ff" stroke-width="2"/>
+                        <line x1="28" y1="40" x2="36" y2="40" stroke="#00d4ff" stroke-width="2"/>
+                    </svg>
+                </div>
+
+                <div class="master-heading">
+                    <h1>Central de Controle</h1>
+                    <div class="tagline">LDFP — Fábrica do Sistema</div>
+                </div>
+
+                <div class="divider-label">
+                    <span>AUTENTICAÇÃO NECESSÁRIA</span>
+                </div>
+
+                <form id="loginForm" autocomplete="off">
+                    <div class="field">
+                        <div class="field-label">
+                            <svg viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M2 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H2zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                            </svg>
+                            Identificador
+                        </div>
+                        <div class="field-input">
+                            <input id="email" type="email" placeholder="admin@dominio.com"
+                                   required autocomplete="username">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="field-label">
+                            <svg viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                            </svg>
+                            Chave de Acesso
+                        </div>
+                        <div class="field-input">
+                            <input id="senha" type="password" placeholder="••••••••"
+                                   required autocomplete="current-password">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-execute" id="submitBtn">
+                        AUTENTICAR
+                    </button>
+
+                    <div class="alert-error" id="errorMsg"></div>
+                </form>
+            </div>
+
+            <div class="panel-footer">
+                <span class="footer-code">ACCESS_LEVEL: <span>MASTER</span></span>
+                <span class="footer-code">ENCRYPT: <span>JWT/AES</span></span>
+            </div>
+        </div>
     </div>
 
     <script src="session.js?v=20260501"></script>
     <script>
         (function () {
-            // Se já está logado como super-admin, vai direto pro painel
             const auth = window.getStoredAuth?.();
             if (auth?.token) {
                 const role = String(auth?.user?.role || '').trim().toLowerCase();
@@ -214,7 +501,6 @@
                     window.location.href = '/super_admin';
                     return;
                 }
-                // Logado como outro role — limpa e pede login master
                 window.clearAuthSession?.();
             }
 
@@ -236,8 +522,8 @@
             function setLoading(on) {
                 btnEl.disabled = on;
                 btnEl.innerHTML = on
-                    ? '<span class="spinner"></span>Verificando...'
-                    : 'Entrar';
+                    ? '<span class="spinner"></span>VERIFICANDO...'
+                    : 'AUTENTICAR';
             }
 
             form.addEventListener('submit', async (e) => {
@@ -248,7 +534,7 @@
                 const senha = senhaEl.value;
 
                 if (!email || !senha) {
-                    showError('Preencha e-mail e senha.');
+                    showError('Identificador e chave de acesso são obrigatórios.');
                     return;
                 }
 
@@ -264,27 +550,22 @@
                     const data = await resp.json().catch(() => ({}));
 
                     if (!resp.ok) {
-                        showError(data?.error || data?.message || 'E-mail ou senha incorretos.');
+                        showError('ACESSO NEGADO — Credenciais inválidas.');
                         return;
                     }
 
                     const role = String(data?.user?.role || data?.role || '').trim().toLowerCase();
 
                     if (role !== 'super-admin') {
-                        showError('Acesso negado. Esta área é exclusiva para o administrador LDFP.');
+                        showError('ACESSO NEGADO — Nível de autorização insuficiente.');
                         return;
                     }
 
-                    // Salva sessão e redireciona
-                    window.saveAuthSession?.({
-                        token: data.token,
-                        user: data.user
-                    });
-
+                    window.saveAuthSession?.({ token: data.token, user: data.user });
                     window.location.href = '/super_admin';
 
                 } catch (err) {
-                    showError('Erro de conexão. Verifique sua internet e tente novamente.');
+                    showError('FALHA DE CONEXÃO — Tente novamente.');
                 } finally {
                     setLoading(false);
                 }

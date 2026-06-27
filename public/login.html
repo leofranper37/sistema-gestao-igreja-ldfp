@@ -121,6 +121,14 @@
                     throw new Error(extractErrorMessage(data, 'Nao foi possivel entrar agora.'));
                 }
 
+                if (isMasterWorkspaceUser(data.user)) {
+                    status.style.color = '#b91c1c';
+                    status.textContent = 'Use a entrada exclusiva do administrador do sistema.';
+                    btn.disabled = false;
+                    btn.textContent = 'Login';
+                    return;
+                }
+
                 status.style.color = '#15803d';
                 status.textContent = 'Login realizado com sucesso!';
                 setTimeout(() => {
@@ -128,10 +136,6 @@
                         clearAuthSession();
                         localStorage.removeItem('ldfpUser');
                         window.location.href = 'app_login.html';
-                    } else if (isMasterWorkspaceUser(data.user)) {
-                        saveAuthSession(data);
-                        localStorage.setItem('ldfpUser', JSON.stringify(data.user));
-                        window.location.href = 'super-admin.html';
                     } else {
                         saveAuthSession(data);
                         localStorage.setItem('ldfpUser', JSON.stringify(data.user));

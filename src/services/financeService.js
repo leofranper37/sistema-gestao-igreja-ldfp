@@ -123,6 +123,28 @@ async function getTipoReceitaById(id, igrejaId) {
     };
 }
 
+// ─── Caixa ────────────────────────────────────────────────────────────────────
+
+async function getCaixaResumo(igrejaId, mes) {
+    return financeModel.getCaixaResumo(igrejaId, mes);
+}
+
+async function listCaixaLancamentos(igrejaId, filters) {
+    return financeModel.listCaixaLancamentos(igrejaId, filters);
+}
+
+async function createCaixaLancamento(igrejaId, userId, payload) {
+    return financeModel.createCaixaLancamento(igrejaId, userId, payload);
+}
+
+async function deleteCaixaLancamento(id, igrejaId) {
+    return financeModel.deleteCaixaLancamento(id, igrejaId);
+}
+
+async function upsertCaixaMes(igrejaId, payload) {
+    return financeModel.upsertCaixaMes(igrejaId, payload);
+}
+
 module.exports = {
     createTransacao,
     getSaldo,
@@ -138,5 +160,10 @@ module.exports = {
     deleteTipoReceita,
     getTipoReceitaById,
     listTiposReceita,
-    updateTipoReceita
+    updateTipoReceita,
+    getCaixaResumo,
+    listCaixaLancamentos,
+    createCaixaLancamento,
+    deleteCaixaLancamento,
+    upsertCaixaMes
 };

@@ -460,6 +460,175 @@ async function deleteTipoReceita(id, igrejaId) {
     );
 }
 
+// ─── Caixa ────────────────────────────────────────────────────────────────────
+
+async function ensureCaixaTables() {
+    await ensureTable('caixa_meses', [
+        `CREATE TABLE IF NOT EXISTS caixa_meses (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            igreja_id INT NOT NULL,
+            mes_competencia VARCHAR(7) NOT NULL,
+            saldo_inicial DECIMAL(14,2) DEFAULT 0,
+            observacao TEXT NULL,
+            ativo TINYINT(1) DEFAULT 1,
+            atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_caixa_mes (igreja_id, mes_competencia),
+            INDEX idx_caixa_mes_igreja (igreja_id)
+        )`,
+        `CREATE TABLE IF NOT EXISTS caixa_meses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            igreja_id INTEGER NOT NULL,
+            mes_competencia TEXT NOT NULL,
+            saldo_inicial REAL DEFAULT 0,
+            observacao TEXT,
+            ativo INTEGER DEFAULT 1,
+            atualizado_em TEXT DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (igreja_id, mes_competencia)
+        )`
+    ]);
+
+    await ensureTable('caixa_lancamentos', [
+        `CREATE TABLE IF NOT EXISTS caixa_lancamentos (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            igreja_id INT NOT NULL,
+            data DATE NULL,
+            doc VARCHAR(50) NULL,
+            historico VARCHAR(500) NOT NULL,
+            valor DECIMAL(14,2) NOT NULL DEFAULT 0,
+            tipo VARCHAR(10) NOT NULL DEFAULT 'ENTRADA',
+            observacao TEXT NULL,
+            created_by INT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_caixa_lanc_igreja (igreja_id),
+            INDEX idx_caixa_lanc_data (data)
+        )`,
+        `CREATE TABLE IF NOT EXISTS caixa_lancamentos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            igreja_id INTEGER NOT NULL,
+            data TEXT,
+            doc TEXT,
+            historico TEXT NOT NULL,
+            valor REAL NOT NULL DEFAULT 0,
+            tipo TEXT NOT NULL DEFAULT 'ENTRADA',
+            observacao TEXT,
+            created_by INTEGER,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )`
+    ]);
+}
+
+async function getCaixaMes(igrejaId, mesCompetencia) {
+    await ensureCaixaTables();
+    const mes = mesCompetencia || new Date().toISOString().slice(0, 7);
+    const [rows] = await pool.query(
+        'SELECT * FROM caixa_meses WHERE igreja_id = ? AND mes_competencia = ? LIMIT 1',
+        [igrejaId, mes]
+    );
+    return rows[0] || null;
+}
+
+async function upsertCaixaMes(igrejaId, { mesCompetencia, saldoInicial, observacao }) {
+    await ensureCaixaTables();
+    const existing = await getCaixaMes(igrejaId, mesCompetencia);
+    if (existing) {
+        await pool.query(
+            `UPDATE caixa_meses SET saldo_inicial=?, observacao=?, ativo=1, atualizado_em=NOW() WHERE id=?`,
+            [saldoInicial || 0, observacao || null, existing.id]
+        );
+        return existing.id;
+    }
+    const [{ insertId }] = await pool.query(
+        'INSERT INTO caixa_meses (igreja_id, mes_competencia, saldo_inicial, observacao) VALUES (?, ?, ?, ?)',
+        [igrejaId, mesCompetencia, saldoInicial || 0, observacao || null]
+    );
+    return insertId;
+}
+
+async function getCaixaResumo(igrejaId, mes) {
+    await ensureCaixaTables();
+    const mesRef = mes || new Date().toISOString().slice(0, 7);
+    const inicio = mesRef + '-01';
+    const fimDate = new Date(mesRef + '-01');
+    fimDate.setMonth(fimDate.getMonth() + 1);
+    const fim = fimDate.toISOString().slice(0, 10);
+
+    const [mesRows] = await pool.query(
+        'SELECT * FROM caixa_meses WHERE igreja_id = ? AND mes_competencia = ? LIMIT 1',
+        [igrejaId, mesRef]
+    );
+    const mesData = mesRows[0] || null;
+    const saldoInicial = Number(mesData?.saldo_inicial || 0);
+
+    const [totais] = await pool.query(
+        `SELECT
+            COALESCE(SUM(CASE WHEN tipo='ENTRADA' THEN valor ELSE 0 END), 0) AS entradas,
+            COALESCE(SUM(CASE WHEN tipo='SAIDA' THEN valor ELSE 0 END), 0) AS saidas
+         FROM caixa_lancamentos
+         WHERE igreja_id = ? AND data >= ? AND data < ?`,
+        [igrejaId, inicio, fim]
+    );
+    const t = totais[0] || { entradas: 0, saidas: 0 };
+    const entradasMes = Number(t.entradas);
+    const saidasMes = Number(t.saidas);
+    const saldoMes = saldoInicial + entradasMes - saidasMes;
+
+    return {
+        mesCompetencia: mesRef,
+        ativo: !!mesData,
+        saldoInicial,
+        entradasMes,
+        saidasMes,
+        saldoMes,
+        saldoAtual: saldoMes,
+        entradasPeriodo: entradasMes,
+        saidasPeriodo: saidasMes,
+        atualizadoEm: mesData ? String(mesData.atualizado_em || '').slice(0, 10) : null
+    };
+}
+
+async function listCaixaLancamentos(igrejaId, { page = 1, limit = 50, inicio, fim, tipo, busca }) {
+    await ensureCaixaTables();
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 50;
+    const offset = (pageNum - 1) * limitNum;
+    const where = ['igreja_id = ?'];
+    const params = [igrejaId];
+
+    if (inicio) { where.push('data >= ?'); params.push(inicio); }
+    if (fim) { where.push('data <= ?'); params.push(fim); }
+    if (tipo) { where.push('tipo = ?'); params.push(tipo.toUpperCase()); }
+    if (busca) { where.push('historico LIKE ?'); params.push(`%${busca}%`); }
+
+    const whereStr = where.join(' AND ');
+    const [[countRow]] = await pool.query(
+        `SELECT COUNT(*) AS total FROM caixa_lancamentos WHERE ${whereStr}`,
+        [...params]
+    );
+    const total = Number(countRow?.total || 0);
+
+    const [items] = await pool.query(
+        `SELECT * FROM caixa_lancamentos WHERE ${whereStr} ORDER BY data DESC, id DESC LIMIT ? OFFSET ?`,
+        [...params, limitNum, offset]
+    );
+
+    return { items, meta: { page: pageNum, totalPages: Math.max(1, Math.ceil(total / limitNum)) } };
+}
+
+async function createCaixaLancamento(igrejaId, userId, { data, doc, historico, valor, tipo, observacao }) {
+    await ensureCaixaTables();
+    const [{ insertId }] = await pool.query(
+        'INSERT INTO caixa_lancamentos (igreja_id, data, doc, historico, valor, tipo, observacao, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [igrejaId, data || null, doc || null, historico, valor, (tipo || 'ENTRADA').toUpperCase(), observacao || null, userId || null]
+    );
+    return insertId;
+}
+
+async function deleteCaixaLancamento(id, igrejaId) {
+    await ensureCaixaTables();
+    const [info] = await pool.query('DELETE FROM caixa_lancamentos WHERE id = ? AND igreja_id = ?', [id, igrejaId]);
+    return info.affectedRows;
+}
+
 module.exports = {
     ensureFinanceTables,
     createSaldoInicial,
@@ -478,5 +647,10 @@ module.exports = {
     deleteTipoReceita,
     findTipoReceitaById,
     listTiposReceita,
-    updateTipoReceita
+    updateTipoReceita,
+    getCaixaResumo,
+    listCaixaLancamentos,
+    createCaixaLancamento,
+    deleteCaixaLancamento,
+    upsertCaixaMes
 };

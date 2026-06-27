@@ -27,7 +27,12 @@ const {
     listTiposReceita,
     listTransacoes,
     updateTipoReceita,
-    upsertSaldoInicial
+    upsertSaldoInicial,
+    getCaixaResumo,
+    listCaixaLancamentos,
+    createCaixaLancamento,
+    deleteCaixaLancamento,
+    upsertCaixaMes
 } = require('../controllers/financeController');
 
 const router = express.Router();
@@ -47,5 +52,11 @@ router.get('/tipos-receita', requireAuth, authorize(['admin', 'financeiro', 'sec
 router.post('/tipos-receita', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), validateBody(tipoReceitaSchema), createTipoReceita);
 router.put('/tipos-receita/:id', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), validateBody(tipoReceitaUpdateSchema), updateTipoReceita);
 router.delete('/tipos-receita/:id', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), deleteTipoReceita);
+
+router.get('/caixa/resumo', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), getCaixaResumo);
+router.get('/caixa/lancamentos', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), listCaixaLancamentos);
+router.post('/caixa/lancamentos', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), createCaixaLancamento);
+router.delete('/caixa/lancamentos/:id', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), deleteCaixaLancamento);
+router.post('/caixa/mes', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), upsertCaixaMes);
 
 module.exports = router;

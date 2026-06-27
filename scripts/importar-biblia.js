@@ -17,12 +17,12 @@ const { pool } = require('../src/config/db');
 // 1. CONFIGURAÇÕES DA VERSÃO A SER IMPORTADA
 // ==========================================
 // Escolha uma das siglas da tabela: ACF, ARA, ARC, AS21, JFAA, KJA, KJF, NAA, NBV, NTLH, NVI, NVT, TB
-const SIGLA = 'NVI'; 
+const SIGLA = 'ACF';
 const VERSAO = {
     codigo: SIGLA.toLowerCase(),
-    nome: 'Nova Versão Internacional', // Altere o nome para bater com a sua sigla se quiser
+    nome: 'Almeida Corrigida Fiel',
     idioma: 'pt',
-    licenca_nota: 'Uso interno'
+    licenca_nota: 'Domínio público'
 };
 // ==========================================
 

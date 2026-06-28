@@ -782,7 +782,7 @@
                 <nav class="menu">
                     ${renderLegacyGroup('Menu LDFP', 'fa-solid fa-house', [
                         ['dashboard.html', 'fa-regular fa-eye', 'Visão Geral', 'dashboard'],
-                        ['app_membro.html', 'fa-solid fa-mobile-screen-button', 'App do Membro'],
+                        ['painel_app_membro.html', 'fa-solid fa-mobile-screen-button', 'App do Membro'],
                         ['dashboard_membro.html', 'fa-solid fa-user-group', 'Painel do Membro'],
                         ['novidades.html', 'fa-solid fa-star', 'Novidades'],
                         ['configuracoes.html', 'fa-solid fa-gear', 'Configurações', 'configuracoes'],

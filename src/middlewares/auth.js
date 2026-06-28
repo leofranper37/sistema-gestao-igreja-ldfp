@@ -25,6 +25,17 @@ async function requireAuth(req, res, next) {
     try {
         const payload = jwt.verify(token, config.security.jwtSecret);
 
+        // Token do App do Membro (app_mode=true) — busca na tabela membros, não usuarios
+        if (payload.app_mode) {
+            req.auth = {
+                ...payload,
+                id: payload.membro_id || payload.id,
+                userId: payload.membro_id || payload.id,
+                moduleFeatures: []
+            };
+            return next();
+        }
+
         const [rows] = await pool.query(
             `SELECT u.id, u.nome, u.email, u.igreja, u.igreja_id, u.role,
                     i.plano, i.status_assinatura, i.trial_starts_at, i.trial_ends_at,

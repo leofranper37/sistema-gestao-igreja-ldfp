@@ -448,12 +448,59 @@ async function markSaasAssinaturaPaga(req, res) {
     }
 }
 
+// ── Módulos padrão do sistema ─────────────────────────────────────────────────
+
+const STANDARD_MODULES = [
+    { slug: 'membros',        nome: 'Gestão de Membros',             feature_key: 'membros',      icon: 'fa-solid fa-users',                  route_path: 'lista_membros.html' },
+    { slug: 'visitantes',     nome: 'Visitantes',                    feature_key: 'visitantes',   icon: 'fa-solid fa-user-plus',              route_path: 'visitantes.html' },
+    { slug: 'criancas-ebd',   nome: 'Crianças / EBD Dominical',     feature_key: 'criancas',     icon: 'fa-solid fa-child-reaching',         route_path: 'criancas.html' },
+    { slug: 'agenda',         nome: 'Agenda e Escalas',              feature_key: 'agenda',       icon: 'fa-solid fa-calendar-days',          route_path: 'agenda.html' },
+    { slug: 'oracoes',        nome: 'Orações e Pedidos',             feature_key: 'oracoes',      icon: 'fa-solid fa-hands-praying',          route_path: 'oracoes.html' },
+    { slug: 'financeiro',     nome: 'Módulo Financeiro',             feature_key: 'financeiro',   icon: 'fa-solid fa-coins',                  route_path: 'financeiro.html' },
+    { slug: 'missionarios',   nome: 'Missionários',                  feature_key: 'missionarios', icon: 'fa-solid fa-person-rays',            route_path: 'missionarios.html' },
+    { slug: 'igrejas',        nome: 'Congregações / Outras Igrejas', feature_key: 'igrejas',      icon: 'fa-solid fa-church',                 route_path: 'outras_igrejas.html' },
+    { slug: 'whatsapp',       nome: 'Comunicação WhatsApp',          feature_key: 'whatsapp',     icon: 'fa-brands fa-whatsapp',              route_path: 'comunicacao_whatsapp.html' },
+    { slug: 'autocadastro',   nome: 'Aprovação de Cadastro Online',  feature_key: 'autocadastro', icon: 'fa-solid fa-user-check',             route_path: 'autocadastro_aprovacoes.html' },
+    { slug: 'portaria-qr',    nome: 'Portaria / Check-in QR',        feature_key: 'portaria_qr',  icon: 'fa-solid fa-qrcode',                 route_path: 'portaria_checkin.html' },
+    { slug: 'telao',          nome: 'Telão de Visitantes',           feature_key: 'telao',        icon: 'fa-solid fa-display',                route_path: 'telao_visitantes.html' },
+    { slug: 'app-membro',     nome: 'App do Membro',                 feature_key: 'app_membro',   icon: 'fa-solid fa-mobile-screen-button',   route_path: 'painel_app_membro.html' },
+    { slug: 'estudo-biblico', nome: 'Estudo Bíblico / Devocionais',  feature_key: 'estudo',       icon: 'fa-solid fa-book-bible',             route_path: 'estudo.html' },
+    { slug: 'pagamentos',     nome: 'Links de Pagamento',            feature_key: 'pagamentos',   icon: 'fa-solid fa-credit-card',            route_path: 'pagamentos.html' },
+];
+
+async function seedStandardModules() {
+    for (const mod of STANDARD_MODULES) {
+        try {
+            await pool.query(
+                `INSERT INTO saas_modulos (slug, nome, descricao, icon, feature_key, route_path, ativo, updated_at)
+                 VALUES (?, ?, NULL, ?, ?, ?, 1, CURRENT_TIMESTAMP)
+                 ON DUPLICATE KEY UPDATE nome = VALUES(nome), icon = VALUES(icon), feature_key = VALUES(feature_key), route_path = VALUES(route_path), ativo = 1, updated_at = CURRENT_TIMESTAMP`,
+                [mod.slug, mod.nome, mod.icon, mod.feature_key, mod.route_path || null]
+            );
+        } catch (_) {}
+    }
+}
+
 // ── Catálogo de Módulos (SaaS) ──────────────────────────────────────────────
 
 async function listSaasModulos(req, res) {
     try {
-        const rows = await moduleAccessService.listCatalog(false);
+        let rows = await moduleAccessService.listCatalog(false);
+        if (!rows.length) {
+            await seedStandardModules();
+            rows = await moduleAccessService.listCatalog(false);
+        }
         res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+async function seedSaasModulos(req, res) {
+    try {
+        await seedStandardModules();
+        const rows = await moduleAccessService.listCatalog(false);
+        res.json({ ok: true, total: rows.length, modules: rows });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -1341,6 +1388,7 @@ module.exports = {
     listSaasAssinaturas,
     markSaasAssinaturaPaga,
     listSaasModulos,
+    seedSaasModulos,
     createSaasModulo,
     updateSaasModulo,
     getPlanoModulos,

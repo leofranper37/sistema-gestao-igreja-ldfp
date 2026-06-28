@@ -55,6 +55,15 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
 .plan-card-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center}
 .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}.status-dot.on{background:var(--green)}.status-dot.off{background:var(--red)}
 .saved-msg{font-size:12px;color:var(--green);font-weight:600;opacity:0;transition:.3s;margin-left:auto}
+.modules-section{margin-top:4px}
+.modules-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.mod-label{display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:#fff;transition:.15s;user-select:none}
+.mod-label:hover{border-color:#93c5fd;background:#eff6ff}
+.mod-label input[type=checkbox]{width:14px;height:14px;accent-color:var(--blue);flex-shrink:0}
+.mod-label.checked{border-color:#86efac;background:#f0fdf4}
+.mod-label i{color:var(--blue);width:14px;text-align:center;font-size:13px;flex-shrink:0}
+.section-divider{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 4px;display:flex;align-items:center;gap:8px}
+.section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
 .modal-overlay.open{display:flex}
@@ -169,16 +178,90 @@ const token = () => sessionStorage.getItem('token') || localStorage.getItem('tok
 const headers = () => ({ 'Content-Type':'application/json', Authorization: 'Bearer ' + token() });
 
 let planosData = [];
+let _modulosCatalog = [];
 
 async function loadPlanos() {
   try {
-    const r = await fetch('/api/saas/planos', { headers: headers() });
-    if (r.status === 401) { location.href = 'login.html'; return; }
-    planosData = await r.json();
+    const [rPlanos, rMods] = await Promise.all([
+      fetch('/api/saas/planos', { headers: headers() }),
+      fetch('/api/saas/modulos', { headers: headers() })
+    ]);
+    if (rPlanos.status === 401) { location.href = 'login.html'; return; }
+    planosData = await rPlanos.json();
+    _modulosCatalog = rMods.ok ? await rMods.json() : [];
+
+    // Se não há módulos, faz seed automático
+    if (!_modulosCatalog.length) {
+      await fetch('/api/saas/modulos/seed', { method: 'POST', headers: headers() });
+      const r2 = await fetch('/api/saas/modulos', { headers: headers() });
+      _modulosCatalog = r2.ok ? await r2.json() : [];
+    }
+
     renderPlanos(planosData);
+    // Carrega módulos de cada plano
+    const hiddenSlugs = new Set(['eden', 'edon']);
+    for (const p of (planosData || [])) {
+      if (!hiddenSlugs.has(String(p.slug||'').toLowerCase())) {
+        loadPlanModules(p.slug);
+      }
+    }
   } catch (e) {
     toast('Erro ao carregar planos.', 'error');
   }
+}
+
+async function loadPlanModules(slug) {
+  const el = document.getElementById('modules-' + slug);
+  if (!el) return;
+  try {
+    const r = await fetch('/api/saas/planos/' + slug + '/modulos', { headers: headers() });
+    const mods = r.ok ? await r.json() : [];
+    renderModuleCheckboxes(slug, mods);
+  } catch (_) {
+    el.innerHTML = '<span style="font-size:12px;color:#ef4444">Erro ao carregar módulos.</span>';
+  }
+}
+
+function renderModuleCheckboxes(slug, mods) {
+  const el = document.getElementById('modules-' + slug);
+  if (!el) return;
+  if (!mods.length) {
+    el.innerHTML = '<span style="font-size:12px;color:var(--muted);grid-column:1/-1">Nenhum módulo cadastrado. <button onclick="seedModulos()" class="btn btn-sm btn-outline" style="margin-left:6px">Inicializar</button></span>';
+    return;
+  }
+  el.innerHTML = mods.map(m => {
+    const checked = m.effective_enabled || m.enabled || m.plan_enabled;
+    const cls = checked ? 'mod-label checked' : 'mod-label';
+    return `<label class="${cls}" id="mod-label-${slug}-${m.slug}" onclick="toggleModLabel(this)">
+      <input type="checkbox" id="mod-${slug}-${m.slug}" value="${m.slug}" ${checked?'checked':''} onchange="syncModLabel('${slug}','${m.slug}')">
+      <i class="${m.icon||'fa-solid fa-puzzle-piece'}"></i>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(m.nome)}</span>
+    </label>`;
+  }).join('');
+}
+
+function toggleModLabel(label) {
+  const cb = label.querySelector('input[type=checkbox]');
+  if (cb) label.classList.toggle('checked', cb.checked);
+}
+
+function syncModLabel(slug, modSlug) {
+  const cb = document.getElementById('mod-' + slug + '-' + modSlug);
+  const label = document.getElementById('mod-label-' + slug + '-' + modSlug);
+  if (cb && label) label.classList.toggle('checked', cb.checked);
+}
+
+function collectModules(slug) {
+  const el = document.getElementById('modules-' + slug);
+  if (!el) return [];
+  const checks = Array.from(el.querySelectorAll('input[type=checkbox]'));
+  return checks.map(cb => ({ modulo_slug: cb.value, ativo: cb.checked }));
+}
+
+async function seedModulos() {
+  await fetch('/api/saas/modulos/seed', { method: 'POST', headers: headers() });
+  toast('Módulos inicializados!', 'success');
+  loadPlanos();
 }
 
 function renderPlanos(planos) {
@@ -236,8 +319,14 @@ function planCard(p) {
           <option value="0" ${!p.modulo_app_membro?'selected':''}>Não incluso</option>
         </select>
       </div>
+      <div class="form-row modules-section">
+        <div class="section-divider">Módulos do Painel <span style="font-size:10px;font-weight:400;text-transform:none;color:#94a3b8">(controla o que o cliente acessa)</span></div>
+        <div class="modules-grid" id="modules-${p.slug}">
+          <span style="font-size:12px;color:var(--muted);grid-column:1/-1"><i class="fa-solid fa-spinner fa-spin"></i> Carregando módulos...</span>
+        </div>
+      </div>
       <div class="form-row">
-        <label>Benefícios <small style="font-weight:400;text-transform:none">(arraste para reordenar)</small></label>
+        <label>Benefícios <small style="font-weight:400;text-transform:none">(texto exibido na página pública)</small></label>
         <div class="features-list" id="feats-${p.slug}">${featureRows}</div>
         <button class="btn-add-feat" onclick="addFeat('${p.slug}')"><i class="fa-solid fa-plus"></i> Adicionar benefício</button>
       </div>
@@ -288,14 +377,25 @@ async function savePlano(slug) {
     features: collectFeats(slug)
   };
   try {
-    const r = await fetch('/api/saas/planos/' + slug, {
-      method: 'PUT', headers: headers(), body: JSON.stringify(body)
-    });
-    if (!r.ok) throw new Error(await r.text());
+    const [rPlano, rMods] = await Promise.all([
+      fetch('/api/saas/planos/' + slug, {
+        method: 'PUT', headers: headers(), body: JSON.stringify(body)
+      }),
+      fetch('/api/saas/planos/' + slug + '/modulos', {
+        method: 'PUT', headers: headers(),
+        body: JSON.stringify({ modules: collectModules(slug) })
+      })
+    ]);
+    if (!rPlano.ok) throw new Error(await rPlano.text());
     const saved = document.getElementById('saved-' + slug);
     saved.style.opacity = '1';
     setTimeout(() => { saved.style.opacity = '0'; }, 2500);
-    toast('Plano "' + body.nome + '" salvo com sucesso!', 'success');
+    // Atualiza os checkboxes com o resultado salvo
+    if (rMods.ok) {
+      const updatedMods = await rMods.json();
+      renderModuleCheckboxes(slug, updatedMods);
+    }
+    toast('Plano "' + body.nome + '" salvo! Módulos atualizados.', 'success');
   } catch (e) {
     toast('Erro ao salvar: ' + e.message, 'error');
   }

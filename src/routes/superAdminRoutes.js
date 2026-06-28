@@ -15,6 +15,7 @@ const {
     listSaasAssinaturas,
     markSaasAssinaturaPaga,
     listSaasModulos,
+    seedSaasModulos,
     createSaasModulo,
     updateSaasModulo,
     getPlanoModulos,
@@ -86,6 +87,7 @@ router.put('/api/saas/assinaturas/:id/pago', ...isSuperAdmin, markSaasAssinatura
 
 // Catálogo de Módulos
 router.get('/api/saas/modulos', ...isSuperAdmin, listSaasModulos);
+router.post('/api/saas/modulos/seed', ...isSuperAdmin, seedSaasModulos);
 router.post('/api/saas/modulos', ...isSuperAdmin, createSaasModulo);
 router.patch('/api/saas/modulos/:slug', ...isSuperAdmin, updateSaasModulo);
 

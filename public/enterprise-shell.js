@@ -115,6 +115,7 @@
         'planos_editar.html': 'planos',
         'app_membro.html': 'app_membro',
         'dashboard_membro.html': 'app_membro',
+        'painel_app_membro.html': 'app_membro',
         'estudo.html': 'estudo',
         'planos-estudo.html': 'estudo',
         'plano-detalhe.html': 'estudo',
@@ -1017,7 +1018,45 @@
         }
 
         if (!canUseFeature(user, requiredFeature)) {
-            window.location.href = 'dashboard.html';
+            // Mostra modal de upgrade em vez de redirecionar
+            ensureLockStyles();
+            ensureUpgradeModal();
+            const featureLabelMap = {
+                whatsapp: 'Módulo de WhatsApp',
+                autocadastro: 'Aprovação de Cadastro',
+                portaria_qr: 'Portaria QR Code',
+                telao: 'Telão de Visitantes',
+                igrejas: 'Congregações e Outras Igrejas',
+                missionarios: 'Missionários',
+                pagamentos: 'Links de Pagamento',
+                financeiro: 'Módulo Financeiro',
+                app_membro: 'App do Membro',
+                estudo: 'Estudo Bíblico',
+                visitantes: 'Módulo de Visitantes',
+                criancas: 'Crianças / EBD',
+                oracoes: 'Orações'
+            };
+            const resourceName = featureLabelMap[requiredFeature] || fileName.replace('.html', '');
+            // Bloqueia o conteúdo da página
+            const main = document.querySelector('main.enterprise-main') || document.querySelector('main.main-content');
+            if (main) {
+                main.style.filter = 'blur(4px)';
+                main.style.pointerEvents = 'none';
+                main.style.userSelect = 'none';
+            }
+            // Abre o modal após o shell renderizar
+            setTimeout(() => openUpgradeModal(resourceName, requiredFeature), 100);
+            // Ao fechar o modal, volta ao dashboard
+            const modal = document.getElementById('ldfpUpgradeModal');
+            if (modal) {
+                modal.addEventListener('click', function handler(e) {
+                    const close = e.target === modal || e.target?.dataset?.upgradeClose === 'true';
+                    if (close) {
+                        modal.removeEventListener('click', handler);
+                        window.location.href = 'dashboard.html';
+                    }
+                }, { once: false });
+            }
         }
     }
 

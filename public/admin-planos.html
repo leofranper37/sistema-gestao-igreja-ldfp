@@ -56,7 +56,7 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
 .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}.status-dot.on{background:var(--green)}.status-dot.off{background:var(--red)}
 .saved-msg{font-size:12px;color:var(--green);font-weight:600;opacity:0;transition:.3s;margin-left:auto}
 .modules-section{margin-top:4px}
-.modules-grid{display:flex;flex-direction:column;gap:3px;margin-top:6px;max-height:320px;overflow-y:auto;padding-right:2px}
+.modules-grid{display:flex;flex-direction:column;gap:3px;margin-top:6px;max-height:480px;overflow-y:auto;padding-right:2px}
 .modules-grid::-webkit-scrollbar{width:4px}.modules-grid::-webkit-scrollbar-track{background:#f1f5f9;border-radius:4px}.modules-grid::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
 .mod-label{display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:#fff;transition:.15s;user-select:none;min-width:0}
 .mod-label:hover{border-color:#93c5fd;background:#eff6ff}
@@ -183,27 +183,51 @@ const token = () => sessionStorage.getItem('token') || localStorage.getItem('tok
 const headers = () => ({ 'Content-Type':'application/json', Authorization: 'Bearer ' + token() });
 
 let planosData = [];
-let _modulosCatalog = [];
+
+// Lista canônica dos 32 módulos — sempre exibidos, independente do banco
+const STANDARD_MODULES_UI = [
+  { slug:'membros',            nome:'Membros (Lista e Cadastro)',    icon:'fa-solid fa-users',                group:'Secretaria' },
+  { slug:'cargos',             nome:'Cargos e Situações',            icon:'fa-solid fa-briefcase',            group:'Secretaria' },
+  { slug:'historico-pastoral', nome:'Histórico Pastoral',            icon:'fa-solid fa-book-bible',           group:'Secretaria' },
+  { slug:'grupos',             nome:'Grupos e Células',              icon:'fa-solid fa-people-group',         group:'Secretaria' },
+  { slug:'escalas',            nome:'Escalas de Culto',              icon:'fa-solid fa-calendar-check',       group:'Secretaria' },
+  { slug:'ebd',                nome:'EBD (Alunos, Turmas e Grades)', icon:'fa-solid fa-graduation-cap',       group:'Secretaria' },
+  { slug:'batismos',           nome:'Batismos',                      icon:'fa-solid fa-water',                group:'Secretaria' },
+  { slug:'agenda',             nome:'Agenda',                        icon:'fa-solid fa-calendar-days',        group:'Secretaria' },
+  { slug:'outras-igrejas',     nome:'Outras Igrejas',                icon:'fa-solid fa-globe',                group:'Secretaria' },
+  { slug:'missionarios',       nome:'Missionários',                  icon:'fa-solid fa-person-rays',          group:'Secretaria' },
+  { slug:'visitantes',         nome:'Visitantes e Acompanhamento',   icon:'fa-solid fa-user-plus',            group:'Secretaria' },
+  { slug:'criancas',           nome:'Crianças',                      icon:'fa-solid fa-baby',                 group:'Secretaria' },
+  { slug:'oracoes',            nome:'Orações e Pedidos',             icon:'fa-solid fa-hands-praying',        group:'Secretaria' },
+  { slug:'novidades',          nome:'Novidades / Comunicados',       icon:'fa-solid fa-newspaper',            group:'Secretaria' },
+  { slug:'whatsapp',           nome:'Comunicação WhatsApp',          icon:'fa-brands fa-whatsapp',            group:'Secretaria' },
+  { slug:'autocadastro',       nome:'Aprovação de Cadastro Online',  icon:'fa-solid fa-user-check',           group:'Secretaria' },
+  { slug:'portaria-qr',        nome:'Portaria / Check-in QR',        icon:'fa-solid fa-qrcode',               group:'Secretaria' },
+  { slug:'telao',              nome:'Telão de Visitantes',           icon:'fa-solid fa-display',              group:'Secretaria' },
+  { slug:'estudo-biblico',     nome:'Bíblia, Devocionais e Planos', icon:'fa-solid fa-book-bible',           group:'Ensino' },
+  { slug:'dizimos',            nome:'Dízimos & Ofertas',             icon:'fa-solid fa-coins',                group:'Tesouraria' },
+  { slug:'caixa',              nome:'Caixa',                         icon:'fa-solid fa-cash-register',        group:'Tesouraria' },
+  { slug:'bancos',             nome:'Bancos',                        icon:'fa-solid fa-building-columns',     group:'Tesouraria' },
+  { slug:'pagamentos',         nome:'Links de Pagamento',            icon:'fa-solid fa-credit-card',          group:'Tesouraria' },
+  { slug:'contas-pagar',       nome:'Contas a Pagar',                icon:'fa-solid fa-file-invoice-dollar',  group:'Tesouraria' },
+  { slug:'recibos',            nome:'Recibos',                       icon:'fa-solid fa-receipt',              group:'Tesouraria' },
+  { slug:'transferencias',     nome:'Transferências',                icon:'fa-solid fa-right-left',           group:'Tesouraria' },
+  { slug:'contabilidade',      nome:'Plano de Contas e Lançamentos', icon:'fa-solid fa-scale-balanced',       group:'Contabilidade' },
+  { slug:'graficos',           nome:'Gráficos',                      icon:'fa-solid fa-chart-bar',            group:'Contabilidade' },
+  { slug:'relatorios',         nome:'Relatórios',                    icon:'fa-solid fa-file-lines',           group:'Contabilidade' },
+  { slug:'app-membro',         nome:'App do Membro',                 icon:'fa-solid fa-mobile-screen-button', group:'App' },
+];
 
 async function loadPlanos() {
   try {
-    const [rPlanos, rMods] = await Promise.all([
-      fetch('/api/saas/planos', { headers: headers() }),
-      fetch('/api/saas/modulos', { headers: headers() })
-    ]);
+    const rPlanos = await fetch('/api/saas/planos', { headers: headers() });
     if (rPlanos.status === 401) { location.href = 'login.html'; return; }
     planosData = await rPlanos.json();
-    _modulosCatalog = rMods.ok ? await rMods.json() : [];
 
-    // Se não há módulos, faz seed automático
-    if (!_modulosCatalog.length) {
-      await fetch('/api/saas/modulos/seed', { method: 'POST', headers: headers() });
-      const r2 = await fetch('/api/saas/modulos', { headers: headers() });
-      _modulosCatalog = r2.ok ? await r2.json() : [];
-    }
+    // Garante que os módulos padrão existem no banco (idempotente)
+    fetch('/api/saas/modulos/seed', { method: 'POST', headers: headers() }).catch(() => {});
 
     renderPlanos(planosData);
-    // Carrega módulos de cada plano
     const hiddenSlugs = new Set(['eden', 'edon']);
     for (const p of (planosData || [])) {
       if (!hiddenSlugs.has(String(p.slug||'').toLowerCase())) {
@@ -230,42 +254,24 @@ async function loadPlanModules(slug) {
 function renderModuleCheckboxes(slug, mods) {
   const el = document.getElementById('modules-' + slug);
   if (!el) return;
-  if (!mods.length) {
-    el.innerHTML = '<span style="font-size:12px;color:var(--muted)">Nenhum módulo cadastrado. <button onclick="seedModulos()" class="btn btn-outline" style="padding:4px 10px;font-size:11px;margin-left:6px">Inicializar</button></span>';
-    return;
-  }
 
-  const GROUP_ORDER = ['Secretaria', 'Ensino', 'Tesouraria', 'Contabilidade', 'App'];
-  const GROUP_BY_FEATURE = {
-    membros:'Secretaria', cargos:'Secretaria', historico_pastoral:'Secretaria',
-    grupos:'Secretaria', escalas:'Secretaria', ebd:'Secretaria',
-    batismos:'Secretaria', agenda:'Secretaria', outras_igrejas:'Secretaria',
-    missionarios:'Secretaria', visitantes:'Secretaria', criancas:'Secretaria',
-    oracoes:'Secretaria', novidades:'Secretaria', whatsapp:'Secretaria',
-    autocadastro:'Secretaria', portaria_qr:'Secretaria', telao:'Secretaria',
-    estudo:'Ensino',
-    dizimos:'Tesouraria', caixa:'Tesouraria', bancos:'Tesouraria',
-    pagamentos:'Tesouraria', contas_pagar:'Tesouraria', recibos:'Tesouraria',
-    transferencias:'Tesouraria',
-    contabilidade:'Contabilidade', graficos:'Contabilidade', relatorios:'Contabilidade',
-    app_membro:'App'
-  };
-
-  // Agrupar módulos
-  const groups = {};
-  const ungrouped = [];
-  mods.forEach(m => {
-    const g = GROUP_BY_FEATURE[m.feature_key];
-    if (g) { (groups[g] = groups[g] || []).push(m); }
-    else { ungrouped.push(m); }
+  // Monta mapa de estado vindo do banco (slug → boolean)
+  const enabledMap = new Map();
+  (mods || []).forEach(m => {
+    const on = m.effective_enabled ?? m.enabled ?? m.plan_enabled ?? false;
+    enabledMap.set(m.slug, !!on);
   });
 
+  const GROUP_ORDER = ['Secretaria', 'Ensino', 'Tesouraria', 'Contabilidade', 'App'];
+  const groups = {};
+  STANDARD_MODULES_UI.forEach(m => { (groups[m.group] = groups[m.group] || []).push(m); });
+
   function modHtml(m) {
-    const checked = m.effective_enabled || m.enabled || m.plan_enabled;
+    const checked = enabledMap.get(m.slug) || false;
     const cls = checked ? 'mod-label checked' : 'mod-label';
     return `<label class="${cls}" id="mod-label-${slug}-${m.slug}" onclick="toggleModLabel(this)">
       <input type="checkbox" id="mod-${slug}-${m.slug}" value="${m.slug}" ${checked ? 'checked' : ''}>
-      <i class="${m.icon || 'fa-solid fa-puzzle-piece'}"></i>
+      <i class="${m.icon}"></i>
       <span>${m.nome}</span>
     </label>`;
   }
@@ -277,10 +283,6 @@ function renderModuleCheckboxes(slug, mods) {
     html += `<div class="mod-group-header">${groupName}</div>`;
     items.forEach(m => { html += modHtml(m); });
   });
-  if (ungrouped.length) {
-    html += `<div class="mod-group-header">Outros</div>`;
-    ungrouped.forEach(m => { html += modHtml(m); });
-  }
 
   el.innerHTML = html;
 }
@@ -366,9 +368,13 @@ function planCard(p) {
         </select>
       </div>
       <div class="form-row modules-section">
-        <div class="section-divider">Módulos do Painel <span style="font-size:10px;font-weight:400;text-transform:none;color:#94a3b8">(controla o que o cliente acessa)</span></div>
+        <div class="section-divider">Módulos do Painel</div>
+        <p style="font-size:11px;color:var(--muted);margin:4px 0 8px;line-height:1.5">
+          <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> <strong>Marcado</strong> = cliente tem acesso &nbsp;|&nbsp;
+          <i class="fa-solid fa-lock" style="color:#f59e0b"></i> <strong>Desmarcado</strong> = aparece no sidebar com cadeado + mensagem de upgrade
+        </p>
         <div class="modules-grid" id="modules-${p.slug}">
-          <span style="font-size:12px;color:var(--muted);grid-column:1/-1"><i class="fa-solid fa-spinner fa-spin"></i> Carregando módulos...</span>
+          <span style="font-size:12px;color:var(--muted)"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</span>
         </div>
       </div>
       <div class="form-row">

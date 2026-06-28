@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
@@ -8,216 +8,334 @@
   <style>
     :root {
       --bg: #020617;
-      --bg-soft: #0b1220;
-      --card: #020617;
+      --card: #0d1929;
+      --card-featured: #0f1f35;
       --border: #1e293b;
-      --brand: #0f766e;
-      --brand-soft: #99f6e4;
+      --border-featured: #f97316;
       --accent: #f97316;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --shadow-soft: 0 18px 40px rgba(15,23,42,0.65);
+      --accent-soft: rgba(249,115,22,0.15);
+      --green: #22c55e;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --muted-soft: #94a3b8;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(ellipse at top, #0f172a 0%, #020617 60%, #000 100%);
       color: var(--text);
       min-height: 100vh;
     }
 
-    .page {
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 24px 16px 40px;
-    }
-
-    header {
+    /* ── HEADER ─────────────────────────────────────────────── */
+    .page-header {
       text-align: center;
-      margin-bottom: 28px;
-    }
-    header h1 {
-      font-size: 1.9rem;
-      margin-bottom: 6px;
-    }
-    header p {
-      color: var(--muted);
-      font-size: 0.95rem;
+      padding: 48px 16px 36px;
+      position: relative;
     }
 
-    .badge {
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .brand-logo {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 12px rgba(249,115,22,0.4));
+    }
+
+    .brand-leao {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid rgba(249,115,22,0.5);
+      box-shadow: 0 0 24px rgba(249,115,22,0.2);
+    }
+
+    .page-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(15,118,110,0.14);
+      gap: 7px;
+      background: rgba(249,115,22,0.1);
+      border: 1px solid rgba(249,115,22,0.25);
       border-radius: 999px;
-      padding: 4px 12px;
-      font-size: 0.75rem;
-      color: var(--brand-soft);
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      color: #fdba74;
+      margin-bottom: 16px;
+      letter-spacing: 0.3px;
+    }
+
+    .page-title {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      line-height: 1.2;
       margin-bottom: 10px;
+      background: linear-gradient(135deg, #f1f5f9, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-subtitle {
+      font-size: 0.95rem;
+      color: var(--muted-soft);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── UPGRADE NOTICE ─────────────────────────────────────── */
+    .upgrade-notice {
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.35);
+      color: #fde68a;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      text-align: center;
+      margin: 0 16px 28px;
+      line-height: 1.5;
+    }
+
+    /* ── PLANS GRID ─────────────────────────────────────────── */
+    .plans-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 16px 60px;
     }
 
     .plans-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      align-items: start;
     }
 
+    /* ── PLAN CARD ──────────────────────────────────────────── */
     .plan-card {
-      background: linear-gradient(145deg,#020617,#050816);
-      border-radius: var(--radius-lg);
+      background: var(--card);
       border: 1px solid var(--border);
-      box-shadow: var(--shadow-soft);
-      padding: 18px 18px 20px;
-      position: relative;
+      border-radius: 18px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      min-height: 260px;
+      transition: transform .18s, box-shadow .18s;
     }
 
-    .plan-card.highlight {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(249,115,22,0.4), var(--shadow-soft);
+    .plan-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 24px 48px rgba(0,0,0,0.5);
     }
 
-    .plan-tag {
-      position: absolute;
-      top: 10px;
-      right: 14px;
+    .plan-card.featured {
+      border-color: var(--border-featured);
+      background: var(--card-featured);
+      box-shadow: 0 0 0 1px rgba(249,115,22,0.2), 0 20px 60px rgba(249,115,22,0.08);
+    }
+
+    .plan-card-top {
+      padding: 24px 24px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .plan-popular-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--accent);
+      color: #0b1120;
       font-size: 0.7rem;
-      padding: 4px 9px;
+      font-weight: 800;
+      padding: 3px 10px;
       border-radius: 999px;
-      background: rgba(15,23,42,0.8);
-      border: 1px solid rgba(148,163,184,0.6);
-      color: var(--muted);
-    }
-
-    .plan-header {
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       margin-bottom: 10px;
     }
 
     .plan-name {
-      font-size: 1.2rem;
-      font-weight: 700;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #f8fafc;
       margin-bottom: 4px;
+    }
+
+    .plan-subtitle {
+      font-size: 0.85rem;
+      color: var(--muted-soft);
+      margin-bottom: 16px;
+    }
+
+    .plan-price-block {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .plan-price-currency {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--muted-soft);
+    }
+
+    .plan-price-value {
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: #f8fafc;
+      line-height: 1;
+    }
+
+    .plan-price-period {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .plan-price-annual {
+      font-size: 0.78rem;
+      color: #22c55e;
+      margin-top: 4px;
+    }
+
+    /* ── FEATURES LIST ──────────────────────────────────────── */
+    .plan-features {
+      padding: 18px 24px;
+      flex: 1;
+    }
+
+    .features-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin: 14px 0 6px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .plan-subtitle {
-      font-size: 0.85rem;
-      color: var(--muted);
+    .features-section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.06);
     }
 
-    .plan-price {
-      margin: 12px 0;
-    }
-    .plan-price-main {
-      font-size: 1.7rem;
-      font-weight: 700;
-    }
-    .plan-price-main small {
-      font-size: 0.9rem;
-      color: var(--muted);
-      font-weight: 400;
-      margin-left: 4px;
-    }
-    .plan-price-annual {
-      font-size: 0.8rem;
-      color: var(--brand-soft);
-    }
+    .features-section-label:first-child { margin-top: 0; }
 
-    .plan-features {
-      list-style: none;
-      margin: 12px 0 14px;
-      padding: 0;
-      flex-grow: 1;
-    }
-    .plan-features li {
-      font-size: 0.85rem;
-      margin-bottom: 6px;
+    .feat-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      color: var(--text);
-    }
-    .plan-features li i {
-      font-size: 0.7rem;
-      color: var(--brand-soft);
+      gap: 10px;
+      padding: 5px 0;
+      font-size: 0.875rem;
     }
 
-    .plan-footer {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 6px;
+    .feat-icon {
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+      font-size: 0.78rem;
+    }
+
+    .feat-icon.ok { color: var(--green); }
+    .feat-icon.no { color: #334155; }
+
+    .feat-text.no {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-color: #334155;
+    }
+
+    /* ── CTA ────────────────────────────────────────────────── */
+    .plan-cta-wrap {
+      padding: 20px 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
     }
 
     .plan-cta {
-      border: none;
-      border-radius: 999px;
-      cursor: pointer;
-      padding: 9px 14px;
-      font-size: 0.88rem;
-      font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      transition: background-color .15s, transform .08s;
+      gap: 8px;
+      width: 100%;
+      padding: 13px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .08s;
     }
+
     .plan-cta.primary {
       background: var(--accent);
       color: #0b1120;
     }
+
     .plan-cta.primary:hover {
       background: #ea580c;
       transform: translateY(-1px);
     }
-    .plan-cta.outline {
-      background: transparent;
-      color: var(--muted);
-      border: 1px solid var(--border);
-    }
-    .plan-cta.outline:hover {
-      border-color: var(--brand);
+
+    .plan-card.featured .plan-cta.primary {
+      box-shadow: 0 4px 20px rgba(249,115,22,0.4);
     }
 
-    .plan-note {
+    .plan-cta-note {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* ── FOOTER NOTE ────────────────────────────────────────── */
+    .page-footnote {
+      text-align: center;
       font-size: 0.78rem;
       color: var(--muted);
-      text-align: center;
+      margin-top: 8px;
+      padding: 0 16px;
     }
 
-    @media (max-width: 640px) {
-      header h1 { font-size: 1.5rem; }
-      .plan-card { min-height: 0; }
+    @media (max-width: 700px) {
+      .plans-grid { grid-template-columns: 1fr; }
+      .brand-leao { width: 60px; height: 60px; }
     }
   </style>
 </head>
 <body>
-<div class="page">
-  <header>
-    <div class="badge">
-      <i class="fa-solid fa-church"></i>
-      Planos pensados para a realidade da igreja local
+
+<div class="page-header">
+  <div class="brand-row">
+    <img src="logo.png" alt="LDFP" class="brand-logo" onerror="this.style.display='none'">
+    <img src="leao-cruz.jpg" alt="Leão e Cruz" class="brand-leao" onerror="this.style.display='none'">
+  </div>
+  <div class="page-badge">
+    <i class="fa-solid fa-church"></i>
+    Planos pensados para a realidade da igreja local
+  </div>
+  <h1 class="page-title">Escolha o plano ideal para sua igreja</h1>
+  <p class="page-subtitle">Do primeiro cadastro até a operação avançada, o LDFP cresce junto com sua igreja.</p>
+</div>
+
+<div class="plans-wrap">
+  <div class="plans-grid" id="plansGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)">
+      <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
     </div>
-    <h1>Escolha o plano ideal para sua igreja</h1>
-    <p>Do primeiro cadastro até a operação avançada, o LDFP cresce junto com sua igreja.</p>
-  </header>
-
-  <section class="plans-grid" id="plansGrid">
-  </section>
-
-  <p class="plan-note" style="margin-top:18px;">
-    Valores em reais (R$). Cobrança mensal ou anual. Você só será cobrado após concluir o cadastro da igreja.
-  </p>
+  </div>
+  <p class="page-footnote">Valores em reais (R$). Cobrança mensal ou anual. Você só será cobrado após concluir o cadastro da igreja.</p>
 </div>
 
 <script>
@@ -225,70 +343,153 @@
   const _isUpgradeMode = new URLSearchParams(window.location.search).get('upgrade') === '1';
 
   function esc(t) {
-    return String(t || '').replace(/[&<>"]/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[s]));
+    return String(t || '').replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+  }
+
+  function fmtPrice(v) {
+    return Number(v).toFixed(2).replace('.', ',');
+  }
+
+  // Modo upgrade: exibe aviso acima dos cards
+  if (_isUpgradeMode) {
+    const params = new URLSearchParams(window.location.search);
+    const featureNome = params.get('feature_nome') || '';
+    const notice = document.createElement('div');
+    notice.className = 'upgrade-notice';
+    const extra = featureNome ? ` — <strong>${esc(featureNome)}</strong>` : '';
+    notice.innerHTML = `<i class="fa-solid fa-lock" style="margin-right:8px;color:#f59e0b"></i>Este recurso${extra} não está disponível no seu plano atual. Faça upgrade para liberar o acesso.`;
+    document.querySelector('.plans-wrap').prepend(notice);
   }
 
   function renderPlanos(planos) {
     if (!Array.isArray(planos) || !planos.length) {
-      plansGrid.innerHTML = '<p style="color:#9ca3af;font-size:0.9rem;">Nenhum plano disponível no momento.</p>';
+      plansGrid.innerHTML = '<p style="color:var(--muted);font-size:0.9rem;text-align:center;grid-column:1/-1;padding:40px">Nenhum plano disponível no momento.</p>';
       return;
     }
 
     const destaqueSlug = 'betel';
 
+    // Constrói lista mestra de módulos (união de todos os planos)
+    const allModulesMap = new Map(); // slug -> { nome, icon }
+    planos.forEach(p => {
+      (Array.isArray(p.modules) ? p.modules : []).forEach(m => {
+        if (m.slug && !allModulesMap.has(m.slug)) {
+          allModulesMap.set(m.slug, { nome: m.nome || m.slug, icon: m.icon || 'fa-solid fa-puzzle-piece' });
+        }
+      });
+    });
+    const allModulesList = Array.from(allModulesMap.entries()).map(([slug, d]) => ({ slug, ...d }));
+
+    // Grupos de módulos para exibição
+    const MODULE_GROUPS = {
+      Secretaria: ['membros','cargos','historico-pastoral','grupos','escalas','ebd','batismos','agenda','outras-igrejas','missionarios','visitantes','criancas','oracoes','novidades','whatsapp','autocadastro','portaria-qr','telao'],
+      Ensino: ['estudo-biblico'],
+      Tesouraria: ['dizimos','caixa','bancos','pagamentos','contas-pagar','recibos','transferencias'],
+      Contabilidade: ['contabilidade','graficos','relatorios'],
+      App: ['app-membro']
+    };
+
+    // Agrupa módulos existentes por categoria
+    function groupModules(moduleList) {
+      const grouped = {};
+      const ungrouped = [];
+      moduleList.forEach(m => {
+        let found = false;
+        for (const [group, slugs] of Object.entries(MODULE_GROUPS)) {
+          if (slugs.includes(m.slug)) {
+            (grouped[group] = grouped[group] || []).push(m);
+            found = true;
+            break;
+          }
+        }
+        if (!found) ungrouped.push(m);
+      });
+      return { grouped, ungrouped };
+    }
+
     plansGrid.innerHTML = planos.map(p => {
-      // Itens fixos do plano (limites, suporte, etc.) vindos de saas_planos.features_json
+      const isFeatured = p.slug === destaqueSlug;
+      const planModuleSlugs = new Set((Array.isArray(p.modules) ? p.modules : []).map(m => m.slug));
+
       let featuresFixas = [];
       try { featuresFixas = JSON.parse(p.features_json || '[]'); } catch (_) {}
 
-      // Módulos dinâmicos criados via Fábrica de Inovações (saas_plano_modulos JOIN saas_modulos)
-      const modulosDinamicos = Array.isArray(p.modules) ? p.modules : [];
+      // Benefícios fixos (limites, suporte, etc.)
+      const fixasHtml = featuresFixas.length ? `
+        <div class="features-section-label">Incluído neste plano</div>
+        ${featuresFixas.map(f => `
+          <div class="feat-row">
+            <span class="feat-icon ok"><i class="fa-solid fa-check"></i></span>
+            <span class="feat-text">${esc(f)}</span>
+          </div>
+        `).join('')}
+      ` : '';
 
-      const featuresHtml = featuresFixas.map(f => `
-        <li><i class="fa-solid fa-check"></i> ${esc(f)}</li>
-      `).join('');
+      // Módulos agrupados com ✓/✗
+      let modulosHtml = '';
+      if (allModulesList.length) {
+        const { grouped, ungrouped } = groupModules(allModulesList);
+        const groupOrder = Object.keys(MODULE_GROUPS);
 
-      const modulosHtml = modulosDinamicos.map(m => `
-        <li><i class="${esc(m.icon || 'fa-puzzle-piece')}"></i> ${esc(m.nome)}</li>
-      `).join('');
+        groupOrder.forEach(groupName => {
+          const items = grouped[groupName];
+          if (!items || !items.length) return;
+          modulosHtml += `<div class="features-section-label">${groupName}</div>`;
+          items.forEach(m => {
+            const ok = planModuleSlugs.has(m.slug);
+            modulosHtml += `
+              <div class="feat-row">
+                <span class="feat-icon ${ok ? 'ok' : 'no'}">
+                  <i class="fa-solid ${ok ? 'fa-check' : 'fa-xmark'}"></i>
+                </span>
+                <span class="feat-text ${ok ? '' : 'no'}">${esc(m.nome)}</span>
+              </div>`;
+          });
+        });
+
+        if (ungrouped.length) {
+          modulosHtml += `<div class="features-section-label">Outros</div>`;
+          ungrouped.forEach(m => {
+            const ok = planModuleSlugs.has(m.slug);
+            modulosHtml += `
+              <div class="feat-row">
+                <span class="feat-icon ${ok ? 'ok' : 'no'}">
+                  <i class="fa-solid ${ok ? 'fa-check' : 'fa-xmark'}"></i>
+                </span>
+                <span class="feat-text ${ok ? '' : 'no'}">${esc(m.nome)}</span>
+              </div>`;
+          });
+        }
+      }
+
+      const ctaLabel = _isUpgradeMode ? `Fazer upgrade para ${esc(p.nome)}` : `Começar com ${esc(p.nome)}`;
 
       return `
-        <article class="plan-card ${p.slug === destaqueSlug ? 'highlight' : ''}">
-          <div class="plan-header">
-            <div class="plan-name">
-              ${esc(p.nome)}
-              ${p.slug === destaqueSlug ? '<span style="font-size:0.7rem;background:rgba(248,250,252,0.08);padding:2px 8px;border-radius:999px;color:#fed7aa;">Mais escolhido</span>' : ''}
-            </div>
-            <div class="plan-subtitle">${esc(p.subtitulo || '')}</div>
+      <article class="plan-card ${isFeatured ? 'featured' : ''}">
+        <div class="plan-card-top">
+          ${isFeatured ? '<div class="plan-popular-badge"><i class="fa-solid fa-star"></i> Mais escolhido</div>' : ''}
+          <div class="plan-name">${esc(p.nome)}</div>
+          <div class="plan-subtitle">${esc(p.subtitulo || '')}</div>
+          <div class="plan-price-block">
+            <span class="plan-price-currency">R$</span>
+            <span class="plan-price-value">${fmtPrice(p.preco_mensal).replace(',00', '').split(',')[0]}<span style="font-size:1.1rem;font-weight:600;color:var(--muted-soft)">,${fmtPrice(p.preco_mensal).split(',')[1]}</span></span>
+            <span class="plan-price-period">/mês</span>
           </div>
+          <div class="plan-price-annual">ou R$ ${fmtPrice(p.preco_anual)} /ano</div>
+        </div>
 
-          <div class="plan-price">
-            <div class="plan-price-main">
-              R$ ${Number(p.preco_mensal).toFixed(2).replace('.', ',')}
-              <small>/mês</small>
-            </div>
-            <div class="plan-price-annual">
-              ou R$ ${Number(p.preco_anual).toFixed(2).replace('.', ',')} /ano
-            </div>
-          </div>
+        <div class="plan-features">
+          ${fixasHtml}
+          ${modulosHtml}
+        </div>
 
-          <ul class="plan-features">
-            ${featuresHtml}
-            ${modulosHtml}
-          </ul>
-
-          <div class="plan-footer">
-            <button class="plan-cta primary" onclick="assinarPlano('${esc(p.slug)}')">
-              <span>Começar com ${esc(p.nome)}</span>
-              <i class="fa-solid fa-arrow-right"></i>
-            </button>
-            ${_isUpgradeMode ? '' : `<button class="plan-cta outline" onclick="assinarPlano('${esc(p.slug)}')">
-              <i class="fa-solid fa-bolt"></i>
-              Testar agora, configurar depois
-            </button>`}
-          </div>
-        </article>
-      `;
+        <div class="plan-cta-wrap">
+          <button class="plan-cta primary" onclick="assinarPlano('${esc(p.slug)}')">
+            ${ctaLabel} <i class="fa-solid fa-arrow-right"></i>
+          </button>
+          <p class="plan-cta-note">7 dias grátis para testar</p>
+        </div>
+      </article>`;
     }).join('');
   }
 
@@ -298,8 +499,8 @@
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data = await resp.json();
       renderPlanos(Array.isArray(data) ? data : []);
-    } catch (_err) {
-      plansGrid.innerHTML = '<p style="color:#9ca3af;font-size:0.9rem;">Não foi possível carregar os planos. Tente novamente em instantes.</p>';
+    } catch (_) {
+      plansGrid.innerHTML = '<p style="color:var(--muted);text-align:center;grid-column:1/-1;padding:40px">Não foi possível carregar os planos. Tente novamente em instantes.</p>';
     }
   }
 
@@ -312,18 +513,6 @@
   }
 
   carregarPlanos();
-
-  // Modo upgrade: exibe aviso acima do grid de planos
-  if (_isUpgradeMode) {
-    const params = new URLSearchParams(window.location.search);
-    const featureNome = params.get('feature_nome') || '';
-    const notice = document.createElement('div');
-    notice.style.cssText = 'background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#fde68a;padding:14px 20px;border-radius:12px;font-size:0.88rem;text-align:center;margin-bottom:24px;line-height:1.5;';
-    const extra = featureNome ? ` — <strong>${esc(featureNome)}</strong>` : '';
-    notice.innerHTML = `<i class="fa-solid fa-lock" style="margin-right:8px;color:#f59e0b"></i>Este recurso${extra} não está disponível no seu plano atual. Faça upgrade para liberar o acesso.`;
-    const grid = document.getElementById('plansGrid');
-    if (grid) grid.parentNode.insertBefore(notice, grid);
-  }
 </script>
 </body>
 </html>

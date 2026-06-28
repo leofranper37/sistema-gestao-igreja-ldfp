@@ -381,7 +381,7 @@
                     <p><span class="ldfp-upgrade-resource" id="ldfpUpgradeResource">Este módulo</span> não está incluído no plano da sua igreja.</p>
                     <p>Solicite ativação no painel administrativo ou faça upgrade para liberar este recurso.</p>
                     <div class="ldfp-upgrade-actions">
-                        <a href="assinar.html" class="ldfp-upgrade-btn primary" id="ldfpUpgradePlansLink">Ver planos</a>
+                        <a href="planos.html" class="ldfp-upgrade-btn primary" id="ldfpUpgradePlansLink">Ver planos e fazer upgrade</a>
                         <a href="mailto:contato@ldfp.com.br?subject=Upgrade%20de%20plano%20-%20LDFP" class="ldfp-upgrade-btn">Falar com suporte</a>
                         <button type="button" class="ldfp-upgrade-btn" data-upgrade-close="true">Fechar</button>
                     </div>
@@ -435,7 +435,7 @@
                 feature_nome: resourceName || 'modulo',
                 plano: suggestedPlan
             });
-            plansLink.href = `assinar.html?${query.toString()}`;
+            plansLink.href = `planos.html?${query.toString()}`;
         }
 
         modal.classList.add('is-open');
@@ -973,7 +973,10 @@
         sidebar.querySelectorAll('a[data-locked="true"]').forEach((anchor) => {
             anchor.addEventListener('click', function (event) {
                 event.preventDefault();
-                showLockedFeatureMessage(anchor);
+                const feature = String(anchor.dataset.feature || '').trim();
+                const label = String(anchor.dataset.label || '').trim();
+                const query = new URLSearchParams({ upgrade: '1', origem: 'menu_bloqueado', feature, feature_nome: label });
+                window.location.href = 'planos.html?' + query.toString();
             });
         });
 
@@ -1046,7 +1049,7 @@
             }
             // Abre o modal após o shell renderizar
             setTimeout(() => openUpgradeModal(resourceName, requiredFeature), 100);
-            // Ao fechar o modal, volta ao dashboard
+            // Ao fechar o modal → volta ao dashboard; "Ver planos" → planos.html
             const modal = document.getElementById('ldfpUpgradeModal');
             if (modal) {
                 modal.addEventListener('click', function handler(e) {
@@ -1056,6 +1059,12 @@
                         window.location.href = 'dashboard.html';
                     }
                 }, { once: false });
+                // Garante que o link "Ver planos" aponta para planos.html com contexto
+                const plansBtn = modal.querySelector('#ldfpUpgradePlansLink');
+                if (plansBtn) {
+                    const q = new URLSearchParams({ upgrade: '1', origem: 'pagina_bloqueada', feature: requiredFeature });
+                    plansBtn.href = 'planos.html?' + q.toString();
+                }
             }
         }
     }

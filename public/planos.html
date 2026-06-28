@@ -315,9 +315,12 @@
 
   // Modo upgrade: exibe aviso acima do grid de planos
   if (_isUpgradeMode) {
+    const params = new URLSearchParams(window.location.search);
+    const featureNome = params.get('feature_nome') || '';
     const notice = document.createElement('div');
-    notice.style.cssText = 'background:rgba(15,118,110,.13);border:1px solid rgba(15,118,110,.35);color:#99f6e4;padding:11px 16px;border-radius:10px;font-size:0.85rem;text-align:center;margin-bottom:20px;';
-    notice.innerHTML = '<i class="fa-solid fa-info-circle" style="margin-right:6px"></i><strong>Upgrade de plano:</strong> o período de teste já foi utilizado. Clique em "Começar com…" para contratar diretamente.';
+    notice.style.cssText = 'background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#fde68a;padding:14px 20px;border-radius:12px;font-size:0.88rem;text-align:center;margin-bottom:24px;line-height:1.5;';
+    const extra = featureNome ? ` — <strong>${esc(featureNome)}</strong>` : '';
+    notice.innerHTML = `<i class="fa-solid fa-lock" style="margin-right:8px;color:#f59e0b"></i>Este recurso${extra} não está disponível no seu plano atual. Faça upgrade para liberar o acesso.`;
     const grid = document.getElementById('plansGrid');
     if (grid) grid.parentNode.insertBefore(notice, grid);
   }

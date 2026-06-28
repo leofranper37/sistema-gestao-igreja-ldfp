@@ -369,43 +369,39 @@
 
     const destaqueSlug = 'betel';
 
-    // Constrói lista mestra de módulos (união de todos os planos)
-    const allModulesMap = new Map(); // slug -> { nome, icon }
-    planos.forEach(p => {
-      (Array.isArray(p.modules) ? p.modules : []).forEach(m => {
-        if (m.slug && !allModulesMap.has(m.slug)) {
-          allModulesMap.set(m.slug, { nome: m.nome || m.slug, icon: m.icon || 'fa-solid fa-puzzle-piece' });
-        }
-      });
-    });
-    const allModulesList = Array.from(allModulesMap.entries()).map(([slug, d]) => ({ slug, ...d }));
-
-    // Grupos de módulos para exibição
-    const MODULE_GROUPS = {
-      Secretaria: ['membros','cargos','historico-pastoral','grupos','escalas','ebd','batismos','agenda','outras-igrejas','missionarios','visitantes','criancas','oracoes','novidades','whatsapp','autocadastro','portaria-qr','telao'],
-      Ensino: ['estudo-biblico'],
-      Tesouraria: ['dizimos','caixa','bancos','pagamentos','contas-pagar','recibos','transferencias'],
-      Contabilidade: ['contabilidade','graficos','relatorios'],
-      App: ['app-membro']
-    };
-
-    // Agrupa módulos existentes por categoria
-    function groupModules(moduleList) {
-      const grouped = {};
-      const ungrouped = [];
-      moduleList.forEach(m => {
-        let found = false;
-        for (const [group, slugs] of Object.entries(MODULE_GROUPS)) {
-          if (slugs.includes(m.slug)) {
-            (grouped[group] = grouped[group] || []).push(m);
-            found = true;
-            break;
-          }
-        }
-        if (!found) ungrouped.push(m);
-      });
-      return { grouped, ungrouped };
-    }
+    // Lista canônica de todos os módulos do sistema — igual ao admin-planos.html
+    const ALL_MODULES = [
+      { slug:'membros',            nome:'Membros (Lista e Cadastro)',     group:'Secretaria' },
+      { slug:'cargos',             nome:'Cargos e Situações',             group:'Secretaria' },
+      { slug:'historico-pastoral', nome:'Histórico Pastoral',             group:'Secretaria' },
+      { slug:'grupos',             nome:'Grupos e Células',               group:'Secretaria' },
+      { slug:'escalas',            nome:'Escalas de Culto',               group:'Secretaria' },
+      { slug:'ebd',                nome:'EBD (Alunos, Turmas e Grades)',  group:'Secretaria' },
+      { slug:'batismos',           nome:'Batismos',                       group:'Secretaria' },
+      { slug:'agenda',             nome:'Agenda',                         group:'Secretaria' },
+      { slug:'outras-igrejas',     nome:'Outras Igrejas',                 group:'Secretaria' },
+      { slug:'missionarios',       nome:'Missionários',                   group:'Secretaria' },
+      { slug:'visitantes',         nome:'Visitantes e Acompanhamento',    group:'Secretaria' },
+      { slug:'criancas',           nome:'Crianças',                       group:'Secretaria' },
+      { slug:'oracoes',            nome:'Orações e Pedidos',              group:'Secretaria' },
+      { slug:'novidades',          nome:'Novidades / Comunicados',        group:'Secretaria' },
+      { slug:'whatsapp',           nome:'Comunicação WhatsApp',           group:'Secretaria' },
+      { slug:'autocadastro',       nome:'Aprovação de Cadastro Online',   group:'Secretaria' },
+      { slug:'portaria-qr',        nome:'Portaria / Check-in QR',         group:'Secretaria' },
+      { slug:'telao',              nome:'Telão de Visitantes',            group:'Secretaria' },
+      { slug:'estudo-biblico',     nome:'Bíblia, Devocionais e Planos',   group:'Ensino' },
+      { slug:'dizimos',            nome:'Dízimos & Ofertas',              group:'Tesouraria' },
+      { slug:'caixa',              nome:'Caixa',                          group:'Tesouraria' },
+      { slug:'bancos',             nome:'Bancos',                         group:'Tesouraria' },
+      { slug:'pagamentos',         nome:'Links de Pagamento',             group:'Tesouraria' },
+      { slug:'contas-pagar',       nome:'Contas a Pagar',                 group:'Tesouraria' },
+      { slug:'recibos',            nome:'Recibos',                        group:'Tesouraria' },
+      { slug:'transferencias',     nome:'Transferências',                 group:'Tesouraria' },
+      { slug:'contabilidade',      nome:'Plano de Contas e Lançamentos',  group:'Contabilidade' },
+      { slug:'graficos',           nome:'Gráficos',                       group:'Contabilidade' },
+      { slug:'relatorios',         nome:'Relatórios',                     group:'Contabilidade' },
+      { slug:'app-membro',         nome:'App do Membro',                  group:'App' },
+    ];
 
     plansGrid.innerHTML = planos.map(p => {
       const isFeatured = p.slug === destaqueSlug;
@@ -425,42 +421,27 @@
         `).join('')}
       ` : '';
 
-      // Módulos agrupados com ✓/✗
+      // Módulos agrupados com ✓/✗ — todos os 30 módulos do sistema
+      const groupOrder = ['Secretaria','Ensino','Tesouraria','Contabilidade','App'];
+      const grouped = {};
+      ALL_MODULES.forEach(m => { (grouped[m.group] = grouped[m.group] || []).push(m); });
+
       let modulosHtml = '';
-      if (allModulesList.length) {
-        const { grouped, ungrouped } = groupModules(allModulesList);
-        const groupOrder = Object.keys(MODULE_GROUPS);
-
-        groupOrder.forEach(groupName => {
-          const items = grouped[groupName];
-          if (!items || !items.length) return;
-          modulosHtml += `<div class="features-section-label">${groupName}</div>`;
-          items.forEach(m => {
-            const ok = planModuleSlugs.has(m.slug);
-            modulosHtml += `
-              <div class="feat-row">
-                <span class="feat-icon ${ok ? 'ok' : 'no'}">
-                  <i class="fa-solid ${ok ? 'fa-check' : 'fa-xmark'}"></i>
-                </span>
-                <span class="feat-text ${ok ? '' : 'no'}">${esc(m.nome)}</span>
-              </div>`;
-          });
+      groupOrder.forEach(groupName => {
+        const items = grouped[groupName];
+        if (!items || !items.length) return;
+        modulosHtml += `<div class="features-section-label">${groupName}</div>`;
+        items.forEach(m => {
+          const ok = planModuleSlugs.has(m.slug);
+          modulosHtml += `
+            <div class="feat-row">
+              <span class="feat-icon ${ok ? 'ok' : 'no'}">
+                <i class="fa-solid ${ok ? 'fa-check' : 'fa-xmark'}"></i>
+              </span>
+              <span class="feat-text ${ok ? '' : 'no'}">${esc(m.nome)}</span>
+            </div>`;
         });
-
-        if (ungrouped.length) {
-          modulosHtml += `<div class="features-section-label">Outros</div>`;
-          ungrouped.forEach(m => {
-            const ok = planModuleSlugs.has(m.slug);
-            modulosHtml += `
-              <div class="feat-row">
-                <span class="feat-icon ${ok ? 'ok' : 'no'}">
-                  <i class="fa-solid ${ok ? 'fa-check' : 'fa-xmark'}"></i>
-                </span>
-                <span class="feat-text ${ok ? '' : 'no'}">${esc(m.nome)}</span>
-              </div>`;
-          });
-        }
-      }
+      });
 
       const ctaLabel = _isUpgradeMode ? `Fazer upgrade para ${esc(p.nome)}` : `Começar com ${esc(p.nome)}`;
 

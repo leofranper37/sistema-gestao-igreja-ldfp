@@ -56,14 +56,17 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
 .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}.status-dot.on{background:var(--green)}.status-dot.off{background:var(--red)}
 .saved-msg{font-size:12px;color:var(--green);font-weight:600;opacity:0;transition:.3s;margin-left:auto}
 .modules-section{margin-top:4px}
-.modules-grid{display:flex;flex-direction:column;gap:4px;margin-top:6px;max-height:220px;overflow-y:auto;padding-right:2px}
+.modules-grid{display:flex;flex-direction:column;gap:3px;margin-top:6px;max-height:320px;overflow-y:auto;padding-right:2px}
 .modules-grid::-webkit-scrollbar{width:4px}.modules-grid::-webkit-scrollbar-track{background:#f1f5f9;border-radius:4px}.modules-grid::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
-.mod-label{display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;transition:.15s;user-select:none;min-width:0}
+.mod-label{display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:#fff;transition:.15s;user-select:none;min-width:0}
 .mod-label:hover{border-color:#93c5fd;background:#eff6ff}
 .mod-label input[type=checkbox]{width:14px;height:14px;accent-color:var(--blue);flex-shrink:0}
 .mod-label.checked{border-color:#86efac;background:#f0fdf4}
 .mod-label i{color:var(--blue);width:16px;text-align:center;font-size:13px;flex-shrink:0}
 .mod-label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.mod-group-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:10px 0 3px;padding:0 2px;display:flex;align-items:center;gap:6px}
+.mod-group-header::after{content:'';flex:1;height:1px;background:var(--border)}
+.mod-group-header:first-child{margin-top:2px}
 .section-divider{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 4px;display:flex;align-items:center;gap:8px}
 .section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 /* MODAL */
@@ -228,19 +231,60 @@ function renderModuleCheckboxes(slug, mods) {
   const el = document.getElementById('modules-' + slug);
   if (!el) return;
   if (!mods.length) {
-    el.innerHTML = '<span style="font-size:12px;color:var(--muted);grid-column:1/-1">Nenhum módulo cadastrado. <button onclick="seedModulos()" class="btn btn-sm btn-outline" style="margin-left:6px">Inicializar</button></span>';
+    el.innerHTML = '<span style="font-size:12px;color:var(--muted)">Nenhum módulo cadastrado. <button onclick="seedModulos()" class="btn btn-outline" style="padding:4px 10px;font-size:11px;margin-left:6px">Inicializar</button></span>';
     return;
   }
-  el.innerHTML = mods.map(m => {
+
+  const GROUP_ORDER = ['Secretaria', 'Ensino', 'Tesouraria', 'Contabilidade', 'App'];
+  const GROUP_BY_FEATURE = {
+    membros:'Secretaria', cargos:'Secretaria', historico_pastoral:'Secretaria',
+    grupos:'Secretaria', escalas:'Secretaria', ebd:'Secretaria',
+    batismos:'Secretaria', agenda:'Secretaria', outras_igrejas:'Secretaria',
+    missionarios:'Secretaria', visitantes:'Secretaria', criancas:'Secretaria',
+    oracoes:'Secretaria', novidades:'Secretaria', whatsapp:'Secretaria',
+    autocadastro:'Secretaria', portaria_qr:'Secretaria', telao:'Secretaria',
+    estudo:'Ensino',
+    dizimos:'Tesouraria', caixa:'Tesouraria', bancos:'Tesouraria',
+    pagamentos:'Tesouraria', contas_pagar:'Tesouraria', recibos:'Tesouraria',
+    transferencias:'Tesouraria',
+    contabilidade:'Contabilidade', graficos:'Contabilidade', relatorios:'Contabilidade',
+    app_membro:'App'
+  };
+
+  // Agrupar módulos
+  const groups = {};
+  const ungrouped = [];
+  mods.forEach(m => {
+    const g = GROUP_BY_FEATURE[m.feature_key];
+    if (g) { (groups[g] = groups[g] || []).push(m); }
+    else { ungrouped.push(m); }
+  });
+
+  function modHtml(m) {
     const checked = m.effective_enabled || m.enabled || m.plan_enabled;
     const cls = checked ? 'mod-label checked' : 'mod-label';
     return `<label class="${cls}" id="mod-label-${slug}-${m.slug}" onclick="toggleModLabel(this)">
-      <input type="checkbox" id="mod-${slug}-${m.slug}" value="${m.slug}" ${checked?'checked':''} onchange="syncModLabel('${slug}','${m.slug}')">
-      <i class="${m.icon||'fa-solid fa-puzzle-piece'}"></i>
-      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(m.nome)}</span>
+      <input type="checkbox" id="mod-${slug}-${m.slug}" value="${m.slug}" ${checked ? 'checked' : ''}>
+      <i class="${m.icon || 'fa-solid fa-puzzle-piece'}"></i>
+      <span>${m.nome}</span>
     </label>`;
-  }).join('');
+  }
+
+  let html = '';
+  GROUP_ORDER.forEach(groupName => {
+    const items = groups[groupName];
+    if (!items || !items.length) return;
+    html += `<div class="mod-group-header">${groupName}</div>`;
+    items.forEach(m => { html += modHtml(m); });
+  });
+  if (ungrouped.length) {
+    html += `<div class="mod-group-header">Outros</div>`;
+    ungrouped.forEach(m => { html += modHtml(m); });
+  }
+
+  el.innerHTML = html;
 }
+
 
 function toggleModLabel(label) {
   const cb = label.querySelector('input[type=checkbox]');

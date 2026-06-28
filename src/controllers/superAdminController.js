@@ -451,21 +451,41 @@ async function markSaasAssinaturaPaga(req, res) {
 // ── Módulos padrão do sistema ─────────────────────────────────────────────────
 
 const STANDARD_MODULES = [
-    { slug: 'membros',        nome: 'Gestão de Membros',             feature_key: 'membros',      icon: 'fa-solid fa-users',                  route_path: 'lista_membros.html' },
-    { slug: 'visitantes',     nome: 'Visitantes',                    feature_key: 'visitantes',   icon: 'fa-solid fa-user-plus',              route_path: 'visitantes.html' },
-    { slug: 'criancas-ebd',   nome: 'Crianças / EBD Dominical',     feature_key: 'criancas',     icon: 'fa-solid fa-child-reaching',         route_path: 'criancas.html' },
-    { slug: 'agenda',         nome: 'Agenda e Escalas',              feature_key: 'agenda',       icon: 'fa-solid fa-calendar-days',          route_path: 'agenda.html' },
-    { slug: 'oracoes',        nome: 'Orações e Pedidos',             feature_key: 'oracoes',      icon: 'fa-solid fa-hands-praying',          route_path: 'oracoes.html' },
-    { slug: 'financeiro',     nome: 'Módulo Financeiro',             feature_key: 'financeiro',   icon: 'fa-solid fa-coins',                  route_path: 'financeiro.html' },
-    { slug: 'missionarios',   nome: 'Missionários',                  feature_key: 'missionarios', icon: 'fa-solid fa-person-rays',            route_path: 'missionarios.html' },
-    { slug: 'igrejas',        nome: 'Congregações / Outras Igrejas', feature_key: 'igrejas',      icon: 'fa-solid fa-church',                 route_path: 'outras_igrejas.html' },
-    { slug: 'whatsapp',       nome: 'Comunicação WhatsApp',          feature_key: 'whatsapp',     icon: 'fa-brands fa-whatsapp',              route_path: 'comunicacao_whatsapp.html' },
-    { slug: 'autocadastro',   nome: 'Aprovação de Cadastro Online',  feature_key: 'autocadastro', icon: 'fa-solid fa-user-check',             route_path: 'autocadastro_aprovacoes.html' },
-    { slug: 'portaria-qr',    nome: 'Portaria / Check-in QR',        feature_key: 'portaria_qr',  icon: 'fa-solid fa-qrcode',                 route_path: 'portaria_checkin.html' },
-    { slug: 'telao',          nome: 'Telão de Visitantes',           feature_key: 'telao',        icon: 'fa-solid fa-display',                route_path: 'telao_visitantes.html' },
-    { slug: 'app-membro',     nome: 'App do Membro',                 feature_key: 'app_membro',   icon: 'fa-solid fa-mobile-screen-button',   route_path: 'painel_app_membro.html' },
-    { slug: 'estudo-biblico', nome: 'Estudo Bíblico / Devocionais',  feature_key: 'estudo',       icon: 'fa-solid fa-book-bible',             route_path: 'estudo.html' },
-    { slug: 'pagamentos',     nome: 'Links de Pagamento',            feature_key: 'pagamentos',   icon: 'fa-solid fa-credit-card',            route_path: 'pagamentos.html' },
+    // ── Secretaria ───────────────────────────────────────────────────────────
+    { slug: 'membros',            nome: 'Membros (Lista e Cadastro)',        feature_key: 'membros',           icon: 'fa-solid fa-users',                  route_path: 'lista_membros.html' },
+    { slug: 'cargos',             nome: 'Cargos e Situações',                feature_key: 'cargos',            icon: 'fa-solid fa-briefcase',              route_path: 'cargos.html' },
+    { slug: 'historico-pastoral', nome: 'Histórico Pastoral',                feature_key: 'historico_pastoral',icon: 'fa-solid fa-book-bible',             route_path: 'historico_pastoral.html' },
+    { slug: 'grupos',             nome: 'Grupos e Células',                  feature_key: 'grupos',            icon: 'fa-solid fa-people-group',           route_path: 'grupos.html' },
+    { slug: 'escalas',            nome: 'Escalas de Culto',                  feature_key: 'escalas',           icon: 'fa-solid fa-calendar-check',         route_path: 'escalas.html' },
+    { slug: 'ebd',                nome: 'EBD (Alunos, Turmas e Grades)',     feature_key: 'ebd',               icon: 'fa-solid fa-graduation-cap',         route_path: 'ebd_alunos.html' },
+    { slug: 'batismos',           nome: 'Batismos',                          feature_key: 'batismos',          icon: 'fa-solid fa-water',                  route_path: 'batismos.html' },
+    { slug: 'agenda',             nome: 'Agenda',                            feature_key: 'agenda',            icon: 'fa-solid fa-calendar-days',          route_path: 'agenda.html' },
+    { slug: 'outras-igrejas',     nome: 'Outras Igrejas',                    feature_key: 'outras_igrejas',    icon: 'fa-solid fa-globe',                  route_path: 'outras_igrejas.html' },
+    { slug: 'missionarios',       nome: 'Missionários',                      feature_key: 'missionarios',      icon: 'fa-solid fa-person-rays',            route_path: 'missionarios.html' },
+    { slug: 'visitantes',         nome: 'Visitantes e Acompanhamento',       feature_key: 'visitantes',        icon: 'fa-solid fa-user-plus',              route_path: 'visitantes.html' },
+    { slug: 'criancas',           nome: 'Crianças',                          feature_key: 'criancas',          icon: 'fa-solid fa-baby',                   route_path: 'criancas.html' },
+    { slug: 'oracoes',            nome: 'Orações e Pedidos',                 feature_key: 'oracoes',           icon: 'fa-solid fa-hands-praying',          route_path: 'oracoes.html' },
+    { slug: 'novidades',          nome: 'Novidades / Comunicados',           feature_key: 'novidades',         icon: 'fa-solid fa-newspaper',              route_path: 'novidades.html' },
+    { slug: 'whatsapp',           nome: 'Comunicação WhatsApp',              feature_key: 'whatsapp',          icon: 'fa-brands fa-whatsapp',              route_path: 'comunicacao_whatsapp.html' },
+    { slug: 'autocadastro',       nome: 'Aprovação de Cadastro Online',      feature_key: 'autocadastro',      icon: 'fa-solid fa-user-check',             route_path: 'autocadastro_aprovacoes.html' },
+    { slug: 'portaria-qr',        nome: 'Portaria / Check-in QR',            feature_key: 'portaria_qr',       icon: 'fa-solid fa-qrcode',                 route_path: 'portaria_checkin.html' },
+    { slug: 'telao',              nome: 'Telão de Visitantes',               feature_key: 'telao',             icon: 'fa-solid fa-display',                route_path: 'telao_visitantes.html' },
+    // ── Ensino ───────────────────────────────────────────────────────────────
+    { slug: 'estudo-biblico',     nome: 'Bíblia, Devocionais e Planos',     feature_key: 'estudo',            icon: 'fa-solid fa-book-bible',             route_path: 'estudo.html' },
+    // ── Tesouraria ───────────────────────────────────────────────────────────
+    { slug: 'dizimos',            nome: 'Dízimos & Ofertas',                 feature_key: 'dizimos',           icon: 'fa-solid fa-coins',                  route_path: 'tesouraria_dizimos.html' },
+    { slug: 'caixa',              nome: 'Caixa',                             feature_key: 'caixa',             icon: 'fa-solid fa-cash-register',          route_path: 'tesouraria_caixa.html' },
+    { slug: 'bancos',             nome: 'Bancos',                            feature_key: 'bancos',            icon: 'fa-solid fa-building-columns',       route_path: 'tesouraria_bancos.html' },
+    { slug: 'pagamentos',         nome: 'Links de Pagamento',                feature_key: 'pagamentos',        icon: 'fa-solid fa-credit-card',            route_path: 'pagamentos.html' },
+    { slug: 'contas-pagar',       nome: 'Contas a Pagar',                    feature_key: 'contas_pagar',      icon: 'fa-solid fa-file-invoice-dollar',    route_path: 'contas_pagar.html' },
+    { slug: 'recibos',            nome: 'Recibos',                           feature_key: 'recibos',           icon: 'fa-solid fa-receipt',                route_path: 'recibo.html' },
+    { slug: 'transferencias',     nome: 'Transferências',                    feature_key: 'transferencias',    icon: 'fa-solid fa-right-left',             route_path: 'transferencias.html' },
+    // ── Contabilidade ─────────────────────────────────────────────────────────
+    { slug: 'contabilidade',      nome: 'Plano de Contas e Lançamentos',    feature_key: 'contabilidade',     icon: 'fa-solid fa-scale-balanced',         route_path: 'plano_contas.html' },
+    { slug: 'graficos',           nome: 'Gráficos',                          feature_key: 'graficos',          icon: 'fa-solid fa-chart-bar',              route_path: 'graficos_secretaria.html' },
+    { slug: 'relatorios',         nome: 'Relatórios',                        feature_key: 'relatorios',        icon: 'fa-solid fa-file-lines',             route_path: 'relatorios_secretaria.html' },
+    // ── App ───────────────────────────────────────────────────────────────────
+    { slug: 'app-membro',         nome: 'App do Membro',                    feature_key: 'app_membro',        icon: 'fa-solid fa-mobile-screen-button',   route_path: 'painel_app_membro.html' },
 ];
 
 async function seedStandardModules() {

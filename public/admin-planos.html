@@ -69,6 +69,10 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
 .mod-group-header:first-child{margin-top:2px}
 .section-divider{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 4px;display:flex;align-items:center;gap:8px}
 .section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.plan-limits-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.plan-limit-badge{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;background:rgba(37,99,235,.08);color:var(--blue);padding:4px 10px;border-radius:100px;border:1px solid rgba(37,99,235,.15)}
+.plan-limit-badge i{font-size:11px}
+.plan-verse-preview{margin-top:10px;font-size:11px;font-style:italic;color:var(--muted);line-height:1.5;padding:8px 10px;background:rgba(245,158,11,.06);border-left:3px solid var(--gold);border-radius:0 6px 6px 0}
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
 .modal-overlay.open{display:flex}
@@ -184,6 +188,34 @@ const headers = () => ({ 'Content-Type':'application/json', Authorization: 'Bear
 
 let planosData = [];
 
+// Versículos bíblicos padrão por plano (usado quando plano não tem verso salvo)
+const DEFAULT_PLAN_VERSES = {
+  hebrom: 'Melhor é serem dois do que um, porque têm melhor paga do seu trabalho. — Eclesiastes 4:9',
+  betel:  'Como é este lugar temível! Não é outra coisa mais que a casa de Deus e a porta do céu. — Gênesis 28:17',
+  siao:   'O Senhor escolheu a Sião; quis que fosse habitação sua. — Salmos 132:13',
+};
+
+// Módulos padrão por plano — define o que vem pré-marcado quando não há config salva
+const DEFAULT_PLAN_MODULES = {
+  hebrom: new Set([
+    'membros','cargos','historico-pastoral','escalas','batismos',
+    'agenda','oracoes','novidades','dizimos','caixa','relatorios'
+  ]),
+  betel: new Set([
+    'membros','cargos','historico-pastoral','grupos','escalas','ebd','batismos',
+    'agenda','outras-igrejas','visitantes','criancas','oracoes','novidades',
+    'autocadastro','estudo-biblico','dizimos','caixa','bancos','pagamentos',
+    'contas-pagar','recibos','transferencias','graficos','relatorios','app-membro'
+  ]),
+  siao: new Set([
+    'membros','cargos','historico-pastoral','grupos','escalas','ebd','batismos',
+    'agenda','outras-igrejas','missionarios','visitantes','criancas','oracoes',
+    'novidades','whatsapp','autocadastro','portaria-qr','telao','estudo-biblico',
+    'dizimos','caixa','bancos','pagamentos','contas-pagar','recibos','transferencias',
+    'contabilidade','graficos','relatorios','app-membro'
+  ]),
+};
+
 // Lista canônica dos 32 módulos — sempre exibidos, independente do banco
 const STANDARD_MODULES_UI = [
   { slug:'membros',            nome:'Membros (Lista e Cadastro)',    icon:'fa-solid fa-users',                group:'Secretaria' },
@@ -257,10 +289,17 @@ function renderModuleCheckboxes(slug, mods) {
 
   // Monta mapa de estado vindo do banco (slug → boolean)
   const enabledMap = new Map();
-  (mods || []).forEach(m => {
-    const on = m.effective_enabled ?? m.enabled ?? m.plan_enabled ?? false;
-    enabledMap.set(m.slug, !!on);
-  });
+  const hasSaved = Array.isArray(mods) && mods.length > 0;
+  if (hasSaved) {
+    mods.forEach(m => {
+      const on = m.effective_enabled ?? m.enabled ?? m.plan_enabled ?? false;
+      enabledMap.set(m.slug, !!on);
+    });
+  } else {
+    // Nenhuma config salva → usa defaults do plano
+    const defaults = DEFAULT_PLAN_MODULES[slug];
+    if (defaults) defaults.forEach(s => enabledMap.set(s, true));
+  }
 
   const GROUP_ORDER = ['Secretaria', 'Ensino', 'Tesouraria', 'Contabilidade', 'App'];
   const groups = {};
@@ -328,12 +367,22 @@ function planCard(p) {
       <button class="btn-remove" onclick="removeFeat('${p.slug}',${i})"><i class="fa-solid fa-trash"></i></button>
     </div>`).join('');
 
+  const versiculoDefault = DEFAULT_PLAN_VERSES[p.slug] || '';
+  const versiculoVal = p.versiculo ? escHtml(p.versiculo) : escHtml(versiculoDefault);
+  const maxCad = p.max_cadastros > 0 ? p.max_cadastros : '∞';
+  const maxCong = p.max_congregacoes > 0 ? p.max_congregacoes : '∞';
+
   return `
   <div class="plan-edit-card${featured?' featured':''}">
     <div class="plan-card-header">
       <span class="plan-slug">${p.slug}</span>
       <h3 id="nome-display-${p.slug}">${escHtml(p.nome)}</h3>
       <div class="price-display">R$ <span id="preco-display-${p.slug}">${fmt(p.preco_mensal)}</span><small>/mês</small></div>
+      <div class="plan-limits-row">
+        <span class="plan-limit-badge"><i class="fa-solid fa-users"></i> <span id="lim-cad-${p.slug}">${maxCad}</span> membros</span>
+        <span class="plan-limit-badge"><i class="fa-solid fa-church"></i> <span id="lim-cong-${p.slug}">${maxCong}</span> congregações</span>
+      </div>
+      ${versiculoDefault ? `<div class="plan-verse-preview" id="verse-preview-${p.slug}">${versiculoVal}</div>` : ''}
     </div>
     <div class="plan-card-body">
       <div class="form-row"><label>Nome do Plano</label>
@@ -343,7 +392,9 @@ function planCard(p) {
         <input type="text" id="subtitulo-${p.slug}" value="${escHtml(p.subtitulo||'')}">
       </div>
       <div class="form-row"><label>Versículo Bíblico</label>
-        <input type="text" id="versiculo-${p.slug}" value="${escHtml(p.versiculo||'')}">
+        <input type="text" id="versiculo-${p.slug}" value="${versiculoVal}" placeholder="${escHtml(versiculoDefault)}"
+          oninput="const vp=document.getElementById('verse-preview-${p.slug}');if(vp)vp.textContent=this.value||'${versiculoDefault.replace(/'/g,"\\'")}'"
+        >
       </div>
       <div class="two-col">
         <div class="form-row"><label>Preço Mensal (R$)</label>
@@ -355,10 +406,12 @@ function planCard(p) {
       </div>
       <div class="two-col">
         <div class="form-row"><label>Máx. Cadastros</label>
-          <input type="number" min="0" id="max-cad-${p.slug}" value="${p.max_cadastros}">
+          <input type="number" min="0" id="max-cad-${p.slug}" value="${p.max_cadastros}"
+            oninput="const el=document.getElementById('lim-cad-${p.slug}');if(el)el.textContent=this.value>0?this.value:'∞'">
         </div>
         <div class="form-row"><label>Máx. Congregações</label>
-          <input type="number" min="0" id="max-cong-${p.slug}" value="${p.max_congregacoes}">
+          <input type="number" min="0" id="max-cong-${p.slug}" value="${p.max_congregacoes}"
+            oninput="const el=document.getElementById('lim-cong-${p.slug}');if(el)el.textContent=this.value>0?this.value:'∞'">
         </div>
       </div>
       <div class="form-row"><label>App do Membro</label>

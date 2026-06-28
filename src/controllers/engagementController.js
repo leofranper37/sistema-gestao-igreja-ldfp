@@ -56,11 +56,14 @@ async function loginMembroApp(req, res) {
     }
 
     // Busca o igrejaTk (public_token) da igreja para o app usar nas rotas públicas
-    const [igrejaTkRows] = await pool.query(
-        'SELECT public_token FROM igrejas WHERE id = ? LIMIT 1',
-        [membro.igreja_id]
-    );
-    const igrejaTk = igrejaTkRows[0]?.public_token || null;
+    let igrejaTk = null;
+    try {
+        const [igrejaTkRows] = await pool.query(
+            'SELECT public_token FROM igrejas WHERE id = ? LIMIT 1',
+            [membro.igreja_id]
+        );
+        igrejaTk = igrejaTkRows[0]?.public_token || null;
+    } catch (_) {}
 
     const payload = {
         id: membro.id,

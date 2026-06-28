@@ -563,7 +563,7 @@ async function getMinhaConta(req, res) {
         const [igRows] = await pool.query(
             `SELECT i.id, i.nome, i.plano, i.status_assinatura,
                     i.trial_ends_at, i.max_cadastros, i.max_congregacoes,
-                    i.modulo_app_membro,
+                    i.modulo_app_membro, i.public_token,
                     sp.nome AS plano_nome, sp.subtitulo AS plano_subtitulo,
                     sp.preco_mensal, sp.preco_anual, sp.features_json
              FROM igrejas i
@@ -605,7 +605,9 @@ async function getMinhaConta(req, res) {
             max_congregacoes: ig.max_congregacoes || 1,
             modulo_app_membro: temAppMembro,
             suporte,
-            features: safeJson(ig.features_json, [])
+            features: safeJson(ig.features_json, []),
+            public_token: ig.public_token || null,
+            igrejaTk: ig.public_token || null
         });
     } catch (err) {
         res.status(500).json({ error: err.message });

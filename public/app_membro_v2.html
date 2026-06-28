@@ -1265,6 +1265,22 @@
     }
   }
 
+  function getIgrejaTkForApp() {
+    const user = getCurrentMemberUser();
+    return user?.igrejaTk || '';
+  }
+
+  // Fetch para rotas /api/app/* — adiciona igrejaTk e token de auth automaticamente
+  async function appFetch(url, opts) {
+    const tk = getIgrejaTkForApp();
+    const token = localStorage.getItem('app_member_token');
+    const sep = url.includes('?') ? '&' : '?';
+    const fullUrl = tk ? (url + sep + 'igrejaTk=' + encodeURIComponent(tk)) : url;
+    const headers = Object.assign({}, opts?.headers || {});
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    return fetch(fullUrl, Object.assign({}, opts, { headers }));
+  }
+
   function getIgrejaIdForApp() {
     const user = getCurrentMemberUser();
     const fromUser = Number(user?.igrejaId || user?.igreja_id || user?.churchId || 0);
@@ -1413,7 +1429,7 @@
   async function loadConfig() {
     try {
       const igrejaId = getIgrejaIdForApp();
-      const res = await fetch('/api/app/config?igrejaId=' + encodeURIComponent(igrejaId));
+      const res = await appFetch('/api/app/config');
       if (!res.ok) return;
       const cfg = await res.json();
       if (cfg.versiculoContribuicoes) contribVerse.textContent = cfg.versiculoContribuicoes;
@@ -1430,7 +1446,7 @@
   async function loadCongregacoes() {
     try {
       const igrejaId = getIgrejaIdForApp();
-      const res = await fetch('/api/app/congregacoes?igrejaId=' + encodeURIComponent(igrejaId));
+      const res = await appFetch('/api/app/congregacoes');
       if (!res.ok) return;
       const data = await res.json();
       _congregacoes = Array.isArray(data) ? data : (data.data || []);
@@ -1480,7 +1496,7 @@
 
       // 1) Fonte principal atual (CRUD completo no painel de mídias)
       try {
-        const resMidias = await fetch('/api/app/midias?igrejaId=' + encodeURIComponent(igrejaId));
+        const resMidias = await appFetch('/api/app/midias');
         if (resMidias.ok) {
           const payload = await resMidias.json().catch(() => ({}));
           videos = (payload.videos || []).map((item) => ({
@@ -1496,7 +1512,7 @@
 
       // 2) Compatibilidade com endpoint legado
       if (!videos.length) {
-        const resVideos = await fetch('/api/app/videos?igrejaId=' + encodeURIComponent(igrejaId));
+        const resVideos = await appFetch('/api/app/videos');
         if (resVideos.ok) {
           const data = await resVideos.json().catch(() => ([]));
           videos = Array.isArray(data) ? data : (data.data || []);
@@ -1554,7 +1570,7 @@
       let images = [];
 
       try {
-        const resMidias = await fetch('/api/app/midias?igrejaId=' + encodeURIComponent(igrejaId));
+        const resMidias = await appFetch('/api/app/midias');
         if (resMidias.ok) {
           const payload = await resMidias.json().catch(() => ({}));
           images = (payload.images || []).map((item) => ({
@@ -1664,7 +1680,7 @@
     listaEventosEl.innerHTML = '<div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;"><i class="fa-solid fa-spinner fa-spin"></i></div>';
     try {
       const igrejaId = getIgrejaIdForApp();
-      const res = await fetch(`/api/app/eventos?igrejaId=${encodeURIComponent(igrejaId)}&mes=${getMesParam()}`);
+      const res = await appFetch('/api/app/eventos?mes=' + getMesParam());
       if (!res.ok) throw new Error();
       const data = await res.json();
       const eventos = Array.isArray(data) ? data : (data.data || []);

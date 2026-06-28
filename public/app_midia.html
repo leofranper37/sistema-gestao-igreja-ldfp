@@ -500,9 +500,31 @@
             </div>
 
             <div id="gerenciarMidiasTab" class="tab-content">
-                <h2><i class="fa-solid fa-upload"></i> Gerenciar Mídias</h2>
-                <div class="content-card" id="gerenciarMidiasContent">
-                    <p>Carregando gerenciador...</p>
+                <h2><i class="fa-solid fa-upload"></i> Adicionar Mídia</h2>
+                <div class="content-card">
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="mgTipo" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#0b1320;color:var(--text);font-size:0.95rem;">
+                            <option value="videos">Vídeo (YouTube)</option>
+                            <option value="images">Imagem</option>
+                            <option value="audios">Áudio</option>
+                            <option value="documents">Documento</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Título *</label>
+                        <input type="text" id="mgTitulo" class="form-group input" placeholder="Título da mídia" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#0b1320;color:var(--text);font-size:0.95rem;">
+                    </div>
+                    <div class="form-group">
+                        <label>URL *</label>
+                        <input type="url" id="mgUrl" placeholder="https://..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#0b1320;color:var(--text);font-size:0.95rem;">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" id="mgDescricao" placeholder="Opcional" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#0b1320;color:var(--text);font-size:0.95rem;">
+                    </div>
+                    <button id="mgBtnSalvar" class="btn-primary" style="margin-top:12px;">Salvar</button>
+                    <p id="mgStatus" class="status-message"></p>
                 </div>
             </div>
         </div>
@@ -595,11 +617,19 @@
         function saveAuthSession(token, user) {
             localStorage.setItem('ldfp_auth_token_midia', token);
             localStorage.setItem('ldfp_user_data_midia', JSON.stringify(user));
+            if (user?.igrejaTk) {
+                localStorage.setItem('ldfp_igrejaTk_midia', user.igrejaTk);
+            }
         }
 
         function clearAuthSession() {
             localStorage.removeItem('ldfp_auth_token_midia');
             localStorage.removeItem('ldfp_user_data_midia');
+            localStorage.removeItem('ldfp_igrejaTk_midia');
+        }
+
+        function getIgrejaTk() {
+            return localStorage.getItem('ldfp_igrejaTk_midia') || '';
         }
 
         function parseFlag(value, fallback = false) {
@@ -674,7 +704,10 @@
                     }
 
                     token = payload.token;
-                    user = payload.membro || null;
+                    const membroData = payload.membro || null;
+                    const igrejaTk = payload.membro?.igrejaTk || null;
+
+                    user = membroData;
 
                     if (token) {
                         const meResp = await fetch('/app-membro/meu-perfil', {
@@ -688,7 +721,8 @@
                                 igrejaId: meData.igreja_id || user?.igrejaId,
                                 igrejaNome: meData.nome_igreja || user?.nome_igreja || user?.igrejaNome,
                                 acesso_app_midia: meData.acesso_app_midia,
-                                gerenciar_midias: meData.gerenciar_midias
+                                gerenciar_midias: meData.gerenciar_midias,
+                                igrejaTk: igrejaTk
                             };
                         }
                     }
@@ -736,7 +770,6 @@
 
         // --- Funcoes de UI e Conteudo ---
         let currentTab = 'videosTab';
-        let managerContentLoaded = false;
 
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach((tab) => tab.classList.remove('active'));
@@ -744,15 +777,7 @@
 
             document.querySelectorAll('.bottom-nav-item').forEach((item) => item.classList.remove('active'));
             const navItem = document.querySelector(`.bottom-nav-item[data-tab="${tabId}"]`);
-            if (navItem) {
-                navItem.classList.add('active');
-            }
-
-            if (tabId === 'gerenciarMidiasTab' && !managerContentLoaded) {
-                const user = getCurrentUser();
-                const igrejaId = Number(user?.igrejaId || user?.igreja_id || getChurchIdForMedia());
-                loadContentIntoApp('igreja_midias.html?id=' + igrejaId);
-            }
+            if (navItem) navItem.classList.add('active');
 
             currentTab = tabId;
         }
@@ -799,20 +824,52 @@
             }).join('');
         }
 
-        async function loadContentIntoApp(url) {
-            const target = $('gerenciarMidiasContent');
-            if (!target) return;
+        async function salvarMidia() {
+            const tipo = $('mgTipo').value;
+            const titulo = ($('mgTitulo').value || '').trim();
+            const url = ($('mgUrl').value || '').trim();
+            const descricao = ($('mgDescricao').value || '').trim();
+            const status = $('mgStatus');
+            const btn = $('mgBtnSalvar');
 
-            target.innerHTML = '<p>Carregando gerenciador...</p>';
+            if (!titulo || !url) {
+                status.textContent = 'Título e URL são obrigatórios.';
+                status.className = 'status-message error';
+                return;
+            }
 
-            // Usa iframe para isolar estilos/scripts do gerenciador sem conflitar com o app.
-            target.innerHTML = '<iframe src="' + url + '" title="Gerenciar Mídias" style="width:100%;min-height:70vh;border:none;border-radius:12px;background:#fff;"></iframe>';
-            managerContentLoaded = true;
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+            status.textContent = '';
+            status.className = 'status-message';
+
+            try {
+                const token = getAuthToken();
+                const resp = await fetch('/api/app/midias/' + tipo, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ title: titulo, url, description: descricao })
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) throw new Error(data.error || 'Erro ao salvar.');
+
+                status.textContent = 'Mídia adicionada com sucesso!';
+                status.className = 'status-message success';
+                $('mgTitulo').value = '';
+                $('mgUrl').value = '';
+                $('mgDescricao').value = '';
+                loadMediaContent();
+            } catch (err) {
+                status.textContent = err.message;
+                status.className = 'status-message error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Salvar';
+            }
         }
-
-        window.showMediaTabFromManager = function (tabId) {
-            showTab(tabId || 'videosTab');
-        };
 
         function openMediaPlayer(type, url, title, description) {
             const playerArea = $('playerArea');
@@ -851,10 +908,13 @@
         async function loadChurchConfig() {
             const fallbackLogo = localStorage.getItem('church_logo_url') || 'https://via.placeholder.com/35x35?text=LDFP';
             const fallbackName = localStorage.getItem('church_name') || 'App de Midia';
-            const igrejaId = getChurchIdForMedia();
+            const igrejaTk = getIgrejaTk();
+            const token = getAuthToken();
 
             try {
-                const resp = await fetch('/api/app/config?igrejaId=' + igrejaId);
+                const headers = token ? { Authorization: 'Bearer ' + token } : {};
+                const qs = igrejaTk ? ('?igrejaTk=' + igrejaTk) : '';
+                const resp = await fetch('/api/app/config' + qs, { headers });
                 const config = await resp.json().catch(() => ({}));
                 if (!resp.ok) {
                     throw new Error(config.error || 'Erro ao carregar configuracao');
@@ -923,8 +983,11 @@
         // Carregamento de conteudo de midia (API real com fallback)
         async function loadMediaContent() {
             try {
-                const igrejaId = getChurchIdForMedia();
-                const resp = await fetch('/api/app/midias?igrejaId=' + igrejaId);
+                const igrejaTk = getIgrejaTk();
+                const token = getAuthToken();
+                const headers = token ? { Authorization: 'Bearer ' + token } : {};
+                const qs = igrejaTk ? ('?igrejaTk=' + igrejaTk) : '';
+                const resp = await fetch('/api/app/midias' + qs, { headers });
                 const payload = await resp.json().catch(() => ({}));
                 if (!resp.ok) {
                     throw new Error(payload.error || 'Erro ao carregar mídias da igreja.');
@@ -1007,6 +1070,10 @@
 
             if ($('closePlayerModal')) {
                 $('closePlayerModal').addEventListener('click', closeMediaPlayer);
+            }
+
+            if ($('mgBtnSalvar')) {
+                $('mgBtnSalvar').addEventListener('click', salvarMidia);
             }
 
             document.querySelectorAll('.bottom-nav-item').forEach((item) => {

@@ -340,26 +340,57 @@ async function ensureAppTables() {
 
 // ─── middleware: identifica a igreja pelo token público ──────────────────────
 
+const jwt = require('jsonwebtoken');
+const config = require('../config');
+
 async function resolveIgreja(req, res, next) {
-    const token = String(req.query.igrejaTk || req.body?.igrejaTk || '').trim();
-    if (!token) {
-        return res.status(400).json({ error: 'Identificador de igreja ausente (igrejaTk).' });
-    }
-    try {
-        // ensureAppTables garante que a coluna existe e o backfill foi aplicado
-        await ensureAppTables();
-        const [rows] = await pool.query(
-            'SELECT id FROM igrejas WHERE public_token = ? LIMIT 1',
-            [token]
-        );
-        if (!rows || !rows.length) {
-            return res.status(404).json({ error: 'Igreja não encontrada.' });
+    await ensureAppTables();
+
+    const tkParam = String(req.query.igrejaTk || req.body?.igrejaTk || '').trim();
+
+    if (tkParam) {
+        try {
+            const [rows] = await pool.query(
+                'SELECT id FROM igrejas WHERE public_token = ? LIMIT 1',
+                [tkParam]
+            );
+            if (!rows || !rows.length) {
+                return res.status(404).json({ error: 'Igreja não encontrada.' });
+            }
+            req.igrejaId = rows[0].id;
+            return next();
+        } catch (err) {
+            return res.status(500).json({ error: 'Erro interno ao identificar a igreja.' });
         }
-        req.igrejaId = rows[0].id;
-        return next();
-    } catch (err) {
-        return res.status(500).json({ error: 'Erro interno ao identificar a igreja.' });
     }
+
+    // Fallback: aceita token JWT de membro autenticado para identificar a igreja
+    const authHeader = req.headers.authorization || '';
+    if (authHeader.startsWith('Bearer ')) {
+        try {
+            const payload = jwt.verify(authHeader.slice(7).trim(), config.security.jwtSecret);
+            if (payload.igrejaId) {
+                req.igrejaId = payload.igrejaId;
+                return next();
+            }
+        } catch (_) {}
+    }
+
+    return res.status(400).json({ error: 'Identificador de igreja ausente (igrejaTk).' });
+}
+
+// Permite acesso a admin/secretaria OU membro com gerenciar_midias=true
+function authorizeMediaWrite(req, res, next) {
+    if (!req.auth) {
+        return res.status(401).json({ error: 'Não autenticado.' });
+    }
+    if (['admin', 'secretaria', 'super-admin'].includes(req.auth.role)) {
+        return next();
+    }
+    if (req.auth.app_mode && req.auth.gerenciar_midias) {
+        return next();
+    }
+    return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para gerenciar mídias.' });
 }
 
 // ─── GET /api/app/config ─────────────────────────────────────────────────────
@@ -566,7 +597,7 @@ router.get('/api/app/midias', resolveIgreja, async (req, res) => {
 
 // ─── POST /api/app/midias/:type ─────────────────────────────────────────────
 
-router.post('/api/app/midias/:type', requireAuth, authorize(['admin', 'secretaria']), async (req, res) => {
+router.post('/api/app/midias/:type', requireAuth, authorizeMediaWrite, async (req, res) => {
     try {
         await ensureAppTables();
         const type = normalizeMediaType(req.params.type);
@@ -608,7 +639,7 @@ router.post('/api/app/midias/:type', requireAuth, authorize(['admin', 'secretari
 
 // ─── DELETE /api/app/midias/:type/:id ───────────────────────────────────────
 
-router.delete('/api/app/midias/:type/:id', requireAuth, authorize(['admin', 'secretaria']), async (req, res) => {
+router.delete('/api/app/midias/:type/:id', requireAuth, authorizeMediaWrite, async (req, res) => {
     try {
         await ensureAppTables();
         const type = normalizeMediaType(req.params.type);

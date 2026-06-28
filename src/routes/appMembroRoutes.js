@@ -318,6 +318,8 @@ async function ensureAppTables() {
 
         await ensureOptionalColumn('app_config', 'youtube', 'TEXT');
         await ensureOptionalColumn('app_config', 'live_stream_url', 'TEXT');
+        await ensureOptionalColumn('app_config', 'licao_semana', 'VARCHAR(255)');
+        await ensureOptionalColumn('app_config', 'licao_url', 'TEXT');
 
         // Garante a coluna public_token em igrejas (bancos existentes não a têm)
         await ensureOptionalColumn('igrejas', 'public_token', 'VARCHAR(64)');
@@ -400,7 +402,7 @@ router.get('/api/app/config', resolveIgreja, async (req, res) => {
         await ensureAppTables();
         const id = req.igrejaId;
         const [rows] = await pool.query(
-            'SELECT verso_contribuicoes, logo_url, whatsapp, facebook, instagram, youtube, live_stream_url FROM app_config WHERE igreja_id = ? LIMIT 1',
+            'SELECT verso_contribuicoes, logo_url, whatsapp, facebook, instagram, youtube, live_stream_url, licao_semana, licao_url FROM app_config WHERE igreja_id = ? LIMIT 1',
             [id]
         );
         const row = rows[0] || {};
@@ -411,7 +413,9 @@ router.get('/api/app/config', resolveIgreja, async (req, res) => {
             facebook: row.facebook || null,
             instagram: row.instagram || null,
             youtube: row.youtube || null,
-            liveStreamUrl: row.live_stream_url || null
+            liveStreamUrl: row.live_stream_url || null,
+            licaoSemana: row.licao_semana || null,
+            licaoUrl: row.licao_url || null
         });
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -430,6 +434,8 @@ router.post('/api/app/config', requireAuth, async (req, res) => {
         const instagram = String(req.body?.instagram || '').trim() || null;
         const youtube = String(req.body?.youtube || '').trim() || null;
         const liveStreamUrl = String(req.body?.liveStreamUrl || '').trim() || null;
+        const licaoSemana = String(req.body?.licaoSemana || '').trim() || null;
+        const licaoUrl = String(req.body?.licaoUrl || '').trim() || null;
 
         const [updateResult] = await pool.query(
             `UPDATE app_config
@@ -440,9 +446,11 @@ router.post('/api/app/config', requireAuth, async (req, res) => {
                  instagram = ?,
                  youtube = ?,
                  live_stream_url = ?,
+                 licao_semana = ?,
+                 licao_url = ?,
                  updated_at = CURRENT_TIMESTAMP
              WHERE igreja_id = ?`,
-            [versiculoContribuicoes, logoUrl, whatsapp, facebook, instagram, youtube, liveStreamUrl, id]
+            [versiculoContribuicoes, logoUrl, whatsapp, facebook, instagram, youtube, liveStreamUrl, licaoSemana, licaoUrl, id]
         );
 
         const affected = Number(updateResult?.affectedRows || updateResult?.rowCount || 0);
@@ -450,29 +458,17 @@ router.post('/api/app/config', requireAuth, async (req, res) => {
         if (!affected) {
             await pool.query(
                 `INSERT INTO app_config (
-                    igreja_id,
-                    verso_contribuicoes,
-                    logo_url,
-                    whatsapp,
-                    facebook,
-                    instagram,
-                    youtube,
-                    live_stream_url,
-                    updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-                [id, versiculoContribuicoes, logoUrl, whatsapp, facebook, instagram, youtube, liveStreamUrl]
+                    igreja_id, verso_contribuicoes, logo_url, whatsapp, facebook,
+                    instagram, youtube, live_stream_url, licao_semana, licao_url, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+                [id, versiculoContribuicoes, logoUrl, whatsapp, facebook, instagram, youtube, liveStreamUrl, licaoSemana, licaoUrl]
             );
         }
 
         return res.json({
             ok: true,
-            versiculoContribuicoes,
-            logoUrl,
-            whatsapp,
-            facebook,
-            instagram,
-            youtube,
-            liveStreamUrl
+            versiculoContribuicoes, logoUrl, whatsapp, facebook,
+            instagram, youtube, liveStreamUrl, licaoSemana, licaoUrl
         });
     } catch (err) {
         return res.status(500).json({ error: err.message });

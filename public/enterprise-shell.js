@@ -549,7 +549,6 @@
             ['comunicacao_whatsapp.html', 'fa-brands fa-whatsapp', 'WhatsApp', 'whatsapp'],
             ['autocadastro_aprovacoes.html', 'fa-solid fa-user-check', 'Aprovação de Cadastro', 'autocadastro'],
             ['portaria_checkin.html', 'fa-solid fa-qrcode', 'Portaria QR', 'portaria_qr'],
-            ['app_midia.html', 'fa-solid fa-tv', 'App Midia', 'app_midia'],
             ['telao_visitantes.html', 'fa-solid fa-display', 'Telão', 'telao']
         ];
 

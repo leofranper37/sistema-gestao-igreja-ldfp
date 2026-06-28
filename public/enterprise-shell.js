@@ -230,11 +230,17 @@
         return ROLE_FEATURES.visitante;
     }
 
+    // Funcionalidades que nunca podem ser bloqueadas pelo sistema de módulos
+    const CORE_FEATURES = new Set(['dashboard', 'configuracoes']);
+
     function getEnabledFeatures(user) {
         const roleFeatures = getRoleVisibleFeatures(user);
 
-        if (Array.isArray(dynamicFeatureAllowList)) {
-            return roleFeatures.filter((feature) => dynamicFeatureAllowList.includes(feature));
+        // Se o plano não tem nenhum módulo configurado, trata como sem restrição
+        if (Array.isArray(dynamicFeatureAllowList) && dynamicFeatureAllowList.length > 0) {
+            return roleFeatures.filter((feature) =>
+                CORE_FEATURES.has(feature) || dynamicFeatureAllowList.includes(feature)
+            );
         }
 
         return roleFeatures;

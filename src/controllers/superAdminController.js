@@ -1116,6 +1116,19 @@ async function listResetRequests(req, res) {
         res.json(rows);
     } catch (err) { res.status(500).json({ error: err.message }); }
 }
+
+async function resolveResetRequest(req, res) {
+    try {
+        const id = Number(req.params.id);
+        if (!id) return res.status(400).json({ error: 'ID inválido.' });
+        await pool.query(
+            `UPDATE password_reset_requests SET status = 'resolvido', resolved_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pendente'`,
+            [id]
+        );
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
 // ── Fábrica de Inovações ─────────────────────────────────────────────────────
 
 async function postFactoryAiSuggest(req, res) {
@@ -1436,5 +1449,6 @@ module.exports = {
     listUsuariosAdmin,
     postResetSenha,
     listResetRequests,
+    resolveResetRequest,
     getSaasRelatorioFinanceiro,
 };

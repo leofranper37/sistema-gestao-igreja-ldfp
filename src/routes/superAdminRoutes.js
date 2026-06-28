@@ -42,7 +42,8 @@ const {
     impersonateChurch,
     listUsuariosAdmin,
     postResetSenha,
-    listResetRequests
+    listResetRequests,
+    resolveResetRequest
 } = require('../controllers/superAdminController');
 
 const {
@@ -124,6 +125,7 @@ router.delete('/api/saas/novidades/:id', ...isSuperAdmin, deleteNovidade);
 router.get('/api/saas/usuarios', ...isSuperAdmin, listUsuariosAdmin);
 router.post('/api/saas/usuarios/reset-senha', ...isSuperAdmin, postResetSenha);
 router.get('/api/saas/reset-requests', ...isSuperAdmin, listResetRequests);
+router.patch('/api/saas/reset-requests/:id/resolve', ...isSuperAdmin, resolveResetRequest);
 
 // Backup & Recuperação de dados por igreja
 router.get('/api/saas/backups',                       ...isSuperAdmin, listarBackups);

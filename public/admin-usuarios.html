@@ -233,13 +233,32 @@ async function loadRequests() {
         <td>${new Date(d.created_at).toLocaleString('pt-BR')}</td>
         <td>
           ${d.status === 'pendente'
-            ? `<button class="btn primary sm" onclick="openResetFromRequest('${d.email}')"><i class="fa-solid fa-key"></i> Redefinir</button>`
+            ? `<div style="display:flex;gap:6px">
+                <button class="btn primary sm" onclick="openResetFromRequest('${d.email}')"><i class="fa-solid fa-key"></i> Redefinir</button>
+                <button class="btn sm" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0" onclick="dispensarRequest(${d.id}, this)"><i class="fa-solid fa-xmark"></i> Dispensar</button>
+               </div>`
             : '<span style="color:var(--muted);font-size:11px">Resolvido</span>'}
         </td>
       </tr>
     `).join('');
   } catch(e) {
     toast('Erro ao carregar solicitações: ' + e.message, true);
+  }
+}
+
+async function dispensarRequest(id, btn) {
+  btn.disabled = true;
+  try {
+    const r = await fetch(`/api/saas/reset-requests/${id}/resolve`, { method: 'PATCH', headers: headers() });
+    if (!r.ok) throw new Error(await r.text());
+    btn.closest('tr').querySelector('.status').textContent = 'resolvido';
+    btn.closest('tr').querySelector('.status').className = 'status resolvido';
+    btn.closest('div').innerHTML = '<span style="color:var(--muted);font-size:11px">Resolvido</span>';
+    toast('Solicitação dispensada.', false);
+    loadResetRequests();
+  } catch(e) {
+    toast('Erro: ' + e.message, true);
+    btn.disabled = false;
   }
 }
 

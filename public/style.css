@@ -2,13 +2,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --sidebar-bg: #1e2433;
-    --sidebar-border: #334155;
-    --sidebar-text: #f1f5f9;
-    --sidebar-text-muted: #c4d0e3;
-    --sidebar-active-bg: rgba(59,130,246,0.22);
-    --sidebar-active-text: #93c5fd;
-    --sidebar-hover-bg: rgba(255,255,255,0.09);
+    --sidebar-bg: #ffffff;
+    --sidebar-border: #e5e7eb;
+    --sidebar-text: #1e293b;
+    --sidebar-text-muted: #64748b;
+    --sidebar-active-bg: #eff6ff;
+    --sidebar-active-text: #2563eb;
+    --sidebar-hover-bg: #f8fafc;
 
     --main-bg: #f9fafb;
     --card-bg: #ffffff;
@@ -128,7 +128,7 @@ main.main-content > .enterprise-top-header ~ .enterprise-top-header {
 }
 .profile-avatar {
     width: 34px; height: 34px;
-    background-color: #3b82f6;
+    background-color: #2563eb;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     color: white; font-size: 14px;
@@ -180,7 +180,7 @@ main.main-content > .enterprise-top-header ~ .enterprise-top-header {
 .dropdown-btn.active .arrow { transform: rotate(90deg); opacity: 1; }
 
 /* Sub-menu */
-.dropdown-container { display: none; background-color: transparent; }
+.dropdown-container { display: none; background-color: #fff; }
 .dropdown-container.is-open { display: block; }
 .dropdown-container a {
     display: block;

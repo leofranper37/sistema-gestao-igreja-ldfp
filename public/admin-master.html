@@ -341,7 +341,7 @@
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Excluindo...';
                 try {
-                    const token = localStorage.getItem('ldfp_token') || sessionStorage.getItem('ldfp_token');
+                    const token = window.getAuthToken?.() || sessionStorage.getItem('token') || localStorage.getItem('token') || '';
                     const resp = await fetch(`/api/saas/igrejas/${_deleteIgrejaId}`, {
                         method: 'DELETE',
                         headers: { Authorization: `Bearer ${token}` }

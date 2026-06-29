@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"D:/sistema-gestao-igreja-main\" show --stat e45aec6)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'fix: service worker CSS/JS agora usa network-first para sempre carregar versao atualizada *)",
+      "Bash(git push *)",
+      "Bash(Select-String *)"
+    ]
+  }
+}

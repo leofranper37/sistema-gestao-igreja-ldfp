@@ -1063,9 +1063,9 @@ async function deleteIgreja(req, res) {
 
     // Registra no audit log após o commit (fire-and-forget)
     const { audit } = require('../services/auditService');
-    audit('IGREJA_EXCLUIDA', req, { igrejaNome: igNome, igrejaId: id, totalMembros });
+    audit('IGREJA_EXCLUIDA', req, { igrejaNome: ig[0].nome, igrejaId: id, totalMembros });
 
-    res.json({ ok: true, mensagem: `Igreja "${igNome}" excluída com sucesso.` });
+    res.json({ ok: true, mensagem: `Igreja "${ig[0].nome}" excluída com sucesso.` });
 }
 
 // ── Usuários / Reset de Senha ────────────────────────────────────────────────

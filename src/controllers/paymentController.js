@@ -72,18 +72,34 @@ async function listarPlanos(req, res) {
             `SELECT slug, nome, subtitulo, preco_mensal, preco_anual,
                     max_cadastros, max_congregacoes, modulo_app_membro, features_json
              FROM saas_planos
-               WHERE ativo = 1 AND LOWER(slug) NOT IN ('eden', 'edon')
+             WHERE ativo = 1 AND LOWER(slug) NOT IN ('eden', 'edon')
              ORDER BY preco_mensal ASC`
         );
-        
-        // Se obteve dados do banco, retorna eles
+
         if (Array.isArray(rows) && rows.length > 0) {
-            return res.json(rows);
+            const result = rows.map(r => {
+                // Se o admin já preencheu os benefícios, usa eles
+                let features = [];
+                try { features = JSON.parse(r.features_json || '[]'); } catch (_) {}
+
+                // Se estiver vazio, gera lista automática a partir dos dados do plano
+                if (!features.length) {
+                    if (r.max_cadastros > 0) features.push(`Até ${r.max_cadastros} membros cadastrados`);
+                    if (r.max_congregacoes > 1) features.push(`Até ${r.max_congregacoes} congregações`);
+                    else features.push('1 congregação');
+                    if (r.modulo_app_membro) features.push('App do Membro (iOS e Android)');
+                    features.push('Suporte via e-mail');
+                }
+
+                return { ...r, features_json: JSON.stringify(features) };
+            });
+
+            return res.json(result);
         }
     } catch (err) {
         console.error('[paymentController] Erro ao consultar saas_planos:', err.message);
     }
-    
+
     // Fallback: retorna planos padrão se banco falhar ou estiver vazio
     res.json(FALLBACK_PLANOS);
 }

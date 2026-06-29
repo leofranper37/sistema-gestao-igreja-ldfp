@@ -3,12 +3,12 @@
 
 :root {
     --sidebar-bg: #1e2433;
-    --sidebar-border: #2d3748;
-    --sidebar-text: #e2e8f0;
-    --sidebar-text-muted: #94a3b8;
-    --sidebar-active-bg: rgba(59,130,246,0.18);
-    --sidebar-active-text: #60a5fa;
-    --sidebar-hover-bg: rgba(255,255,255,0.07);
+    --sidebar-border: #334155;
+    --sidebar-text: #f1f5f9;
+    --sidebar-text-muted: #c4d0e3;
+    --sidebar-active-bg: rgba(59,130,246,0.22);
+    --sidebar-active-text: #93c5fd;
+    --sidebar-hover-bg: rgba(255,255,255,0.09);
 
     --main-bg: #f9fafb;
     --card-bg: #ffffff;

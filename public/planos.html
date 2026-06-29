@@ -335,6 +335,40 @@
     document.querySelector('.plans-wrap').prepend(notice);
   }
 
+  // Nome amigável de cada módulo — igual ao admin
+  const MODULE_NAMES = {
+    'membros':            'Membros (Lista e Cadastro)',
+    'cargos':             'Cargos e Situações',
+    'historico-pastoral': 'Histórico Pastoral',
+    'grupos':             'Grupos e Células',
+    'escalas':            'Escalas de Culto',
+    'ebd':                'EBD (Alunos, Turmas e Grades)',
+    'batismos':           'Batismos',
+    'agenda':             'Agenda',
+    'outras-igrejas':     'Outras Igrejas',
+    'missionarios':       'Missionários',
+    'visitantes':         'Visitantes e Acompanhamento',
+    'criancas':           'Crianças',
+    'oracoes':            'Orações e Pedidos',
+    'novidades':          'Novidades / Comunicados',
+    'whatsapp':           'Comunicação WhatsApp',
+    'autocadastro':       'Aprovação de Cadastro Online',
+    'portaria-qr':        'Portaria / Check-in QR',
+    'telao':              'Telão de Visitantes',
+    'estudo-biblico':     'Bíblia, Devocionais e Planos',
+    'dizimos':            'Dízimos & Ofertas',
+    'caixa':              'Caixa',
+    'bancos':             'Bancos',
+    'pagamentos':         'Links de Pagamento',
+    'contas-pagar':       'Contas a Pagar',
+    'recibos':            'Recibos',
+    'transferencias':     'Transferências',
+    'contabilidade':      'Plano de Contas e Lançamentos',
+    'graficos':           'Gráficos',
+    'relatorios':         'Relatórios',
+    'app-membro':         'App do Membro',
+  };
+
   function renderPlanos(planos) {
     if (!Array.isArray(planos) || !planos.length) {
       plansGrid.innerHTML = '<p style="color:var(--muted);font-size:0.9rem;text-align:center;grid-column:1/-1;padding:40px">Nenhum plano disponível no momento.</p>';
@@ -345,18 +379,26 @@
 
     plansGrid.innerHTML = planos.map(p => {
       const isFeatured = p.slug === destaqueSlug;
-      const planModuleSlugs = new Set((Array.isArray(p.modules) ? p.modules : []).map(m => m.slug));
 
+      // Módulos marcados no admin (checkboxes azuis) → aparecem aqui
+      const modulosMarcados = (Array.isArray(p.modules) ? p.modules : [])
+        .map(m => MODULE_NAMES[m.slug])
+        .filter(Boolean);
+
+      // Benefícios manuais escritos no campo "Benefícios" do admin
       let featuresFixas = [];
       try { featuresFixas = JSON.parse(p.features_json || '[]'); } catch (_) {}
 
-      // Página pública: mostra só os benefícios que o admin escreveu no campo "Benefícios"
-      const fixasHtml = featuresFixas.length ? featuresFixas.map(f => `
-        <div class="feat-row">
-          <i class="fa-solid fa-check feat-icon"></i>
-          <span>${esc(f)}</span>
-        </div>
-      `).join('') : `<div class="feat-row" style="color:var(--muted);font-size:0.8rem">Benefícios não configurados.</div>`;
+      // Junta: benefícios manuais primeiro, depois módulos marcados
+      const todosItens = [...featuresFixas, ...modulosMarcados];
+
+      const fixasHtml = todosItens.length
+        ? todosItens.map(f => `
+            <div class="feat-row">
+              <i class="fa-solid fa-check feat-icon"></i>
+              <span>${esc(f)}</span>
+            </div>`).join('')
+        : `<div class="feat-row" style="color:var(--muted);font-size:0.8rem">Configure os módulos no painel admin.</div>`;
 
       // Formata preço: parte inteira + centavos separados
       const precoStr = fmtPrice(p.preco_mensal);

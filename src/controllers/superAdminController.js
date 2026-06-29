@@ -399,6 +399,58 @@ async function updatePlano(req, res) {
     }
 }
 
+async function createPlano(req, res) {
+    const {
+        slug, nome, subtitulo, versiculo,
+        preco_mensal, preco_anual,
+        max_cadastros, max_congregacoes,
+        modulo_app_membro, features, ativo
+    } = req.body || {};
+
+    if (!slug || !nome) {
+        return res.status(400).json({ error: 'slug e nome são obrigatórios.' });
+    }
+
+    const slugClean = String(slug).toLowerCase().trim();
+
+    try {
+        const [existing] = await pool.query(
+            `SELECT id FROM saas_planos WHERE slug = ? LIMIT 1`, [slugClean]
+        );
+        if (existing.length) {
+            return res.status(409).json({ error: `Já existe um plano com o slug "${slugClean}".` });
+        }
+
+        await pool.query(
+            `INSERT INTO saas_planos
+             (slug, nome, subtitulo, versiculo, preco_mensal, preco_anual,
+              max_cadastros, max_congregacoes, modulo_app_membro, features_json, ativo, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+            [
+                slugClean,
+                nome,
+                subtitulo || '',
+                versiculo || '',
+                fmt(preco_mensal),
+                fmt(preco_anual),
+                Number(max_cadastros) || 0,
+                Number(max_congregacoes) || 1,
+                modulo_app_membro ? 1 : 0,
+                JSON.stringify(Array.isArray(features) ? features : []),
+                ativo !== false ? 1 : 0,
+            ]
+        );
+
+        const [created] = await pool.query(
+            `SELECT * FROM saas_planos WHERE slug = ? LIMIT 1`, [slugClean]
+        );
+        const r = created[0];
+        return res.status(201).json({ ...r, features: safeJson(r.features_json, []) });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 // ── Assinaturas / Faturas SaaS ─────────────────────────────────────────────
 
 async function listSaasAssinaturas(req, res) {
@@ -1416,6 +1468,7 @@ module.exports = {
     patchIgrejaStatus,
     updateSaasIgrejaContrato,
     listPlanos,
+    createPlano,
     getPlano,
     updatePlano,
     listSaasAssinaturas,

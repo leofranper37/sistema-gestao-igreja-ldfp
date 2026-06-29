@@ -10,6 +10,7 @@ const {
     patchIgrejaStatus,
     updateSaasIgrejaContrato,
     listPlanos,
+    createPlano,
     getPlano,
     updatePlano,
     listSaasAssinaturas,
@@ -81,6 +82,7 @@ router.post('/api/saas/igrejas/:id/impersonate', ...isSuperAdmin, impersonateChu
 
 // Planos
 router.get('/api/saas/planos', ...isSuperAdmin, listPlanos);
+router.post('/api/saas/planos', ...isSuperAdmin, createPlano);
 router.get('/api/saas/planos/:slug', ...isSuperAdmin, getPlano);
 router.put('/api/saas/planos/:slug', ...isSuperAdmin, updatePlano);
 

@@ -1080,6 +1080,22 @@ async function initializeDatabase() {
             INDEX idx_caixa_lanc_data (data)
         )`);
 
+        await activeMysqlPool.query(`CREATE TABLE IF NOT EXISTS blog_posts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            titulo VARCHAR(255) NOT NULL,
+            slug VARCHAR(255) NOT NULL UNIQUE,
+            resumo TEXT,
+            conteudo LONGTEXT,
+            autor VARCHAR(150) DEFAULT 'LDFP',
+            categoria VARCHAR(100) DEFAULT 'Geral',
+            imagem_url VARCHAR(500),
+            publicado TINYINT(1) NOT NULL DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_blog_slug (slug),
+            INDEX idx_blog_publicado (publicado)
+        )`);
+
         console.log('✅ Tabelas principais verificadas/criadas no MySQL.');
         return;
     }

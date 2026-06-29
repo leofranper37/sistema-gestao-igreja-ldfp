@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog — LDFP Master</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--dark:#0f172a;--panel:#1e293b;--blue:#2563eb;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--bg:#f8fafc;--white:#fff;--text:#334155;--muted:#64748b;--border:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--dark);color:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px}
+.logo-icon{background:linear-gradient(135deg,var(--blue),#60a5fa);width:32px;height:32px;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:800;font-size:14px}
+.sidebar-header h2{font-size:17px;font-weight:800}.sidebar-header span{font-size:10px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.menu{padding:16px 0;flex:1;overflow-y:auto}
+.menu-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:0 18px;margin:12px 0 6px;font-weight:600}
+.menu-item{padding:11px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.2s;border-left:3px solid transparent}
+.menu-item:hover{background:var(--panel);color:#fff}.menu-item.active{background:var(--panel);border-left-color:var(--blue);color:#fff;font-weight:600}
+.menu-item i{width:18px;text-align:center;font-size:15px}
+.main-content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.workspace{padding:28px;flex:1;overflow-y:auto}
+.btn{padding:9px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:8px;transition:.2s}
+.btn.primary{background:var(--blue);color:#fff}.btn.primary:hover{background:#1d4ed8}
+.btn.secondary{background:#fff;border:1px solid var(--border);color:var(--text)}.btn.secondary:hover{background:#f1f5f9}
+.btn.danger{background:var(--red);color:#fff}.btn.danger:hover{background:#b91c1c}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn.edit{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe;padding:5px 10px;font-size:12px}
+.posts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-top:20px}
+.post-card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:.15s}
+.post-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.post-thumb{width:100%;height:140px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:2rem;overflow:hidden}
+.post-thumb img{width:100%;height:100%;object-fit:cover}
+.post-info{padding:14px 16px}
+.post-cat{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--blue);margin-bottom:4px}
+.post-title{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:6px;line-height:1.4}
+.post-resumo{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
+.post-status{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px}
+.post-status.pub{background:#dcfce7;color:#16a34a}
+.post-status.draft{background:#fef9c3;color:#ca8a04}
+.post-actions{display:flex;gap:6px}
+.empty-state{text-align:center;padding:60px;color:var(--muted);grid-column:1/-1}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(3px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:16px;padding:28px;width:min(700px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.2)}
+.modal h2{font-size:18px;font-weight:800;margin-bottom:20px;color:var(--dark)}
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px}
+.form-row input,.form-row textarea,.form-row select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:#fff}
+.form-row textarea{resize:vertical;min-height:200px;font-family:inherit}
+.form-row input:focus,.form-row textarea:focus,.form-row select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.switch-row{display:flex;align-items:center;gap:10px}
+.switch-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}
+.switch-row label{font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;z-index:2000;opacity:0;transform:translateY(12px);transition:.3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">L</div>
+    <div><h2>LDFP Master</h2><span>Painel SaaS</span></div>
+  </div>
+  <div class="menu">
+    <div class="menu-label">Negócio</div>
+    <a href="super-admin.html" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="admin-igrejas.html" class="menu-item"><i class="fa-solid fa-church"></i> Igrejas (Clientes)</a>
+    <a href="admin-assinaturas.html" class="menu-item"><i class="fa-solid fa-file-invoice-dollar"></i> Assinaturas & Faturas</a>
+    <a href="admin-usuarios.html" class="menu-item"><i class="fa-solid fa-users-gear"></i> Usuários & Senhas</a>
+    <a href="admin-modulos.html" class="menu-item"><i class="fa-solid fa-puzzle-piece"></i> Catálogo de Módulos</a>
+    <a href="admin-retomada.html" class="menu-item"><i class="fa-solid fa-rocket"></i> Retomada Inteligente</a>
+    <div class="menu-label">Configurações SaaS</div>
+    <a href="admin-planos.html" class="menu-item"><i class="fa-solid fa-tags"></i> Planos e Preços</a>
+    <a href="admin-novidades.html" class="menu-item"><i class="fa-solid fa-newspaper"></i> Novidades</a>
+    <a href="admin-blog.html" class="menu-item active"><i class="fa-solid fa-pen-nib"></i> Blog</a>
+    <a href="admin-inovacoes.html" class="menu-item"><i class="fa-solid fa-lightbulb"></i> Fábrica de Inovações</a>
+    <a href="admin-sistema.html" class="menu-item"><i class="fa-solid fa-server"></i> Logs e Sistema</a>
+    <div class="menu-label">Sessão</div>
+    <a href="login.html" class="menu-item"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <header class="topbar">
+    <h1><i class="fa-solid fa-pen-nib" style="color:var(--blue);margin-right:8px"></i>Blog</h1>
+    <div class="topbar-right">
+      <button class="btn primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> Novo Post</button>
+      <button class="btn secondary" onclick="loadPosts()"><i class="fa-solid fa-rotate-right"></i> Atualizar</button>
+    </div>
+  </header>
+  <div class="workspace">
+    <p style="font-size:13px;color:var(--muted)">Gerencie os posts do blog público em <a href="/blog" target="_blank" style="color:var(--blue)">ldfp.com.br/blog</a>.</p>
+    <div class="posts-grid" id="postsGrid">
+      <div class="empty-state"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">Novo Post</h2>
+    <input type="hidden" id="editId">
+    <div class="form-row">
+      <label>Título</label>
+      <input id="fTitulo" type="text" placeholder="Título do post..." oninput="autoSlug()">
+    </div>
+    <div class="two-col">
+      <div class="form-row">
+        <label>Slug (URL)</label>
+        <input id="fSlug" type="text" placeholder="titulo-do-post">
+      </div>
+      <div class="form-row">
+        <label>Categoria</label>
+        <select id="fCategoria">
+          <option>Liderança</option>
+          <option>Finanças da Igreja</option>
+          <option>Secretaria e Gestão</option>
+          <option>Espiritualidade</option>
+          <option>Tecnologia para Igrejas</option>
+          <option>Fé e Prática</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Resumo (aparece na listagem)</label>
+      <textarea id="fResumo" rows="2" placeholder="Breve descrição do post..."></textarea>
+    </div>
+    <div class="form-row">
+      <label>Conteúdo (HTML permitido)</label>
+      <textarea id="fConteudo" placeholder="<p>Conteúdo completo do post...</p>&#10;<h2>Subtítulo</h2>&#10;<p>Mais texto...</p>"></textarea>
+    </div>
+    <div class="two-col">
+      <div class="form-row">
+        <label>Autor</label>
+        <input id="fAutor" type="text" placeholder="Nome do autor" value="LDFP">
+      </div>
+      <div class="form-row">
+        <label>URL da Imagem (opcional)</label>
+        <input id="fImagem" type="url" placeholder="https://...">
+      </div>
+    </div>
+    <div class="switch-row" style="margin-top:4px">
+      <input type="checkbox" id="fPublicado">
+      <label for="fPublicado">Publicar imediatamente (aparece no blog público)</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn primary" onclick="savePost()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="session.js?v=20260501"></script>
+<script>
+const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
+const headers = () => ({ 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() });
+
+let posts = [];
+
+function fmtDate(s) {
+  return new Date(s).toLocaleDateString('pt-BR');
+}
+
+function autoSlug() {
+  const t = document.getElementById('fTitulo').value;
+  document.getElementById('fSlug').value = t.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-');
+}
+
+async function loadPosts() {
+  try {
+    const r = await fetch('/api/saas/blog/posts', { headers: headers() });
+    if (r.status === 401) { location.href = 'login.html'; return; }
+    posts = await r.json();
+    renderPosts();
+  } catch { toast('Erro ao carregar posts.', 'error'); }
+}
+
+function renderPosts() {
+  const grid = document.getElementById('postsGrid');
+  if (!posts.length) {
+    grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-pen-nib fa-2x" style="margin-bottom:12px"></i><br>Nenhum post ainda. Crie o primeiro!</div>';
+    return;
+  }
+  grid.innerHTML = posts.map(p => `
+    <div class="post-card">
+      <div class="post-thumb">
+        ${p.imagem_url ? `<img src="${p.imagem_url}" alt="${p.titulo}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-image\\'></i>'">` : '<i class="fa-solid fa-image"></i>'}
+      </div>
+      <div class="post-info">
+        <div class="post-cat">${p.categoria || 'Geral'}</div>
+        <div class="post-title">${p.titulo}</div>
+        <div class="post-resumo">${p.resumo || '<em style="color:#94a3b8">Sem resumo</em>'}</div>
+        <div class="post-footer">
+          <span class="post-status ${p.publicado ? 'pub' : 'draft'}">${p.publicado ? 'Publicado' : 'Rascunho'}</span>
+          <div class="post-actions">
+            <button class="btn edit sm" onclick="editPost(${p.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+            <button class="btn danger sm" onclick="deletePost(${p.id}, '${p.titulo.replace(/'/g,"\\'")}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openModal(post) {
+  document.getElementById('editId').value = post ? post.id : '';
+  document.getElementById('modalTitle').textContent = post ? 'Editar Post' : 'Novo Post';
+  document.getElementById('fTitulo').value = post ? post.titulo : '';
+  document.getElementById('fSlug').value = post ? post.slug : '';
+  document.getElementById('fResumo').value = post ? (post.resumo || '') : '';
+  document.getElementById('fConteudo').value = post ? (post.conteudo || '') : '';
+  document.getElementById('fAutor').value = post ? (post.autor || 'LDFP') : 'LDFP';
+  document.getElementById('fCategoria').value = post ? (post.categoria || 'Liderança') : 'Liderança';
+  document.getElementById('fImagem').value = post ? (post.imagem_url || '') : '';
+  document.getElementById('fPublicado').checked = post ? !!post.publicado : false;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+function editPost(id) {
+  const p = posts.find(x => x.id === id);
+  if (p) openModal(p);
+}
+
+async function savePost() {
+  const id = document.getElementById('editId').value;
+  const body = {
+    titulo: document.getElementById('fTitulo').value.trim(),
+    slug: document.getElementById('fSlug').value.trim(),
+    resumo: document.getElementById('fResumo').value.trim(),
+    conteudo: document.getElementById('fConteudo').value.trim(),
+    autor: document.getElementById('fAutor').value.trim() || 'LDFP',
+    categoria: document.getElementById('fCategoria').value,
+    imagem_url: document.getElementById('fImagem').value.trim() || null,
+    publicado: document.getElementById('fPublicado').checked
+  };
+  if (!body.titulo || !body.slug) { toast('Título e slug são obrigatórios.', 'error'); return; }
+  try {
+    const url = id ? `/api/saas/blog/posts/${id}` : '/api/saas/blog/posts';
+    const method = id ? 'PUT' : 'POST';
+    const r = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });
+    if (!r.ok) throw new Error(await r.text());
+    closeModal();
+    toast(id ? 'Post atualizado!' : 'Post criado!', 'success');
+    loadPosts();
+  } catch (e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+async function deletePost(id, titulo) {
+  if (!confirm(`Deletar "${titulo}"?`)) return;
+  try {
+    const r = await fetch(`/api/saas/blog/posts/${id}`, { method: 'DELETE', headers: headers() });
+    if (!r.ok) throw new Error(await r.text());
+    toast('Post deletado.', 'success');
+    loadPosts();
+  } catch (e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + type + ' show';
+  setTimeout(() => { el.className = 'toast ' + type; }, 3000);
+}
+
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target.id === 'modalOverlay') closeModal();
+});
+
+(function() {
+  const t = token();
+  if (!t) { location.href = 'login.html'; return; }
+  try {
+    const p = JSON.parse(atob(t.split('.')[1]));
+    if (!['super-admin','super_admin','superadmin','master'].includes(p.role)) { location.href = 'login.html'; }
+  } catch(_) { location.href = 'login.html'; }
+})();
+
+loadPosts();
+</script>
+</body>
+</html>

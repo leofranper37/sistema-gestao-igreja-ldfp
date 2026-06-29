@@ -46,6 +46,8 @@ const {
     resolveResetRequest
 } = require('../controllers/superAdminController');
 
+const { listAdmin: listAdminPosts, createPost, updatePost, deletePost } = require('../controllers/blogController');
+
 const {
     listarBackups,
     detalharBackup,
@@ -113,6 +115,12 @@ router.post('/api/saas/retomada/checkpoint', ...isSuperAdmin, postRetomadaCheckp
 // Fábrica de Inovações
 router.post('/api/saas/factory/ai-suggest', ...isSuperAdmin, postFactoryAiSuggest);
 router.post('/api/saas/factory/publish', ...isSuperAdmin, postFactoryPublish);
+
+// Blog
+router.get('/api/saas/blog/posts', ...isSuperAdmin, listAdminPosts);
+router.post('/api/saas/blog/posts', ...isSuperAdmin, createPost);
+router.put('/api/saas/blog/posts/:id', ...isSuperAdmin, updatePost);
+router.delete('/api/saas/blog/posts/:id', ...isSuperAdmin, deletePost);
 
 // Novidades (público: sem auth / admin: com auth)
 router.get('/api/novidades', listNovidadesPublic);

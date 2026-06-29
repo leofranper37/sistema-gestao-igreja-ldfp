@@ -1185,53 +1185,59 @@ async function resolveResetRequest(req, res) {
 
 async function postFactoryAiSuggest(req, res) {
     const prompt = String(req.body?.prompt || '').trim();
-    const words = prompt.toLowerCase();
+    if (!prompt) return res.status(400).json({ error: 'Prompt é obrigatório.' });
 
-    let name = '', description = '', route = 'construcao.html', plans = ['siao'];
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+        return res.status(503).json({ error: 'ANTHROPIC_API_KEY não configurada. Adicione no .env do servidor.' });
+    }
 
-    if (words.includes('financ') || words.includes('caixa') || words.includes('tesourar')) {
-        name = 'Painel Financeiro Avançado'; description = 'Relatórios, gráficos e exportação financeira completa.';
-        route = 'financeiro.html'; plans = ['betel', 'siao'];
-    } else if (words.includes('membro') || words.includes('secretar') || words.includes('cadastro')) {
-        name = 'Gestão de Membros'; description = 'Controle de membros, visitantes e secretaria.';
-        route = 'membros.html'; plans = ['hebrom', 'betel', 'siao'];
-    } else if (words.includes('ebd') || words.includes('escola') || words.includes('dominical')) {
-        name = 'EBD — Escola Dominical'; description = 'Gestão completa da Escola Bíblica Dominical.';
-        route = 'ebd_turmas.html'; plans = ['betel', 'siao'];
-    } else if (words.includes('batismo')) {
-        name = 'Controle de Batismos'; description = 'Registro, inscrições e controle de batismos.';
-        route = 'batismos.html'; plans = ['betel', 'siao'];
-    } else if (words.includes('whatsapp') || words.includes('mensagem') || words.includes('comunicac')) {
-        name = 'Comunicação WhatsApp'; description = 'Central de comunicação com membros via WhatsApp.';
-        route = 'comunicacao_whatsapp.html'; plans = ['siao'];
-    } else if (words.includes('escala') || words.includes('voluntar') || words.includes('ministér')) {
-        name = 'Escalas de Ministérios'; description = 'Gerenciamento de escalas e voluntários.';
-        route = 'escalas.html'; plans = ['betel', 'siao'];
-    } else if (words.includes('agenda') || words.includes('event') || words.includes('calend')) {
-        name = 'Agenda e Eventos'; description = 'Calendário e gerenciamento de eventos da igreja.';
-        route = 'agenda.html'; plans = ['hebrom', 'betel', 'siao'];
-    } else if (words.includes('dashboard') || words.includes('indicador') || words.includes('crescimento')) {
-        name = 'Dashboard Executivo'; description = 'Indicadores de crescimento com gráficos e métricas.';
-        route = 'dashboard.html'; plans = ['siao'];
-    } else {
-        const titleParts = prompt.split(' ').slice(0, 5).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
-        name = titleParts.join(' ') || 'Novo Módulo';
-        description = 'Módulo desenvolvido conforme necessidade descrita.';
-        route = 'construcao.html';
-        plans = ['siao'];
+    const Anthropic = require('@anthropic-ai/sdk');
+    const client = new Anthropic({ apiKey });
+
+    const message = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        messages: [{
+            role: 'user',
+            content: `Você é um especialista em sistemas de gestão para igrejas evangélicas brasileiras.
+
+Sugira uma nova funcionalidade para o sistema LDFP baseado nesta ideia:
+
+"${prompt}"
+
+Retorne APENAS um JSON válido, sem markdown, sem explicações:
+{
+  "name": "Nome curto da funcionalidade (máx 40 chars)",
+  "description": "Descrição em 1-2 frases objetivas",
+  "route": "nome_pagina.html",
+  "targetPlans": ["hebrom"|"betel"|"siao"],
+  "rationale": ["motivo 1", "motivo 2", "motivo 3"]
+}`
+        }]
+    });
+
+    let parsed;
+    try {
+        const text = message.content[0].text.trim();
+        parsed = JSON.parse(text);
+    } catch (_) {
+        return res.status(500).json({ error: 'Falha ao processar resposta da IA. Tente novamente.' });
     }
 
     res.json({
         suggestion: {
-            module: { id: 'mod-' + Date.now(), name, description, route, status: 'lab', enabled: true, targetPlans: plans },
+            module: {
+                id: 'mod-' + Date.now(),
+                name: parsed.name || 'Novo Módulo',
+                description: parsed.description || '',
+                route: parsed.route || 'construcao.html',
+                status: 'lab',
+                enabled: true,
+                targetPlans: Array.isArray(parsed.targetPlans) ? parsed.targetPlans : ['siao']
+            },
             menuOverride: null,
-            rationale: [
-                `Módulo "${name}" identificado a partir do prompt fornecido.`,
-                `Rota sugerida: ${route}`,
-                `Planos-alvo recomendados: ${plans.join(', ')}.`,
-                'Status inicial "Lab" — valide antes de publicar.',
-                'Clique em Publicar para ativar nos planos selecionados.'
-            ]
+            rationale: Array.isArray(parsed.rationale) ? parsed.rationale : [parsed.description]
         }
     });
 }

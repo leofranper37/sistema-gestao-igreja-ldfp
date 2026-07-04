@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resumo Financeiro — LDFP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+.page-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.page-header-bar h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--title-color, #1f2937);
+  margin: 0;
+}
+.month-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.month-selector label {
+  font-size: 13px;
+  color: var(--text-muted, #6b7280);
+  font-weight: 500;
+}
+.month-selector input[type=month] {
+  padding: 7px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-main, #111827);
+  background: #fff;
+  cursor: pointer;
+}
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.kpi-icon.green  { background: #dcfce7; color: #16a34a; }
+.kpi-icon.blue   { background: #dbeafe; color: #2563eb; }
+.kpi-icon.red    { background: #fee2e2; color: #dc2626; }
+.kpi-icon.orange { background: #ffedd5; color: #ea580c; }
+.kpi-label {
+  font-size: 12px;
+  color: var(--text-muted, #6b7280);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.kpi-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--title-color, #1f2937);
+  line-height: 1.2;
+}
+.kpi-value.loading { color: #d1d5db; font-size: 1rem; }
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+@media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+.info-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.info-card h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px;
+}
+.big-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--title-color, #1f2937);
+}
+.big-value.positive { color: #16a34a; }
+.big-value.negative { color: #dc2626; }
+.chart-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+.chart-card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--title-color, #1f2937);
+  margin: 0 0 16px;
+}
+.table-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.table-card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.table-card-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--title-color, #1f2937);
+  margin: 0;
+}
+.table-card table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table-card th {
+  padding: 10px 20px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f9fafb;
+  border-bottom: 1px solid #f3f4f6;
+}
+.table-card td {
+  padding: 12px 20px;
+  font-size: 13px;
+  color: var(--text-main, #374151);
+  border-bottom: 1px solid #f9fafb;
+}
+.table-card tr:last-child td { border-bottom: none; }
+.val-entrada { color: #16a34a; font-weight: 600; }
+.val-saida   { color: #dc2626; font-weight: 600; }
+.empty-row td { text-align: center; color: #9ca3af; padding: 24px; }
+</style>
+</head>
+<body class="enterprise-shell-page">
+
+<div class="main-content" id="mainContent" style="padding:28px;overflow-y:auto">
+  <div class="page-header-bar">
+    <h1><i class="fa-solid fa-chart-pie" style="color:#2563eb;margin-right:10px"></i>Resumo Financeiro</h1>
+    <div class="month-selector">
+      <label for="mesSelect"><i class="fa-regular fa-calendar"></i> Mês:</label>
+      <input type="month" id="mesSelect">
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon green"><i class="fa-solid fa-cash-register"></i></div>
+      <div>
+        <div class="kpi-label">Saldo do Caixa</div>
+        <div class="kpi-value loading" id="kpiSaldoCaixa">Carregando...</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon blue"><i class="fa-solid fa-arrow-down"></i></div>
+      <div>
+        <div class="kpi-label">Entradas do Mês</div>
+        <div class="kpi-value loading" id="kpiEntradas">Carregando...</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon red"><i class="fa-solid fa-arrow-up"></i></div>
+      <div>
+        <div class="kpi-label">Saídas do Mês</div>
+        <div class="kpi-value loading" id="kpiSaidas">Carregando...</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon orange"><i class="fa-solid fa-coins"></i></div>
+      <div>
+        <div class="kpi-label">Dízimos e Ofertas</div>
+        <div class="kpi-value loading" id="kpiDizimos">Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bancos + Resultado -->
+  <div class="two-col">
+    <div class="info-card">
+      <h3><i class="fa-solid fa-building-columns" style="margin-right:6px"></i>Saldo dos Bancos</h3>
+      <div class="big-value" id="saldoBancos">—</div>
+    </div>
+    <div class="info-card">
+      <h3><i class="fa-solid fa-scale-balanced" style="margin-right:6px"></i>Resultado do Mês</h3>
+      <div class="big-value" id="resultadoMes">—</div>
+      <div style="font-size:12px;color:#9ca3af;margin-top:4px">Entradas − Saídas</div>
+    </div>
+  </div>
+
+  <!-- Gráfico -->
+  <div class="chart-card">
+    <h3><i class="fa-solid fa-chart-bar" style="margin-right:8px;color:#2563eb"></i>Dízimos e Ofertas — Últimos 6 meses</h3>
+    <canvas id="graficoMeses" height="80"></canvas>
+  </div>
+
+  <!-- Últimos lançamentos -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <h3><i class="fa-solid fa-list" style="margin-right:8px;color:#2563eb"></i>Últimos Lançamentos</h3>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Histórico</th>
+          <th>Tipo</th>
+          <th>Valor</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaLancamentos">
+        <tr class="empty-row"><td colspan="4"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260101"></script>
+<script>
+(function() {
+  const raw = localStorage.getItem('token') || (() => {
+    try { return JSON.parse(localStorage.getItem('ldfpAuth') || '{}').token; } catch(_) { return null; }
+  })();
+  if (!raw) { location.href = 'login.html'; }
+})();
+
+const token = () => {
+  const t = localStorage.getItem('token');
+  if (t) return t;
+  try { return JSON.parse(localStorage.getItem('ldfpAuth') || '{}').token || ''; } catch(_) { return ''; }
+};
+const authH = () => ({ 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() });
+
+function brl(v) {
+  const n = parseFloat(v) || 0;
+  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function mesAtual() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+// Inicializa seletor de mês
+const mesSelect = document.getElementById('mesSelect');
+mesSelect.value = mesAtual();
+mesSelect.addEventListener('change', () => carregarDados(mesSelect.value));
+
+let grafico = null;
+
+async function carregarDados(mes) {
+  try {
+    const [resumoCaixa, totaisDizimos, saldo, stats, lancamentos] = await Promise.allSettled([
+      fetch(`/api/finance/caixa/resumo?mes=${mes}`, { headers: authH() }).then(r => r.json()),
+      fetch(`/api/finance/dizimos/totais?competencia=${mes}`, { headers: authH() }).then(r => r.json()),
+      fetch('/api/finance/saldo', { headers: authH() }).then(r => r.json()),
+      fetch('/api/dashboard/stats', { headers: authH() }).then(r => r.json()),
+      fetch('/api/finance/caixa/lancamentos?limit=5', { headers: authH() }).then(r => r.json()),
+    ]);
+
+    // KPI — Caixa
+    if (resumoCaixa.status === 'fulfilled' && resumoCaixa.value) {
+      const c = resumoCaixa.value;
+      document.getElementById('kpiSaldoCaixa').textContent = brl(c.saldo_final ?? c.saldo_inicial ?? 0);
+      document.getElementById('kpiSaldoCaixa').classList.remove('loading');
+      document.getElementById('kpiEntradas').textContent = brl(c.total_entradas ?? 0);
+      document.getElementById('kpiEntradas').classList.remove('loading');
+      document.getElementById('kpiSaidas').textContent = brl(c.total_saidas ?? 0);
+      document.getElementById('kpiSaidas').classList.remove('loading');
+      const resultado = (parseFloat(c.total_entradas) || 0) - (parseFloat(c.total_saidas) || 0);
+      const elRes = document.getElementById('resultadoMes');
+      elRes.textContent = brl(resultado);
+      elRes.className = 'big-value ' + (resultado >= 0 ? 'positive' : 'negative');
+    }
+
+    // KPI — Dízimos
+    if (totaisDizimos.status === 'fulfilled') {
+      const d = totaisDizimos.value;
+      const total = d.total ?? d.total_dizimos ?? d.valor ?? 0;
+      document.getElementById('kpiDizimos').textContent = brl(total);
+      document.getElementById('kpiDizimos').classList.remove('loading');
+    }
+
+    // Saldo bancos
+    if (saldo.status === 'fulfilled') {
+      document.getElementById('saldoBancos').textContent = brl(saldo.value?.saldo ?? saldo.value?.total ?? 0);
+    }
+
+    // Gráfico 6 meses
+    if (stats.status === 'fulfilled' && stats.value?.graficos?.dizimosPorMes) {
+      const dados = stats.value.graficos.dizimosPorMes;
+      const labels = dados.map(d => d.mes || d.competencia || d.label || '');
+      const valores = dados.map(d => parseFloat(d.total || d.valor || 0));
+      if (grafico) grafico.destroy();
+      grafico = new Chart(document.getElementById('graficoMeses'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Dízimos e Ofertas',
+            data: valores,
+            backgroundColor: 'rgba(37,99,235,0.7)',
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') },
+              grid: { color: '#f3f4f6' }
+            }
+          }
+        }
+      });
+    }
+
+    // Tabela lançamentos
+    if (lancamentos.status === 'fulfilled' && Array.isArray(lancamentos.value) && lancamentos.value.length) {
+      const tbody = document.getElementById('tabelaLancamentos');
+      tbody.innerHTML = lancamentos.value.map(l => {
+        const isEntrada = (l.tipo || '').toLowerCase().includes('entrada') || parseFloat(l.valor) > 0;
+        const cls = isEntrada ? 'val-entrada' : 'val-saida';
+        const sinal = isEntrada ? '+' : '-';
+        const data = l.data ? new Date(l.data).toLocaleDateString('pt-BR') : '—';
+        return `<tr>
+          <td>${data}</td>
+          <td>${l.historico || l.descricao || '—'}</td>
+          <td>${l.tipo || '—'}</td>
+          <td class="${cls}">${sinal} ${brl(Math.abs(parseFloat(l.valor) || 0))}</td>
+        </tr>`;
+      }).join('');
+    } else {
+      document.getElementById('tabelaLancamentos').innerHTML =
+        '<tr class="empty-row"><td colspan="4">Nenhum lançamento encontrado</td></tr>';
+    }
+
+  } catch(e) {
+    console.error('[resumo financeiro]', e);
+  }
+}
+
+carregarDados(mesSelect.value);
+</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Blog LDFP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --bg: #111827; --card: #1f2937; --border: #374151; --accent: #f97316; --text: #f9fafb; --muted: #9ca3af; --muted-soft: #d1d5db; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .top-nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--border); }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-weight: 800; font-size: 1.1rem; }
+    .nav-logo img { width: 36px; height: 36px; object-fit: contain; }
+    .nav-back { color: var(--muted); text-decoration: none; font-size: 0.88rem; display: flex; align-items: center; gap: 6px; transition: color .15s; }
+    .nav-back:hover { color: var(--text); }
+    .nav-cta { background: var(--accent); color: #fff; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 700; }
+
+    .post-wrap { max-width: 760px; margin: 0 auto; padding: 48px 16px 80px; }
+
+    .post-hero { width: 100%; max-height: 400px; object-fit: cover; border-radius: 14px; margin-bottom: 32px; }
+    .post-category { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--accent); margin-bottom: 12px; }
+    .post-title { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 800; line-height: 1.25; margin-bottom: 16px; }
+    .post-meta { display: flex; align-items: center; gap: 16px; color: var(--muted); font-size: 0.84rem; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .post-meta i { margin-right: 5px; }
+
+    .post-content { font-size: 1rem; line-height: 1.85; color: var(--muted-soft); }
+    .post-content h2 { color: var(--text); font-size: 1.3rem; margin: 28px 0 12px; }
+    .post-content h3 { color: var(--text); font-size: 1.1rem; margin: 20px 0 8px; }
+    .post-content p { margin-bottom: 16px; }
+    .post-content ul, .post-content ol { padding-left: 24px; margin-bottom: 16px; }
+    .post-content li { margin-bottom: 6px; }
+    .post-content blockquote { border-left: 3px solid var(--accent); padding: 12px 20px; background: rgba(249,115,22,0.06); border-radius: 0 8px 8px 0; margin: 20px 0; color: var(--text); font-style: italic; }
+    .post-content strong { color: var(--text); }
+    .post-content a { color: var(--accent); }
+
+    .cta-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 24px; text-align: center; margin-top: 48px; }
+    .cta-box h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+    .cta-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+    .cta-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #fff; padding: 12px 24px; border-radius: 9px; text-decoration: none; font-weight: 700; font-size: 0.9rem; }
+    .cta-btn:hover { opacity: 0.9; }
+
+    .loading { text-align: center; padding: 80px; color: var(--muted); }
+    .not-found { text-align: center; padding: 80px; }
+    .not-found h2 { font-size: 1.4rem; margin-bottom: 12px; }
+    .not-found a { color: var(--accent); }
+
+    @media (max-width: 640px) { .top-nav { padding: 12px 16px; } }
+  </style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a href="/blog" class="nav-back"><i class="fa-solid fa-arrow-left"></i> Blog</a>
+  <a href="/" class="nav-logo">
+    <img src="/logo.png" alt="LDFP" onerror="this.style.display='none'">
+    LDFP
+  </a>
+  <a href="/cadastro_igreja.html" class="nav-cta">Começar grátis</a>
+</nav>
+
+<div class="post-wrap" id="postWrap">
+  <div class="loading"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+</div>
+
+<script>
+  function fmtDate(s) {
+    return new Date(s).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+
+  const slug = window.location.pathname.split('/').filter(Boolean).pop();
+
+  fetch(`/api/blog/posts/${slug}`)
+    .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
+    .then(post => {
+      document.title = `${post.titulo} — Blog LDFP`;
+      document.getElementById('postWrap').innerHTML = `
+        ${post.imagem_url ? `<img src="${post.imagem_url}" alt="${post.titulo}" class="post-hero" onerror="this.style.display='none'">` : ''}
+        <div class="post-category">${post.categoria || 'Geral'}</div>
+        <h1 class="post-title">${post.titulo}</h1>
+        <div class="post-meta">
+          <span><i class="fa-regular fa-user"></i>${post.autor || 'LDFP'}</span>
+          <span><i class="fa-regular fa-calendar"></i>${fmtDate(post.created_at)}</span>
+        </div>
+        <div class="post-content">${post.conteudo || ''}</div>
+        <div class="cta-box">
+          <h3>Gerencie sua igreja com o LDFP</h3>
+          <p>30+ módulos, do primeiro membro à contabilidade avançada.</p>
+          <a href="/cadastro_igreja.html" class="cta-btn"><i class="fa-solid fa-rocket"></i> Experimente 7 dias grátis</a>
+        </div>`;
+    })
+    .catch(() => {
+      document.getElementById('postWrap').innerHTML = `
+        <div class="not-found">
+          <h2>Post não encontrado</h2>
+          <p><a href="/blog">← Voltar ao blog</a></p>
+        </div>`;
+    });
+</script>
+</body>
+</html>

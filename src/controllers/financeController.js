@@ -178,6 +178,57 @@ async function deleteTipoReceita(req, res) {
     res.json({ message: 'Tipo de receita removido com sucesso.' });
 }
 
+// ─── Caixa ────────────────────────────────────────────────────────────────────
+
+async function getCaixaResumo(req, res) {
+    const igrejaId = getIgrejaId(req.auth);
+    const mes = req.query.mes || null;
+    const resumo = await financeService.getCaixaResumo(igrejaId, mes);
+    res.json(resumo);
+}
+
+async function listCaixaLancamentos(req, res) {
+    const igrejaId = getIgrejaId(req.auth);
+    const { page, limit, inicio, fim, tipo, busca } = req.query;
+    const result = await financeService.listCaixaLancamentos(igrejaId, { page, limit, inicio, fim, tipo, busca });
+    res.json(result);
+}
+
+async function createCaixaLancamento(req, res) {
+    const igrejaId = getIgrejaId(req.auth);
+    const userId = req.auth?.id || null;
+    const { data, doc, historico, valor, tipo, observacao } = req.body;
+
+    if (!historico || !historico.trim()) {
+        return res.status(400).json({ error: 'O histórico é obrigatório.' });
+    }
+    const valorNum = parseDecimal(valor);
+    if (Number.isNaN(valorNum) || valorNum <= 0) {
+        return res.status(400).json({ error: 'Valor inválido.' });
+    }
+
+    const id = await financeService.createCaixaLancamento(igrejaId, userId, { data, doc, historico: historico.trim(), valor: valorNum, tipo, observacao });
+    audit('finance.caixa.lancamento.create', req, { tipo, valor: valorNum });
+    res.status(201).json({ id, message: 'Lançamento registrado com sucesso.' });
+}
+
+async function deleteCaixaLancamento(req, res) {
+    const igrejaId = getIgrejaId(req.auth);
+    const { id } = req.params;
+    const rows = await financeService.deleteCaixaLancamento(id, igrejaId);
+    if (!rows) return res.status(404).json({ error: 'Lançamento não encontrado.' });
+    audit('finance.caixa.lancamento.delete', req, { id });
+    res.json({ message: 'Lançamento removido.' });
+}
+
+async function upsertCaixaMes(req, res) {
+    const igrejaId = getIgrejaId(req.auth);
+    const { mesCompetencia, saldoInicial, observacao } = req.body;
+    if (!mesCompetencia) return res.status(400).json({ error: 'Mês de competência é obrigatório.' });
+    await financeService.upsertCaixaMes(igrejaId, { mesCompetencia, saldoInicial: parseDecimal(saldoInicial) || 0, observacao });
+    res.json({ message: 'Mês de caixa configurado com sucesso.' });
+}
+
 module.exports = {
     createTransacao,
     getSaldo,
@@ -191,5 +242,10 @@ module.exports = {
     createTipoReceita,
     deleteTipoReceita,
     listTiposReceita,
-    updateTipoReceita
+    updateTipoReceita,
+    getCaixaResumo,
+    listCaixaLancamentos,
+    createCaixaLancamento,
+    deleteCaixaLancamento,
+    upsertCaixaMes
 };

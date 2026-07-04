@@ -2,285 +2,461 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#111827">
-  <title>LDFP - Login do Membro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f0c29">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>App do Membro</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --bg-main: #101826;
-      --bg-card: #141d2b;
+      --primary: #7c3aed;
+      --primary-dark: #5b21b6;
       --accent: #f97316;
-      --accent-soft: #fed7aa;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --border: #1f2933;
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --shadow-soft: 0 8px 20px rgba(0,0,0,0.35);
-      --error-red: #ef4444;
-      --success-green: #22c55e;
+      --bg: #0f0c29;
+      --bg2: #1a1040;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --card-bg: #ffffff;
+      --input-bg: #f8fafc;
+      --input-border: #e2e8f0;
+      --input-text: #1e293b;
+      --label: #64748b;
+      --error: #ef4444;
+      --success: #10b981;
+      --radius: 20px;
+      --shadow: 0 20px 60px rgba(0,0,0,0.4);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
 
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg-main);
-      color: var(--text);
-      -webkit-font-smoothing: antialiased;
+      background: linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
       display: flex;
-      justify-content: center;
-      align-items: center;
+      flex-direction: column;
       min-height: 100vh;
-      padding: 20px;
+      min-height: -webkit-fill-available;
     }
 
-    .card {
-      max-width: 380px;
-      width: 100%;
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
-      padding: 30px;
-      border: 1px solid rgba(15,23,42,0.7);
-      box-shadow: var(--shadow-soft);
+    /* ── HERO TOP ── */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px 30px;
       text-align: center;
     }
 
-    .login-logo {
-      width: 120px;
-      height: auto;
-      margin-bottom: 25px;
-      filter: drop-shadow(0 0 10px rgba(249,115,22,0.5));
+    .church-logo-wrap {
+      width: 100px;
+      height: 100px;
+      border-radius: 28px;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      overflow: hidden;
     }
 
-    .card h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
-    .card p { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
-
-    .input-group { margin-bottom: 16px; text-align: left; }
-    .input-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-
-    .input-field {
+    #churchLogo {
       width: 100%;
-      padding: 12px 15px;
-      background: #020617;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      color: var(--text);
-      font-size: 16px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .input-field:focus { border-color: var(--accent); }
-    .input-field::placeholder { color: var(--muted); }
-
-    .btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: var(--radius-md);
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: background 0.2s, opacity 0.2s;
-    }
-    .btn-primary { background: var(--accent); color: #111827; }
-    .btn-primary:hover:not(:disabled) { background: #e06a14; }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .msg {
-      font-size: 13px;
-      margin-top: 14px;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 28px;
       display: none;
-      padding: 10px 12px;
-      border-radius: var(--radius-md);
     }
-    .msg.error  { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; display: block; }
-    .msg.success{ background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.25); color: #86efac; display: block; }
 
-    .hint { display: block; margin-top: 14px; font-size: 13px; color: var(--accent-soft); }
+    .church-initials {
+      font-size: 36px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+
+    .church-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+
+    .hero-tagline {
+      font-size: 14px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.6;
+      max-width: 280px;
+    }
+
+    .hero-features {
+      display: flex;
+      gap: 12px;
+      margin-top: 22px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .hero-feature-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 30px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.8);
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── CARD FORM ── */
+    .card-wrap {
+      background: var(--card-bg);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 30px 24px 40px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-wrap h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+
+    .card-wrap .sub {
+      font-size: 13px;
+      color: var(--label);
+      margin-bottom: 24px;
+    }
 
     .screen { display: none; }
     .screen.active { display: block; }
+
+    .field-group { margin-bottom: 16px; }
+
+    .field-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--label);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 16px;
+      color: var(--input-text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+
+    .field-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+    }
+
+    .field-input::placeholder { color: #b0bac8; }
+
+    .btn-main {
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+      color: #fff;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .btn-main:active:not(:disabled) { transform: scale(0.98); }
+    .btn-main:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .hint-text {
+      display: block;
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--label);
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+
+    .hint-text i { color: var(--primary); margin-right: 4px; }
+
+    .alert {
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+      margin-top: 14px;
+      display: none;
+      line-height: 1.5;
+    }
+    .alert.error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; display: block; }
+    .alert.success { background: #f0fdf4; border: 1px solid #a7f3d0; color: #059669; display: block; }
+
+    /* Loading dots */
+    @keyframes dot { 0%,80%,100% { opacity:0.2; transform: scale(0.8) } 40% { opacity:1; transform: scale(1) } }
+    .loading-dots span { animation: dot 1.2s infinite; display: inline-block; width: 6px; height: 6px; background: #fff; border-radius: 50%; margin: 0 2px; }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <img id="churchLogo" src="" alt="" class="login-logo" onerror="this.style.display='none'">
 
-    <!-- TELA 1: Login -->
-    <div id="screenLogin" class="screen active">
-      <h1>Acesso do Membro</h1>
-      <p>Entre com seu CPF e senha para acessar o aplicativo.</p>
-
-      <form id="loginForm">
-        <div class="input-group">
-          <label for="igrejaNome">Igreja <span style="font-size:12px;color:var(--muted)">(opcional)</span></label>
-          <input type="text" id="igrejaNome" class="input-field" placeholder="Nome da igreja, se solicitado">
-        </div>
-        <div class="input-group">
-          <label for="cpf">CPF</label>
-          <input type="text" id="cpf" class="input-field" placeholder="Somente números" required
-                 inputmode="numeric" maxlength="11">
-        </div>
-        <div class="input-group">
-          <label for="senha">Senha</label>
-          <input type="password" id="senha" class="input-field" placeholder="Sua senha" required>
-        </div>
-        <button type="submit" class="btn btn-primary" id="loginBtn">Entrar</button>
-        <span class="hint">Primeiro acesso? Use os 6 primeiros dígitos do CPF como senha.</span>
-        <div id="loginMsg" class="msg"></div>
-      </form>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="church-logo-wrap">
+      <img id="churchLogo" src="" alt="Logo">
+      <div class="church-initials" id="churchInitials">✝</div>
     </div>
-
-    <!-- TELA 2: Troca de senha obrigatória -->
-    <div id="screenTrocar" class="screen">
-      <h1>Crie sua senha</h1>
-      <p>Por segurança, defina uma senha pessoal antes de continuar.</p>
-
-      <form id="trocarForm">
-        <div class="input-group">
-          <label for="novaSenha">Nova senha</label>
-          <input type="password" id="novaSenha" class="input-field" placeholder="Mínimo 6 caracteres" required minlength="6">
-        </div>
-        <div class="input-group">
-          <label for="confirmarSenha">Confirmar senha</label>
-          <input type="password" id="confirmarSenha" class="input-field" placeholder="Repita a senha" required>
-        </div>
-        <button type="submit" class="btn btn-primary" id="trocarBtn">Salvar senha e entrar</button>
-        <div id="trocarMsg" class="msg"></div>
-      </form>
+    <div class="church-name" id="churchName">App do Membro</div>
+    <p class="hero-tagline">Acesse conteúdos exclusivos, eventos, carteirinha digital e muito mais.</p>
+    <div class="hero-features">
+      <span class="hero-feature-chip"><i class="fa-solid fa-id-card"></i> Carteirinha</span>
+      <span class="hero-feature-chip"><i class="fa-solid fa-video"></i> Vídeos</span>
+      <span class="hero-feature-chip"><i class="fa-solid fa-calendar"></i> Eventos</span>
+      <span class="hero-feature-chip"><i class="fa-brands fa-pix"></i> PIX</span>
     </div>
   </div>
 
+  <!-- CARD FORM -->
+  <div class="card-wrap">
+
+    <!-- TELA 1: Login -->
+    <div id="screenLogin" class="screen active">
+      <h2>Entrar</h2>
+      <p class="sub">Use seu CPF e senha para acessar</p>
+
+      <form id="loginForm" autocomplete="on">
+        <div class="field-group" id="fieldIgreja" style="display:none;">
+          <label>Nome da Igreja</label>
+          <input type="text" id="igrejaNome" class="field-input" placeholder="Digite o nome da igreja" autocomplete="organization">
+        </div>
+        <div class="field-group">
+          <label>CPF</label>
+          <input type="text" id="cpf" class="field-input" placeholder="000.000.000-00" inputmode="numeric" maxlength="14" autocomplete="username" required>
+        </div>
+        <div class="field-group">
+          <label>Senha</label>
+          <input type="password" id="senha" class="field-input" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn-main" id="loginBtn">Entrar</button>
+        <span class="hint-text"><i class="fa-solid fa-circle-info"></i>Primeiro acesso? Use os 6 primeiros dígitos do CPF como senha.</span>
+        <div id="loginMsg" class="alert"></div>
+      </form>
+    </div>
+
+    <!-- TELA 2: Criar senha -->
+    <div id="screenTrocar" class="screen">
+      <h2>Crie sua senha</h2>
+      <p class="sub">Por segurança, defina uma senha pessoal antes de continuar</p>
+
+      <form id="trocarForm">
+        <div class="field-group">
+          <label>Nova senha</label>
+          <input type="password" id="novaSenha" class="field-input" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password">
+        </div>
+        <div class="field-group">
+          <label>Confirmar senha</label>
+          <input type="password" id="confirmarSenha" class="field-input" placeholder="Repita a senha" required autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn-main" id="trocarBtn">Salvar e entrar</button>
+        <div id="trocarMsg" class="alert"></div>
+      </form>
+    </div>
+
+  </div>
+
   <script>
-    (function () {
-      const logo = document.getElementById('churchLogo');
-      const logoUrl = localStorage.getItem('church_logo_url');
-      if (logoUrl) logo.src = logoUrl;
+  (function () {
+    // ── Pegar igrejaTk da URL e carregar config da igreja ──
+    const params = new URLSearchParams(location.search);
+    const igrejaTk = params.get('igrejaTk') || '';
 
-      let tempToken = null;
+    if (igrejaTk) {
+      localStorage.setItem('ldfp_login_igrejaTk', igrejaTk);
+      fetch('/api/app/config?igrejaTk=' + encodeURIComponent(igrejaTk))
+        .then(r => r.ok ? r.json() : null)
+        .then(cfg => {
+          if (!cfg) return;
+          const logoEl = document.getElementById('churchLogo');
+          const initEl = document.getElementById('churchInitials');
+          const nameEl = document.getElementById('churchName');
 
-      function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+          if (cfg.logoUrl) {
+            logoEl.src = cfg.logoUrl;
+            logoEl.style.display = 'block';
+            initEl.style.display = 'none';
+            logoEl.onerror = function() {
+              logoEl.style.display = 'none';
+              initEl.style.display = 'block';
+            };
+          }
+        })
+        .catch(() => {});
+    }
+
+    // Mostra campo de igreja se não tiver igrejaTk
+    if (!igrejaTk) {
+      document.getElementById('fieldIgreja').style.display = 'block';
+    }
+
+    // Máscara CPF
+    document.getElementById('cpf').addEventListener('input', function(e) {
+      let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      e.target.value = v;
+    });
+
+    let tempToken = null;
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function showMsg(elId, text, type) {
+      const el = document.getElementById(elId);
+      el.textContent = text;
+      el.className = 'alert ' + type;
+    }
+
+    function clearMsg(elId) {
+      const el = document.getElementById(elId);
+      el.className = 'alert';
+      el.textContent = '';
+    }
+
+    // ── Login ──
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMsg('loginMsg');
+
+      const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+      const senha = document.getElementById('senha').value;
+      const igrejaNome = document.getElementById('igrejaNome').value.trim();
+
+      if (cpf.length !== 11) {
+        showMsg('loginMsg', 'CPF deve ter 11 dígitos.', 'error');
+        return;
       }
 
-      function showMsg(elId, text, type) {
-        const el = document.getElementById(elId);
-        el.textContent = text;
-        el.className = 'msg ' + type;
-      }
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
 
-      function clearMsg(elId) {
-        const el = document.getElementById(elId);
-        el.className = 'msg';
-        el.textContent = '';
-      }
+      try {
+        const body = { cpf, senha };
+        if (igrejaNome) body.igreja_nome = igrejaNome;
 
-      // ── Tela 1: Login ─────────────────────────────────────────────
-      document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearMsg('loginMsg');
+        const resp = await fetch('/app-membro/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
 
-        const cpf   = document.getElementById('cpf').value.replace(/\D/g, '');
-        const senha = document.getElementById('senha').value;
-        const igrejaNome = document.getElementById('igrejaNome').value.trim();
+        const data = await resp.json();
 
-        if (cpf.length !== 11) {
-          showMsg('loginMsg', 'CPF deve ter 11 dígitos.', 'error');
+        if (!resp.ok) {
+          showMsg('loginMsg', data?.error || data?.message || 'CPF ou senha incorretos.', 'error');
           return;
         }
 
-        const btn = document.getElementById('loginBtn');
-        btn.disabled = true;
-        btn.textContent = 'Entrando...';
+        tempToken = data.token;
+        localStorage.setItem('app_member_token', data.token);
+        localStorage.setItem('app_member_user', JSON.stringify(data.membro));
 
-        try {
-          const body = { cpf, senha };
-          if (igrejaNome) body.igreja_nome = igrejaNome;
-
-          const resp = await fetch('/app-membro/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-          });
-
-          const data = await resp.json();
-
-          if (!resp.ok) {
-            showMsg('loginMsg', data?.error || data?.message || 'CPF ou senha incorretos.', 'error');
-            return;
-          }
-
-          tempToken = data.token;
-          localStorage.setItem('app_member_token', data.token);
-          localStorage.setItem('app_member_user', JSON.stringify(data.membro));
-
-          if (data.precisa_trocar) {
-            showScreen('screenTrocar');
-          } else {
-            window.location.href = 'app_membro_v2.html';
-          }
-
-        } catch (err) {
-          showMsg('loginMsg', 'Erro de conexão. Tente novamente.', 'error');
-        } finally {
-          btn.disabled = false;
-          btn.textContent = 'Entrar';
+        if (data.precisa_trocar) {
+          showScreen('screenTrocar');
+        } else {
+          window.location.href = 'app_membro_v2.html';
         }
-      });
 
-      // ── Tela 2: Trocar senha ───────────────────────────────────────
-      document.getElementById('trocarForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearMsg('trocarMsg');
+      } catch (err) {
+        showMsg('loginMsg', 'Erro de conexão. Tente novamente.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Entrar';
+      }
+    });
 
-        const novaSenha     = document.getElementById('novaSenha').value;
-        const confirmarSenha = document.getElementById('confirmarSenha').value;
+    // ── Trocar senha ──
+    document.getElementById('trocarForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMsg('trocarMsg');
 
-        if (novaSenha.length < 6) {
-          showMsg('trocarMsg', 'A senha deve ter pelo menos 6 caracteres.', 'error');
+      const novaSenha = document.getElementById('novaSenha').value;
+      const confirmarSenha = document.getElementById('confirmarSenha').value;
+
+      if (novaSenha.length < 6) {
+        showMsg('trocarMsg', 'A senha deve ter pelo menos 6 caracteres.', 'error');
+        return;
+      }
+      if (novaSenha !== confirmarSenha) {
+        showMsg('trocarMsg', 'As senhas não coincidem.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('trocarBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
+
+      try {
+        const resp = await fetch('/app-membro/trocar-senha', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + tempToken
+          },
+          body: JSON.stringify({ novaSenha })
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+          showMsg('trocarMsg', data?.error || 'Erro ao salvar senha.', 'error');
           return;
         }
-        if (novaSenha !== confirmarSenha) {
-          showMsg('trocarMsg', 'As senhas não coincidem.', 'error');
-          return;
-        }
 
-        const btn = document.getElementById('trocarBtn');
-        btn.disabled = true;
-        btn.textContent = 'Salvando...';
+        showMsg('trocarMsg', '✓ Senha salva! Entrando...', 'success');
+        setTimeout(() => { window.location.href = 'app_membro_v2.html'; }, 900);
 
-        try {
-          const resp = await fetch('/app-membro/trocar-senha', {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + tempToken
-            },
-            body: JSON.stringify({ novaSenha })
-          });
+      } catch (err) {
+        showMsg('trocarMsg', 'Erro de conexão. Tente novamente.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Salvar e entrar';
+      }
+    });
 
-          const data = await resp.json();
-
-          if (!resp.ok) {
-            showMsg('trocarMsg', data?.error || 'Erro ao salvar senha.', 'error');
-            return;
-          }
-
-          showMsg('trocarMsg', 'Senha salva! Redirecionando...', 'success');
-          setTimeout(() => { window.location.href = 'app_membro_v2.html'; }, 1000);
-
-        } catch (err) {
-          showMsg('trocarMsg', 'Erro de conexão. Tente novamente.', 'error');
-        } finally {
-          btn.disabled = false;
-          btn.textContent = 'Salvar senha e entrar';
-        }
-      });
-    })();
+  })();
   </script>
 </body>
 </html>

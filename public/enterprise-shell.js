@@ -21,13 +21,14 @@
     }
 
     const ROLE_FEATURES = {
-        super_admin: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'configuracoes', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao', 'planos', 'estudo'],
-        admin: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'configuracoes', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao', 'estudo'],
-        secretaria: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'financeiro', 'cargos', 'midia', 'whatsapp', 'autocadastro', 'portaria_qr', 'pagamentos', 'app_midia', 'telao', 'estudo'],
-        pastor: ['dashboard', 'membros', 'visitantes', 'criancas', 'oracoes', 'agenda', 'missionarios', 'igrejas', 'cargos', 'whatsapp', 'autocadastro', 'app_midia', 'telao', 'estudo'],
+        super_admin: ['dashboard', 'membros', 'cargos', 'historico_pastoral', 'grupos', 'escalas', 'ebd', 'batismos', 'agenda', 'outras_igrejas', 'missionarios', 'visitantes', 'criancas', 'oracoes', 'novidades', 'whatsapp', 'autocadastro', 'portaria_qr', 'telao', 'estudo', 'dizimos', 'caixa', 'bancos', 'pagamentos', 'contas_pagar', 'recibos', 'transferencias', 'contabilidade', 'graficos', 'relatorios', 'app_membro', 'configuracoes', 'planos'],
+        admin: ['dashboard', 'membros', 'cargos', 'historico_pastoral', 'grupos', 'escalas', 'ebd', 'batismos', 'agenda', 'outras_igrejas', 'missionarios', 'visitantes', 'criancas', 'oracoes', 'novidades', 'whatsapp', 'autocadastro', 'portaria_qr', 'telao', 'estudo', 'dizimos', 'caixa', 'bancos', 'pagamentos', 'contas_pagar', 'recibos', 'transferencias', 'contabilidade', 'graficos', 'relatorios', 'app_membro', 'configuracoes'],
+        secretaria: ['dashboard', 'membros', 'cargos', 'historico_pastoral', 'grupos', 'escalas', 'ebd', 'batismos', 'agenda', 'outras_igrejas', 'missionarios', 'visitantes', 'criancas', 'oracoes', 'novidades', 'whatsapp', 'autocadastro', 'portaria_qr', 'telao', 'estudo', 'dizimos', 'caixa', 'bancos', 'pagamentos', 'contas_pagar', 'recibos', 'transferencias', 'contabilidade', 'graficos', 'relatorios', 'app_membro'],
+        pastor: ['dashboard', 'membros', 'cargos', 'historico_pastoral', 'grupos', 'escalas', 'ebd', 'batismos', 'agenda', 'outras_igrejas', 'missionarios', 'visitantes', 'criancas', 'oracoes', 'novidades', 'whatsapp', 'autocadastro', 'telao', 'estudo', 'app_membro'],
+        financeiro: ['dashboard', 'dizimos', 'caixa', 'bancos', 'pagamentos', 'contas_pagar', 'recibos', 'transferencias', 'contabilidade', 'graficos', 'relatorios'],
         oficial: ['membros', 'visitantes', 'agenda', 'oracoes', 'portaria_qr', 'estudo'],
-        ministerio: ['membros', 'oracoes', 'agenda', 'criancas', 'estudo'],
-        midia: ['agenda', 'membros', 'midia', 'app_midia', 'telao', 'estudo'],
+        ministerio: ['membros', 'oracoes', 'agenda', 'criancas', 'ebd', 'estudo'],
+        midia: ['agenda', 'membros', 'telao', 'estudo', 'app_membro'],
         membro: ['oracoes', 'agenda', 'estudo'],
         visitante: ['oracoes', 'agenda', 'estudo']
     };
@@ -51,70 +52,103 @@
     };
 
     const PAGE_FEATURES = {
+        // Dashboard
         'dashboard.html': 'dashboard',
+        // Membros
         'membros.html': 'membros',
         'cadastro.html': 'membros',
-        'cargos.html': 'cargos',
-        'situacoes.html': 'membros',
-        'congregacoes.html': 'membros',
-        'historico_pastoral.html': 'membros',
-        'tipos_historico.html': 'membros',
-        'grupos.html': 'membros',
-        'grupo_novo.html': 'membros',
-        'grupos_categorias.html': 'membros',
-        'grupos_reunioes.html': 'membros',
-        'escalas.html': 'agenda',
-        'ebd_alunos.html': 'criancas',
-        'ebd_turmas.html': 'criancas',
-        'ebd_grades.html': 'criancas',
-        'batismos.html': 'membros',
-        'batismo_novo.html': 'membros',
-        'batismos_inscricoes.html': 'membros',
         'lista_membros.html': 'membros',
+        'congregados.html': 'membros',
+        'congregacoes.html': 'membros',
+        // Cargos
+        'cargos.html': 'cargos',
+        'situacoes.html': 'cargos',
+        // Histórico Pastoral
+        'historico_pastoral.html': 'historico_pastoral',
+        'tipos_historico.html': 'historico_pastoral',
+        // Grupos
+        'grupos.html': 'grupos',
+        'grupo_novo.html': 'grupos',
+        'grupos_categorias.html': 'grupos',
+        'grupos_reunioes.html': 'grupos',
+        // Escalas
+        'escalas.html': 'escalas',
+        // EBD
+        'ebd_alunos.html': 'ebd',
+        'ebd_turmas.html': 'ebd',
+        'ebd_grades.html': 'ebd',
+        // Batismos
+        'batismos.html': 'batismos',
+        'batismo_novo.html': 'batismos',
+        'batismos_inscricoes.html': 'batismos',
+        // Agenda
         'agenda.html': 'agenda',
-        'outras_igrejas.html': 'igrejas',
+        // Outras Igrejas
+        'outras_igrejas.html': 'outras_igrejas',
+        // Missionários
         'missionarios.html': 'missionarios',
+        // Visitantes
         'visitantes.html': 'visitantes',
         'visitantes_kanban.html': 'visitantes',
-        'congregados.html': 'membros',
+        // Crianças
         'criancas.html': 'criancas',
+        // Orações
         'oracoes.html': 'oracoes',
+        // Novidades
+        'novidades.html': 'novidades',
+        // WhatsApp
         'comunicacao_whatsapp.html': 'whatsapp',
+        // Autocadastro
         'autocadastro_aprovacoes.html': 'autocadastro',
+        // Portaria QR
         'portaria_checkin.html': 'portaria_qr',
-        'app_midia.html': 'app_midia',
+        // App Mídia (legado → app_membro)
+        'app_midia.html': 'app_membro',
+        // Telão
         'telao_visitantes.html': 'telao',
-        'financeiro.html': 'financeiro',
-        'dizimos.html': 'financeiro',
-        'tesouraria_dizimos.html': 'financeiro',
-        'dizimos_lancamentos.html': 'financeiro',
-        'dizimos_tipos_receita.html': 'financeiro',
-        'tesouraria_caixa.html': 'financeiro',
-        'caixa_lancamentos.html': 'financeiro',
-        'caixa_ativar_mes.html': 'financeiro',
-        'caixa_saldo_inicial.html': 'financeiro',
-        'bancos_lancamentos.html': 'financeiro',
-        'banco.html': 'financeiro',
-        'tesouraria_bancos.html': 'financeiro',
-        'importacao_extrato.html': 'financeiro',
+        // Tesouraria — Dízimos
+        'financeiro.html': 'dizimos',
+        'dizimos.html': 'dizimos',
+        'tesouraria_dizimos.html': 'dizimos',
+        'dizimos_lancamentos.html': 'dizimos',
+        'dizimos_tipos_receita.html': 'dizimos',
+        // Tesouraria — Caixa
+        'tesouraria_caixa.html': 'caixa',
+        'caixa_lancamentos.html': 'caixa',
+        'caixa_ativar_mes.html': 'caixa',
+        'caixa_saldo_inicial.html': 'caixa',
+        // Tesouraria — Bancos
+        'bancos_lancamentos.html': 'bancos',
+        'banco.html': 'bancos',
+        'tesouraria_bancos.html': 'bancos',
+        'importacao_extrato.html': 'bancos',
+        // Tesouraria — outros
         'pagamentos.html': 'pagamentos',
-        'contas_pagar.html': 'financeiro',
-        'recibo.html': 'financeiro',
-        'transferencias.html': 'financeiro',
-        'plano_contas.html': 'financeiro',
-        'balancete_abertura.html': 'financeiro',
-        'lancamentos_contabeis.html': 'financeiro',
-        'encerramento_exercicio.html': 'financeiro',
-        'graficos_secretaria.html': 'financeiro',
-        'graficos_tesouraria.html': 'financeiro',
-        'relatorios_secretaria.html': 'financeiro',
-        'relatorios_tesouraria.html': 'financeiro',
-        'relatorios_contabilidade.html': 'financeiro',
+        'contas_pagar.html': 'contas_pagar',
+        'recibo.html': 'recibos',
+        'transferencias.html': 'transferencias',
+        // Contabilidade
+        'plano_contas.html': 'contabilidade',
+        'balancete_abertura.html': 'contabilidade',
+        'lancamentos_contabeis.html': 'contabilidade',
+        'encerramento_exercicio.html': 'contabilidade',
+        // Gráficos
+        'graficos_secretaria.html': 'graficos',
+        'graficos_tesouraria.html': 'graficos',
+        // Relatórios
+        'relatorios_secretaria.html': 'relatorios',
+        'relatorios_tesouraria.html': 'relatorios',
+        'relatorios_contabilidade.html': 'relatorios',
+        // Configurações
         'configuracoes.html': 'configuracoes',
+        // Planos (super admin only)
         'planos_lista.html': 'planos',
         'planos_editar.html': 'planos',
+        // App do Membro
         'app_membro.html': 'app_membro',
         'dashboard_membro.html': 'app_membro',
+        'painel_app_membro.html': 'app_membro',
+        // Ensino
         'estudo.html': 'estudo',
         'planos-estudo.html': 'estudo',
         'plano-detalhe.html': 'estudo',
@@ -126,18 +160,20 @@
     let dynamicModules = [];
 
     const FEATURE_KEY_ALIASES = {
-        ebd: 'criancas',
-        ebd_dominical: 'criancas',
+        // Legado → novo
+        financeiro: 'dizimos',
+        igrejas: 'outras_igrejas',
+        congregacoes: 'outras_igrejas',
+        ebd_dominical: 'ebd',
+        'criancas-ebd': 'ebd',
+        criancas_ebd: 'ebd',
+        // Typos e variantes
         credencial_membro: 'app_membro',
         credencial: 'app_membro',
-        congregacoes: 'igrejas',
-        outras_igrejas: 'igrejas',
+        app_midia: 'app_membro',
         portaria: 'portaria_qr',
-        app_midia: 'app_midia',
-        app_membro: 'app_membro',
-        relatorios: 'financeiro',
-        grupos: 'membros',
-        grupos_celulas: 'membros'
+        grupos_celulas: 'grupos',
+        midia: 'app_membro'
     };
 
     function normalizeFeatureKey(value) {
@@ -194,11 +230,17 @@
         return ROLE_FEATURES.visitante;
     }
 
+    // Funcionalidades que nunca podem ser bloqueadas pelo sistema de módulos
+    const CORE_FEATURES = new Set(['dashboard', 'configuracoes']);
+
     function getEnabledFeatures(user) {
         const roleFeatures = getRoleVisibleFeatures(user);
 
-        if (Array.isArray(dynamicFeatureAllowList)) {
-            return roleFeatures.filter((feature) => dynamicFeatureAllowList.includes(feature));
+        // Se o plano não tem nenhum módulo configurado, trata como sem restrição
+        if (Array.isArray(dynamicFeatureAllowList) && dynamicFeatureAllowList.length > 0) {
+            return roleFeatures.filter((feature) =>
+                CORE_FEATURES.has(feature) || dynamicFeatureAllowList.includes(feature)
+            );
         }
 
         return roleFeatures;
@@ -380,7 +422,7 @@
                     <p><span class="ldfp-upgrade-resource" id="ldfpUpgradeResource">Este módulo</span> não está incluído no plano da sua igreja.</p>
                     <p>Solicite ativação no painel administrativo ou faça upgrade para liberar este recurso.</p>
                     <div class="ldfp-upgrade-actions">
-                        <a href="assinar.html" class="ldfp-upgrade-btn primary" id="ldfpUpgradePlansLink">Ver planos</a>
+                        <a href="planos.html" class="ldfp-upgrade-btn primary" id="ldfpUpgradePlansLink">Ver planos e fazer upgrade</a>
                         <a href="mailto:contato@ldfp.com.br?subject=Upgrade%20de%20plano%20-%20LDFP" class="ldfp-upgrade-btn">Falar com suporte</a>
                         <button type="button" class="ldfp-upgrade-btn" data-upgrade-close="true">Fechar</button>
                     </div>
@@ -434,7 +476,7 @@
                 feature_nome: resourceName || 'modulo',
                 plano: suggestedPlan
             });
-            plansLink.href = `assinar.html?${query.toString()}`;
+            plansLink.href = `planos.html?${query.toString()}`;
         }
 
         modal.classList.add('is-open');
@@ -444,15 +486,16 @@
         const feature = String(anchor?.dataset?.feature || '').trim();
         const label = String(anchor?.dataset?.label || 'Este módulo').trim();
         const featureLabelMap = {
-            whatsapp: 'Módulo de WhatsApp',
-            autocadastro: 'Aprovação de Cadastro',
-            portaria_qr: 'Portaria QR',
-            telao: 'Telão',
-            igrejas: 'Congregações e Outras Igrejas',
-            missionarios: 'Missionários',
-            app_midia: 'App de Mídia',
-            pagamentos: 'Links de Pagamento',
-            financeiro: 'Módulo Financeiro'
+            membros: 'Membros', cargos: 'Cargos', historico_pastoral: 'Histórico Pastoral',
+            grupos: 'Grupos e Células', escalas: 'Escalas de Culto', ebd: 'EBD',
+            batismos: 'Batismos', agenda: 'Agenda', outras_igrejas: 'Outras Igrejas',
+            missionarios: 'Missionários', visitantes: 'Visitantes', criancas: 'Crianças',
+            oracoes: 'Orações', novidades: 'Novidades', whatsapp: 'Módulo de WhatsApp',
+            autocadastro: 'Aprovação de Cadastro', portaria_qr: 'Portaria QR', telao: 'Telão',
+            estudo: 'Estudo Bíblico', dizimos: 'Dízimos & Ofertas', caixa: 'Caixa',
+            bancos: 'Bancos', pagamentos: 'Links de Pagamento', contas_pagar: 'Contas a Pagar',
+            recibos: 'Recibos', transferencias: 'Transferências', contabilidade: 'Contabilidade',
+            graficos: 'Gráficos', relatorios: 'Relatórios', app_membro: 'App do Membro'
         };
 
         const resourceName = featureLabelMap[feature] || label;
@@ -506,40 +549,40 @@
             ['lista_membros.html', 'fa-solid fa-address-book', 'Lista de Membros', 'membros'],
             ['membros.html', 'fa-solid fa-user-plus', 'Cadastrar Novo Membro', 'membros'],
             ['cargos.html', 'fa-solid fa-briefcase', 'Cargos', 'cargos'],
-            ['situacoes.html', 'fa-solid fa-toggle-on', 'Situações', 'membros'],
+            ['situacoes.html', 'fa-solid fa-toggle-on', 'Situações', 'cargos'],
             ['congregacoes.html', 'fa-solid fa-church', 'Congregações', 'membros']
         ];
 
         const historicoLinks = [
-            ['historico_pastoral.html', 'fa-solid fa-book-bible', 'Histórico Pastoral', 'membros'],
-            ['tipos_historico.html', 'fa-solid fa-list-check', 'Tipo de Histórico', 'membros']
+            ['historico_pastoral.html', 'fa-solid fa-book-bible', 'Histórico Pastoral', 'historico_pastoral'],
+            ['tipos_historico.html', 'fa-solid fa-list-check', 'Tipo de Histórico', 'historico_pastoral']
         ];
 
         const grupoLinks = [
-            ['grupos.html', 'fa-solid fa-people-group', 'Grupos', 'membros']
+            ['grupos.html', 'fa-solid fa-people-group', 'Grupos', 'grupos']
         ];
 
         const escalaLinks = [
-            ['escalas.html?tab=eventos', 'fa-regular fa-calendar', 'Eventos', 'agenda'],
-            ['escalas.html?tab=dashboard', 'fa-solid fa-clipboard-list', 'Gestão de Escalas', 'agenda'],
-            ['escalas.html?tab=matriz', 'fa-solid fa-calendar-days', 'Escala Mensal', 'agenda']
+            ['escalas.html?tab=eventos', 'fa-regular fa-calendar', 'Eventos', 'escalas'],
+            ['escalas.html?tab=dashboard', 'fa-solid fa-clipboard-list', 'Gestão de Escalas', 'escalas'],
+            ['escalas.html?tab=matriz', 'fa-solid fa-calendar-days', 'Escala Mensal', 'escalas']
         ];
 
         const ebdLinks = [
-            ['ebd_alunos.html', 'fa-solid fa-child-reaching', 'Alunos', 'criancas'],
-            ['ebd_turmas.html', 'fa-solid fa-users-line', 'Turmas & Revistas', 'criancas'],
-            ['ebd_grades.html', 'fa-solid fa-calendar-days', 'Grades & Presença', 'criancas']
+            ['ebd_alunos.html', 'fa-solid fa-child-reaching', 'Alunos', 'ebd'],
+            ['ebd_turmas.html', 'fa-solid fa-users-line', 'Turmas & Revistas', 'ebd'],
+            ['ebd_grades.html', 'fa-solid fa-calendar-days', 'Grades & Presença', 'ebd']
         ];
 
         const batismoLinks = [
-            ['batismos.html', 'fa-solid fa-water', 'Batismos', 'membros'],
-            ['batismo_novo.html', 'fa-solid fa-plus', 'Cadastrar', 'membros'],
-            ['batismos_inscricoes.html', 'fa-solid fa-clipboard-check', 'Inscrições', 'membros']
+            ['batismos.html', 'fa-solid fa-water', 'Batismos', 'batismos'],
+            ['batismo_novo.html', 'fa-solid fa-plus', 'Cadastrar', 'batismos'],
+            ['batismos_inscricoes.html', 'fa-solid fa-clipboard-check', 'Inscrições', 'batismos']
         ];
 
         const otherLinks = [
             ['agenda.html', 'fa-solid fa-calendar-days', 'Agenda', 'agenda'],
-            ['outras_igrejas.html', 'fa-solid fa-globe', 'Outras Igrejas', 'igrejas'],
+            ['outras_igrejas.html', 'fa-solid fa-globe', 'Outras Igrejas', 'outras_igrejas'],
             ['missionarios.html', 'fa-solid fa-person-rays', 'Missionários', 'missionarios'],
             ['visitantes.html', 'fa-solid fa-user-plus', 'Visitantes', 'visitantes'],
             ['visitantes_kanban.html', 'fa-solid fa-shoe-prints', 'Acompanhamento', 'visitantes'],
@@ -549,7 +592,6 @@
             ['comunicacao_whatsapp.html', 'fa-brands fa-whatsapp', 'WhatsApp', 'whatsapp'],
             ['autocadastro_aprovacoes.html', 'fa-solid fa-user-check', 'Aprovação de Cadastro', 'autocadastro'],
             ['portaria_checkin.html', 'fa-solid fa-qrcode', 'Portaria QR', 'portaria_qr'],
-            ['app_midia.html', 'fa-solid fa-tv', 'App Midia', 'app_midia'],
             ['telao_visitantes.html', 'fa-solid fa-display', 'Telão', 'telao']
         ];
 
@@ -658,25 +700,25 @@
 
     function renderTesourariaGroup(activePath, user) {
         const dizimosLinks = [
-            ['tesouraria_dizimos.html', 'fa-solid fa-coins', 'Dízimos', 'financeiro']
+            ['tesouraria_dizimos.html', 'fa-solid fa-coins', 'Dízimos', 'dizimos']
         ];
 
         const caixaLinks = [
-            ['tesouraria_caixa.html', 'fa-solid fa-cash-register', 'Caixa', 'financeiro'],
-            ['caixa_ativar_mes.html', 'fa-solid fa-circle-dollar-to-slot', 'Ativar Mês / Saldo Inicial', 'financeiro']
+            ['tesouraria_caixa.html', 'fa-solid fa-cash-register', 'Caixa', 'caixa'],
+            ['caixa_ativar_mes.html', 'fa-solid fa-circle-dollar-to-slot', 'Ativar Mês / Saldo Inicial', 'caixa']
         ];
 
         const bancosLinks = [
-            ['tesouraria_bancos.html', 'fa-solid fa-building-columns', 'Bancos', 'financeiro'],
-            ['bancos_lancamentos.html', 'fa-solid fa-file-invoice-dollar', 'Lançamentos Bancários', 'financeiro'],
-            ['importacao_extrato.html', 'fa-solid fa-file-import', 'Importar Extrato', 'financeiro']
+            ['tesouraria_bancos.html', 'fa-solid fa-building-columns', 'Bancos', 'bancos'],
+            ['bancos_lancamentos.html', 'fa-solid fa-file-invoice-dollar', 'Lançamentos Bancários', 'bancos'],
+            ['importacao_extrato.html', 'fa-solid fa-file-import', 'Importar Extrato', 'bancos']
         ];
 
         const otherLinks = [
             ['pagamentos.html', 'fa-solid fa-link', 'Links de Pagamento', 'pagamentos'],
-            ['contas_pagar.html', 'fa-solid fa-file-invoice-dollar', 'Contas a Pagar', 'financeiro'],
-            ['recibo.html', 'fa-solid fa-receipt', 'Recibos', 'financeiro'],
-            ['transferencias.html', 'fa-solid fa-right-left', 'Transferências', 'financeiro']
+            ['contas_pagar.html', 'fa-solid fa-file-invoice-dollar', 'Contas a Pagar', 'contas_pagar'],
+            ['recibo.html', 'fa-solid fa-receipt', 'Recibos', 'recibos'],
+            ['transferencias.html', 'fa-solid fa-right-left', 'Transferências', 'transferencias']
         ];
 
         const allowedDizimosLinks = filterLinksByRole(dizimosLinks, user);
@@ -782,9 +824,9 @@
                 <nav class="menu">
                     ${renderLegacyGroup('Menu LDFP', 'fa-solid fa-house', [
                         ['dashboard.html', 'fa-regular fa-eye', 'Visão Geral', 'dashboard'],
-                        ['app_membro.html', 'fa-solid fa-mobile-screen-button', 'App do Membro'],
-                        ['dashboard_membro.html', 'fa-solid fa-user-group', 'Painel do Membro'],
-                        ['novidades.html', 'fa-solid fa-star', 'Novidades'],
+                        ['painel_app_membro.html', 'fa-solid fa-mobile-screen-button', 'App do Membro', 'app_membro'],
+                        ['dashboard_membro.html', 'fa-solid fa-user-group', 'Painel do Membro', 'app_membro'],
+                        ['novidades.html', 'fa-solid fa-star', 'Novidades', 'novidades'],
                         ['configuracoes.html', 'fa-solid fa-gear', 'Configurações', 'configuracoes'],
                         ['index.html', 'fa-solid fa-right-from-bracket', 'Sair']
                     ], activePath, true, user)}
@@ -801,21 +843,21 @@
                     ${renderTesourariaGroup(activePath, user)}
 
                     ${renderLegacyGroup('Contabilidade', 'fa-solid fa-scale-balanced', [
-                        ['plano_contas.html', 'fa-solid fa-list-ol', 'Plano de Contas', 'financeiro'],
-                        ['balancete_abertura.html', 'fa-solid fa-book-open', 'Balancete de Abertura', 'financeiro'],
-                        ['lancamentos_contabeis.html', 'fa-solid fa-clipboard-list', 'Lançamentos Contábeis', 'financeiro'],
-                        ['encerramento_exercicio.html', 'fa-solid fa-flag-checkered', 'Encerramento do Exercício', 'financeiro']
+                        ['plano_contas.html', 'fa-solid fa-list-ol', 'Plano de Contas', 'contabilidade'],
+                        ['balancete_abertura.html', 'fa-solid fa-book-open', 'Balancete de Abertura', 'contabilidade'],
+                        ['lancamentos_contabeis.html', 'fa-solid fa-clipboard-list', 'Lançamentos Contábeis', 'contabilidade'],
+                        ['encerramento_exercicio.html', 'fa-solid fa-flag-checkered', 'Encerramento do Exercício', 'contabilidade']
                     ], activePath, false, user)}
 
                     ${renderLegacyGroup('Gráficos', 'fa-solid fa-chart-column', [
-                        ['graficos_secretaria.html', 'fa-solid fa-chart-pie', 'Secretaria', 'financeiro'],
-                        ['graficos_tesouraria.html', 'fa-solid fa-chart-line', 'Tesouraria', 'financeiro']
+                        ['graficos_secretaria.html', 'fa-solid fa-chart-pie', 'Secretaria', 'graficos'],
+                        ['graficos_tesouraria.html', 'fa-solid fa-chart-line', 'Tesouraria', 'graficos']
                     ], activePath, false, user)}
 
                     ${renderLegacyGroup('Relatórios', 'fa-solid fa-print', [
-                        ['relatorios_secretaria.html', 'fa-regular fa-file-lines', 'Secretaria', 'financeiro'],
-                        ['relatorios_tesouraria.html', 'fa-regular fa-file-lines', 'Tesouraria', 'financeiro'],
-                        ['relatorios_contabilidade.html', 'fa-regular fa-file-lines', 'Contabilidade', 'financeiro']
+                        ['relatorios_secretaria.html', 'fa-regular fa-file-lines', 'Secretaria', 'relatorios'],
+                        ['relatorios_tesouraria.html', 'fa-regular fa-file-lines', 'Tesouraria', 'relatorios'],
+                        ['relatorios_contabilidade.html', 'fa-regular fa-file-lines', 'Contabilidade', 'relatorios']
                     ], activePath, false, user)}
 
                     ${renderDynamicModulesGroup(activePath)}
@@ -973,7 +1015,10 @@
         sidebar.querySelectorAll('a[data-locked="true"]').forEach((anchor) => {
             anchor.addEventListener('click', function (event) {
                 event.preventDefault();
-                showLockedFeatureMessage(anchor);
+                const feature = String(anchor.dataset.feature || '').trim();
+                const label = String(anchor.dataset.label || '').trim();
+                const query = new URLSearchParams({ upgrade: '1', origem: 'menu_bloqueado', feature, feature_nome: label });
+                window.location.href = 'planos.html?' + query.toString();
             });
         });
 
@@ -1018,7 +1063,50 @@
         }
 
         if (!canUseFeature(user, requiredFeature)) {
-            window.location.href = 'dashboard.html';
+            // Mostra modal de upgrade em vez de redirecionar
+            ensureLockStyles();
+            ensureUpgradeModal();
+            const featureLabelMap = {
+                membros: 'Membros', cargos: 'Cargos', historico_pastoral: 'Histórico Pastoral',
+                grupos: 'Grupos e Células', escalas: 'Escalas de Culto', ebd: 'EBD',
+                batismos: 'Batismos', agenda: 'Agenda', outras_igrejas: 'Outras Igrejas',
+                missionarios: 'Missionários', visitantes: 'Visitantes', criancas: 'Crianças',
+                oracoes: 'Orações', novidades: 'Novidades', whatsapp: 'Módulo de WhatsApp',
+                autocadastro: 'Aprovação de Cadastro', portaria_qr: 'Portaria QR Code',
+                telao: 'Telão de Visitantes', estudo: 'Estudo Bíblico',
+                dizimos: 'Dízimos & Ofertas', caixa: 'Caixa', bancos: 'Bancos',
+                pagamentos: 'Links de Pagamento', contas_pagar: 'Contas a Pagar',
+                recibos: 'Recibos', transferencias: 'Transferências',
+                contabilidade: 'Contabilidade', graficos: 'Gráficos', relatorios: 'Relatórios',
+                app_membro: 'App do Membro'
+            };
+            const resourceName = featureLabelMap[requiredFeature] || fileName.replace('.html', '');
+            // Bloqueia o conteúdo da página
+            const main = document.querySelector('main.enterprise-main') || document.querySelector('main.main-content');
+            if (main) {
+                main.style.filter = 'blur(4px)';
+                main.style.pointerEvents = 'none';
+                main.style.userSelect = 'none';
+            }
+            // Abre o modal após o shell renderizar
+            setTimeout(() => openUpgradeModal(resourceName, requiredFeature), 100);
+            // Ao fechar o modal → volta ao dashboard; "Ver planos" → planos.html
+            const modal = document.getElementById('ldfpUpgradeModal');
+            if (modal) {
+                modal.addEventListener('click', function handler(e) {
+                    const close = e.target === modal || e.target?.dataset?.upgradeClose === 'true';
+                    if (close) {
+                        modal.removeEventListener('click', handler);
+                        window.location.href = 'dashboard.html';
+                    }
+                }, { once: false });
+                // Garante que o link "Ver planos" aponta para planos.html com contexto
+                const plansBtn = modal.querySelector('#ldfpUpgradePlansLink');
+                if (plansBtn) {
+                    const q = new URLSearchParams({ upgrade: '1', origem: 'pagina_bloqueada', feature: requiredFeature });
+                    plansBtn.href = 'planos.html?' + q.toString();
+                }
+            }
         }
     }
 

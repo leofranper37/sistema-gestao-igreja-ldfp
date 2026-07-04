@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Funcionalidades — LDFP Sistema de Gestão para Igrejas</title>
+  <meta name="description" content="Conheça todos os módulos do LDFP: secretaria, tesouraria, contabilidade, ensino e app do membro. Mais de 30 funcionalidades para sua igreja.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #111827;
+      --surface: #1f2937;
+      --surface2: #374151;
+      --border: #374151;
+      --accent: #f97316;
+      --accent-soft: rgba(249,115,22,0.12);
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --teal: #14b8a6;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --muted2: #6b7280;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ── HEADER ── */
+    .page-header {
+      text-align: center;
+      padding: 56px 16px 48px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .brand-logo {
+      width: 52px; height: 52px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px rgba(249,115,22,0.4));
+    }
+
+    .brand-leao {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(249,115,22,0.4);
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(249,115,22,0.3);
+      border-radius: 999px;
+      padding: 5px 16px;
+      font-size: 0.78rem;
+      color: #fdba74;
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
+    }
+
+    .page-title {
+      font-size: clamp(1.7rem, 4vw, 2.6rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, #f9fafb 30%, #9ca3af);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* ── WRAPPER ── */
+    .content-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px 80px;
+    }
+
+    /* ── CATEGORY SECTION ── */
+    .category-section {
+      margin-bottom: 56px;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .category-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .category-icon.orange { background: rgba(249,115,22,0.15); color: var(--accent); }
+    .category-icon.green  { background: rgba(34,197,94,0.15);  color: var(--green); }
+    .category-icon.blue   { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .category-icon.purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+    .category-icon.teal   { background: rgba(20,184,166,0.15); color: var(--teal); }
+
+    .category-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .category-count {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--muted2);
+      background: var(--surface2);
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    /* ── MODULE GRID ── */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .mod-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform .15s, box-shadow .15s;
+      position: relative;
+    }
+
+    .mod-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .mod-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .mod-icon.orange { background: rgba(249,115,22,0.12); color: #fb923c; }
+    .mod-icon.green  { background: rgba(34,197,94,0.12);  color: #4ade80; }
+    .mod-icon.blue   { background: rgba(59,130,246,0.12); color: #60a5fa; }
+    .mod-icon.purple { background: rgba(168,85,247,0.12); color: #c084fc; }
+    .mod-icon.teal   { background: rgba(20,184,166,0.12); color: #2dd4bf; }
+
+    .mod-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .mod-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .badge-exclusivo {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: #fff;
+      font-size: 0.58rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 56px;
+      text-align: center;
+    }
+
+    .stat-item strong {
+      display: block;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-item span {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      padding: 56px 16px;
+      background: linear-gradient(135deg, rgba(249,115,22,0.07) 0%, transparent 60%);
+      border: 1px solid rgba(249,115,22,0.15);
+      border-radius: 20px;
+      margin-top: 24px;
+    }
+
+    .cta-section h2 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .cta-section p {
+      color: var(--muted);
+      margin-bottom: 28px;
+      font-size: 0.95rem;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity .15s, transform .08s;
+    }
+
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: border-color .15s, color .15s;
+    }
+
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── NAV ── */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(17,24,39,0.95);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--text);
+    }
+
+    .nav-logo img {
+      width: 32px; height: 32px;
+      object-fit: contain;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-link {
+      font-size: 0.85rem;
+      color: var(--muted);
+      padding: 7px 14px;
+      border-radius: 8px;
+      transition: color .15s, background .15s;
+    }
+
+    .nav-link:hover { color: var(--text); background: var(--surface); }
+    .nav-link.active { color: var(--accent); }
+
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .stats-bar { gap: 24px; }
+      .modules-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <div class="nav-logo">
+    <img src="logo.png" alt="LDFP" onerror="this.style.display='none'">
+    LDFP
+  </div>
+  <div class="nav-links">
+    <a href="planos.html" class="nav-link">Planos</a>
+    <a href="funcionalidades.html" class="nav-link active">Funcionalidades</a>
+    <a href="index.html" class="nav-link">Entrar</a>
+    <a href="cadastro_igreja.html" class="btn-primary" style="padding:7px 16px;font-size:0.85rem">Começar grátis</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="brand-row">
+    <img src="logo.png" alt="LDFP" class="brand-logo" onerror="this.style.display='none'">
+    <img src="leao-cruz.jpg" alt="Leão e Cruz" class="brand-leao" onerror="this.style.display='none'">
+  </div>
+  <div class="header-badge">
+    <i class="fa-solid fa-star"></i>
+    30+ funcionalidades para sua igreja
+  </div>
+  <h1 class="page-title">Tudo que sua igreja precisa em um só lugar</h1>
+  <p class="page-subtitle">Do cadastro de membros à contabilidade formal — o LDFP cobre todos os departamentos da sua igreja com ferramentas profissionais e fáceis de usar.</p>
+</div>
+
+<div class="content-wrap">
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-item"><strong>30+</strong><span>Módulos disponíveis</span></div>
+    <div class="stat-item"><strong>10</strong><span>Perfis de acesso</span></div>
+    <div class="stat-item"><strong>100%</strong><span>Online, sem instalação</span></div>
+    <div class="stat-item"><strong>7 dias</strong><span>Teste grátis</span></div>
+  </div>
+
+  <!-- SECRETARIA -->
+  <div class="category-section">
+    <div class="category-header">
+      <div class="category-icon orange"><i class="fa-solid fa-users"></i></div>
+      <div class="category-title">Secretaria</div>
+      <div class="category-count">18 módulos</div>
+    </div>
+    <div class="modules-grid">
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-id-card"></i></div>
+        <div class="mod-name">Membros</div>
+        <div class="mod-desc">Lista completa, ficha cadastral, foto e documentos</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-briefcase"></i></div>
+        <div class="mod-name">Cargos e Situações</div>
+        <div class="mod-desc">Controle de cargos ministeriais e situação do membro</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-book-bible"></i></div>
+        <div class="mod-name">Histórico Pastoral</div>
+        <div class="mod-desc">Registro completo da vida espiritual do membro</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-people-group"></i></div>
+        <div class="mod-name">Grupos e Células</div>
+        <div class="mod-desc">Gestão de pequenos grupos e células da igreja</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-calendar-check"></i></div>
+        <div class="mod-name">Escalas de Culto</div>
+        <div class="mod-desc">Escala mensal de ministérios e voluntários</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div class="mod-name">EBD</div>
+        <div class="mod-desc">Alunos, turmas, grades e chamadas da Escola Bíblica</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-water"></i></div>
+        <div class="mod-name">Batismos</div>
+        <div class="mod-desc">Cadastro, inscrições e histórico de batismos</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-calendar-days"></i></div>
+        <div class="mod-name">Agenda</div>
+        <div class="mod-desc">Eventos, cultos e compromissos da igreja</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-globe"></i></div>
+        <div class="mod-name">Outras Igrejas</div>
+        <div class="mod-desc">Gestão de igrejas irmãs e parceiras</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-person-rays"></i></div>
+        <div class="mod-name">Missionários</div>
+        <div class="mod-desc">Controle e apoio a missionários enviados</div>
+      </div>
+
+      <div class="mod-card">
+        <span class="badge-exclusivo">Exclusivo</span>
+        <div class="mod-icon orange"><i class="fa-solid fa-user-plus"></i></div>
+        <div class="mod-name">Visitantes + Kanban</div>
+        <div class="mod-desc">Acompanhamento com pipeline visual de conversão</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-baby"></i></div>
+        <div class="mod-name">Crianças</div>
+        <div class="mod-desc">Gestão completa do ministério infantil</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-hands-praying"></i></div>
+        <div class="mod-name">Orações</div>
+        <div class="mod-desc">Pedidos de oração e acompanhamento pastoral</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-newspaper"></i></div>
+        <div class="mod-name">Novidades</div>
+        <div class="mod-desc">Comunicados e avisos para a congregação</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-brands fa-whatsapp"></i></div>
+        <div class="mod-name">WhatsApp</div>
+        <div class="mod-desc">Comunicação direta com membros via WhatsApp</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon orange"><i class="fa-solid fa-user-check"></i></div>
+        <div class="mod-name">Aprovação Online</div>
+        <div class="mod-desc">Autocadastro de membros com aprovação do admin</div>
+      </div>
+
+      <div class="mod-card">
+        <span class="badge-exclusivo">Exclusivo</span>
+        <div class="mod-icon orange"><i class="fa-solid fa-qrcode"></i></div>
+        <div class="mod-name">Portaria QR</div>
+        <div class="mod-desc">Check-in de culto por QR code — sem papel</div>
+      </div>
+
+      <div class="mod-card">
+        <span class="badge-exclusivo">Exclusivo</span>
+        <div class="mod-icon orange"><i class="fa-solid fa-display"></i></div>
+        <div class="mod-name">Telão de Visitantes</div>
+        <div class="mod-desc">Tela de boas-vindas exibida em cultos para visitantes</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TESOURARIA -->
+  <div class="category-section">
+    <div class="category-header">
+      <div class="category-icon green"><i class="fa-solid fa-coins"></i></div>
+      <div class="category-title">Tesouraria</div>
+      <div class="category-count">7 módulos</div>
+    </div>
+    <div class="modules-grid">
+
+      <div class="mod-card">
+        <div class="mod-icon green"><i class="fa-solid fa-coins"></i></div>
+        <div class="mod-name">Dízimos e Ofertas</div>
+        <div class="mod-desc">Controle de recebimentos com histórico por membro</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon green"><i class="fa-solid fa-cash-register"></i></div>
+        <div class="mod-name">Caixa</div>
+        <div class="mod-desc">Controle de caixa mensal com saldo e lançamentos</div>
+      </div>
+
+      <div class="mod-card">
+        <span class="badge-exclusivo">Exclusivo</span>
+        <div class="mod-icon green"><i class="fa-solid fa-building-columns"></i></div>
+        <div class="mod-name">Bancos</div>
+        <div class="mod-desc">Contas bancárias com importação de extrato OFX/CSV</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon green"><i class="fa-solid fa-credit-card"></i></div>
+        <div class="mod-name">Links de Pagamento</div>
+        <div class="mod-desc">Geração de links para doações e ofertas online</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon green"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+        <div class="mod-name">Contas a Pagar</div>
+        <div class="mod-desc">Compromissos financeiros e controle de vencimentos</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon green"><i class="fa-solid fa-receipt"></i></div>
+        <div class="mod-name">Recibos</div>
+        <div class="mod-desc">Emissão de recibos de dízimos e ofertas</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon green"><i class="fa-solid fa-right-left"></i></div>
+        <div class="mod-name">Transferências</div>
+        <div class="mod-desc">Transferências entre contas e caixas da igreja</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CONTABILIDADE -->
+  <div class="category-section">
+    <div class="category-header">
+      <div class="category-icon blue"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div class="category-title">Contabilidade</div>
+      <div class="category-count">4 módulos</div>
+    </div>
+    <div class="modules-grid">
+
+      <div class="mod-card">
+        <div class="mod-icon blue"><i class="fa-solid fa-sitemap"></i></div>
+        <div class="mod-name">Plano de Contas</div>
+        <div class="mod-desc">Estrutura contábil customizável para sua realidade</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon blue"><i class="fa-solid fa-scale-balanced"></i></div>
+        <div class="mod-name">Lançamentos Contábeis</div>
+        <div class="mod-desc">Partidas dobradas e diário contábil completo</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon blue"><i class="fa-solid fa-table-list"></i></div>
+        <div class="mod-name">Balancete</div>
+        <div class="mod-desc">Balancete de abertura e verificação periódica</div>
+      </div>
+
+      <div class="mod-card">
+        <span class="badge-exclusivo">Exclusivo</span>
+        <div class="mod-icon blue"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="mod-name">Encerramento de Exercício</div>
+        <div class="mod-desc">Encerramento formal e legal do exercício contábil</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ENSINO -->
+  <div class="category-section">
+    <div class="category-header">
+      <div class="category-icon purple"><i class="fa-solid fa-book-open"></i></div>
+      <div class="category-title">Ensino e Espiritualidade</div>
+      <div class="category-count">2 módulos</div>
+    </div>
+    <div class="modules-grid">
+
+      <div class="mod-card">
+        <div class="mod-icon purple"><i class="fa-solid fa-book-open"></i></div>
+        <div class="mod-name">Bíblia e Devocionais</div>
+        <div class="mod-desc">Leitura bíblica diária e devocionais para membros</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon purple"><i class="fa-solid fa-bookmark"></i></div>
+        <div class="mod-name">Planos de Estudo</div>
+        <div class="mod-desc">Planos de leitura bíblica com acompanhamento de progresso</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- APP DO MEMBRO -->
+  <div class="category-section">
+    <div class="category-header">
+      <div class="category-icon teal"><i class="fa-solid fa-mobile-screen-button"></i></div>
+      <div class="category-title">App do Membro</div>
+      <div class="category-count">2 módulos</div>
+    </div>
+    <div class="modules-grid">
+
+      <div class="mod-card">
+        <div class="mod-icon teal"><i class="fa-solid fa-mobile-screen-button"></i></div>
+        <div class="mod-name">App do Membro</div>
+        <div class="mod-desc">Painel exclusivo para membros acessarem pelo celular</div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-icon teal"><i class="fa-solid fa-id-badge"></i></div>
+        <div class="mod-name">Credencial Digital</div>
+        <div class="mod-desc">Carteirinha digital do membro sempre no bolso</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Pronto para transformar a gestão da sua igreja?</h2>
+    <p>Comece hoje — 7 dias grátis, sem cartão de crédito.</p>
+    <div class="cta-buttons">
+      <a href="cadastro_igreja.html" class="btn-primary">
+        <i class="fa-solid fa-rocket"></i>
+        Começar agora — 7 dias grátis
+      </a>
+      <a href="planos.html" class="btn-outline">
+        <i class="fa-solid fa-tags"></i>
+        Ver planos e preços
+      </a>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

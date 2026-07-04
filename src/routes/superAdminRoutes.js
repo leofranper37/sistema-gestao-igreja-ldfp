@@ -10,11 +10,13 @@ const {
     patchIgrejaStatus,
     updateSaasIgrejaContrato,
     listPlanos,
+    createPlano,
     getPlano,
     updatePlano,
     listSaasAssinaturas,
     markSaasAssinaturaPaga,
     listSaasModulos,
+    seedSaasModulos,
     createSaasModulo,
     updateSaasModulo,
     getPlanoModulos,
@@ -41,8 +43,11 @@ const {
     impersonateChurch,
     listUsuariosAdmin,
     postResetSenha,
-    listResetRequests
+    listResetRequests,
+    resolveResetRequest
 } = require('../controllers/superAdminController');
+
+const { listAdmin: listAdminPosts, createPost, updatePost, deletePost } = require('../controllers/blogController');
 
 const {
     listarBackups,
@@ -77,6 +82,7 @@ router.post('/api/saas/igrejas/:id/impersonate', ...isSuperAdmin, impersonateChu
 
 // Planos
 router.get('/api/saas/planos', ...isSuperAdmin, listPlanos);
+router.post('/api/saas/planos', ...isSuperAdmin, createPlano);
 router.get('/api/saas/planos/:slug', ...isSuperAdmin, getPlano);
 router.put('/api/saas/planos/:slug', ...isSuperAdmin, updatePlano);
 
@@ -86,6 +92,7 @@ router.put('/api/saas/assinaturas/:id/pago', ...isSuperAdmin, markSaasAssinatura
 
 // Catálogo de Módulos
 router.get('/api/saas/modulos', ...isSuperAdmin, listSaasModulos);
+router.post('/api/saas/modulos/seed', ...isSuperAdmin, seedSaasModulos);
 router.post('/api/saas/modulos', ...isSuperAdmin, createSaasModulo);
 router.patch('/api/saas/modulos/:slug', ...isSuperAdmin, updateSaasModulo);
 
@@ -111,6 +118,12 @@ router.post('/api/saas/retomada/checkpoint', ...isSuperAdmin, postRetomadaCheckp
 router.post('/api/saas/factory/ai-suggest', ...isSuperAdmin, postFactoryAiSuggest);
 router.post('/api/saas/factory/publish', ...isSuperAdmin, postFactoryPublish);
 
+// Blog (super admin)
+router.get('/api/saas/blog/posts', ...isSuperAdmin, listAdminPosts);
+router.post('/api/saas/blog/posts', ...isSuperAdmin, createPost);
+router.put('/api/saas/blog/posts/:id', ...isSuperAdmin, updatePost);
+router.delete('/api/saas/blog/posts/:id', ...isSuperAdmin, deletePost);
+
 // Novidades (público: sem auth / admin: com auth)
 router.get('/api/novidades', listNovidadesPublic);
 router.get('/api/saas/novidades', ...isSuperAdmin, listNovidadesAdmin);
@@ -122,6 +135,7 @@ router.delete('/api/saas/novidades/:id', ...isSuperAdmin, deleteNovidade);
 router.get('/api/saas/usuarios', ...isSuperAdmin, listUsuariosAdmin);
 router.post('/api/saas/usuarios/reset-senha', ...isSuperAdmin, postResetSenha);
 router.get('/api/saas/reset-requests', ...isSuperAdmin, listResetRequests);
+router.patch('/api/saas/reset-requests/:id/resolve', ...isSuperAdmin, resolveResetRequest);
 
 // Backup & Recuperação de dados por igreja
 router.get('/api/saas/backups',                       ...isSuperAdmin, listarBackups);

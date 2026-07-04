@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Gerenciar App do Membro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .ap-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+        @media(max-width:800px) { .ap-grid { grid-template-columns:1fr; } }
+        .ap-card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:20px; box-shadow:0 4px 16px rgba(15,23,42,.06); margin-bottom:18px; }
+        .ap-card h3 { font-size:15px; font-weight:700; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+        .ap-card h3 i { color:#0f766e; font-size:16px; }
+        .ap-card p.sub { font-size:12px; color:#64748b; margin-bottom:14px; }
+        .field { width:100%; padding:9px 12px; border:1px solid #dbe3ef; border-radius:8px; font-size:13px; box-sizing:border-box; margin-top:4px; background:#f8fafc; color:#1e293b; }
+        .field:focus { border-color:#0f766e; outline:none; background:#fff; }
+        label { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.04em; display:block; margin-top:12px; }
+        .btn { border:none; border-radius:8px; padding:9px 16px; font-weight:700; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:6px; }
+        .btn-primary { background:#0f766e; color:#fff; }
+        .btn-primary:hover { background:#0d6460; }
+        .btn-secondary { background:#1e293b; color:#fff; }
+        .btn-danger { background:#dc2626; color:#fff; border-radius:6px; padding:4px 10px; font-size:12px; }
+        .btn-sm { padding:5px 11px; font-size:12px; }
+        .inline-form { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+        .inline-form input, .inline-form select { flex:1; min-width:140px; padding:8px 11px; border:1px solid #dbe3ef; border-radius:8px; font-size:13px; background:#f8fafc; }
+        table { width:100%; border-collapse:collapse; font-size:13px; margin-top:12px; }
+        th { background:#f1f5f9; padding:9px 12px; text-align:left; font-weight:600; color:#475569; font-size:12px; }
+        td { padding:9px 12px; border-bottom:1px solid #f1f5f9; }
+        tr:hover td { background:#fafafa; }
+        .empty { text-align:center; color:#94a3b8; padding:20px; font-size:13px; }
+        .msg { font-size:12px; padding:8px 12px; border-radius:6px; margin-top:8px; display:none; }
+        .msg.ok { background:#d1fae5; color:#065f46; display:block; }
+        .msg.err { background:#fee2e2; color:#991b1b; display:block; }
+        .link-box { display:flex; gap:8px; align-items:center; margin-top:10px; }
+        .link-input { flex:1; padding:9px 12px; border:1px solid #dbe3ef; border-radius:8px; font-size:12px; background:#f8fafc; color:#374151; }
+        .app-preview-banner {
+            background:linear-gradient(135deg,#0f0c29 0%,#302b63 60%,#24243e 100%);
+            border-radius:14px; padding:18px 20px; color:#e5e7eb; margin-bottom:20px;
+            display:flex; align-items:center; gap:16px;
+        }
+        .app-preview-banner i { font-size:32px; color:#a78bfa; }
+        .app-preview-banner strong { color:#fff; font-size:15px; display:block; margin-bottom:3px; }
+        .app-preview-banner span { font-size:12px; color:#94a3b8; }
+        .badge-live { background:#d1fae5; color:#065f46; border-radius:20px; padding:2px 9px; font-size:11px; font-weight:700; display:inline-block; }
+        .tab-pills { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+        .tab-pill { background:#f1f5f9; border:1px solid #e2e8f0; color:#475569; border-radius:20px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; }
+        .tab-pill.active { background:#0f766e; color:#fff; border-color:#0f766e; }
+        .section-tab { display:none; }
+        .section-tab.active { display:block; }
+        .info-box { background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px 14px; font-size:12px; color:#1e40af; margin-bottom:14px; }
+        .info-box i { margin-right:5px; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page"
+      data-shell-active="painel_app_membro.html"
+      data-shell-title="App do Membro"
+      data-shell-breadcrumb="LDFP / Secretaria / App do Membro"
+      data-shell-chip="App"
+      data-shell-role="Secretaria">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>App do Membro</h2>
+                <p>Gerencie o conteúdo e configurações do aplicativo dos membros.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-mobile-screen-button"></i> App</div>
+        </div>
+
+        <!-- Banner preview -->
+        <div class="app-preview-banner">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+            <div>
+                <strong>App do Membro LDFP</strong>
+                <span>Carteirinha digital · Vídeos · Fotos · Eventos · PIX · EBD · Live</span>
+            </div>
+            <div style="margin-left:auto; text-align:right; flex-shrink:0;">
+                <div id="linkAppBadge" style="font-size:12px; color:#a78bfa; margin-bottom:4px;">Link do App</div>
+                <input id="appLinkInput" class="link-input" readonly style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#e5e7eb;max-width:220px;" placeholder="Carregando...">
+                <button onclick="copiarLink()" style="border:none;background:rgba(255,255,255,.12);color:#e5e7eb;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:11px;margin-top:4px;"><i class="fa fa-copy"></i> Copiar</button>
+                <p id="msgCopiaLink" style="font-size:11px;color:#6ee7b7;display:none;margin-top:3px;">✓ Copiado!</p>
+            </div>
+        </div>
+
+        <!-- Tabs de navegação -->
+        <div class="tab-pills">
+            <button class="tab-pill active" onclick="showTab('tab-config')"><i class="fa fa-gear"></i> Configurações</button>
+            <button class="tab-pill" onclick="showTab('tab-videos')"><i class="fa fa-play-circle"></i> Vídeos</button>
+            <button class="tab-pill" onclick="showTab('tab-audios')"><i class="fa fa-headphones"></i> Áudios</button>
+            <button class="tab-pill" onclick="showTab('tab-fotos')"><i class="fa fa-image"></i> Fotos</button>
+            <button class="tab-pill" onclick="showTab('tab-eventos')"><i class="fa fa-calendar-days"></i> Eventos</button>
+            <button class="tab-pill" onclick="showTab('tab-ebd')"><i class="fa fa-book-open"></i> EBD / Ensino</button>
+        </div>
+
+        <!-- ══ TAB: CONFIGURAÇÕES ══════════════════════════════════════════ -->
+        <div id="tab-config" class="section-tab active">
+            <div class="ap-grid">
+                <div>
+                    <div class="ap-card">
+                        <h3><i class="fa fa-palette"></i> Aparência e Logo</h3>
+                        <p class="sub">Personalize como o app aparece para os membros.</p>
+                        <label>URL do Logo da Igreja</label>
+                        <input type="url" id="cfg-logo" class="field" placeholder="https://...logo.png">
+                        <label>Versículo de Contribuições</label>
+                        <input type="text" id="cfg-verso" class="field" placeholder='"Trazei todos os dízimos..." (Ml 3:10)'>
+                    </div>
+
+                    <div class="ap-card">
+                        <h3><i class="fa-brands fa-whatsapp"></i> Redes Sociais</h3>
+                        <p class="sub">Links que aparecem na seção "Conecte-se" do app.</p>
+                        <label>WhatsApp (com DDI, sem +)</label>
+                        <input type="text" id="cfg-whatsapp" class="field" placeholder="5511999999999">
+                        <label>Instagram (URL)</label>
+                        <input type="url" id="cfg-instagram" class="field" placeholder="https://instagram.com/suaigreja">
+                        <label>Facebook (URL)</label>
+                        <input type="url" id="cfg-facebook" class="field" placeholder="https://facebook.com/suaigreja">
+                        <label>YouTube (URL do canal)</label>
+                        <input type="url" id="cfg-youtube" class="field" placeholder="https://youtube.com/@suaigreja">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="ap-card">
+                        <h3><i class="fa fa-video"></i> Live / Transmissão ao Vivo</h3>
+                        <p class="sub">Link da live que aparece no app. Pode ser YouTube, Zoom, etc.</p>
+                        <label>URL da Live <span class="badge-live">AO VIVO</span></label>
+                        <input type="url" id="cfg-live" class="field" placeholder="https://youtube.com/live/...">
+                        <small style="color:#94a3b8;font-size:11px;display:block;margin-top:6px;">Deixe em branco quando não houver live ativa.</small>
+                    </div>
+
+                    <div class="ap-card" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#bbf7d0;">
+                        <h4 style="color:#065f46;margin:0 0 10px;font-size:14px;"><i class="fa fa-circle-info"></i> Como funciona</h4>
+                        <ul style="font-size:12px;color:#166534;padding-left:16px;line-height:2.1;">
+                            <li>Compartilhe o link do app com membros cadastrados</li>
+                            <li>Login: CPF + primeiros 6 dígitos do CPF (senha padrão)</li>
+                            <li>Carteirinha digital com QR Code</li>
+                            <li>Vídeos, Fotos, Eventos aparecem no app</li>
+                            <li>Live ativa → ícone especial na tela inicial</li>
+                        </ul>
+                        <div style="margin-top:12px;padding-top:10px;border-top:1px solid #bbf7d0;">
+                            <p style="font-size:12px;color:#065f46;"><i class="fa fa-key"></i> <strong>Resetar senha:</strong> Membros → Editar → Resetar Senha App</p>
+                        </div>
+                    </div>
+
+                    <div class="ap-card" style="text-align:center;">
+                        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="salvarConfig()">
+                            <i class="fa fa-save"></i> Salvar Todas as Configurações
+                        </button>
+                        <p id="msgConfig" class="msg"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ TAB: VÍDEOS ═══════════════════════════════════════════════ -->
+        <div id="tab-videos" class="section-tab">
+            <div class="ap-card">
+                <h3><i class="fa fa-play-circle"></i> Vídeos no App</h3>
+                <p class="sub">Adicione URLs do YouTube. Aparecem na aba "Vídeos" do app dos membros.</p>
+                <div class="inline-form">
+                    <input type="text" id="vid-titulo" placeholder="Título do vídeo">
+                    <input type="url" id="vid-url" placeholder="URL do YouTube (https://youtu.be/...)">
+                    <button class="btn btn-primary btn-sm" onclick="adicionarMidia('videos', 'vid')"><i class="fa fa-plus"></i> Adicionar</button>
+                </div>
+                <p id="msgVideo" class="msg"></p>
+                <div id="listaVideos"><p class="empty"><i class="fa fa-spinner fa-spin"></i> Carregando...</p></div>
+            </div>
+        </div>
+
+        <!-- ══ TAB: ÁUDIOS ════════════════════════════════════════════════ -->
+        <div id="tab-audios" class="section-tab">
+            <div class="ap-card">
+                <h3><i class="fa fa-headphones"></i> Áudios / Músicas / Pregações</h3>
+                <p class="sub">Adicione links de áudios (Spotify, SoundCloud, Drive, etc.) que aparecem no app.</p>
+                <div class="inline-form">
+                    <input type="text" id="aud-titulo" placeholder="Título (ex: Pregação 22/06)">
+                    <input type="url" id="aud-url" placeholder="URL do áudio">
+                    <button class="btn btn-primary btn-sm" onclick="adicionarMidia('audios', 'aud')"><i class="fa fa-plus"></i> Adicionar</button>
+                </div>
+                <p id="msgAudio" class="msg"></p>
+                <div id="listaAudios"><p class="empty"><i class="fa fa-spinner fa-spin"></i> Carregando...</p></div>
+            </div>
+        </div>
+
+        <!-- ══ TAB: FOTOS ════════════════════════════════════════════════ -->
+        <div id="tab-fotos" class="section-tab">
+            <div class="ap-card">
+                <h3><i class="fa fa-image"></i> Fotos e Imagens</h3>
+                <p class="sub">Adicione URLs de imagens (Google Fotos, Imgur, Drive, etc.) que aparecem na galeria do app.</p>
+                <div class="inline-form">
+                    <input type="text" id="img-titulo" placeholder="Título da imagem">
+                    <input type="url" id="img-url" placeholder="URL da imagem">
+                    <button class="btn btn-primary btn-sm" onclick="adicionarMidia('images', 'img')"><i class="fa fa-plus"></i> Adicionar</button>
+                </div>
+                <p id="msgImagem" class="msg"></p>
+                <div id="listaImagens"><p class="empty"><i class="fa fa-spinner fa-spin"></i> Carregando...</p></div>
+            </div>
+        </div>
+
+        <!-- ══ TAB: EVENTOS ══════════════════════════════════════════════ -->
+        <div id="tab-eventos" class="section-tab">
+            <div class="info-box">
+                <i class="fa fa-circle-info"></i>
+                Eventos criados aqui também aparecem na <strong>Agenda</strong> do painel. Todos os eventos futuros da agenda são exibidos no app.
+            </div>
+            <div class="ap-card">
+                <h3><i class="fa fa-calendar-plus"></i> Criar Evento Rápido</h3>
+                <p class="sub">O evento aparecerá no calendário do App do Membro.</p>
+                <div class="ap-grid">
+                    <div>
+                        <label>Título do Evento *</label>
+                        <input type="text" id="ev-titulo" class="field" placeholder="Ex: Culto de Domingo, Retiro, EBD...">
+                        <label>Descrição</label>
+                        <textarea id="ev-descricao" class="field" rows="2" placeholder="Detalhes opcionais..." style="resize:vertical;"></textarea>
+                    </div>
+                    <div>
+                        <label>Data e Hora de Início *</label>
+                        <input type="datetime-local" id="ev-inicio" class="field">
+                        <label>Data e Hora de Término *</label>
+                        <input type="datetime-local" id="ev-fim" class="field">
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="margin-top:14px;" onclick="criarEvento()">
+                    <i class="fa fa-calendar-plus"></i> Criar Evento no App
+                </button>
+                <p id="msgEvento" class="msg"></p>
+            </div>
+            <div class="ap-card">
+                <h3><i class="fa fa-calendar-days"></i> Próximos Eventos</h3>
+                <p class="sub">Eventos cadastrados para os próximos 30 dias.</p>
+                <div id="listaEventos"><p class="empty"><i class="fa fa-spinner fa-spin"></i> Carregando...</p></div>
+            </div>
+        </div>
+
+        <!-- ══ TAB: EBD / ENSINO ═════════════════════════════════════════ -->
+        <div id="tab-ebd" class="section-tab">
+            <div class="ap-card">
+                <h3><i class="fa fa-book-open"></i> Lição da Semana (EBD)</h3>
+                <p class="sub">A lição definida aqui aparece como destaque na tela inicial do app dos membros.</p>
+                <label>Lição Atual</label>
+                <input type="text" id="ebd-licao" class="field" placeholder='Ex: Lição 3 — "A Fé que Move Montanhas"'>
+                <label>Link da Lição (opcional)</label>
+                <input type="url" id="ebd-url" class="field" placeholder="https://... (PDF, YouTube, site da lição)">
+                <button class="btn btn-primary" style="margin-top:14px;" onclick="salvarEBD()">
+                    <i class="fa fa-save"></i> Salvar Lição da Semana
+                </button>
+                <p id="msgEBD" class="msg"></p>
+            </div>
+            <div class="ap-card" style="background:#fefce8;border-color:#fde68a;">
+                <h4 style="color:#92400e;margin:0 0 8px;font-size:14px;"><i class="fa fa-lightbulb"></i> Como aparece no App</h4>
+                <p style="font-size:12px;color:#78350f;line-height:1.8;">
+                    O app mostra um card "<strong>📖 Lição da Semana</strong>" na tela inicial com o texto que você definir.<br>
+                    Se houver um link, o membro pode tocar para acessar a lição completa.<br>
+                    Atualize toda semana para os membros sempre verem a lição correta.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+requireAuthSession();
+
+let _igrejaTk = null;
+let _authToken = null;
+
+function getAuth() {
+    try { return JSON.parse(localStorage.getItem('ldfpAuth') || '{}'); } catch(_) { return {}; }
+}
+
+function authHeader() {
+    return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _authToken };
+}
+
+function showMsg(id, text, tipo) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'msg ' + tipo;
+    setTimeout(() => { el.className = 'msg'; }, 4000);
+}
+
+function showTab(id) {
+    document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-pill').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelector('[onclick="showTab(\'' + id + '\')"]').classList.add('active');
+    if (id === 'tab-videos') carregarMidias('videos', 'listaVideos');
+    if (id === 'tab-audios') carregarMidias('audios', 'listaAudios');
+    if (id === 'tab-fotos')  carregarMidias('images', 'listaImagens');
+    if (id === 'tab-eventos') carregarEventos();
+}
+
+function copiarLink() {
+    const el = document.getElementById('appLinkInput');
+    if (!el.value || el.value.includes('...')) return;
+    navigator.clipboard.writeText(el.value).catch(() => { el.select(); document.execCommand('copy'); });
+    const msg = document.getElementById('msgCopiaLink');
+    msg.style.display = 'block';
+    setTimeout(() => { msg.style.display = 'none'; }, 2000);
+}
+
+async function init() {
+    const auth = getAuth();
+    _authToken = auth.token;
+
+    try {
+        const resp = await fetch('/api/minha-conta', { headers: { Authorization: 'Bearer ' + _authToken } });
+        if (resp.ok) {
+            const data = await resp.json();
+            _igrejaTk = data.igrejaTk || data.public_token || null;
+        }
+    } catch (_) {}
+
+    const linkEl = document.getElementById('appLinkInput');
+    if (_igrejaTk) {
+        linkEl.value = location.origin + '/app_login.html?igrejaTk=' + _igrejaTk;
+    } else {
+        linkEl.value = 'Configure o token da igreja';
+    }
+
+    await carregarConfig();
+    carregarMidias('videos', 'listaVideos');
+}
+
+async function carregarConfig() {
+    if (!_igrejaTk) return;
+    try {
+        const resp = await fetch('/api/app/config?igrejaTk=' + _igrejaTk);
+        if (!resp.ok) return;
+        const cfg = await resp.json();
+        document.getElementById('cfg-logo').value      = cfg.logoUrl || '';
+        document.getElementById('cfg-verso').value     = cfg.versiculoContribuicoes || '';
+        document.getElementById('cfg-whatsapp').value  = cfg.whatsapp || '';
+        document.getElementById('cfg-instagram').value = cfg.instagram || '';
+        document.getElementById('cfg-facebook').value  = cfg.facebook || '';
+        document.getElementById('cfg-youtube').value   = cfg.youtube || '';
+        document.getElementById('cfg-live').value      = cfg.liveStreamUrl || '';
+        document.getElementById('ebd-licao').value     = cfg.licaoSemana || '';
+        document.getElementById('ebd-url').value       = cfg.licaoUrl || '';
+    } catch (_) {}
+}
+
+async function salvarConfig() {
+    const body = {
+        logoUrl:                document.getElementById('cfg-logo').value.trim(),
+        versiculoContribuicoes: document.getElementById('cfg-verso').value.trim(),
+        whatsapp:               document.getElementById('cfg-whatsapp').value.trim(),
+        instagram:              document.getElementById('cfg-instagram').value.trim(),
+        facebook:               document.getElementById('cfg-facebook').value.trim(),
+        youtube:                document.getElementById('cfg-youtube').value.trim(),
+        liveStreamUrl:          document.getElementById('cfg-live').value.trim()
+    };
+    try {
+        const resp = await fetch('/api/app/config', { method: 'POST', headers: authHeader(), body: JSON.stringify(body) });
+        if (resp.ok) showMsg('msgConfig', '✓ Configurações salvas com sucesso!', 'ok');
+        else showMsg('msgConfig', 'Erro ao salvar.', 'err');
+    } catch (_) { showMsg('msgConfig', 'Erro de conexão.', 'err'); }
+}
+
+async function salvarEBD() {
+    const body = {
+        logoUrl:                document.getElementById('cfg-logo').value.trim(),
+        versiculoContribuicoes: document.getElementById('cfg-verso').value.trim(),
+        whatsapp:               document.getElementById('cfg-whatsapp').value.trim(),
+        instagram:              document.getElementById('cfg-instagram').value.trim(),
+        facebook:               document.getElementById('cfg-facebook').value.trim(),
+        youtube:                document.getElementById('cfg-youtube').value.trim(),
+        liveStreamUrl:          document.getElementById('cfg-live').value.trim(),
+        licaoSemana:            document.getElementById('ebd-licao').value.trim(),
+        licaoUrl:               document.getElementById('ebd-url').value.trim()
+    };
+    try {
+        const resp = await fetch('/api/app/config', { method: 'POST', headers: authHeader(), body: JSON.stringify(body) });
+        if (resp.ok) showMsg('msgEBD', '✓ Lição da semana salva! Já aparece no app.', 'ok');
+        else showMsg('msgEBD', 'Erro ao salvar.', 'err');
+    } catch (_) { showMsg('msgEBD', 'Erro de conexão.', 'err'); }
+}
+
+// ── Mídias (vídeos, áudios, fotos) ────────────────────────────────────────
+
+const LABELS = { videos: 'vídeo', audios: 'áudio', images: 'imagem' };
+
+async function carregarMidias(tipo, listaId) {
+    if (!_igrejaTk) { document.getElementById(listaId).innerHTML = '<p class="empty">Token não disponível. Aguarde...</p>'; return; }
+    const el = document.getElementById(listaId);
+    el.innerHTML = '<p class="empty"><i class="fa fa-spinner fa-spin"></i> Carregando...</p>';
+    try {
+        const resp = await fetch('/api/app/midias?igrejaTk=' + _igrejaTk, { headers: { Authorization: 'Bearer ' + _authToken } });
+        const data = resp.ok ? await resp.json() : {};
+        const items = Array.isArray(data[tipo]) ? data[tipo] : [];
+        if (!items.length) { el.innerHTML = '<p class="empty">Nenhum ' + LABELS[tipo] + ' adicionado ainda.</p>'; return; }
+        let html = '<table><thead><tr><th>Título</th><th>URL</th><th></th></tr></thead><tbody>';
+        items.forEach(m => {
+            const safe = (m.title || m.titulo || '-').replace(/</g, '&lt;');
+            const url = (m.url || '').replace(/</g, '&lt;');
+            html += '<tr><td>' + safe + '</td>'
+                + '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="' + url + '" target="_blank" style="color:#0f766e;">' + url + '</a></td>'
+                + '<td><button class="btn-danger btn" onclick="excluirMidia(\'' + tipo + '\',' + m.id + ')">Excluir</button></td></tr>';
+        });
+        el.innerHTML = html + '</tbody></table>';
+    } catch (_) { el.innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
+}
+
+async function adicionarMidia(tipo, prefix) {
+    const titulo = (document.getElementById(prefix + '-titulo').value || '').trim();
+    const url    = (document.getElementById(prefix + '-url').value || '').trim();
+    const msgId  = 'msg' + { videos: 'Video', audios: 'Audio', images: 'Imagem' }[tipo];
+    if (!titulo || !url) { showMsg(msgId, 'Preencha título e URL.', 'err'); return; }
+    try {
+        const resp = await fetch('/api/app/midias/' + tipo, {
+            method: 'POST',
+            headers: authHeader(),
+            body: JSON.stringify({ title: titulo, url })
+        });
+        const d = await resp.json().catch(() => ({}));
+        if (resp.ok) {
+            showMsg(msgId, '✓ ' + LABELS[tipo] + ' adicionado(a) com sucesso!', 'ok');
+            document.getElementById(prefix + '-titulo').value = '';
+            document.getElementById(prefix + '-url').value = '';
+            carregarMidias(tipo, { videos: 'listaVideos', audios: 'listaAudios', images: 'listaImagens' }[tipo]);
+        } else {
+            showMsg(msgId, d.error || 'Erro ao adicionar.', 'err');
+        }
+    } catch (_) { showMsg(msgId, 'Erro de conexão.', 'err'); }
+}
+
+async function excluirMidia(tipo, id) {
+    if (!confirm('Excluir este item?')) return;
+    await fetch('/api/app/midias/' + tipo + '/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + _authToken } });
+    const listaId = { videos: 'listaVideos', audios: 'listaAudios', images: 'listaImagens' }[tipo];
+    carregarMidias(tipo, listaId);
+}
+
+// ── Eventos ────────────────────────────────────────────────────────────────
+
+function fmtLocal(dt) {
+    if (!dt) return '-';
+    return new Date(dt).toLocaleString('pt-BR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+}
+
+async function criarEvento() {
+    const titulo    = (document.getElementById('ev-titulo').value || '').trim();
+    const descricao = (document.getElementById('ev-descricao').value || '').trim();
+    const inicio    = document.getElementById('ev-inicio').value;
+    const fim       = document.getElementById('ev-fim').value;
+    if (!titulo || !inicio || !fim) { showMsg('msgEvento', 'Preencha título, início e fim.', 'err'); return; }
+    try {
+        const resp = await fetch('/agenda/eventos', {
+            method: 'POST',
+            headers: authHeader(),
+            body: JSON.stringify({ titulo, descricao: descricao || null, inicio: new Date(inicio).toISOString(), fim: new Date(fim).toISOString() })
+        });
+        const d = await resp.json().catch(() => ({}));
+        if (resp.ok) {
+            showMsg('msgEvento', '✓ Evento criado! Já aparece no app.', 'ok');
+            document.getElementById('ev-titulo').value = '';
+            document.getElementById('ev-descricao').value = '';
+            document.getElementById('ev-inicio').value = '';
+            document.getElementById('ev-fim').value = '';
+            carregarEventos();
+        } else {
+            showMsg('msgEvento', d.error || 'Erro ao criar evento.', 'err');
+        }
+    } catch (_) { showMsg('msgEvento', 'Erro de conexão.', 'err'); }
+}
+
+async function carregarEventos() {
+    const el = document.getElementById('listaEventos');
+    el.innerHTML = '<p class="empty"><i class="fa fa-spinner fa-spin"></i> Carregando...</p>';
+    try {
+        const agora = new Date().toISOString();
+        const fim30 = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        const resp = await fetch('/agenda/eventos?start=' + agora + '&end=' + fim30, { headers: { Authorization: 'Bearer ' + _authToken } });
+        const data = resp.ok ? await resp.json() : [];
+        const eventos = Array.isArray(data) ? data : (data.data || data.eventos || []);
+        if (!eventos.length) { el.innerHTML = '<p class="empty">Nenhum evento nos próximos 30 dias.</p>'; return; }
+        let html = '<table><thead><tr><th>Título</th><th>Início</th><th>Fim</th></tr></thead><tbody>';
+        eventos.slice(0, 20).forEach(e => {
+            html += '<tr><td>' + (e.titulo || '-') + '</td><td>' + fmtLocal(e.inicio) + '</td><td>' + fmtLocal(e.fim) + '</td></tr>';
+        });
+        el.innerHTML = html + '</tbody></table>';
+    } catch (_) { el.innerHTML = '<p class="empty">Erro ao carregar eventos.</p>'; }
+}
+
+init();
+</script>
+</body>
+</html>

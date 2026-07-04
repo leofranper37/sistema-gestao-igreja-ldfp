@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .oracoes-wrap { padding: 24px 30px 30px; }
+        .enterprise-page-shell-inner { }
         .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
         .tab-btn { border: 1px solid #dbe3ef; background: #fff; border-radius: 8px; padding: 8px 12px; font-weight: 600; cursor: pointer; }
         .tab-btn.active { background: #0f766e; color: #fff; border-color: #0f766e; }
@@ -53,7 +53,14 @@
 </head>
 <body class="theme-petroleo enterprise-shell-page" data-shell-title="Orações" data-shell-breadcrumb="LDFP / Secretaria / Orações" data-shell-active="oracoes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
     <main class="main-content enterprise-main">
-        <div class="oracoes-wrap">
+        <div class="enterprise-page-shell">
+            <div class="enterprise-page-hero">
+                <div>
+                    <h2>Orações</h2>
+                    <p>Registre pedidos de oração, acompanhe o mural e responda aos pedidos da comunidade.</p>
+                </div>
+                <div class="enterprise-page-badge"><i class="fa-solid fa-hands-praying"></i> Secretaria</div>
+            </div>
             <div class="tabs">
                 <button type="button" class="tab-btn active" data-tab="meus">Meus Pedidos</button>
                 <button type="button" class="tab-btn" data-tab="mural">Mural de Orações</button>

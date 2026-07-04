@@ -55,6 +55,24 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
 .plan-card-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center}
 .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}.status-dot.on{background:var(--green)}.status-dot.off{background:var(--red)}
 .saved-msg{font-size:12px;color:var(--green);font-weight:600;opacity:0;transition:.3s;margin-left:auto}
+.modules-section{margin-top:4px}
+.modules-grid{display:flex;flex-direction:column;gap:3px;margin-top:6px;max-height:480px;overflow-y:auto;padding-right:2px}
+.modules-grid::-webkit-scrollbar{width:4px}.modules-grid::-webkit-scrollbar-track{background:#f1f5f9;border-radius:4px}.modules-grid::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+.mod-label{display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:#fff;transition:.15s;user-select:none;min-width:0}
+.mod-label:hover{border-color:#93c5fd;background:#eff6ff}
+.mod-label input[type=checkbox]{width:14px;height:14px;accent-color:var(--blue);flex-shrink:0}
+.mod-label.checked{border-color:#86efac;background:#f0fdf4}
+.mod-label i{color:var(--blue);width:16px;text-align:center;font-size:13px;flex-shrink:0}
+.mod-label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.mod-group-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:10px 0 3px;padding:0 2px;display:flex;align-items:center;gap:6px}
+.mod-group-header::after{content:'';flex:1;height:1px;background:var(--border)}
+.mod-group-header:first-child{margin-top:2px}
+.section-divider{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 4px;display:flex;align-items:center;gap:8px}
+.section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.plan-limits-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.plan-limit-badge{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;background:rgba(37,99,235,.08);color:var(--blue);padding:4px 10px;border-radius:100px;border:1px solid rgba(37,99,235,.15)}
+.plan-limit-badge i{font-size:11px}
+.plan-verse-preview{margin-top:10px;font-size:11px;font-style:italic;color:var(--muted);line-height:1.5;padding:8px 10px;background:rgba(245,158,11,.06);border-left:3px solid var(--gold);border-radius:0 6px 6px 0}
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
 .modal-overlay.open{display:flex}
@@ -66,20 +84,6 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
 .toast{position:fixed;bottom:24px;right:24px;padding:14px 22px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;z-index:2000;opacity:0;transform:translateY(16px);transition:.3s}
 .toast.show{opacity:1;transform:translateY(0)}
 .toast.success{background:var(--green)}.toast.error{background:var(--red)}
-/* MODULE TOGGLES */
-.modulos-section{border-top:1px solid var(--border);padding-top:14px;margin-top:4px}
-.modulos-grid{display:flex;flex-direction:column;gap:2px;max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;background:#fcfcfd}
-.modulo-row{display:flex;align-items:center;gap:9px;padding:5px 6px;border-radius:6px;cursor:pointer;user-select:none;transition:background .12s}
-.modulo-row:hover{background:rgba(37,99,235,.05)}
-.mod-check{display:none}
-.mod-pill{width:34px;height:19px;background:#cbd5e1;border-radius:100px;flex-shrink:0;position:relative;transition:background .18s}
-.mod-pill::after{content:'';position:absolute;top:2.5px;left:2.5px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .18s;box-shadow:0 1px 3px rgba(0,0,0,.18)}
-.mod-check:checked+.mod-pill{background:var(--green)}
-.mod-check:checked+.mod-pill::after{transform:translateX(15px)}
-.mod-icon{font-size:11px;color:var(--muted);width:16px;text-align:center;flex-shrink:0}
-.mod-name{font-size:12px;color:var(--text);flex:1;font-weight:500}
-.mod-key{font-size:10px;color:var(--muted);font-family:monospace;background:rgba(0,0,0,.04);padding:1px 5px;border-radius:4px}
-.modulos-empty{font-size:12px;color:var(--muted);padding:8px;text-align:center}
 </style>
 </head>
 <body>
@@ -183,35 +187,168 @@ const token = () => sessionStorage.getItem('token') || localStorage.getItem('tok
 const headers = () => ({ 'Content-Type':'application/json', Authorization: 'Bearer ' + token() });
 
 let planosData = [];
-let modulosCatalog = [];
-let planoModulosMap = {};
 
-async function loadModulosCatalog() {
-  try {
-    const r = await fetch('/api/saas/modulos', { headers: headers() });
-    if (r.ok) modulosCatalog = await r.json();
-  } catch (e) { modulosCatalog = []; }
-}
+// Versículos bíblicos padrão por plano (usado quando plano não tem verso salvo)
+const DEFAULT_PLAN_VERSES = {
+  hebrom: 'Melhor é serem dois do que um, porque têm melhor paga do seu trabalho. — Eclesiastes 4:9',
+  betel:  'Como é este lugar temível! Não é outra coisa mais que a casa de Deus e a porta do céu. — Gênesis 28:17',
+  siao:   'O Senhor escolheu a Sião; quis que fosse habitação sua. — Salmos 132:13',
+};
 
-async function loadPlanoModulos(slug) {
-  try {
-    const r = await fetch('/api/saas/planos/' + slug + '/modulos', { headers: headers() });
-    if (r.ok) planoModulosMap[slug] = await r.json();
-    else planoModulosMap[slug] = [];
-  } catch (e) { planoModulosMap[slug] = []; }
-}
+// Módulos padrão por plano — define o que vem pré-marcado quando não há config salva
+const DEFAULT_PLAN_MODULES = {
+  hebrom: new Set([
+    'membros','cargos','historico-pastoral','escalas','batismos',
+    'agenda','oracoes','novidades','dizimos','caixa','relatorios'
+  ]),
+  betel: new Set([
+    'membros','cargos','historico-pastoral','grupos','escalas','ebd','batismos',
+    'agenda','outras-igrejas','visitantes','criancas','oracoes','novidades',
+    'autocadastro','estudo-biblico','dizimos','caixa','bancos','pagamentos',
+    'contas-pagar','recibos','transferencias','graficos','relatorios','app-membro'
+  ]),
+  siao: new Set([
+    'membros','cargos','historico-pastoral','grupos','escalas','ebd','batismos',
+    'agenda','outras-igrejas','missionarios','visitantes','criancas','oracoes',
+    'novidades','whatsapp','autocadastro','portaria-qr','telao','estudo-biblico',
+    'dizimos','caixa','bancos','pagamentos','contas-pagar','recibos','transferencias',
+    'contabilidade','graficos','relatorios','app-membro'
+  ]),
+};
+
+// Lista canônica dos 32 módulos — sempre exibidos, independente do banco
+const STANDARD_MODULES_UI = [
+  { slug:'membros',            nome:'Membros (Lista e Cadastro)',    icon:'fa-solid fa-users',                group:'Secretaria' },
+  { slug:'cargos',             nome:'Cargos e Situações',            icon:'fa-solid fa-briefcase',            group:'Secretaria' },
+  { slug:'historico-pastoral', nome:'Histórico Pastoral',            icon:'fa-solid fa-book-bible',           group:'Secretaria' },
+  { slug:'grupos',             nome:'Grupos e Células',              icon:'fa-solid fa-people-group',         group:'Secretaria' },
+  { slug:'escalas',            nome:'Escalas de Culto',              icon:'fa-solid fa-calendar-check',       group:'Secretaria' },
+  { slug:'ebd',                nome:'EBD (Alunos, Turmas e Grades)', icon:'fa-solid fa-graduation-cap',       group:'Secretaria' },
+  { slug:'batismos',           nome:'Batismos',                      icon:'fa-solid fa-water',                group:'Secretaria' },
+  { slug:'agenda',             nome:'Agenda',                        icon:'fa-solid fa-calendar-days',        group:'Secretaria' },
+  { slug:'outras-igrejas',     nome:'Outras Igrejas',                icon:'fa-solid fa-globe',                group:'Secretaria' },
+  { slug:'missionarios',       nome:'Missionários',                  icon:'fa-solid fa-person-rays',          group:'Secretaria' },
+  { slug:'visitantes',         nome:'Visitantes e Acompanhamento',   icon:'fa-solid fa-user-plus',            group:'Secretaria' },
+  { slug:'criancas',           nome:'Crianças',                      icon:'fa-solid fa-baby',                 group:'Secretaria' },
+  { slug:'oracoes',            nome:'Orações e Pedidos',             icon:'fa-solid fa-hands-praying',        group:'Secretaria' },
+  { slug:'novidades',          nome:'Novidades / Comunicados',       icon:'fa-solid fa-newspaper',            group:'Secretaria' },
+  { slug:'whatsapp',           nome:'Comunicação WhatsApp',          icon:'fa-brands fa-whatsapp',            group:'Secretaria' },
+  { slug:'autocadastro',       nome:'Aprovação de Cadastro Online',  icon:'fa-solid fa-user-check',           group:'Secretaria' },
+  { slug:'portaria-qr',        nome:'Portaria / Check-in QR',        icon:'fa-solid fa-qrcode',               group:'Secretaria' },
+  { slug:'telao',              nome:'Telão de Visitantes',           icon:'fa-solid fa-display',              group:'Secretaria' },
+  { slug:'estudo-biblico',     nome:'Bíblia, Devocionais e Planos', icon:'fa-solid fa-book-bible',           group:'Ensino' },
+  { slug:'dizimos',            nome:'Dízimos & Ofertas',             icon:'fa-solid fa-coins',                group:'Tesouraria' },
+  { slug:'caixa',              nome:'Caixa',                         icon:'fa-solid fa-cash-register',        group:'Tesouraria' },
+  { slug:'bancos',             nome:'Bancos',                        icon:'fa-solid fa-building-columns',     group:'Tesouraria' },
+  { slug:'pagamentos',         nome:'Links de Pagamento',            icon:'fa-solid fa-credit-card',          group:'Tesouraria' },
+  { slug:'contas-pagar',       nome:'Contas a Pagar',                icon:'fa-solid fa-file-invoice-dollar',  group:'Tesouraria' },
+  { slug:'recibos',            nome:'Recibos',                       icon:'fa-solid fa-receipt',              group:'Tesouraria' },
+  { slug:'transferencias',     nome:'Transferências',                icon:'fa-solid fa-right-left',           group:'Tesouraria' },
+  { slug:'contabilidade',      nome:'Plano de Contas e Lançamentos', icon:'fa-solid fa-scale-balanced',       group:'Contabilidade' },
+  { slug:'graficos',           nome:'Gráficos',                      icon:'fa-solid fa-chart-bar',            group:'Contabilidade' },
+  { slug:'relatorios',         nome:'Relatórios',                    icon:'fa-solid fa-file-lines',           group:'Contabilidade' },
+  { slug:'app-membro',         nome:'App do Membro',                 icon:'fa-solid fa-mobile-screen-button', group:'App' },
+];
 
 async function loadPlanos() {
   try {
-    await loadModulosCatalog();
-    const r = await fetch('/api/saas/planos', { headers: headers() });
-    if (r.status === 401) { location.href = 'login.html'; return; }
-    planosData = await r.json();
-    await Promise.all(planosData.map(p => loadPlanoModulos(p.slug)));
+    const rPlanos = await fetch('/api/saas/planos', { headers: headers() });
+    if (rPlanos.status === 401) { location.href = 'login.html'; return; }
+    planosData = await rPlanos.json();
+
+    // Garante que os módulos padrão existem no banco (idempotente)
+    fetch('/api/saas/modulos/seed', { method: 'POST', headers: headers() }).catch(() => {});
+
     renderPlanos(planosData);
+    const hiddenSlugs = new Set(['eden', 'edon']);
+    for (const p of (planosData || [])) {
+      if (!hiddenSlugs.has(String(p.slug||'').toLowerCase())) {
+        loadPlanModules(p.slug);
+      }
+    }
   } catch (e) {
     toast('Erro ao carregar planos.', 'error');
   }
+}
+
+async function loadPlanModules(slug) {
+  const el = document.getElementById('modules-' + slug);
+  if (!el) return;
+  try {
+    const r = await fetch('/api/saas/planos/' + slug + '/modulos', { headers: headers() });
+    const mods = r.ok ? await r.json() : [];
+    renderModuleCheckboxes(slug, mods);
+  } catch (_) {
+    el.innerHTML = '<span style="font-size:12px;color:#ef4444">Erro ao carregar módulos.</span>';
+  }
+}
+
+function renderModuleCheckboxes(slug, mods) {
+  const el = document.getElementById('modules-' + slug);
+  if (!el) return;
+
+  // Monta mapa de estado vindo do banco (slug → boolean)
+  const enabledMap = new Map();
+  const hasSaved = Array.isArray(mods) && mods.length > 0;
+  if (hasSaved) {
+    mods.forEach(m => {
+      const on = m.effective_enabled ?? m.enabled ?? m.plan_enabled ?? false;
+      enabledMap.set(m.slug, !!on);
+    });
+  } else {
+    // Nenhuma config salva → usa defaults do plano
+    const defaults = DEFAULT_PLAN_MODULES[slug];
+    if (defaults) defaults.forEach(s => enabledMap.set(s, true));
+  }
+
+  const GROUP_ORDER = ['Secretaria', 'Ensino', 'Tesouraria', 'Contabilidade', 'App'];
+  const groups = {};
+  STANDARD_MODULES_UI.forEach(m => { (groups[m.group] = groups[m.group] || []).push(m); });
+
+  function modHtml(m) {
+    const checked = enabledMap.get(m.slug) || false;
+    const cls = checked ? 'mod-label checked' : 'mod-label';
+    return `<label class="${cls}" id="mod-label-${slug}-${m.slug}" onclick="toggleModLabel(this)">
+      <input type="checkbox" id="mod-${slug}-${m.slug}" value="${m.slug}" ${checked ? 'checked' : ''}>
+      <i class="${m.icon}"></i>
+      <span>${m.nome}</span>
+    </label>`;
+  }
+
+  let html = '';
+  GROUP_ORDER.forEach(groupName => {
+    const items = groups[groupName];
+    if (!items || !items.length) return;
+    html += `<div class="mod-group-header">${groupName}</div>`;
+    items.forEach(m => { html += modHtml(m); });
+  });
+
+  el.innerHTML = html;
+}
+
+
+function toggleModLabel(label) {
+  const cb = label.querySelector('input[type=checkbox]');
+  if (cb) label.classList.toggle('checked', cb.checked);
+}
+
+function syncModLabel(slug, modSlug) {
+  const cb = document.getElementById('mod-' + slug + '-' + modSlug);
+  const label = document.getElementById('mod-label-' + slug + '-' + modSlug);
+  if (cb && label) label.classList.toggle('checked', cb.checked);
+}
+
+function collectModules(slug) {
+  const el = document.getElementById('modules-' + slug);
+  if (!el) return [];
+  const checks = Array.from(el.querySelectorAll('input[type=checkbox]'));
+  return checks.map(cb => ({ modulo_slug: cb.value, ativo: cb.checked }));
+}
+
+async function seedModulos() {
+  await fetch('/api/saas/modulos/seed', { method: 'POST', headers: headers() });
+  toast('Módulos inicializados!', 'success');
+  loadPlanos();
 }
 
 function renderPlanos(planos) {
@@ -230,12 +367,22 @@ function planCard(p) {
       <button class="btn-remove" onclick="removeFeat('${p.slug}',${i})"><i class="fa-solid fa-trash"></i></button>
     </div>`).join('');
 
+  const versiculoDefault = DEFAULT_PLAN_VERSES[p.slug] || '';
+  const versiculoVal = p.versiculo ? escHtml(p.versiculo) : escHtml(versiculoDefault);
+  const maxCad = p.max_cadastros > 0 ? p.max_cadastros : '∞';
+  const maxCong = p.max_congregacoes > 0 ? p.max_congregacoes : '∞';
+
   return `
   <div class="plan-edit-card${featured?' featured':''}">
     <div class="plan-card-header">
       <span class="plan-slug">${p.slug}</span>
       <h3 id="nome-display-${p.slug}">${escHtml(p.nome)}</h3>
       <div class="price-display">R$ <span id="preco-display-${p.slug}">${fmt(p.preco_mensal)}</span><small>/mês</small></div>
+      <div class="plan-limits-row">
+        <span class="plan-limit-badge"><i class="fa-solid fa-users"></i> <span id="lim-cad-${p.slug}">${maxCad}</span> membros</span>
+        <span class="plan-limit-badge"><i class="fa-solid fa-church"></i> <span id="lim-cong-${p.slug}">${maxCong}</span> congregações</span>
+      </div>
+      ${versiculoDefault ? `<div class="plan-verse-preview" id="verse-preview-${p.slug}">${versiculoVal}</div>` : ''}
     </div>
     <div class="plan-card-body">
       <div class="form-row"><label>Nome do Plano</label>
@@ -245,7 +392,9 @@ function planCard(p) {
         <input type="text" id="subtitulo-${p.slug}" value="${escHtml(p.subtitulo||'')}">
       </div>
       <div class="form-row"><label>Versículo Bíblico</label>
-        <input type="text" id="versiculo-${p.slug}" value="${escHtml(p.versiculo||'')}">
+        <input type="text" id="versiculo-${p.slug}" value="${versiculoVal}" placeholder="${escHtml(versiculoDefault)}"
+          oninput="const vp=document.getElementById('verse-preview-${p.slug}');if(vp)vp.textContent=this.value||'${versiculoDefault.replace(/'/g,"\\'")}'"
+        >
       </div>
       <div class="two-col">
         <div class="form-row"><label>Preço Mensal (R$)</label>
@@ -257,10 +406,12 @@ function planCard(p) {
       </div>
       <div class="two-col">
         <div class="form-row"><label>Máx. Cadastros</label>
-          <input type="number" min="0" id="max-cad-${p.slug}" value="${p.max_cadastros}">
+          <input type="number" min="0" id="max-cad-${p.slug}" value="${p.max_cadastros}"
+            oninput="const el=document.getElementById('lim-cad-${p.slug}');if(el)el.textContent=this.value>0?this.value:'∞'">
         </div>
         <div class="form-row"><label>Máx. Congregações</label>
-          <input type="number" min="0" id="max-cong-${p.slug}" value="${p.max_congregacoes}">
+          <input type="number" min="0" id="max-cong-${p.slug}" value="${p.max_congregacoes}"
+            oninput="const el=document.getElementById('lim-cong-${p.slug}');if(el)el.textContent=this.value>0?this.value:'∞'">
         </div>
       </div>
       <div class="form-row"><label>App do Membro</label>
@@ -269,12 +420,18 @@ function planCard(p) {
           <option value="0" ${!p.modulo_app_membro?'selected':''}>Não incluso</option>
         </select>
       </div>
-      <div class="form-row modulos-section">
-        <label>Módulos do plano <small style="font-weight:400;text-transform:none;color:var(--muted)">(acesso após o trial)</small></label>
-        <div class="modulos-grid" id="modulos-${p.slug}">${renderModuloToggles(p.slug)}</div>
+      <div class="form-row modules-section">
+        <div class="section-divider">Módulos do Painel</div>
+        <p style="font-size:11px;color:var(--muted);margin:4px 0 8px;line-height:1.5">
+          <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> <strong>Marcado</strong> = cliente tem acesso &nbsp;|&nbsp;
+          <i class="fa-solid fa-lock" style="color:#f59e0b"></i> <strong>Desmarcado</strong> = aparece no sidebar com cadeado + mensagem de upgrade
+        </p>
+        <div class="modules-grid" id="modules-${p.slug}">
+          <span style="font-size:12px;color:var(--muted)"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</span>
+        </div>
       </div>
       <div class="form-row">
-        <label>Benefícios <small style="font-weight:400;text-transform:none">(texto de marketing)</small></label>
+        <label>Benefícios <small style="font-weight:400;text-transform:none">(texto exibido na página pública)</small></label>
         <div class="features-list" id="feats-${p.slug}">${featureRows}</div>
         <button class="btn-add-feat" onclick="addFeat('${p.slug}')"><i class="fa-solid fa-plus"></i> Adicionar benefício</button>
       </div>
@@ -288,23 +445,6 @@ function planCard(p) {
       </button>
     </div>
   </div>`;
-}
-
-function renderModuloToggles(slug) {
-  if (!modulosCatalog.length) return '<p class="modulos-empty">Nenhum módulo cadastrado no catálogo ainda.</p>';
-  const planMods = planoModulosMap[slug] || [];
-  const enabledMap = {};
-  planMods.forEach(m => { enabledMap[m.slug] = m.enabled; });
-  return modulosCatalog.map(m => {
-    const on = !!enabledMap[m.slug];
-    return `<label class="modulo-row">
-      <input type="checkbox" class="mod-check" data-modulo="${escHtml(m.slug)}" ${on ? 'checked' : ''}>
-      <span class="mod-pill"></span>
-      <i class="${escHtml(m.icon || 'fa-solid fa-puzzle-piece')} mod-icon"></i>
-      <span class="mod-name">${escHtml(m.nome)}</span>
-      <span class="mod-key">${escHtml(m.feature_key || '')}</span>
-    </label>`;
-  }).join('');
 }
 
 function addFeat(slug) {
@@ -342,27 +482,25 @@ async function savePlano(slug) {
     features: collectFeats(slug)
   };
   try {
-    const r = await fetch('/api/saas/planos/' + slug, {
-      method: 'PUT', headers: headers(), body: JSON.stringify(body)
-    });
-    if (!r.ok) throw new Error(await r.text());
-
-    // Salva módulos do plano
-    const modulosEl = document.getElementById('modulos-' + slug);
-    if (modulosEl) {
-      const checks = Array.from(modulosEl.querySelectorAll('.mod-check'));
-      if (checks.length) {
-        const modules = checks.map(c => ({ modulo_slug: c.dataset.modulo, ativo: c.checked }));
-        await fetch('/api/saas/planos/' + slug + '/modulos', {
-          method: 'PUT', headers: headers(), body: JSON.stringify({ modules })
-        });
-      }
-    }
-
+    const [rPlano, rMods] = await Promise.all([
+      fetch('/api/saas/planos/' + slug, {
+        method: 'PUT', headers: headers(), body: JSON.stringify(body)
+      }),
+      fetch('/api/saas/planos/' + slug + '/modulos', {
+        method: 'PUT', headers: headers(),
+        body: JSON.stringify({ modules: collectModules(slug) })
+      })
+    ]);
+    if (!rPlano.ok) throw new Error(await rPlano.text());
     const saved = document.getElementById('saved-' + slug);
     saved.style.opacity = '1';
     setTimeout(() => { saved.style.opacity = '0'; }, 2500);
-    toast('Plano "' + body.nome + '" salvo com sucesso!', 'success');
+    // Atualiza os checkboxes com o resultado salvo
+    if (rMods.ok) {
+      const updatedMods = await rMods.json();
+      renderModuleCheckboxes(slug, updatedMods);
+    }
+    toast('Plano "' + body.nome + '" salvo! Módulos atualizados.', 'success');
   } catch (e) {
     toast('Erro ao salvar: ' + e.message, 'error');
   }

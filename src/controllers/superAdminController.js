@@ -24,6 +24,7 @@ function toSlug(str) {
         .slice(0, 70);
 }
 
+
 function safeJson(str, fallback = []) {
     try { return JSON.parse(str); } catch (_) { return fallback; }
 }
@@ -415,6 +416,59 @@ async function updatePlano(req, res) {
     }
 }
 
+async function createPlano(req, res) {
+    const {
+        slug, nome, subtitulo, versiculo,
+        preco_mensal, preco_anual,
+        max_cadastros, max_congregacoes,
+        modulo_app_membro, features, ativo
+    } = req.body || {};
+
+    if (!slug || !nome) {
+        return res.status(400).json({ error: 'slug e nome são obrigatórios.' });
+    }
+
+    const slugClean = String(slug).toLowerCase().trim();
+
+    try {
+        const [existing] = await pool.query(
+            `SELECT id FROM saas_planos WHERE slug = ? LIMIT 1`, [slugClean]
+        );
+        if (existing.length) {
+            return res.status(409).json({ error: `Já existe um plano com o slug "${slugClean}".` });
+        }
+
+        await pool.query(
+            `INSERT INTO saas_planos
+             (slug, nome, subtitulo, versiculo, preco_mensal, preco_anual,
+              max_cadastros, max_congregacoes, modulo_app_membro, features_json, ativo, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+            [
+                slugClean,
+                nome,
+                subtitulo || '',
+                versiculo || '',
+                fmt(preco_mensal),
+                fmt(preco_anual),
+                Number(max_cadastros) || 0,
+                Number(max_congregacoes) || 1,
+                modulo_app_membro ? 1 : 0,
+                JSON.stringify(Array.isArray(features) ? features : []),
+                ativo !== false ? 1 : 0,
+            ]
+        );
+
+        const [created] = await pool.query(
+            `SELECT * FROM saas_planos WHERE slug = ? LIMIT 1`, [slugClean]
+        );
+        const r = created[0];
+        return res.status(201).json({ ...r, features: safeJson(r.features_json, []) });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+
 // ── Assinaturas / Faturas SaaS ─────────────────────────────────────────────
 
 async function listSaasAssinaturas(req, res) {
@@ -464,12 +518,79 @@ async function markSaasAssinaturaPaga(req, res) {
     }
 }
 
+// ── Módulos padrão do sistema ─────────────────────────────────────────────────
+
+const STANDARD_MODULES = [
+    // ── Secretaria ───────────────────────────────────────────────────────────
+    { slug: 'membros',            nome: 'Membros (Lista e Cadastro)',        feature_key: 'membros',           icon: 'fa-solid fa-users',                  route_path: 'lista_membros.html' },
+    { slug: 'cargos',             nome: 'Cargos e Situações',                feature_key: 'cargos',            icon: 'fa-solid fa-briefcase',              route_path: 'cargos.html' },
+    { slug: 'historico-pastoral', nome: 'Histórico Pastoral',                feature_key: 'historico_pastoral',icon: 'fa-solid fa-book-bible',             route_path: 'historico_pastoral.html' },
+    { slug: 'grupos',             nome: 'Grupos e Células',                  feature_key: 'grupos',            icon: 'fa-solid fa-people-group',           route_path: 'grupos.html' },
+    { slug: 'escalas',            nome: 'Escalas de Culto',                  feature_key: 'escalas',           icon: 'fa-solid fa-calendar-check',         route_path: 'escalas.html' },
+    { slug: 'ebd',                nome: 'EBD (Alunos, Turmas e Grades)',     feature_key: 'ebd',               icon: 'fa-solid fa-graduation-cap',         route_path: 'ebd_alunos.html' },
+    { slug: 'batismos',           nome: 'Batismos',                          feature_key: 'batismos',          icon: 'fa-solid fa-water',                  route_path: 'batismos.html' },
+    { slug: 'agenda',             nome: 'Agenda',                            feature_key: 'agenda',            icon: 'fa-solid fa-calendar-days',          route_path: 'agenda.html' },
+    { slug: 'outras-igrejas',     nome: 'Outras Igrejas',                    feature_key: 'outras_igrejas',    icon: 'fa-solid fa-globe',                  route_path: 'outras_igrejas.html' },
+    { slug: 'missionarios',       nome: 'Missionários',                      feature_key: 'missionarios',      icon: 'fa-solid fa-person-rays',            route_path: 'missionarios.html' },
+    { slug: 'visitantes',         nome: 'Visitantes e Acompanhamento',       feature_key: 'visitantes',        icon: 'fa-solid fa-user-plus',              route_path: 'visitantes.html' },
+    { slug: 'criancas',           nome: 'Crianças',                          feature_key: 'criancas',          icon: 'fa-solid fa-baby',                   route_path: 'criancas.html' },
+    { slug: 'oracoes',            nome: 'Orações e Pedidos',                 feature_key: 'oracoes',           icon: 'fa-solid fa-hands-praying',          route_path: 'oracoes.html' },
+    { slug: 'novidades',          nome: 'Novidades / Comunicados',           feature_key: 'novidades',         icon: 'fa-solid fa-newspaper',              route_path: 'novidades.html' },
+    { slug: 'whatsapp',           nome: 'Comunicação WhatsApp',              feature_key: 'whatsapp',          icon: 'fa-brands fa-whatsapp',              route_path: 'comunicacao_whatsapp.html' },
+    { slug: 'autocadastro',       nome: 'Aprovação de Cadastro Online',      feature_key: 'autocadastro',      icon: 'fa-solid fa-user-check',             route_path: 'autocadastro_aprovacoes.html' },
+    { slug: 'portaria-qr',        nome: 'Portaria / Check-in QR',            feature_key: 'portaria_qr',       icon: 'fa-solid fa-qrcode',                 route_path: 'portaria_checkin.html' },
+    { slug: 'telao',              nome: 'Telão de Visitantes',               feature_key: 'telao',             icon: 'fa-solid fa-display',                route_path: 'telao_visitantes.html' },
+    // ── Ensino ───────────────────────────────────────────────────────────────
+    { slug: 'estudo-biblico',     nome: 'Bíblia, Devocionais e Planos',     feature_key: 'estudo',            icon: 'fa-solid fa-book-bible',             route_path: 'estudo.html' },
+    // ── Tesouraria ───────────────────────────────────────────────────────────
+    { slug: 'dizimos',            nome: 'Dízimos & Ofertas',                 feature_key: 'dizimos',           icon: 'fa-solid fa-coins',                  route_path: 'tesouraria_dizimos.html' },
+    { slug: 'caixa',              nome: 'Caixa',                             feature_key: 'caixa',             icon: 'fa-solid fa-cash-register',          route_path: 'tesouraria_caixa.html' },
+    { slug: 'bancos',             nome: 'Bancos',                            feature_key: 'bancos',            icon: 'fa-solid fa-building-columns',       route_path: 'tesouraria_bancos.html' },
+    { slug: 'pagamentos',         nome: 'Links de Pagamento',                feature_key: 'pagamentos',        icon: 'fa-solid fa-credit-card',            route_path: 'pagamentos.html' },
+    { slug: 'contas-pagar',       nome: 'Contas a Pagar',                    feature_key: 'contas_pagar',      icon: 'fa-solid fa-file-invoice-dollar',    route_path: 'contas_pagar.html' },
+    { slug: 'recibos',            nome: 'Recibos',                           feature_key: 'recibos',           icon: 'fa-solid fa-receipt',                route_path: 'recibo.html' },
+    { slug: 'transferencias',     nome: 'Transferências',                    feature_key: 'transferencias',    icon: 'fa-solid fa-right-left',             route_path: 'transferencias.html' },
+    // ── Contabilidade ─────────────────────────────────────────────────────────
+    { slug: 'contabilidade',      nome: 'Plano de Contas e Lançamentos',    feature_key: 'contabilidade',     icon: 'fa-solid fa-scale-balanced',         route_path: 'plano_contas.html' },
+    { slug: 'graficos',           nome: 'Gráficos',                          feature_key: 'graficos',          icon: 'fa-solid fa-chart-bar',              route_path: 'graficos_secretaria.html' },
+    { slug: 'relatorios',         nome: 'Relatórios',                        feature_key: 'relatorios',        icon: 'fa-solid fa-file-lines',             route_path: 'relatorios_secretaria.html' },
+    // ── App ───────────────────────────────────────────────────────────────────
+    { slug: 'app-membro',         nome: 'App do Membro',                    feature_key: 'app_membro',        icon: 'fa-solid fa-mobile-screen-button',   route_path: 'painel_app_membro.html' },
+];
+
+async function seedStandardModules() {
+    for (const mod of STANDARD_MODULES) {
+        try {
+            await pool.query(
+                `INSERT INTO saas_modulos (slug, nome, descricao, icon, feature_key, route_path, ativo, updated_at)
+                 VALUES (?, ?, NULL, ?, ?, ?, 1, CURRENT_TIMESTAMP)
+                 ON DUPLICATE KEY UPDATE nome = VALUES(nome), icon = VALUES(icon), feature_key = VALUES(feature_key), route_path = VALUES(route_path), ativo = 1, updated_at = CURRENT_TIMESTAMP`,
+                [mod.slug, mod.nome, mod.icon, mod.feature_key, mod.route_path || null]
+            );
+        } catch (_) {}
+    }
+}
+
 // ── Catálogo de Módulos (SaaS) ──────────────────────────────────────────────
 
 async function listSaasModulos(req, res) {
     try {
-        const rows = await moduleAccessService.listCatalog(false);
+        let rows = await moduleAccessService.listCatalog(false);
+        if (!rows.length) {
+            await seedStandardModules();
+            rows = await moduleAccessService.listCatalog(false);
+        }
         res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+async function seedSaasModulos(req, res) {
+    try {
+        await seedStandardModules();
+        const rows = await moduleAccessService.listCatalog(false);
+        res.json({ ok: true, total: rows.length, modules: rows });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -639,7 +760,8 @@ async function getMinhaConta(req, res) {
             max_congregacoes: ig.max_congregacoes || 1,
             modulo_app_membro: temAppMembro,
             suporte,
-            features: safeJson(ig.features_json, [])
+            features: safeJson(ig.features_json, []),
+            slug: ig.slug || null
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -1126,12 +1248,26 @@ async function listResetRequests(req, res) {
         res.json(rows);
     } catch (err) { res.status(500).json({ error: err.message }); }
 }
+
+async function resolveResetRequest(req, res) {
+    try {
+        const id = Number(req.params.id);
+        if (!id) return res.status(400).json({ error: 'ID inválido.' });
+        await pool.query(
+            `UPDATE password_reset_requests SET status = 'resolvido', resolved_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pendente'`,
+            [id]
+        );
+        res.json({ ok: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+}
+
 // ── Fábrica de Inovações ─────────────────────────────────────────────────────
 
 async function postFactoryAiSuggest(req, res) {
     const prompt = String(req.body?.prompt || '').trim();
-    const words = prompt.toLowerCase();
+    if (!prompt) return res.status(400).json({ error: 'Prompt é obrigatório.' });
 
+    const words = prompt.toLowerCase();
     let name = '', description = '', route = 'construcao.html', plans = ['siao'];
 
     if (words.includes('financ') || words.includes('caixa') || words.includes('tesourar')) {
@@ -1413,11 +1549,13 @@ module.exports = {
     patchIgrejaStatus,
     updateSaasIgrejaContrato,
     listPlanos,
+    createPlano,
     getPlano,
     updatePlano,
     listSaasAssinaturas,
     markSaasAssinaturaPaga,
     listSaasModulos,
+    seedSaasModulos,
     createSaasModulo,
     updateSaasModulo,
     getPlanoModulos,
@@ -1445,5 +1583,6 @@ module.exports = {
     listUsuariosAdmin,
     postResetSenha,
     listResetRequests,
+    resolveResetRequest,
     getSaasRelatorioFinanceiro,
 };

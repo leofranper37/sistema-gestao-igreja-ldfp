@@ -55,6 +55,16 @@ async function loginMembroApp(req, res) {
         }
     }
 
+    // Busca o igrejaTk (public_token) da igreja para o app usar nas rotas públicas
+    let igrejaTk = null;
+    try {
+        const [igrejaTkRows] = await pool.query(
+            'SELECT public_token FROM igrejas WHERE id = ? LIMIT 1',
+            [membro.igreja_id]
+        );
+        igrejaTk = igrejaTkRows[0]?.public_token || null;
+    } catch (_) {}
+
     const payload = {
         id: membro.id,
         nome: membro.nome,
@@ -66,11 +76,13 @@ async function loginMembroApp(req, res) {
         role: 'membro',
         membro_id: membro.id,
         cpf: cpfLimpo,
-        app_mode: true
+        app_mode: true,
+        acesso_app_midia: membro.acesso_app_midia ? true : false,
+        gerenciar_midias: membro.gerenciar_midias ? true : false
     };
 
     const token = jwt.sign(payload, config.security.jwtSecret, { expiresIn: '30d' });
-    res.json({ token, membro: payload, precisa_trocar: precisaTrocar, message: 'Login realizado com sucesso.' });
+    res.json({ token, membro: { ...payload, igrejaTk }, precisa_trocar: precisaTrocar, message: 'Login realizado com sucesso.' });
 }
 
 async function trocarSenhaMembroApp(req, res) {

@@ -222,9 +222,16 @@
 </head>
 <body class="theme-petroleo enterprise-shell-page" data-shell-title="Congregados" data-shell-breadcrumb="LDFP / Secretaria / Congregados" data-shell-active="congregados.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
     <main class="main-content enterprise-main">
-        <div class="congregados-wrap">
-            <div class="page-header">
-                <h2 style="margin:0;color:#1f2937;">Congregados</h2>
+        <div class="enterprise-page-shell">
+            <div class="enterprise-page-hero">
+                <div>
+                    <h2>Congregados</h2>
+                    <p>Gerencie o cadastro de pessoas que frequentam a igreja mas ainda não são membros.</p>
+                </div>
+                <div class="enterprise-page-badge"><i class="fa-solid fa-people-group"></i> Secretaria</div>
+            </div>
+        <div class="congregados-wrap" style="padding:0">
+            <div class="page-header" style="display:flex;justify-content:flex-end;margin-bottom:14px;">
                 <button class="btn-novo" onclick="abrirModal()"><i class="fa-solid fa-plus"></i> Novo Congregado</button>
             </div>
             <div class="search-bar">
@@ -518,5 +525,6 @@
 
         carregarLista();
     </script>
+        </div><!-- /enterprise-page-shell -->
 </body>
 </html>

@@ -18,6 +18,10 @@ const SUPER_ADMIN_PASS = [
     '/api/reset-request',
     '/webhook',
     '/health',
+    '/login',
+    '/esqueci-senha',
+    '/redefinir-senha',
+    '/criar-conta',
 ];
 
 function churchGuard(req, res, next) {

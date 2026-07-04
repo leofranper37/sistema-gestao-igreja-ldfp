@@ -444,12 +444,20 @@
       data-shell-role="Administrador">
 
 <main class="main-content enterprise-main">
-<div class="page-wrap">
+<div class="enterprise-page-shell">
+    <div class="enterprise-page-hero">
+        <div>
+            <h2>Visitantes</h2>
+            <p>Gerencie o acompanhamento de visitantes, histórico de visitas e envio de boas-vindas.</p>
+        </div>
+        <div class="enterprise-page-badge"><i class="fa-solid fa-user-group"></i> Secretaria</div>
+    </div>
+<div class="page-wrap" style="padding:0">
 
     <!-- Cabeçalho -->
     <div class="page-header">
         <div class="page-header-left">
-            <h2><i class="fa-solid fa-user-group"></i> Visitantes</h2>
+            <h2 style="display:none"><i class="fa-solid fa-user-group"></i> Visitantes</h2>
             <p>Cadastro, acompanhamento pastoral e controle de telão.</p>
         </div>
         <div class="header-actions">
@@ -1085,7 +1093,6 @@
             const url = `${location.origin}/visita/${conta.slug}`;
             $('linkAutocadastro').value = url;
 
-            // Gera QR via API pública do QRServer.com (sem biblioteca extra)
             const img = document.createElement('img');
             img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(url)}`;
             img.alt = 'QR Code autocadastro';
@@ -1137,5 +1144,6 @@
         </button>
     </div>
 </div>
+</div><!-- /enterprise-page-shell -->
 </body>
 </html>

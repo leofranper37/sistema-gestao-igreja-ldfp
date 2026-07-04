@@ -2,1426 +2,1611 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#111827">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f0c29">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>LDFP - App do Membro</title>
+  <title>App do Membro</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
-      --bg-main: #101826;
-      --bg-card: #141d2b;
-      --bg-card-soft: #1b2433;
-      --accent: #f97316;    /* laranja */
-      --accent-soft: #fed7aa;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --border: #1f2933;
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --shadow-soft: 0 8px 20px rgba(0,0,0,0.35);
+      --bg: #0a0e1a;
+      --bg2: #111827;
+      --bg3: #1e2535;
+      --primary: #7c3aed;
+      --accent: #f97316;
+      --text: #f1f5f9;
+      --muted: #64748b;
+      --muted2: #94a3b8;
+      --border: rgba(255,255,255,0.06);
+      --radius: 20px;
+      --radius-sm: 14px;
+      --nav-h: 68px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html { height: 100%; }
 
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
       color: var(--text);
       -webkit-font-smoothing: antialiased;
+      height: 100%;
+      overflow: hidden;
     }
 
+    /* ── APP SHELL ── */
     .app {
-      max-width: 480px;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      max-width: 430px;
       margin: 0 auto;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: radial-gradient(circle at top, #111827 0, #020617 55%, #000 100%);
+      position: relative;
+      background: var(--bg);
+      overflow: hidden;
     }
 
-    /* HEADER */
-
-    .app-header {
-      padding: 12px 18px 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .app-header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .avatar-circle {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 20%, #fef9c3 0, #f97316 55%, #7c2d12 100%);
-      box-shadow: 0 0 18px rgba(248,250,252,0.3);
-    }
-
-    .header-title {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .header-title span {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .header-title strong {
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .app-header-right a {
-      font-size: 12px;
-      color: var(--accent-soft);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    /* CONTENT / PANELS */
-
+    /* ── SCROLLABLE MAIN ── */
     .app-main {
       flex: 1;
-      padding: 6px 14px 12px;
       overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      padding-bottom: var(--nav-h);
     }
 
-    .panel {
-      display: none;
-      padding-bottom: 60px; /* espaço pro bottom nav */
-    }
+    /* ── PANELS ── */
+    .panel { display: none; }
     .panel.active { display: block; }
 
-    /* COMMON COMPONENTS */
-
-    .panel-title {
-      text-align: center;
-      margin: 8px 0 14px;
-    }
-    .panel-title h1 {
-      font-size: 20px;
-      font-weight: 600;
-    }
-    .panel-title p {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 10px;
-    }
-
-    .card {
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
-      padding: 12px;
-      border: 1px solid rgba(15,23,42,0.7);
-      box-shadow: var(--shadow-soft);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .card-title {
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .card-sub {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .btn {
-      border-radius: 999px;
-      padding: 8px 14px;
-      font-size: 12px;
-      border: none;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      font-weight: 600;
-    }
-    .btn-primary {
-      background: var(--accent);
-      color: #111827;
-    }
-    .btn-ghost {
-      background: #111827;
-      color: var(--text);
-      border: 1px solid #374151;
-    }
-
-    .section-title {
-      font-size: 13px;
-      font-weight: 600;
-      margin: 18px 0 8px;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(15,118,110,0.08);
-      border: 1px solid rgba(148,163,184,0.3);
-      color: var(--muted);
-    }
-
-    /* INPUTS */
-
-    .input {
-      width: 100%;
-      background: #020617;
-      border-radius: 999px;
-      border: 1px solid #1f2937;
-      padding: 8px 12px;
-      font-size: 13px;
-      color: var(--text);
-      outline: none;
-    }
-    .input::placeholder { color: #6b7280; }
-
-    .input-rounded {
-      border-radius: 999px;
-    }
-
-    .input-search {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #020617;
-      border-radius: 999px;
-      padding: 6px 10px;
-      border: 1px solid #1f2937;
-      margin: 10px 0 16px;
-    }
-    .input-search input {
-      border: none;
-      background: transparent;
-      flex: 1;
-      color: var(--text);
-      font-size: 13px;
-      outline: none;
-    }
-    .input-search i { color: #6b7280; }
-
-    /* HOME / MURAL */
-
-    .mural-subtitle {
-      font-size: 14px;
-      text-align: center;
-      margin-top: 4px;
-      margin-bottom: 10px;
-    }
-
-    .welcome-text {
-      font-size: 13px;
-      text-align: center;
-      margin: 16px 0 10px;
-    }
-
-    .contrib-card {
-      margin-top: 16px;
-    }
-
-    .digital-id-card {
-      margin: 8px 0 14px;
-      background: linear-gradient(145deg, #1f2937 0%, #0f172a 100%);
-      border: 1px solid rgba(249, 115, 22, 0.35);
-      border-radius: var(--radius-lg);
-      padding: 14px;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
-    }
-
-    .digital-id-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      font-size: 11px;
-      color: #cbd5e1;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .digital-id-body {
-      display: grid;
-      grid-template-columns: 72px 1fr;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .digital-id-photo {
-      width: 72px;
-      height: 72px;
-      border-radius: 12px;
-      object-fit: cover;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: #111827;
-    }
-
-    .digital-id-name {
-      font-size: 16px;
-      font-weight: 700;
-      line-height: 1.2;
-      color: #f8fafc;
-      margin-bottom: 3px;
-    }
-
-    .digital-id-meta {
-      font-size: 12px;
-      color: #cbd5e1;
-      margin-bottom: 2px;
-    }
-
-    .digital-id-meta strong {
-      color: #f59e0b;
-      font-weight: 600;
-    }
-
-    .contrib-card p {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
-    /* ENCONTRE-NOS */
-
-    .social-row {
-      display: flex;
-      gap: 10px;
-      margin: 10px 0 14px;
-    }
-
-    .social-btn {
-      flex: 1;
-      border-radius: var(--radius-md);
-      border: none;
-      padding: 8px 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      font-size: 13px;
-      cursor: pointer;
-      color: #fff;
-    }
-    .social-whatsapp { background: #22c55e; }
-    .social-facebook { background: #2563eb; }
-    .social-instagram {
-      background: radial-gradient(circle at 30% 30%, #facc15 0, #ec4899 40%, #4f46e5 80%);
-    }
-
-    .congreg-card {
-      background: var(--bg-card-soft);
-      border-radius: var(--radius-md);
-      padding: 10px 11px;
-      border: 1px solid #111827;
-      margin-bottom: 10px;
-      font-size: 12px;
-    }
-
-    .congreg-header {
-      margin-bottom: 4px;
-      font-weight: 600;
-    }
-
-    .congreg-footer {
-      margin-top: 8px;
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-    .congreg-footer button {
-      background: #020617;
-      border: none;
-      border-radius: 999px;
-      padding: 4px 10px;
-      font-size: 11px;
-      color: var(--muted);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-    }
-
-    /* VÍDEOS */
-
-    .videos-empty {
-      text-align: center;
-      padding: 40px 10px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .videos-empty i {
-      font-size: 38px;
-      margin-bottom: 10px;
-      opacity: 0.6;
-    }
-
-    .videos-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 10px;
-    }
-
-    .video-card {
-      background: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      text-align: left;
-      color: #e5e7eb;
-      cursor: pointer;
-    }
-
-    .video-thumb {
-      position: relative;
-      border-radius: 8px;
-      overflow: hidden;
-      background: #020617;
-      min-height: 96px;
-    }
-
-    .video-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      opacity: 0.88;
-    }
-
-    .video-thumb .play-icon {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent);
-      font-size: 30px;
-      text-shadow: 0 3px 10px rgba(0,0,0,0.35);
-    }
-
-    .video-title {
-      font-size: 13px;
-      font-weight: 600;
-      line-height: 1.35;
-    }
-
-    .video-date {
-      font-size: 11px;
-      color: #9ca3af;
-    }
-
-    .photos-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px;
-    }
-
-    .photo-card {
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #111827;
-      text-align: left;
-      color: #e5e7eb;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    .photo-card img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      display: block;
-    }
-
-    .photo-meta {
-      padding: 8px;
-      font-size: 12px;
-      line-height: 1.4;
-    }
-
-    .photo-title {
-      font-weight: 600;
-      color: #f3f4f6;
-      margin-bottom: 2px;
-    }
-
-    .photo-desc {
-      color: #9ca3af;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* EVENTOS */
-
-    .month-nav {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 18px;
-      margin: 10px 0 16px;
-      font-size: 13px;
-    }
-
-    .month-btn {
-      width: 30px;
-      height: 30px;
-      border-radius: 999px;
-      border: none;
-      background: var(--accent);
-      color: #111827;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-    .event-empty {
-      text-align: center;
-      padding: 40px 10px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .event-empty i {
-      font-size: 40px;
-      margin-bottom: 10px;
-      opacity: 0.7;
-    }
-
-    /* MODAL CONEXÃO */
-    .modal-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 100;
-      justify-content: center;
-      align-items: flex-end;
-    }
-    .modal-box {
-      background: var(--bg-card);
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-      padding: 20px 20px 32px;
-      width: 100%;
-      max-width: 480px;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .modal-header h2 { font-size: 16px; font-weight: 600; }
-    .modal-close { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
-    .modal-field { margin-bottom: 12px; }
-    .modal-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-    .modal-field input, .modal-field textarea {
-      width: 100%;
-      background: #020617;
-      border: 1px solid #1f2937;
-      border-radius: var(--radius-md);
-      padding: 10px 12px;
-      font-size: 14px;
-      color: var(--text);
-      outline: none;
-      font-family: inherit;
-    }
-    .modal-field textarea { resize: none; }
-
-    /* BOTTOM NAV */
-
+    /* ── BOTTOM NAV ── */
     .bottom-nav {
-      position: sticky;
+      position: fixed;
       bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(15,23,42,0.98);
-      border-top: 1px solid #020617;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      height: var(--nav-h);
+      background: rgba(10,14,26,0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
       display: flex;
-      padding: 6px 8px 8px;
-      z-index: 10;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      z-index: 100;
     }
 
-    .bottom-item {
+    .nav-item {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 3px;
-      font-size: 11px;
-      color: #9ca3af;
       cursor: pointer;
+      padding: 8px 4px;
+      color: var(--muted);
+      transition: color 0.2s;
+      position: relative;
     }
 
-    .bottom-item i { font-size: 17px; }
-
-    .bottom-item.active {
-      color: var(--accent);
+    .nav-icon-wrap {
+      width: 40px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      transition: background 0.2s;
     }
 
-    /* NOVIDADES */
-    .novidade-card { background:var(--bg-card); border-radius:var(--radius-md); padding:16px; margin-bottom:12px; border-left:3px solid var(--border); }
-    .novidade-card.destaque { border-left-color:#a78bfa; background:linear-gradient(135deg,#1b2433 80%,#1e1b4b33 100%); }
-    .novidade-badges { margin-bottom:8px; display:flex; flex-wrap:wrap; gap:5px; }
-    .novidade-badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
-    .badge-release  { background:#d1fae5; color:#065f46; }
-    .badge-feature  { background:#dbeafe; color:#1e40af; }
-    .badge-fix      { background:#fee2e2; color:#991b1b; }
-    .badge-aviso    { background:#fef3c7; color:#92400e; }
-    .badge-melhoria { background:#ede9fe; color:#5b21b6; }
-    .badge-destaque { background:#fef9c3; color:#854d0e; }
-    .novidade-titulo { font-size:15px; font-weight:700; color:var(--text); margin-bottom:4px; }
-    .novidade-sub { font-size:12px; color:var(--muted); margin-bottom:8px; }
-    .novidade-conteudo { font-size:13px; color:#d1d5db; line-height:1.6; white-space:pre-wrap; }
-    .novidade-footer { margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
-    .novidade-data { font-size:11px; color:var(--muted); }
-    .novidade-tags { font-size:11px; color:var(--accent); }
+    .nav-item i { font-size: 18px; transition: transform 0.2s; }
+    .nav-item span { font-size: 10px; font-weight: 500; }
 
-    /* PUSH NOTIFICATION BANNER */
-    .push-banner {
-      display:flex; align-items:center; gap:12px;
-      background:linear-gradient(135deg,#111827 80%,#1c1917 100%);
-      border:1px solid #374151; border-radius:var(--radius-md);
-      padding:14px 16px; margin-bottom:16px;
+    .nav-item.active { color: var(--primary); }
+    .nav-item.active .nav-icon-wrap {
+      background: rgba(124,58,237,0.15);
     }
-    .push-banner-icon { font-size:22px; color:var(--accent); flex-shrink:0; }
-    .push-banner-text { flex:1; }
-    .push-banner-text strong { display:block; font-size:13px; color:var(--text); margin-bottom:2px; }
-    .push-banner-text span { font-size:11px; color:var(--muted); }
-    .push-toggle-btn {
-      flex-shrink:0; padding:7px 14px; border-radius:20px; font-size:12px; font-weight:700;
-      border:none; cursor:pointer; transition:background .2s;
+    .nav-item.active i { transform: scale(1.1); }
+
+    /* ── HOME PANEL ── */
+    .home-hero {
+      background: linear-gradient(160deg, #1a0e3a 0%, #0f0c29 60%, #0a0e1a 100%);
+      padding: 56px 20px 24px;
+      position: relative;
+      overflow: hidden;
     }
-    .push-toggle-btn.ativar  { background:var(--accent); color:#fff; }
-    .push-toggle-btn.desativar { background:#374151; color:#9ca3af; }
-    .push-toggle-btn:disabled { opacity:.55; cursor:default; }
+
+    .home-hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .home-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: -40px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 2px solid rgba(124,58,237,0.5);
+      background: var(--bg3);
+      flex-shrink: 0;
+    }
+
+    .hero-avatar-placeholder {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), #4f46e5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+      border: 2px solid rgba(124,58,237,0.4);
+    }
+
+    .hero-text { flex: 1; min-width: 0; }
+    .hero-greeting {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 2px;
+    }
+    .hero-name {
+      font-size: 19px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hero-church {
+      font-size: 12px;
+      color: rgba(255,255,255,0.45);
+      margin-top: 1px;
+    }
+
+    .hero-badge {
+      background: rgba(124,58,237,0.2);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 30px;
+      padding: 5px 12px;
+      font-size: 11px;
+      color: #c4b5fd;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Feature grid */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 16px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feature-card {
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s, box-shadow 0.15s;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .feature-card:active { transform: scale(0.97); }
+
+    .feature-card-video { background: linear-gradient(145deg, #1e3a5f 0%, #0984e3 100%); }
+    .feature-card-fotos { background: linear-gradient(145deg, #2d1b69 0%, #7c3aed 100%); }
+    .feature-card-eventos { background: linear-gradient(145deg, #064e3b 0%, #10b981 100%); }
+    .feature-card-carteirinha { background: linear-gradient(145deg, #78350f 0%, #f59e0b 100%); }
+
+    .feature-card-icon {
+      font-size: 28px;
+      opacity: 0.9;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .feature-card-info { margin-top: 8px; }
+    .feature-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .feature-card-sub {
+      font-size: 11px;
+      color: rgba(255,255,255,0.65);
+    }
+
+    .feature-card-shine {
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Quick actions */
+    .quick-actions {
+      padding: 16px 16px 0;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .quick-list {
+      background: var(--bg2);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .quick-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 15px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .quick-item:last-child { border-bottom: none; }
+    .quick-item:active { background: rgba(255,255,255,0.04); }
+
+    .quick-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .quick-icon-pix { background: rgba(0,184,148,0.15); color: #00b894; }
+    .quick-icon-local { background: rgba(9,132,227,0.15); color: #0984e3; }
+    .quick-icon-novidades { background: rgba(124,58,237,0.15); color: #7c3aed; }
+    .quick-icon-conectar { background: rgba(249,115,22,0.15); color: #f97316; }
+
+    .quick-info { flex: 1; }
+    .quick-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .quick-sub { font-size: 12px; color: var(--muted2); margin-top: 1px; }
+
+    .quick-arrow { color: var(--muted); font-size: 12px; }
+
+    /* Verse card */
+    .verse-card {
+      margin: 16px 16px 8px;
+      background: linear-gradient(135deg, #1a0e3a 0%, #0f172a 100%);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+
+    .verse-icon { font-size: 20px; margin-bottom: 8px; color: var(--accent); }
+    .verse-text {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.7;
+      font-style: italic;
+      margin-bottom: 14px;
+    }
+
+    .verse-pix-btns { display: flex; gap: 8px; }
+    .pix-btn {
+      flex: 1;
+      border: none;
+      border-radius: 12px;
+      padding: 11px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity 0.2s;
+    }
+    .pix-btn:active { opacity: 0.8; }
+    .pix-btn-main { background: #00b894; color: #fff; }
+    .pix-btn-ghost { background: rgba(255,255,255,0.08); color: var(--text); border: 1px solid var(--border); }
+
+    /* ── VIDEO / FOTOS PANELS ── */
+    .panel-header {
+      padding: 56px 20px 14px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header h1 { font-size: 22px; font-weight: 700; }
+    .panel-header p { font-size: 13px; color: var(--muted2); margin-top: 3px; }
+
+    .panel-body { padding: 16px; }
+
+    .media-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .media-card {
+      background: var(--bg2);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .media-card:active { transform: scale(0.97); }
+
+    .media-thumb {
+      position: relative;
+      background: #020617;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+    }
+
+    .media-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.85;
+    }
+
+    .media-play {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .media-play i { font-size: 28px; color: rgba(255,255,255,0.9); text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+
+    .media-info { padding: 10px 12px; }
+    .media-title { font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--text); }
+    .media-date { font-size: 11px; color: var(--muted2); margin-top: 3px; }
+
+    .photos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .photo-tile {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--bg3);
+      position: relative;
+    }
+
+    .photo-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.2s;
+    }
+    .photo-tile:active img { transform: scale(1.05); }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted2);
+    }
+    .empty-state i { font-size: 44px; opacity: 0.3; margin-bottom: 14px; display: block; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── EVENTOS ── */
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 16px;
+    }
+    .month-btn {
+      width: 36px; height: 36px;
+      border-radius: 999px;
+      border: none;
+      background: var(--bg3);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    .month-btn:active { background: var(--primary); }
+    .month-label { font-size: 16px; font-weight: 600; text-transform: capitalize; }
+
+    .event-card {
+      background: var(--bg2);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      border-left: 3px solid #10b981;
+      display: flex;
+      gap: 14px;
+    }
+
+    .event-date-box {
+      width: 44px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+
+    .event-day { font-size: 24px; font-weight: 800; color: #10b981; line-height: 1; }
+    .event-weekday { font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .event-info { flex: 1; }
+    .event-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .event-desc { font-size: 12px; color: var(--muted2); }
+
+    /* ── CARTEIRINHA ── */
+    .carteirinha-wrap {
+      padding: 20px 16px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .carteirinha-card {
+      width: 100%;
+      max-width: 340px;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      background: #141d2b;
+      border: 1px solid rgba(124,58,237,0.25);
+    }
+
+    .cart-header {
+      background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%);
+      padding: 18px 20px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cart-header-logo-box {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.15);
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .cart-header-logo-box img { width: 100%; height: 100%; object-fit: cover; }
+    .cart-header-logo-init { font-size: 18px; font-weight: 800; color: #fff; }
+
+    .cart-header-right { text-align: right; }
+    .cart-header-right span { display: block; font-size: 10px; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.8px; }
+    .cart-header-right strong { font-size: 14px; color: #fff; font-weight: 700; }
+
+    .cart-body { padding: 18px 20px; }
+
+    .cart-photo-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .cart-photo {
+      width: 76px; height: 76px;
+      border-radius: 14px;
+      object-fit: cover;
+      border: 2px solid rgba(124,58,237,0.3);
+      background: #0f172a;
+      flex-shrink: 0;
+    }
+
+    .cart-photo-fallback {
+      width: 76px; height: 76px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #4c1d95, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; font-weight: 800; color: #fff;
+      flex-shrink: 0;
+    }
+
+    .cart-nome { font-size: 17px; font-weight: 700; color: #f8fafc; margin-bottom: 6px; line-height: 1.2; }
+
+    .pill {
+      display: inline-block;
+      border-radius: 30px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    .pill-cargo { background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.35); color: #c4b5fd; }
+    .pill-ativo { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+
+    .cart-divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 14px 0; }
+
+    .cart-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .cart-field label {
+      display: block;
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 3px;
+    }
+
+    .cart-field span { font-size: 13px; color: #cbd5e1; font-weight: 500; }
+
+    .cart-qr-section { text-align: center; }
+    .cart-qr-box {
+      display: inline-block;
+      background: #fff;
+      border-radius: 14px;
+      padding: 10px;
+      margin-bottom: 6px;
+    }
+
+    .cart-qr-label { font-size: 10px; color: var(--muted); letter-spacing: 0.5px; }
+
+    .cart-footer {
+      background: rgba(255,255,255,0.03);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #475569;
+    }
+
+    .btn-baixar {
+      margin-top: 20px;
+      background: linear-gradient(135deg, #4c1d95, #7c3aed);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 13px 28px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+      transition: opacity 0.2s;
+    }
+    .btn-baixar:active { opacity: 0.85; }
+
+    /* ── LOCAL ── */
+    .social-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .social-btn {
+      flex: 1;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 12px 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #fff;
+      transition: opacity 0.2s;
+    }
+    .social-btn:active { opacity: 0.85; }
+    .s-wa { background: #25D366; }
+    .s-fb { background: #1877f2; }
+    .s-ig { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+    .s-yt { background: #ff0000; }
+
+    .cong-card {
+      background: var(--bg2);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .cong-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .cong-detail { font-size: 12px; color: var(--muted2); margin-bottom: 3px; }
+    .cong-btns { display: flex; gap: 8px; margin-top: 10px; }
+    .cong-btn {
+      flex: 1;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 12px;
+      color: var(--muted2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    /* ── MAIS PANEL ── */
+    .mais-section { padding: 20px 16px 0; }
+    .mais-section .section-label { margin-bottom: 10px; }
+
+    .mais-list {
+      background: var(--bg2);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .mais-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .mais-item:last-child { border-bottom: none; }
+    .mais-item:active { background: rgba(255,255,255,0.04); }
+
+    .mais-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .mais-info { flex: 1; }
+    .mais-title { font-size: 14px; font-weight: 600; }
+    .mais-sub { font-size: 12px; color: var(--muted2); margin-top: 2px; }
+    .mais-arrow { color: var(--muted); font-size: 12px; }
+
+    /* ── NOVIDADES ── */
+    .novidade-card {
+      background: var(--bg2);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--primary);
+    }
+
+    .novidade-badges { margin-bottom: 8px; }
+    .novidade-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-right: 4px;
+    }
+
+    .badge-release { background: #d1fae5; color: #065f46; }
+    .badge-feature { background: #dbeafe; color: #1e40af; }
+    .badge-fix { background: #fee2e2; color: #991b1b; }
+    .badge-aviso { background: #fef3c7; color: #92400e; }
+    .badge-melhoria { background: #ede9fe; color: #5b21b6; }
+    .badge-destaque { background: #fef9c3; color: #854d0e; }
+
+    .novidade-titulo { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .novidade-conteudo { font-size: 13px; color: #d1d5db; line-height: 1.6; white-space: pre-wrap; }
+    .novidade-footer { margin-top: 10px; font-size: 11px; color: var(--muted); }
+
+    /* ── MODALS ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-sheet {
+      background: #1a1f2e;
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 20px 20px 36px;
+      width: 100%;
+      max-width: 430px;
+      border-top: 1px solid var(--border);
+    }
+
+    .modal-handle {
+      width: 36px; height: 4px;
+      background: var(--bg3);
+      border-radius: 99px;
+      margin: 0 auto 18px;
+    }
+
+    .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+    .modal-close-btn {
+      float: right;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+      margin-top: -4px;
+    }
+
+    .modal-field { margin-bottom: 14px; }
+    .modal-field label { display: block; font-size: 12px; color: var(--muted2); margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .modal-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .modal-input:focus { border-color: var(--primary); }
+    textarea.modal-input { resize: none; }
+    select.modal-input { cursor: pointer; }
+
+    .modal-btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: opacity 0.2s;
+    }
+    .modal-btn:active { opacity: 0.85; }
+    .modal-btn-primary { background: linear-gradient(135deg, var(--primary), #4f46e5); color: #fff; }
+    .modal-btn-pix { background: #00b894; color: #fff; }
+    .modal-btn-ghost { background: var(--bg3); color: var(--text); }
+
+    @keyframes livePulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(1.3); } }
+
+    /* Audio list */
+    .audio-item {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .audio-item:active { background: rgba(255,255,255,0.04); }
+    .audio-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(124,58,237,0.15); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #a78bfa; flex-shrink: 0; }
+    .audio-info { flex: 1; min-width: 0; }
+    .audio-title { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .audio-sub { font-size: 12px; color: var(--muted2); margin-top: 2px; }
+
+    /* Search bar */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 16px;
+      margin-bottom: 16px;
+    }
+    .search-bar i { color: var(--muted); }
+    .search-bar input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+    .search-bar input::placeholder { color: var(--muted); }
   </style>
 </head>
 <body>
+
 <div class="app">
-  <!-- HEADER -->
-  <header class="app-header">
-    <div class="app-header-left">
-      <img id="churchLogoHeader" src="" alt="Igreja"
-           class="avatar-circle"
-           onerror="this.style.display='none'">
-      <div class="header-title">
-        <span>Mural da Igreja</span>
-        <strong id="memberGreeting">Bem-vindo(a)!</strong>
-      </div>
-    </div>
-    <div class="app-header-right">
-      <a href="#" id="btnLogout">
-        <i class="fa-solid fa-right-from-bracket"></i> Sair
-      </a>
-    </div>
-  </header>
+  <main class="app-main" id="appMain">
 
-  <!-- MAIN -->
-  <main class="app-main">
-    <!-- INÍCIO -->
+    <!-- ── HOME ── -->
     <section id="panel-home" class="panel active">
-      <div class="panel-title">
-        <h1>Mural da Igreja</h1>
-        <p>Conteúdo e conexões para membros e visitantes.</p>
-      </div>
-
-      <article class="digital-id-card" aria-label="Credencial digital do membro">
-        <div class="digital-id-top">
-          <span>Credencial Digital</span>
-          <i class="fa-solid fa-id-card"></i>
-        </div>
-        <div class="digital-id-body">
-          <img id="credentialPhoto" class="digital-id-photo" src="https://via.placeholder.com/72x72?text=MEMBRO" alt="Foto do membro">
-          <div>
-            <div id="credentialNome" class="digital-id-name">Membro</div>
-            <div class="digital-id-meta"><strong>Igreja:</strong> <span id="credentialIgreja">-</span></div>
-            <div class="digital-id-meta"><strong>Cargo:</strong> <span id="credentialCargo">Membro</span></div>
+      <div class="home-hero">
+        <div class="hero-row">
+          <div id="heroAvatarPlaceholder" class="hero-avatar-placeholder">M</div>
+          <img id="heroAvatarImg" class="hero-avatar" src="" alt="" style="display:none">
+          <div class="hero-text">
+            <div class="hero-greeting">Bem-vindo(a) de volta!</div>
+            <div class="hero-name" id="memberGreeting">Membro</div>
+            <div class="hero-church" id="churchNameHome"></div>
           </div>
+          <div class="hero-badge" id="membroBadge">Membro</div>
         </div>
-      </article>
 
-      <div class="input-search">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="search" placeholder="Buscar no mural...">
-      </div>
-
-      <div class="card-grid">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Vídeos</div>
-              <div class="card-sub">Assista às mensagens e cultos</div>
+        <div class="feature-grid">
+          <div class="feature-card feature-card-video" data-nav="panel-video">
+            <div class="feature-card-shine"></div>
+            <div class="feature-card-icon"><i class="fa-solid fa-play-circle"></i></div>
+            <div class="feature-card-info">
+              <div class="feature-card-title">Vídeos</div>
+              <div class="feature-card-sub">Mensagens e cultos</div>
             </div>
-            <i class="fa-solid fa-play" style="color:var(--accent);"></i>
           </div>
-          <button class="btn btn-primary" data-nav="video">
-            <i class="fa-solid fa-play"></i> Ver vídeos
-          </button>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Fotos</div>
-              <div class="card-sub">Momentos especiais da igreja</div>
+          <div class="feature-card feature-card-fotos" data-nav="panel-fotos">
+            <div class="feature-card-shine"></div>
+            <div class="feature-card-icon"><i class="fa-solid fa-images"></i></div>
+            <div class="feature-card-info">
+              <div class="feature-card-title">Fotos</div>
+              <div class="feature-card-sub">Momentos especiais</div>
             </div>
-            <i class="fa-solid fa-image" style="color:var(--accent);"></i>
           </div>
-          <button class="btn btn-ghost" data-nav="fotos">
-            <i class="fa-solid fa-image"></i> Ver fotos
+          <div class="feature-card feature-card-eventos" data-nav="panel-eventos">
+            <div class="feature-card-shine"></div>
+            <div class="feature-card-icon"><i class="fa-solid fa-calendar-check"></i></div>
+            <div class="feature-card-info">
+              <div class="feature-card-title">Eventos</div>
+              <div class="feature-card-sub">Agenda da igreja</div>
+            </div>
+          </div>
+          <div class="feature-card feature-card-carteirinha" data-nav="panel-carteirinha">
+            <div class="feature-card-shine"></div>
+            <div class="feature-card-icon"><i class="fa-solid fa-id-card"></i></div>
+            <div class="feature-card-info">
+              <div class="feature-card-title">Carteirinha</div>
+              <div class="feature-card-sub">Credencial digital</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <div class="section-label">Acesso Rápido</div>
+        <div class="quick-list">
+          <div class="quick-item" onclick="abrirModalPix('Dízimo')">
+            <div class="quick-icon quick-icon-pix"><i class="fa-brands fa-pix"></i></div>
+            <div class="quick-info">
+              <div class="quick-title">Dízimos &amp; Ofertas</div>
+              <div class="quick-sub">Contribua via PIX</div>
+            </div>
+            <i class="fa-solid fa-chevron-right quick-arrow"></i>
+          </div>
+          <div class="quick-item" data-nav="panel-local">
+            <div class="quick-icon quick-icon-local"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="quick-info">
+              <div class="quick-title">Encontre-nos</div>
+              <div class="quick-sub">Congregações e endereços</div>
+            </div>
+            <i class="fa-solid fa-chevron-right quick-arrow"></i>
+          </div>
+          <div class="quick-item" data-nav="panel-novidades">
+            <div class="quick-icon quick-icon-novidades"><i class="fa-solid fa-bell"></i></div>
+            <div class="quick-info">
+              <div class="quick-title">Novidades</div>
+              <div class="quick-sub">Comunicados e atualizações</div>
+            </div>
+            <i class="fa-solid fa-chevron-right quick-arrow"></i>
+          </div>
+          <div class="quick-item" onclick="abrirModalConexao('conexao')">
+            <div class="quick-icon quick-icon-conectar"><i class="fa-solid fa-handshake"></i></div>
+            <div class="quick-info">
+              <div class="quick-title">Conecte-se</div>
+              <div class="quick-sub">Orações, decisões e ajuda</div>
+            </div>
+            <i class="fa-solid fa-chevron-right quick-arrow"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="verse-card">
+        <div class="verse-icon"><i class="fa-solid fa-book-bible"></i></div>
+        <p class="verse-text" id="contribVerse">"Trazei todos os dízimos e ofertas à casa do tesouro." (Ml 3:10)</p>
+        <div class="verse-pix-btns">
+          <button class="pix-btn pix-btn-main" onclick="abrirModalPix('Dízimo')">
+            <i class="fa-brands fa-pix"></i> Dízimo
+          </button>
+          <button class="pix-btn pix-btn-ghost" onclick="abrirModalPix('Oferta')">
+            <i class="fa-solid fa-hand-holding-dollar"></i> Oferta
           </button>
         </div>
       </div>
 
-      <p class="welcome-text">Visitante, seja muito bem-vindo!</p>
-
-      <div class="card-grid">
-        <div class="card">
-          <div class="card-title" style="color:var(--accent-soft);">Quero me conectar</div>
-          <div class="card-sub">Adoraríamos conhecê-lo melhor.</div>
-          <button class="btn btn-ghost" data-tipo="conexao" style="margin-top:10px;">
-            Conecte-se
-          </button>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="color:var(--accent-soft);">Podemos orar por você?</div>
-          <div class="card-sub">Envie um pedido de oração.</div>
-          <button class="btn btn-ghost" data-tipo="oracao" style="margin-top:10px;">
-            Envie um pedido
-          </button>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="color:var(--accent-soft);">Precisa de ajuda ou apoio?</div>
-          <div class="card-sub">Estamos aqui para caminhar com você.</div>
-          <button class="btn btn-ghost" data-tipo="ajuda" style="margin-top:10px;">
-            Falar com alguém
-          </button>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="color:var(--accent-soft);">Decidi caminhar com Jesus</div>
-          <div class="card-sub">Queremos celebrar essa decisão!</div>
-          <button class="btn btn-ghost" data-tipo="decisao" style="margin-top:10px;">
-            Iniciar caminhada
-          </button>
+      <!-- Card Lição EBD -->
+      <div id="ebdCard" style="display:none;margin:0 16px 12px;background:linear-gradient(135deg,#1a3a1a,#14532d);border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:18px 20px;cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:44px;height:44px;background:rgba(16,185,129,0.2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📖</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#6ee7b7;margin-bottom:3px;">Lição da Semana</div>
+            <div id="ebdTexto" style="font-size:14px;font-weight:600;color:#f0fdf4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          </div>
+          <i class="fa-solid fa-chevron-right" style="color:#6ee7b7;font-size:12px;flex-shrink:0;"></i>
         </div>
       </div>
 
-      <div class="card contrib-card">
-        <div class="card-title" style="text-align:center;color:var(--accent-soft);">
-          Contribuições
-        </div>
-        <p id="contribVerse">"Trazei todos os dízimos e ofertas à casa do tesouro." (Ml 3:10)</p>
-        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="abrirModalPix('Dízimo')">
-            <i class="fa-solid fa-coins"></i> Dízimos e Ofertas
-          </button>
-          <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="abrirModalPix('Oferta')">
-            <i class="fa-solid fa-hand-holding-dollar"></i> Contribuições
-          </button>
+      <!-- Card Live ao Vivo -->
+      <div id="liveCard" style="display:none;margin:0 16px 16px;background:linear-gradient(135deg,#3a0a0a,#7f1d1d);border:1px solid rgba(239,68,68,0.4);border-radius:20px;padding:18px 20px;cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="position:relative;width:44px;height:44px;flex-shrink:0;">
+            <div style="width:44px;height:44px;background:rgba(239,68,68,0.2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;">📡</div>
+            <div style="position:absolute;top:0;right:0;width:12px;height:12px;background:#ef4444;border-radius:50%;border:2px solid #3a0a0a;animation:livePulse 1.5s infinite;"></div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#fca5a5;margin-bottom:3px;">Ao Vivo Agora</div>
+            <div style="font-size:14px;font-weight:600;color:#fff;">Assistir Transmissão</div>
+          </div>
+          <i class="fa-solid fa-play-circle" style="color:#ef4444;font-size:20px;flex-shrink:0;"></i>
         </div>
       </div>
     </section>
 
-    <!-- ENCONTRE-NOS -->
-    <section id="panel-local" class="panel">
-      <div class="panel-title">
-        <h1>Onde estamos</h1>
-        <p>Encontre nossas congregações e redes sociais.</p>
-      </div>
-
-      <div class="section-title">Redes sociais</div>
-      <div class="social-row">
-        <button class="social-btn social-whatsapp">
-          <i class="fa-brands fa-whatsapp"></i> WhatsApp
-        </button>
-        <button class="social-btn social-facebook">
-          <i class="fa-brands fa-facebook-f"></i>
-        </button>
-        <button class="social-btn social-instagram">
-          <i class="fa-brands fa-instagram"></i>
-        </button>
-      </div>
-
-      <div class="input-search">
-        <input id="buscaCongregacao" type="search" placeholder="Buscar igreja por endereço ou nome">
-        <i class="fa-solid fa-magnifying-glass"></i>
-      </div>
-
-      <div id="listaCongregacoes"></div>
-    </section>
-
-    <!-- VÍDEO -->
+    <!-- ── MÍDIA (Vídeos + Áudios) ── -->
     <section id="panel-video" class="panel">
-      <div class="panel-title">
-        <h1>Galeria de Vídeos</h1>
-        <p>Acompanhe os últimos cultos e mensagens.</p>
+      <div class="panel-header">
+        <h1><i class="fa-solid fa-photo-film" style="color:#0984e3;margin-right:8px;"></i>Mídia</h1>
+        <p>Vídeos, músicas e pregações</p>
       </div>
-
-      <div id="areaVideos">
-        <div class="videos-empty">
-          <i class="fa-regular fa-clone"></i>
-          <p>Nenhum vídeo encontrado.</p>
+      <div class="panel-body">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:12px;"><i class="fa-solid fa-play-circle" style="margin-right:5px;color:#0984e3;"></i>Vídeos</div>
+        <div id="areaVideos" class="media-grid-2">
+          <div style="grid-column:1/-1;"><div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando...</p></div></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin:20px 0 12px;"><i class="fa-solid fa-headphones" style="margin-right:5px;color:#7c3aed;"></i>Áudios e Pregações</div>
+        <div id="areaAudios">
+          <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando...</p></div>
         </div>
       </div>
     </section>
 
-    <!-- FOTOS -->
+    <!-- ── FOTOS ── -->
     <section id="panel-fotos" class="panel">
-      <div class="panel-title">
-        <h1>Galeria de Fotos</h1>
-        <p>Veja os momentos especiais da igreja.</p>
+      <div class="panel-header">
+        <h1><i class="fa-solid fa-images" style="color:#7c3aed;margin-right:8px;"></i>Fotos</h1>
+        <p>Momentos especiais da nossa igreja</p>
       </div>
-
-      <div id="areaFotos">
-        <div class="videos-empty">
-          <i class="fa-regular fa-image"></i>
-          <p>Nenhuma foto encontrada.</p>
+      <div class="panel-body">
+        <div id="areaFotos" class="photos-grid">
+          <div style="grid-column:1/-1;"><div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando...</p></div></div>
         </div>
       </div>
     </section>
 
-    <!-- EVENTOS -->
+    <!-- ── EVENTOS ── -->
     <section id="panel-eventos" class="panel">
-      <div class="panel-title">
-        <h1>Eventos</h1>
-        <p>Fique por dentro da agenda da igreja.</p>
+      <div class="panel-header">
+        <h1><i class="fa-solid fa-calendar-check" style="color:#10b981;margin-right:8px;"></i>Eventos</h1>
+        <p>Agenda da nossa igreja</p>
       </div>
-
-      <div class="month-nav">
-        <button class="month-btn" id="mesAnterior"><i class="fa-solid fa-chevron-left"></i></button>
-        <div id="labelMes"></div>
-        <button class="month-btn" id="mesProximo"><i class="fa-solid fa-chevron-right"></i></button>
-      </div>
-
-      <div id="listaEventos">
-        <div class="event-empty">
-          <i class="fa-regular fa-clipboard"></i>
-          <p>Nenhum registro encontrado.</p>
+      <div class="panel-body">
+        <div class="month-nav">
+          <button class="month-btn" id="mesAnterior"><i class="fa-solid fa-chevron-left"></i></button>
+          <div class="month-label" id="labelMes"></div>
+          <button class="month-btn" id="mesProximo"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div id="listaEventos">
+          <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando...</p></div>
         </div>
       </div>
     </section>
 
-    <!-- NOVIDADES -->
+    <!-- ── CARTEIRINHA ── -->
+    <section id="panel-carteirinha" class="panel">
+      <div class="panel-header">
+        <h1><i class="fa-solid fa-id-card" style="color:#f59e0b;margin-right:8px;"></i>Minha Carteirinha</h1>
+        <p>Sua credencial digital de membro</p>
+      </div>
+      <div class="carteirinha-wrap">
+        <div id="carteirinha-card" class="carteirinha-card">
+          <div class="cart-header">
+            <div class="cart-header-logo-box">
+              <img id="cartLogoImg" src="" alt="" style="display:none">
+              <div class="cart-header-logo-init" id="cartLogoInit">I</div>
+            </div>
+            <div class="cart-header-right">
+              <span>Membro Oficial</span>
+              <strong id="cart-nome-igreja">Igreja</strong>
+            </div>
+          </div>
+          <div class="cart-body">
+            <div class="cart-photo-row">
+              <div id="cart-photo-wrap">
+                <div class="cart-photo-fallback" id="cart-photo-fallback">M</div>
+              </div>
+              <div>
+                <div class="cart-nome" id="cart-nome">Nome do Membro</div>
+                <span class="pill pill-cargo" id="cart-cargo">Membro</span>
+                <span class="pill pill-ativo" id="cart-situacao">Ativo</span>
+              </div>
+            </div>
+            <hr class="cart-divider">
+            <div class="cart-fields">
+              <div class="cart-field">
+                <label>Matrícula</label>
+                <span id="cart-matricula">#000001</span>
+              </div>
+              <div class="cart-field">
+                <label>Membro desde</label>
+                <span id="cart-admissao">-</span>
+              </div>
+            </div>
+            <div class="cart-qr-section">
+              <div class="cart-qr-box">
+                <div id="cart-qrcode"></div>
+              </div>
+              <div class="cart-qr-label">Escaneie para verificar</div>
+            </div>
+          </div>
+          <div class="cart-footer">
+            <span>LDFP — Sistema de Gestão</span>
+            <span id="cart-validade">Válida 2026</span>
+          </div>
+        </div>
+        <button class="btn-baixar" id="btnBaixarCarteirinha" type="button">
+          <i class="fa-solid fa-download"></i> Baixar Carteirinha
+        </button>
+      </div>
+    </section>
+
+    <!-- ── LOCAL ── -->
+    <section id="panel-local" class="panel">
+      <div class="panel-header">
+        <h1><i class="fa-solid fa-location-dot" style="color:#0984e3;margin-right:8px;"></i>Encontre-nos</h1>
+        <p>Nossas congregações e redes sociais</p>
+      </div>
+      <div class="panel-body">
+        <div class="social-row" id="socialRow">
+          <button class="social-btn s-wa" id="btnWa" style="display:none"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+          <button class="social-btn s-fb" id="btnFb" style="display:none"><i class="fa-brands fa-facebook-f"></i></button>
+          <button class="social-btn s-ig" id="btnIg" style="display:none"><i class="fa-brands fa-instagram"></i></button>
+          <button class="social-btn s-yt" id="btnYt" style="display:none"><i class="fa-brands fa-youtube"></i></button>
+        </div>
+        <div class="search-bar">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="buscaCongregacao" type="search" placeholder="Buscar por nome ou endereço...">
+        </div>
+        <div id="listaCongregacoes">
+          <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando...</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── NOVIDADES ── -->
     <section id="panel-novidades" class="panel">
-      <div class="panel-title">
-        <h1>Novidades</h1>
-        <p>Atualizações e comunicados da sua igreja.</p>
+      <div class="panel-header">
+        <h1><i class="fa-solid fa-bell" style="color:#7c3aed;margin-right:8px;"></i>Novidades</h1>
+        <p>Comunicados e atualizações da igreja</p>
       </div>
-      <!-- Banner de notificações push -->
-      <div id="pushBanner" class="push-banner" style="display:none">
-        <div class="push-banner-icon"><i class="fa-solid fa-bell"></i></div>
-        <div class="push-banner-text">
-          <strong id="pushBannerTitle">Ativar notificações</strong>
-          <span id="pushBannerSub">Receba avisos da sua igreja em tempo real.</span>
+      <div class="panel-body">
+        <div id="pushBanner" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;display:none;align-items:center;gap:12px;">
+          <i class="fa-solid fa-bell" style="color:var(--primary);font-size:22px;flex-shrink:0;"></i>
+          <div style="flex:1;">
+            <strong style="display:block;font-size:13px;" id="pushBannerTitle">Ativar notificações</strong>
+            <span style="font-size:12px;color:var(--muted2);" id="pushBannerSub">Receba avisos da sua igreja em tempo real.</span>
+          </div>
+          <button id="pushToggleBtn" onclick="togglePush()" style="background:var(--primary);color:#fff;border:none;border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;">Ativar</button>
         </div>
-        <button id="pushToggleBtn" class="push-toggle-btn ativar" onclick="togglePush()">Ativar</button>
-      </div>
-      <div id="listaNovidades">
-        <div class="event-empty">
-          <i class="fa-solid fa-spinner fa-spin"></i>
-          <p>Carregando novidades...</p>
+        <div id="listaNovidades">
+          <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando...</p></div>
         </div>
       </div>
     </section>
+
+    <!-- ── MAIS ── -->
+    <section id="panel-mais" class="panel">
+      <div class="panel-header">
+        <h1>Mais</h1>
+        <p>Todas as funcionalidades</p>
+      </div>
+      <div class="mais-section">
+        <div class="section-label">Conexão</div>
+        <div class="mais-list">
+          <div class="mais-item" onclick="abrirModalConexao('conexao')">
+            <div class="mais-icon" style="background:rgba(249,115,22,0.15);color:#f97316;"><i class="fa-solid fa-handshake"></i></div>
+            <div class="mais-info"><div class="mais-title">Quero me conectar</div><div class="mais-sub">Adoraríamos conhecê-lo</div></div>
+            <i class="fa-solid fa-chevron-right mais-arrow"></i>
+          </div>
+          <div class="mais-item" onclick="abrirModalConexao('oracao')">
+            <div class="mais-icon" style="background:rgba(124,58,237,0.15);color:#7c3aed;"><i class="fa-solid fa-hands-praying"></i></div>
+            <div class="mais-info"><div class="mais-title">Pedido de oração</div><div class="mais-sub">Ore conosco</div></div>
+            <i class="fa-solid fa-chevron-right mais-arrow"></i>
+          </div>
+          <div class="mais-item" onclick="abrirModalConexao('ajuda')">
+            <div class="mais-icon" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="fa-solid fa-heart"></i></div>
+            <div class="mais-info"><div class="mais-title">Precisa de ajuda?</div><div class="mais-sub">Estamos aqui por você</div></div>
+            <i class="fa-solid fa-chevron-right mais-arrow"></i>
+          </div>
+          <div class="mais-item" onclick="abrirModalConexao('decisao')">
+            <div class="mais-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="fa-solid fa-cross"></i></div>
+            <div class="mais-info"><div class="mais-title">Decidi seguir a Jesus</div><div class="mais-sub">Queremos celebrar!</div></div>
+            <i class="fa-solid fa-chevron-right mais-arrow"></i>
+          </div>
+        </div>
+
+        <div class="section-label">Contribuição</div>
+        <div class="mais-list">
+          <div class="mais-item" onclick="abrirModalPix('Dízimo')">
+            <div class="mais-icon" style="background:rgba(0,184,148,0.15);color:#00b894;"><i class="fa-brands fa-pix"></i></div>
+            <div class="mais-info"><div class="mais-title">Dízimos e Ofertas</div><div class="mais-sub">Contribua via PIX</div></div>
+            <i class="fa-solid fa-chevron-right mais-arrow"></i>
+          </div>
+        </div>
+
+        <div class="section-label">Conta</div>
+        <div class="mais-list">
+          <div class="mais-item" data-nav="panel-local">
+            <div class="mais-icon" style="background:rgba(9,132,227,0.15);color:#0984e3;"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="mais-info"><div class="mais-title">Encontre-nos</div><div class="mais-sub">Congregações e endereços</div></div>
+            <i class="fa-solid fa-chevron-right mais-arrow"></i>
+          </div>
+          <div class="mais-item" data-nav="panel-novidades">
+            <div class="mais-icon" style="background:rgba(124,58,237,0.15);color:#7c3aed;"><i class="fa-solid fa-bell"></i></div>
+            <div class="mais-info"><div class="mais-title">Novidades</div><div class="mais-sub">Comunicados e avisos</div></div>
+            <i class="fa-solid fa-chevron-right mais-arrow"></i>
+          </div>
+          <div class="mais-item" id="btnLogout">
+            <div class="mais-icon" style="background:rgba(239,68,68,0.12);color:#ef4444;"><i class="fa-solid fa-right-from-bracket"></i></div>
+            <div class="mais-info"><div class="mais-title" style="color:#ef4444;">Sair</div><div class="mais-sub">Encerrar sessão</div></div>
+            <i class="fa-solid fa-chevron-right mais-arrow"></i>
+          </div>
+        </div>
+        <div style="height:20px;"></div>
+      </div>
+    </section>
+
   </main>
 
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
-    <div class="bottom-item active" data-target="panel-home">
-      <i class="fa-solid fa-house"></i>
+    <div class="nav-item active" data-target="panel-home">
+      <div class="nav-icon-wrap"><i class="fa-solid fa-house"></i></div>
       <span>Início</span>
     </div>
-    <div class="bottom-item" data-target="panel-local">
-      <i class="fa-solid fa-location-dot"></i>
-      <span>Encontre-nos</span>
+    <div class="nav-item" data-target="panel-video">
+      <div class="nav-icon-wrap"><i class="fa-solid fa-photo-film"></i></div>
+      <span>Mídia</span>
     </div>
-    <div class="bottom-item" data-target="panel-video">
-      <i class="fa-solid fa-photo-film"></i>
-      <span>Vídeo</span>
-    </div>
-    <div class="bottom-item" data-target="panel-fotos">
-      <i class="fa-solid fa-image"></i>
-      <span>Fotos</span>
-    </div>
-    <div class="bottom-item" data-target="panel-eventos">
-      <i class="fa-solid fa-calendar-check"></i>
+    <div class="nav-item" data-target="panel-eventos">
+      <div class="nav-icon-wrap"><i class="fa-solid fa-calendar-check"></i></div>
       <span>Eventos</span>
     </div>
-    <div class="bottom-item" data-target="panel-novidades">
-      <i class="fa-solid fa-bell"></i>
-      <span>Novidades</span>
+    <div class="nav-item" data-target="panel-carteirinha">
+      <div class="nav-icon-wrap"><i class="fa-solid fa-id-card"></i></div>
+      <span>Carteirinha</span>
+    </div>
+    <div class="nav-item" data-target="panel-mais">
+      <div class="nav-icon-wrap"><i class="fa-solid fa-grid-2"></i></div>
+      <span>Mais</span>
     </div>
   </nav>
 </div>
 
-  <!-- MODAL CONEXÃO -->
-  <div id="conexaoModal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h2 id="modalTitle">Conectar</h2>
-        <button class="modal-close" id="modalClose"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <form id="modalForm">
-        <div class="modal-field">
-          <label>Nome</label>
-          <input id="modalNome" type="text" placeholder="Seu nome" required>
-        </div>
-        <div class="modal-field">
-          <label>Celular</label>
-          <input id="modalCelular" type="tel" placeholder="(00) 00000-0000">
-        </div>
-        <div class="modal-field">
-          <label>Mensagem <span style="color:var(--muted);">(opcional)</span></label>
-          <textarea id="modalMensagem" rows="3" placeholder="Escreva algo..."></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:4px;">Enviar</button>
-      </form>
+<!-- MODAL CONEXÃO -->
+<div id="conexaoModal" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="modal-title" id="modalTitle" style="margin-bottom:0;">Conectar</div>
+      <button class="modal-close-btn" id="modalClose"><i class="fa-solid fa-xmark"></i></button>
     </div>
+    <form id="modalForm">
+      <div class="modal-field">
+        <label>Seu nome</label>
+        <input id="modalNome" type="text" class="modal-input" placeholder="Como você se chama?" required>
+      </div>
+      <div class="modal-field">
+        <label>Celular (opcional)</label>
+        <input id="modalCelular" type="tel" class="modal-input" placeholder="(00) 00000-0000">
+      </div>
+      <div class="modal-field">
+        <label>Mensagem</label>
+        <textarea id="modalMensagem" class="modal-input" rows="3" placeholder="Escreva algo..."></textarea>
+      </div>
+      <button type="submit" class="modal-btn modal-btn-primary">Enviar</button>
+    </form>
   </div>
+</div>
 
-  <!-- MODAL PIX -->
-  <div id="pixModal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h2 id="pixModalTitle">Dízimo / Oferta</h2>
-        <button class="modal-close" onclick="fecharModalPix()"><i class="fa-solid fa-xmark"></i></button>
+<!-- MODAL PIX -->
+<div id="pixModal" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="modal-title" id="pixModalTitle" style="margin-bottom:0;">Contribuição via PIX</div>
+      <button class="modal-close-btn" onclick="fecharModalPix()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div id="pixStep1">
+      <div class="modal-field">
+        <label>Tipo</label>
+        <select id="pixTipo" class="modal-input">
+          <option value="Dízimo">Dízimo</option>
+          <option value="Oferta">Oferta</option>
+          <option value="Missões">Missões</option>
+          <option value="Outro">Outro</option>
+        </select>
       </div>
-      
-      <!-- Passo 1: Informar valor -->
-      <div id="pixStep1">
-        <div class="modal-field">
-          <label>Tipo de Contribuição</label>
-          <select id="pixTipo" class="input input-rounded">
-            <option value="Dízimo">Dízimo</option>
-            <option value="Oferta">Oferta</option>
-            <option value="Missões">Missões</option>
-            <option value="Outro">Outro</option>
-          </select>
-        </div>
-        <div class="modal-field">
-          <label>Descrição (opcional)</label>
-          <input id="pixDescricao" type="text" class="input" placeholder="Ex: Dízimo de Maio">
-        </div>
-        <div class="modal-field">
-          <label>Valor (R$)</label>
-          <input id="pixValor" type="number" step="0.01" min="1" class="input" placeholder="0,00" required>
-        </div>
-        <button type="button" class="btn btn-primary" style="width:100%;margin-top:10px;justify-content:center;" onclick="gerarPix()" id="btnGerarPix">
-          <i class="fa-brands fa-pix"></i> Gerar PIX Agora
-        </button>
+      <div class="modal-field">
+        <label>Descrição (opcional)</label>
+        <input id="pixDescricao" type="text" class="modal-input" placeholder="Ex: Dízimo de Junho">
       </div>
-      
-      <!-- Passo 2: Mostrar QR Code -->
-      <div id="pixStep2" style="display:none; text-align:center;">
-        <p style="font-size:13px; color:var(--muted); margin-bottom:12px;">Escaneie o QR Code abaixo ou copie o código Pix Copia e Cola para realizar o pagamento no app do seu banco.</p>
-        <div style="background:#fff; padding:10px; border-radius:12px; display:inline-block; margin-bottom:16px;">
-            <img id="pixQrCodeImg" src="" alt="QR Code PIX" style="width:200px; height:200px; display:block;">
-        </div>
-        
-        <div class="modal-field" style="text-align:left;">
-          <label>Pix Copia e Cola</label>
-          <div style="display:flex; gap:8px;">
-            <input id="pixCopiaCola" type="text" class="input" readonly>
-            <button class="btn btn-primary" onclick="copiarPix()" id="btnCopiarPix">Copiar</button>
-          </div>
-        </div>
-        
-        <button type="button" class="btn btn-ghost" style="width:100%;margin-top:10px;justify-content:center;" onclick="fecharModalPix()">
-          Concluído
-        </button>
+      <div class="modal-field">
+        <label>Valor (R$)</label>
+        <input id="pixValor" type="number" step="0.01" min="1" class="modal-input" placeholder="0,00">
       </div>
+      <button class="modal-btn modal-btn-pix" onclick="gerarPix()" id="btnGerarPix">
+        <i class="fa-brands fa-pix"></i> Gerar PIX
+      </button>
+    </div>
+
+    <div id="pixStep2" style="display:none; text-align:center;">
+      <p style="font-size:13px;color:var(--muted2);margin-bottom:14px;line-height:1.6;">Escaneie o QR Code ou copie o código abaixo e pague no app do seu banco.</p>
+      <div style="background:#fff;padding:12px;border-radius:16px;display:inline-block;margin-bottom:16px;">
+        <img id="pixQrCodeImg" src="" alt="QR Code PIX" style="width:180px;height:180px;display:block;">
+      </div>
+      <div class="modal-field" style="text-align:left;">
+        <label>Pix Copia e Cola</label>
+        <div style="display:flex;gap:8px;">
+          <input id="pixCopiaCola" type="text" class="modal-input" readonly style="font-size:12px;">
+          <button class="modal-btn modal-btn-primary" onclick="copiarPix()" id="btnCopiarPix" style="width:auto;padding:12px 16px;">Copiar</button>
+        </div>
+      </div>
+      <button class="modal-btn modal-btn-ghost" onclick="fecharModalPix()" style="margin-top:8px;">Concluído</button>
     </div>
   </div>
+</div>
 
 <script>
-  // --- Auth guard ---
-  (function checkLogin() {
-    const token = localStorage.getItem('app_member_token');
-    let user = null;
-    try { user = JSON.parse(localStorage.getItem('app_member_user')); } catch(_e) {}
-    if (!token || !user) { window.location.replace('app_login.html'); }
-  })();
+// ── Auth guard ──
+(function checkLogin() {
+  const token = localStorage.getItem('app_member_token');
+  let user = null;
+  try { user = JSON.parse(localStorage.getItem('app_member_user')); } catch(_e) {}
+  if (!token || !user) { window.location.replace('app_login.html'); }
+})();
 
-  // --- DOM refs ---
-  const greetingEl     = document.getElementById('memberGreeting');
-  const logoEl         = document.getElementById('churchLogoHeader');
-  const contribVerse   = document.getElementById('contribVerse');
-  const listaCongEl    = document.getElementById('listaCongregacoes');
-  const buscaInput     = document.getElementById('buscaCongregacao');
-  const socialWhatsapp = document.querySelector('.social-whatsapp');
-  const socialFacebook = document.querySelector('.social-facebook');
-  const socialInstagram = document.querySelector('.social-instagram');
-  const areaVideosEl   = document.getElementById('areaVideos');
-  const areaFotosEl    = document.getElementById('areaFotos');
-  const listaEventosEl = document.getElementById('listaEventos');
-  const labelMes       = document.getElementById('labelMes');
-  const btnLogout      = document.getElementById('btnLogout');
-  const credentialNomeEl = document.getElementById('credentialNome');
-  const credentialIgrejaEl = document.getElementById('credentialIgreja');
-  const credentialCargoEl = document.getElementById('credentialCargo');
-  const credentialPhotoEl = document.getElementById('credentialPhoto');
-  const modal          = document.getElementById('conexaoModal');
-  const modalTitle     = document.getElementById('modalTitle');
-  const modalForm      = document.getElementById('modalForm');
-  const modalClose     = document.getElementById('modalClose');
-  const pixModal       = document.getElementById('pixModal');
-  let _modalTipo = '';
+// ── Core helpers ──
+function getCurrentMemberUser() {
+  try { return JSON.parse(localStorage.getItem('app_member_user')); } catch(_e) { return null; }
+}
 
-  function getCurrentMemberUser() {
-    try {
-      const raw = localStorage.getItem('app_member_user');
-      return raw ? JSON.parse(raw) : null;
-    } catch (_error) {
-      return null;
-    }
+function getIgrejaTkForApp() {
+  const user = getCurrentMemberUser();
+  return user?.igrejaTk || localStorage.getItem('ldfp_login_igrejaTk') || '';
+}
+
+async function appFetch(url, opts) {
+  const tk = getIgrejaTkForApp();
+  const token = localStorage.getItem('app_member_token');
+  const sep = url.includes('?') ? '&' : '?';
+  const fullUrl = tk ? (url + sep + 'igrejaTk=' + encodeURIComponent(tk)) : url;
+  const headers = Object.assign({}, opts?.headers || {});
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(fullUrl, Object.assign({}, opts, { headers }));
+}
+
+// ── Nav ──
+let _currentPanel = 'panel-home';
+let _loaded = {};
+
+function showPanel(id) {
+  if (_currentPanel === id) return;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) { el.classList.add('active'); _currentPanel = id; }
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.target === id);
+  });
+  document.getElementById('appMain').scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (!_loaded[id]) {
+    _loaded[id] = true;
+    if (id === 'panel-video') { loadVideos(); loadAudios(); }
+    if (id === 'panel-fotos') loadFotos();
+    if (id === 'panel-eventos') { initEventos(); loadEventos(); }
+    if (id === 'panel-carteirinha') renderCarteirinha(getCurrentMemberUser());
+    if (id === 'panel-local') { loadCongregacoes(); }
+    if (id === 'panel-novidades') { loadNovidades(); initPushBanner(); }
   }
+}
 
-  function getIgrejaIdForApp() {
-    const user = getCurrentMemberUser();
-    const fromUser = Number(user?.igrejaId || user?.igreja_id || user?.churchId || 0);
-    if (fromUser > 0) return fromUser;
+document.querySelectorAll('.nav-item[data-target]').forEach(btn => {
+  btn.addEventListener('click', () => showPanel(btn.dataset.target));
+});
 
-    try {
-      const authRaw = localStorage.getItem('ldfpAuth');
-      const authUser = authRaw ? JSON.parse(authRaw)?.user : null;
-      const fromAuth = Number(authUser?.igrejaId || authUser?.igreja_id || authUser?.churchId || 0);
-      if (fromAuth > 0) return fromAuth;
-    } catch (_error) {
-      // segue para os próximos fallbacks
-    }
+document.querySelectorAll('[data-nav]').forEach(el => {
+  el.addEventListener('click', () => showPanel(el.dataset.nav));
+});
 
-    try {
-      const legacyRaw = localStorage.getItem('ldfp_user_data');
-      const legacyUser = legacyRaw ? JSON.parse(legacyRaw) : null;
-      const fromLegacyUser = Number(legacyUser?.igrejaId || legacyUser?.igreja_id || legacyUser?.churchId || 0);
-      if (fromLegacyUser > 0) return fromLegacyUser;
-    } catch (_error) {
-      // segue para os próximos fallbacks
-    }
+document.querySelectorAll('.mais-item[data-nav]').forEach(el => {
+  el.addEventListener('click', () => showPanel(el.dataset.nav));
+});
 
-    const fromLegacy = Number(localStorage.getItem('church_id') || 0);
-    return fromLegacy > 0 ? fromLegacy : 1;
-  }
+document.getElementById('btnLogout').addEventListener('click', () => {
+  if (!confirm('Deseja sair do app?')) return;
+  localStorage.removeItem('app_member_token');
+  localStorage.removeItem('app_member_user');
+  window.location.replace('app_login.html');
+});
 
-  function normalizeMediaBucket(payload) {
-    return {
-      videos: Array.isArray(payload?.videos) ? payload.videos : [],
-      audios: Array.isArray(payload?.audios) ? payload.audios : [],
-      images: Array.isArray(payload?.images) ? payload.images : [],
-      documents: Array.isArray(payload?.documents) ? payload.documents : []
+// ── Profile / hero ──
+async function hydrateMemberProfile() {
+  const token = localStorage.getItem('app_member_token');
+  const user = getCurrentMemberUser();
+  if (!token || !user) return;
+
+  try {
+    const resp = await fetch('/app-membro/meu-perfil', { headers: { Authorization: 'Bearer ' + token } });
+    if (!resp.ok) return;
+    const profile = await resp.json();
+    const next = {
+      ...user,
+      nome: profile?.nome || user.nome,
+      email: profile?.email || user.email,
+      cargo: profile?.cargo || user.cargo || '',
+      foto_url: profile?.foto_url || user.foto_url || '',
+      nome_igreja: profile?.nome_igreja || user.nome_igreja || '',
+      matricula: profile?.id || user.id,
+      data_admissao: profile?.data_admissao || user.data_admissao,
+      situacao: profile?.situacao || user.situacao || 'Ativo',
+      id: profile?.id || user.id
     };
-  }
+    localStorage.setItem('app_member_user', JSON.stringify(next));
+    renderHero(next);
+  } catch(_e) {}
+}
 
-  function getLocalMediaByChurch(igrejaId) {
-    try {
-      const root = localStorage.getItem('ldfp_igreja_midias');
-      if (root) {
-        const parsed = JSON.parse(root);
-        const bucket = parsed?.[String(igrejaId)] || parsed?.[Number(igrejaId)] || null;
-        if (bucket) return normalizeMediaBucket(bucket);
-      }
-    } catch (_error) {
-      // fallback para outros formatos de chave
+function renderHero(user) {
+  if (!user) return;
+  const nome = user.nome || 'Membro';
+  document.getElementById('memberGreeting').textContent = nome.split(' ')[0];
+  document.getElementById('churchNameHome').textContent = user.nome_igreja || user.igrejaNome || '';
+  document.getElementById('membroBadge').textContent = user.cargo || 'Membro';
+
+  const ph = document.getElementById('heroAvatarPlaceholder');
+  const img = document.getElementById('heroAvatarImg');
+  ph.textContent = nome.charAt(0).toUpperCase();
+
+  if (user.foto_url) {
+    img.src = user.foto_url;
+    img.style.display = 'block';
+    ph.style.display = 'none';
+    img.onerror = function() { img.style.display = 'none'; ph.style.display = 'flex'; };
+  }
+}
+
+// ── Config ──
+async function loadConfig() {
+  try {
+    const res = await appFetch('/api/app/config');
+    if (!res.ok) return;
+    const cfg = await res.json();
+    if (cfg.versiculoContribuicoes) document.getElementById('contribVerse').textContent = cfg.versiculoContribuicoes;
+
+    const btnWa = document.getElementById('btnWa');
+    const btnFb = document.getElementById('btnFb');
+    const btnIg = document.getElementById('btnIg');
+    const btnYt = document.getElementById('btnYt');
+
+    if (cfg.whatsapp) {
+      btnWa.style.display = 'flex';
+      const num = String(cfg.whatsapp).replace(/\D/g,'');
+      btnWa.onclick = () => window.open('https://wa.me/' + num, '_blank');
+    }
+    if (cfg.facebook) {
+      btnFb.style.display = 'flex';
+      btnFb.onclick = () => window.open(cfg.facebook, '_blank');
+    }
+    if (cfg.instagram) {
+      btnIg.style.display = 'flex';
+      btnIg.onclick = () => window.open(cfg.instagram, '_blank');
+    }
+    if (cfg.youtube) {
+      btnYt.style.display = 'flex';
+      btnYt.onclick = () => window.open(cfg.youtube, '_blank');
     }
 
-    try {
-      const legacy = localStorage.getItem('ldfp_midias_igreja_' + igrejaId);
-      if (legacy) {
-        return normalizeMediaBucket(JSON.parse(legacy));
-      }
-    } catch (_error) {
-      // sem fallback disponível
-    }
-
-    return normalizeMediaBucket({});
-  }
-
-  function getYoutubeThumb(url) {
-    const raw = String(url || '').trim();
-    if (!raw) return '';
-    let id = '';
-    if (raw.includes('watch?v=')) {
-      id = raw.split('watch?v=')[1].split('&')[0];
-    } else if (raw.includes('youtu.be/')) {
-      id = raw.split('youtu.be/')[1].split('?')[0];
-    } else if (raw.includes('/embed/')) {
-      id = raw.split('/embed/')[1].split('?')[0];
-    }
-    return id ? ('https://img.youtube.com/vi/' + id + '/hqdefault.jpg') : '';
-  }
-
-  function applySocialLink(button, url) {
-    if (!button) return;
-    const safeUrl = String(url || '').trim();
-    if (!safeUrl) {
-      button.style.display = 'none';
-      return;
-    }
-
-    button.style.display = 'inline-flex';
-    button.onclick = () => window.open(safeUrl, '_blank');
-  }
-
-  // --- Init ---
-  function initApp() {
-    const user = getCurrentMemberUser();
-    if (user) {
-      greetingEl.textContent = 'Olá, ' + (user.nome || 'Membro') + '!';
-      renderDigitalCredential(user);
-      hydrateMemberProfile();
-    }
-    const logoUrl = localStorage.getItem('church_logo_url');
-    if (logoUrl) logoEl.src = logoUrl;
-    loadConfig();
-    loadEventos();
-  }
-
-  function renderDigitalCredential(member) {
-    const nome = String(member?.nome || 'Membro');
-    const igreja = String(member?.nome_igreja || member?.igrejaNome || member?.igreja || '-');
-    const cargo = String(member?.cargo || 'Membro');
-    const foto = String(member?.foto_url || member?.fotoUrl || '').trim();
-
-    credentialNomeEl.textContent = nome;
-    credentialIgrejaEl.textContent = igreja;
-    credentialCargoEl.textContent = cargo;
-    credentialPhotoEl.src = foto || 'https://via.placeholder.com/72x72?text=MEMBRO';
-  }
-
-  async function hydrateMemberProfile() {
-    const token = localStorage.getItem('app_member_token');
-    const user = getCurrentMemberUser();
-    if (!token || !user) return;
-
-    try {
-      const response = await fetch('/app-membro/meu-perfil', {
-        headers: { Authorization: 'Bearer ' + token }
-      });
-      if (!response.ok) return;
-
-      const profile = await response.json();
-      const nextUser = {
-        ...user,
-        nome: profile?.nome || user.nome,
-        email: profile?.email || user.email,
-        cargo: profile?.cargo || user.cargo || '',
-        foto_url: profile?.foto_url || user.foto_url || '',
-        nome_igreja: profile?.nome_igreja || user.nome_igreja || user.igrejaNome || ''
+    // Card Lição EBD
+    if (cfg.licaoSemana) {
+      const card = document.getElementById('ebdCard');
+      document.getElementById('ebdTexto').textContent = cfg.licaoSemana;
+      card.style.display = 'block';
+      card.onclick = () => {
+        if (cfg.licaoUrl) window.open(cfg.licaoUrl, '_blank');
       };
-
-      localStorage.setItem('app_member_user', JSON.stringify(nextUser));
-      greetingEl.textContent = 'Olá, ' + (nextUser.nome || 'Membro') + '!';
-      renderDigitalCredential(nextUser);
-    } catch (_error) {
-      // Mantém dados locais caso a API de perfil esteja indisponível
     }
-  }
 
-  // --- Config ---
-  async function loadConfig() {
-    try {
-      const igrejaId = getIgrejaIdForApp();
-      const res = await fetch('/api/app/config?igrejaId=' + encodeURIComponent(igrejaId));
-      if (!res.ok) return;
-      const cfg = await res.json();
-      if (cfg.versiculoContribuicoes) contribVerse.textContent = cfg.versiculoContribuicoes;
-      if (cfg.logoUrl) logoEl.src = cfg.logoUrl;
-      applySocialLink(socialWhatsapp, cfg.whatsapp);
-      applySocialLink(socialFacebook, cfg.facebook);
-      applySocialLink(socialInstagram, cfg.instagram);
-    } catch(_e) {}
-  }
+    // Card Live
+    if (cfg.liveStreamUrl) {
+      const liveCard = document.getElementById('liveCard');
+      liveCard.style.display = 'block';
+      liveCard.onclick = () => window.open(cfg.liveStreamUrl, '_blank');
+    }
 
-  // --- Congregações ---
-  let _congregacoes = [];
+    window._appConfig = cfg;
+  } catch(_e) {}
+}
 
-  async function loadCongregacoes() {
-    try {
-      const igrejaId = getIgrejaIdForApp();
-      const res = await fetch('/api/app/congregacoes?igrejaId=' + encodeURIComponent(igrejaId));
-      if (!res.ok) return;
-      const data = await res.json();
-      _congregacoes = Array.isArray(data) ? data : (data.data || []);
-      renderCongregacoes(buscaInput.value);
-    } catch(_e) {}
-  }
+// ── Vídeos ──
+function getYoutubeThumb(url) {
+  const u = String(url || '');
+  let id = '';
+  if (u.includes('watch?v=')) id = u.split('watch?v=')[1].split('&')[0];
+  else if (u.includes('youtu.be/')) id = u.split('youtu.be/')[1].split('?')[0];
+  else if (u.includes('/embed/')) id = u.split('/embed/')[1].split('?')[0];
+  return id ? 'https://img.youtube.com/vi/' + id + '/mqdefault.jpg' : '';
+}
 
-  function renderCongregacoes(filtro) {
-    const termo = (filtro || '').toLowerCase();
-    const filtradas = _congregacoes.filter(c =>
-      (c.nome || '').toLowerCase().includes(termo) ||
-      (c.endereco || '').toLowerCase().includes(termo)
-    );
-    if (!filtradas.length) {
-      listaCongEl.innerHTML = '<div style="font-size:12px;color:#9ca3af;margin-top:16px;text-align:center;">Nenhuma congregação encontrada.</div>';
+function buildVideoEmbed(url) {
+  const u = String(url || '');
+  if (u.includes('/embed/')) return u;
+  let id = '';
+  if (u.includes('watch?v=')) id = u.split('watch?v=')[1].split('&')[0];
+  else if (u.includes('youtu.be/')) id = u.split('youtu.be/')[1].split('?')[0];
+  return id ? 'https://www.youtube.com/embed/' + id + '?autoplay=1' : u;
+}
+
+async function loadVideos() {
+  const el = document.getElementById('areaVideos');
+  try {
+    let videos = [];
+    const res = await appFetch('/api/app/midias');
+    if (res.ok) {
+      const p = await res.json().catch(() => ({}));
+      videos = (p.videos || []).map(v => ({ id: v.id, titulo: v.title || v.titulo, url: v.url, data: v.createdAt || v.data }));
+    }
+    if (!videos.length) {
+      const res2 = await appFetch('/api/app/videos');
+      if (res2.ok) { const d = await res2.json().catch(() => []); videos = Array.isArray(d) ? d : []; }
+    }
+    if (!videos.length) {
+      el.innerHTML = '<div style="grid-column:1/-1"><div class="empty-state"><i class="fa-regular fa-clone"></i><p>Nenhum vídeo disponível.</p></div></div>';
       return;
     }
-    listaCongEl.innerHTML = filtradas.map(c => {
-      const lat = c.latitude  || '';
-      const lng = c.longitude || '';
-      const wazeUrl = lat ? `https://waze.com/ul?ll=${lat},${lng}&navigate=yes` : '#';
-      const mapsUrl = lat ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}` : '#';
-      return `
-        <div class="congreg-card">
-          <div class="congreg-header">${c.nome || ''}</div>
-          <div>Pastor: ${c.pastor || '-'}</div>
-          <div>Dirigente: ${c.dirigente || '-'}</div>
-          <div>Telefone: ${c.telefone || '-'}</div>
-          <div>Endereço: ${c.endereco || '-'}</div>
-          <div class="congreg-footer">
-            <button onclick="window.open('${wazeUrl}','_blank')"><i class="fa-brands fa-waze"></i> Waze</button>
-            <button onclick="window.open('${mapsUrl}','_blank')"><i class="fa-brands fa-google"></i> Maps</button>
-          </div>
-        </div>`;
+    el.innerHTML = videos.map(v => {
+      const thumb = getYoutubeThumb(v.url) || 'https://via.placeholder.com/320x180?text=VIDEO';
+      const embed = encodeURIComponent(buildVideoEmbed(v.url));
+      const date = v.data ? new Date(v.data).toLocaleDateString('pt-BR') : '';
+      return `<div class="media-card" onclick="window.open(decodeURIComponent('${embed}'),'_blank')">
+        <div class="media-thumb"><img src="${thumb}" alt=""><div class="media-play"><i class="fa-solid fa-play-circle"></i></div></div>
+        <div class="media-info"><div class="media-title">${v.titulo || 'Vídeo'}</div>${date?`<div class="media-date">${date}</div>`:''}</div>
+      </div>`;
     }).join('');
+  } catch(_e) {
+    el.innerHTML = '<div style="grid-column:1/-1"><div class="empty-state"><i class="fa-regular fa-clone"></i><p>Nenhum vídeo encontrado.</p></div></div>';
   }
+}
 
-  buscaInput.addEventListener('input', () => renderCongregacoes(buscaInput.value));
-
-  // --- Vídeos ---
-  async function loadVideos() {
-    areaVideosEl.innerHTML = '<div style="text-align:center;padding:30px;color:#9ca3af;font-size:13px;"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</div>';
-
-    try {
-      const igrejaId = getIgrejaIdForApp();
-      let videos = [];
-
-      // 1) Fonte principal atual (CRUD completo no painel de mídias)
-      try {
-        const resMidias = await fetch('/api/app/midias?igrejaId=' + encodeURIComponent(igrejaId));
-        if (resMidias.ok) {
-          const payload = await resMidias.json().catch(() => ({}));
-          videos = (payload.videos || []).map((item) => ({
-            id: item.id,
-            titulo: item.title || item.titulo || 'Vídeo',
-            url: item.url || '',
-            data: item.createdAt || item.data || null
-          }));
-        }
-      } catch (_error) {
-        videos = [];
-      }
-
-      // 2) Compatibilidade com endpoint legado
-      if (!videos.length) {
-        const resVideos = await fetch('/api/app/videos?igrejaId=' + encodeURIComponent(igrejaId));
-        if (resVideos.ok) {
-          const data = await resVideos.json().catch(() => ([]));
-          videos = Array.isArray(data) ? data : (data.data || []);
-        }
-      }
-
-      // 3) Fallback localStorage para modo simples/offline
-      if (!videos.length) {
-        const localBucket = getLocalMediaByChurch(igrejaId);
-        videos = (localBucket.videos || []).map((item) => ({
-          id: item.id,
-          titulo: item.title || item.titulo || 'Vídeo',
-          url: item.url || '',
-          data: item.data || item.createdAt || null
-        }));
-      }
-
-      if (!videos.length) throw new Error('vazio');
-
-      areaVideosEl.innerHTML = '<div class="videos-grid">' + videos.map((v) => {
-        const thumb = getYoutubeThumb(v.url) || 'https://via.placeholder.com/320x180?text=VIDEO';
-        const dateLabel = v.data ? new Date(v.data).toLocaleDateString('pt-BR') : '';
-        const safeTitle = String(v.titulo || 'Vídeo');
-        const safeUrl = encodeURIComponent(String(v.url || ''));
-
-        return ''
-          + '<button class="video-card" type="button" data-url="' + safeUrl + '">'
-          +   '<div class="video-thumb">'
-          +     '<img src="' + thumb + '" alt="thumb vídeo">'
-          +     '<div class="play-icon"><i class="fa-solid fa-play-circle"></i></div>'
-          +   '</div>'
-          +   '<div class="video-title">' + safeTitle + '</div>'
-          +   (dateLabel ? '<div class="video-date">' + dateLabel + '</div>' : '')
-          + '</button>';
-      }).join('') + '</div>';
-
-      areaVideosEl.querySelectorAll('.video-card').forEach((button) => {
-        button.addEventListener('click', () => {
-          const targetUrl = decodeURIComponent(button.dataset.url || '');
-          if (targetUrl) {
-            window.open(targetUrl, '_blank');
-          }
-        });
-      });
-    } catch(_e) {
-      areaVideosEl.innerHTML = '<div class="videos-empty"><i class="fa-regular fa-clone"></i><p>Nenhum vídeo encontrado.</p></div>';
+// ── Fotos ──
+async function loadFotos() {
+  const el = document.getElementById('areaFotos');
+  try {
+    let images = [];
+    const res = await appFetch('/api/app/midias');
+    if (res.ok) {
+      const p = await res.json().catch(() => ({}));
+      images = (p.images || []).map(i => ({ id: i.id, title: i.title || i.titulo, url: i.url }));
     }
-  }
-
-  async function loadFotos() {
-    areaFotosEl.innerHTML = '<div style="text-align:center;padding:30px;color:#9ca3af;font-size:13px;"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</div>';
-
-    try {
-      const igrejaId = getIgrejaIdForApp();
-      let images = [];
-
-      try {
-        const resMidias = await fetch('/api/app/midias?igrejaId=' + encodeURIComponent(igrejaId));
-        if (resMidias.ok) {
-          const payload = await resMidias.json().catch(() => ({}));
-          images = (payload.images || []).map((item) => ({
-            id: item.id,
-            title: item.title || item.titulo || 'Foto',
-            description: item.description || item.descricao || '',
-            url: item.url || ''
-          }));
-        }
-      } catch (_error) {
-        images = [];
-      }
-
-      if (!images.length) {
-        const localBucket = getLocalMediaByChurch(igrejaId);
-        images = (localBucket.images || []).map((item) => ({
-          id: item.id,
-          title: item.title || item.titulo || 'Foto',
-          description: item.description || item.descricao || '',
-          url: item.url || ''
-        }));
-      }
-
-      if (!images.length) {
-        throw new Error('vazio');
-      }
-
-      areaFotosEl.innerHTML = '<div class="photos-grid">' + images.map((image) => {
-        const safeUrl = encodeURIComponent(String(image.url || ''));
-        const safeTitle = String(image.title || 'Foto');
-        const safeDesc = String(image.description || '');
-
-        return ''
-          + '<button type="button" class="photo-card" data-url="' + safeUrl + '">'
-          +   '<img src="' + String(image.url || '') + '" alt="foto">'
-          +   '<div class="photo-meta">'
-          +     '<div class="photo-title">' + safeTitle + '</div>'
-          +     '<div class="photo-desc">' + (safeDesc || 'Toque para ampliar') + '</div>'
-          +   '</div>'
-          + '</button>';
-      }).join('') + '</div>';
-
-      areaFotosEl.querySelectorAll('.photo-card').forEach((button) => {
-        button.addEventListener('click', () => {
-          const targetUrl = decodeURIComponent(button.dataset.url || '');
-          if (targetUrl) {
-            window.open(targetUrl, '_blank');
-          }
-        });
-      });
-    } catch (_error) {
-      areaFotosEl.innerHTML = '<div class="videos-empty"><i class="fa-regular fa-image"></i><p>Nenhuma foto encontrada.</p></div>';
+    if (!images.length) {
+      el.innerHTML = '<div style="grid-column:1/-1"><div class="empty-state"><i class="fa-regular fa-image"></i><p>Nenhuma foto disponível.</p></div></div>';
+      return;
     }
+    el.innerHTML = images.map(img => `
+      <div class="photo-tile" onclick="window.open('${img.url}','_blank')">
+        <img src="${img.url}" alt="${img.title || ''}">
+      </div>`).join('');
+  } catch(_e) {
+    el.innerHTML = '<div style="grid-column:1/-1"><div class="empty-state"><i class="fa-regular fa-image"></i><p>Nenhuma foto encontrada.</p></div></div>';
   }
+}
 
-  // --- Eventos ---
-  let dataAtual = new Date();
-
-  function getMesParam() {
-    const y = dataAtual.getFullYear();
-    const m = String(dataAtual.getMonth() + 1).padStart(2, '0');
-    return `${y}-${m}`;
-  }
-
-  let _novidadesCarregadas = false;
-
-  function loadNovidades() {
-    const el = document.getElementById('listaNovidades');
-    el.innerHTML = '<div class="event-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando novidades...</p></div>';
-    const tipoLabel = { release:'Nova versão', feature:'Funcionalidade', fix:'Correção', aviso:'Aviso', melhoria:'Melhoria' };
-    const fmtDate = s => new Date(s).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
-    fetch('/api/novidades')
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(items => {
-        _novidadesCarregadas = true;
-        if (!items || !items.length) {
-          el.innerHTML = '<div class="event-empty"><i class="fa-regular fa-bell-slash fa-2x" style="margin-bottom:8px"></i><p>Nenhuma novidade publicada ainda.</p></div>';
-          return;
-        }
-        el.innerHTML = items.map(n => {
-          const tipo = n.tipo || 'release';
-          const label = tipoLabel[tipo] || tipo;
-          const tagsHtml = n.tags ? n.tags.split(',').map(t => `<span>#${t.trim()}</span>`).join(' ') : '';
-          return `
-            <div class="novidade-card${n.destaque ? ' destaque' : ''}">
-              <div class="novidade-badges">
-                <span class="novidade-badge badge-${tipo}">${label}</span>
-                ${n.destaque ? '<span class="novidade-badge badge-destaque">⭐ Destaque</span>' : ''}
-              </div>
-              <div class="novidade-titulo">${n.titulo}</div>
-              ${n.subtitulo ? `<div class="novidade-sub">${n.subtitulo}</div>` : ''}
-              ${n.conteudo ? `<div class="novidade-conteudo">${n.conteudo}</div>` : ''}
-              <div class="novidade-footer">
-                <span class="novidade-data"><i class="fa-regular fa-clock" style="margin-right:4px"></i>${fmtDate(n.created_at)}</span>
-                ${tagsHtml ? `<span class="novidade-tags">${tagsHtml}</span>` : ''}
-              </div>
-            </div>`;
-        }).join('');
-      })
-      .catch(() => {
-        el.innerHTML = '<div class="event-empty"><i class="fa-solid fa-triangle-exclamation" style="color:var(--accent)"></i><p>Erro ao carregar novidades.<br><small>Verifique sua conexão.</small></p></div>';
-      });
-  }
-
-  async function loadEventos() {
-    labelMes.textContent = dataAtual.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-    listaEventosEl.innerHTML = '<div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;"><i class="fa-solid fa-spinner fa-spin"></i></div>';
-    try {
-      const igrejaId = getIgrejaIdForApp();
-      const res = await fetch(`/api/app/eventos?igrejaId=${encodeURIComponent(igrejaId)}&mes=${getMesParam()}`);
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      const eventos = Array.isArray(data) ? data : (data.data || []);
-      if (!eventos.length) throw new Error('vazio');
-      listaEventosEl.innerHTML = eventos.map(e => `
-        <div class="congreg-card">
-          <div class="congreg-header">${e.titulo || e.descricao || 'Evento'}</div>
-          <div>${e.data ? new Date(e.data).toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit', month:'short', year:'numeric'}) : ''}</div>
-          ${e.local ? `<div><i class="fa-solid fa-location-dot" style="color:var(--accent);"></i> ${e.local}</div>` : ''}
-        </div>`).join('');
-    } catch(_e) {
-      listaEventosEl.innerHTML = '<div class="event-empty"><i class="fa-regular fa-clipboard"></i><p>Nenhum registro encontrado.</p></div>';
+// ── Áudios ──
+async function loadAudios() {
+  const el = document.getElementById('areaAudios');
+  try {
+    const res = await appFetch('/api/app/midias');
+    if (!res.ok) throw new Error();
+    const p = await res.json().catch(() => ({}));
+    const audios = Array.isArray(p.audios) ? p.audios : [];
+    if (!audios.length) {
+      el.innerHTML = '<div class="empty-state"><i class="fa-regular fa-circle-pause"></i><p>Nenhum áudio disponível.</p></div>';
+      return;
     }
+    el.innerHTML = audios.map(a => {
+      const titulo = (a.title || a.titulo || 'Áudio').replace(/</g, '&lt;');
+      const url = a.url || '';
+      return `<div class="audio-item" onclick="window.open('${url.replace(/'/g,"\\'")}','_blank')">
+        <div class="audio-icon"><i class="fa-solid fa-headphones"></i></div>
+        <div class="audio-info"><div class="audio-title">${titulo}</div><div class="audio-sub">Toque para ouvir</div></div>
+        <i class="fa-solid fa-play" style="color:var(--primary);font-size:14px;flex-shrink:0;"></i>
+      </div>`;
+    }).join('');
+  } catch(_e) {
+    el.innerHTML = '<div class="empty-state"><i class="fa-regular fa-circle-pause"></i><p>Nenhum áudio encontrado.</p></div>';
   }
+}
 
+// ── Eventos ──
+let dataAtual = new Date();
+
+function getMesParam() {
+  return dataAtual.getFullYear() + '-' + String(dataAtual.getMonth() + 1).padStart(2, '0');
+}
+
+function initEventos() {
   document.getElementById('mesAnterior').addEventListener('click', () => {
     dataAtual.setMonth(dataAtual.getMonth() - 1);
     loadEventos();
@@ -1430,255 +1615,323 @@
     dataAtual.setMonth(dataAtual.getMonth() + 1);
     loadEventos();
   });
+}
 
-  // --- Conexões / Pedidos ---
-  const TIPOS_LABEL = {
-    conexao: 'Quero me conectar',
-    oracao:  'Pedido de Oração',
-    ajuda:   'Precisa de Ajuda',
-    decisao: 'Decidi caminhar com Jesus'
-  };
+async function loadEventos() {
+  document.getElementById('labelMes').textContent = dataAtual.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const el = document.getElementById('listaEventos');
+  el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando...</p></div>';
+  try {
+    const res = await appFetch('/api/app/eventos?mes=' + getMesParam());
+    if (!res.ok) throw new Error();
+    const eventos = await res.json().catch(() => []);
+    const list = Array.isArray(eventos) ? eventos : (eventos.data || []);
+    if (!list.length) throw new Error('vazio');
+    el.innerHTML = list.map(e => {
+      const d = e.data ? new Date(e.data) : null;
+      const day = d ? d.getDate() : '';
+      const wday = d ? d.toLocaleDateString('pt-BR', { weekday: 'short' }) : '';
+      return `<div class="event-card">
+        <div class="event-date-box"><div class="event-day">${day}</div><div class="event-weekday">${wday}</div></div>
+        <div class="event-info"><div class="event-title">${e.titulo || 'Evento'}</div>${e.descricao?`<div class="event-desc">${e.descricao}</div>`:''}</div>
+      </div>`;
+    }).join('');
+  } catch(_e) {
+    el.innerHTML = '<div class="empty-state"><i class="fa-regular fa-clipboard"></i><p>Nenhum evento encontrado.</p></div>';
+  }
+}
 
-  function abrirModal(tipo) {
-    _modalTipo = tipo;
-    modalTitle.textContent = TIPOS_LABEL[tipo] || 'Conexão';
-    modalForm.reset();
-    modal.style.display = 'flex';
+// ── Congregações ──
+let _congregacoes = [];
+
+async function loadCongregacoes() {
+  const el = document.getElementById('listaCongregacoes');
+  try {
+    const res = await appFetch('/api/app/congregacoes');
+    if (!res.ok) throw new Error();
+    const data = await res.json().catch(() => []);
+    _congregacoes = Array.isArray(data) ? data : [];
+    renderCongregacoes('');
+  } catch(_e) {
+    el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-location-dot"></i><p>Nenhuma congregação encontrada.</p></div>';
+  }
+}
+
+function renderCongregacoes(filtro) {
+  const el = document.getElementById('listaCongregacoes');
+  const f = filtro.toLowerCase();
+  const items = _congregacoes.filter(c =>
+    (c.nome||'').toLowerCase().includes(f) || (c.endereco||'').toLowerCase().includes(f)
+  );
+  if (!items.length) { el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-location-dot"></i><p>Nenhuma congregação encontrada.</p></div>'; return; }
+  el.innerHTML = items.map(c => {
+    const lat = c.latitude || ''; const lng = c.longitude || '';
+    const wazeUrl = lat ? `https://waze.com/ul?ll=${lat},${lng}&navigate=yes` : '#';
+    const mapsUrl = lat ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}` : '#';
+    return `<div class="cong-card">
+      <div class="cong-name">${c.nome||''}</div>
+      ${c.pastor?`<div class="cong-detail"><i class="fa-solid fa-user" style="margin-right:5px;color:var(--muted);"></i>Pastor: ${c.pastor}</div>`:''}
+      ${c.endereco?`<div class="cong-detail"><i class="fa-solid fa-location-dot" style="margin-right:5px;color:var(--muted);"></i>${c.endereco}</div>`:''}
+      ${c.telefone?`<div class="cong-detail"><i class="fa-solid fa-phone" style="margin-right:5px;color:var(--muted);"></i>${c.telefone}</div>`:''}
+      ${lat?`<div class="cong-btns">
+        <button class="cong-btn" onclick="window.open('${wazeUrl}','_blank')"><i class="fa-brands fa-waze"></i> Waze</button>
+        <button class="cong-btn" onclick="window.open('${mapsUrl}','_blank')"><i class="fa-brands fa-google"></i> Maps</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('buscaCongregacao').addEventListener('input', e => renderCongregacoes(e.target.value));
+
+// ── Carteirinha ──
+let _qrGenerated = false;
+
+function renderCarteirinha(user) {
+  if (!user) return;
+  const nome = user.nome || 'Membro';
+  const cargo = user.cargo || 'Membro';
+  const situacao = user.situacao || 'Ativo';
+  const matricula = '#' + String(user.id || user.matricula || '1').padStart(6, '0');
+  const admissao = user.data_admissao ? new Date(user.data_admissao + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+  const igreja = user.nome_igreja || user.igrejaNome || 'Igreja';
+
+  document.getElementById('cart-nome').textContent = nome;
+  document.getElementById('cart-cargo').textContent = cargo;
+  document.getElementById('cart-situacao').textContent = situacao;
+  document.getElementById('cart-matricula').textContent = matricula;
+  document.getElementById('cart-admissao').textContent = admissao;
+  document.getElementById('cart-nome-igreja').textContent = igreja;
+  document.getElementById('cart-validade').textContent = 'Válida ' + new Date().getFullYear();
+
+  const logoInitEl = document.getElementById('cartLogoInit');
+  logoInitEl.textContent = (igreja || 'I').charAt(0).toUpperCase();
+
+  const cfg = window._appConfig || {};
+  if (cfg.logoUrl) {
+    const li = document.getElementById('cartLogoImg');
+    li.src = cfg.logoUrl;
+    li.style.display = 'block';
+    logoInitEl.style.display = 'none';
+    li.onerror = function() { li.style.display = 'none'; logoInitEl.style.display = 'flex'; };
   }
 
-  modalClose.addEventListener('click', () => { modal.style.display = 'none'; });
-  modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+  const photoWrap = document.getElementById('cart-photo-wrap');
+  const photoFb = document.getElementById('cart-photo-fallback');
+  photoFb.textContent = nome.charAt(0).toUpperCase();
 
-  modalForm.addEventListener('submit', async e => {
-    e.preventDefault();
-    const nome     = document.getElementById('modalNome').value.trim();
-    const celular  = document.getElementById('modalCelular').value.trim();
-    const mensagem = document.getElementById('modalMensagem').value.trim();
-    const submitBtn = modalForm.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Enviando...';
+  if (user.foto_url) {
+    const img = document.createElement('img');
+    img.src = user.foto_url;
+    img.className = 'cart-photo';
+    img.alt = nome;
+    img.onerror = function() { img.remove(); photoFb.style.display = 'flex'; };
+    photoFb.style.display = 'none';
+    photoWrap.appendChild(img);
+  }
+
+  if (!_qrGenerated) {
+    _qrGenerated = true;
+    const qrEl = document.getElementById('cart-qrcode');
+    qrEl.innerHTML = '';
     try {
-      const res = await fetch('/api/app/conexoes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: _modalTipo, nome, celular, mensagem, igrejaId: getIgrejaIdForApp() })
+      new QRCode(qrEl, {
+        text: 'LDFP:MEMBRO:' + (user.id || '') + ':' + nome,
+        width: 120, height: 120,
+        colorDark: '#000000', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
       });
-      if (!res.ok) throw new Error();
-      modal.style.display = 'none';
-      alert('Pedido enviado! Em breve entraremos em contato.');
-    } catch(_e) {
-      alert('Erro ao enviar. Tente novamente.');
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Enviar';
-    }
-  });
+    } catch(_e) {}
+  }
+}
 
-  // --- Integração PIX ---
-  function abrirModalPix(tipo) {
-    document.getElementById('pixStep1').style.display = 'block';
-    document.getElementById('pixStep2').style.display = 'none';
-    document.getElementById('pixValor').value = '';
-    document.getElementById('pixDescricao').value = '';
-    if (tipo) document.getElementById('pixTipo').value = tipo;
-    pixModal.style.display = 'flex';
-  }
-  
-  function fecharModalPix() {
-    pixModal.style.display = 'none';
-  }
-  
-  pixModal.addEventListener('click', e => { if (e.target === pixModal) fecharModalPix(); });
-  
-  async function gerarPix() {
-    const valor = parseFloat(document.getElementById('pixValor').value);
-    const tipo = document.getElementById('pixTipo').value;
-    const descricao = document.getElementById('pixDescricao').value.trim();
-    
-    if (!valor || valor <= 0) return alert('Por favor, insira um valor válido.');
-    
-    const btn = document.getElementById('btnGerarPix');
-    btn.disabled = true;
+document.getElementById('btnBaixarCarteirinha').addEventListener('click', async () => {
+  const card = document.getElementById('carteirinha-card');
+  try {
+    const btn = document.getElementById('btnBaixarCarteirinha');
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
-    
-    try {
-        const res = await fetch('/api/pix/gerar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('app_member_token') },
-            body: JSON.stringify({ valor, tipo, descricao })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erro ao gerar PIX.');
-        
-        document.getElementById('pixQrCodeImg').src = `data:image/png;base64,${data.qr_code_base64}`;
-        document.getElementById('pixCopiaCola').value = data.qr_code;
-        document.getElementById('pixStep1').style.display = 'none';
-        document.getElementById('pixStep2').style.display = 'block';
-    } catch (e) { alert(e.message); } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-brands fa-pix"></i> Gerar PIX Agora';
-    }
-  }
-  
-  function copiarPix() {
-    const input = document.getElementById('pixCopiaCola');
-    input.select();
-    input.setSelectionRange(0, 99999); 
-    document.execCommand("copy");
-    document.getElementById('btnCopiarPix').textContent = 'Copiado!';
-    setTimeout(() => document.getElementById('btnCopiarPix').textContent = 'Copiar', 2000);
-  }
-
-  // --- Logout ---
-  btnLogout.addEventListener('click', e => {
-    e.preventDefault();
-    localStorage.removeItem('app_member_token');
-    localStorage.removeItem('app_member_user');
-    window.location.href = 'app_login.html';
-  });
-
-  // ── Push Notifications ────────────────────────────────────────────────────────
-  const PUSH_SUB_KEY = 'ldfp_push_subscribed';
-
-  function getIgrejaIdForPush() {
-    try {
-      const u = JSON.parse(localStorage.getItem('app_member_user') || 'null');
-      return u?.igrejaId || u?.igreja_id || 1;
-    } catch (_) { return 1; }
-  }
-
-  async function initPushNotifications() {
-    const banner = document.getElementById('pushBanner');
-    if (!banner) return;
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return; // browser sem suporte
-
-    banner.style.display = 'flex';
-    const btn = document.getElementById('pushToggleBtn');
-    const titleEl = document.getElementById('pushBannerTitle');
-    const subEl = document.getElementById('pushBannerSub');
-
-    try {
-      const reg = await navigator.serviceWorker.ready;
-      const existing = await reg.pushManager.getSubscription();
-
-      if (existing) {
-        btn.textContent = 'Desativar';
-        btn.className = 'push-toggle-btn desativar';
-        titleEl.textContent = 'Notificações ativas';
-        subEl.textContent   = 'Você receberá avisos desta igreja.';
-      } else {
-        btn.textContent = 'Ativar';
-        btn.className = 'push-toggle-btn ativar';
-        titleEl.textContent = 'Ativar notificações';
-        subEl.textContent   = 'Receba avisos da sua igreja em tempo real.';
-      }
-    } catch (_) { /* silencioso */ }
-  }
-
-  async function togglePush() {
-    const btn = document.getElementById('pushToggleBtn');
-    if (!btn) return;
     btn.disabled = true;
-    btn.textContent = '...';
+    const canvas = await html2canvas(card, { scale: 2, backgroundColor: '#141d2b', useCORS: true });
+    const link = document.createElement('a');
+    link.download = 'carteirinha.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch(_e) {
+    alert('Erro ao gerar imagem. Tente novamente.');
+  } finally {
+    const btn = document.getElementById('btnBaixarCarteirinha');
+    btn.innerHTML = '<i class="fa-solid fa-download"></i> Baixar Carteirinha';
+    btn.disabled = false;
+  }
+});
 
-    try {
-      const reg = await navigator.serviceWorker.ready;
-      const existing = await reg.pushManager.getSubscription();
+// ── Novidades ──
+async function loadNovidades() {
+  const el = document.getElementById('listaNovidades');
+  try {
+    const token = localStorage.getItem('app_member_token');
+    const res = await fetch('/api/novidades', { headers: { Authorization: 'Bearer ' + token } });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : (data.novidades || data.items || []);
+    if (!items.length) throw new Error('vazio');
 
-      if (existing) {
-        // Desativar
-        await existing.unsubscribe();
-        await fetch('/api/push/subscribe', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ endpoint: existing.endpoint })
-        });
-        btn.textContent = 'Ativar';
-        btn.className = 'push-toggle-btn ativar';
-        document.getElementById('pushBannerTitle').textContent = 'Ativar notificações';
-        document.getElementById('pushBannerSub').textContent   = 'Receba avisos da sua igreja em tempo real.';
-      } else {
-        // Pedir permissão
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          btn.disabled = false;
-          btn.textContent = 'Ativar';
-          alert('Permissão negada. Habilite notificações nas configurações do navegador.');
-          return;
-        }
-        // Buscar chave VAPID
-        const { publicKey } = await fetch('/api/push/vapid-public-key').then(r => r.json());
-        // Converter chave para Uint8Array
-        const applicationServerKey = urlBase64ToUint8Array(publicKey);
-        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey });
-        const subJson = sub.toJSON();
-        // Salvar no servidor
-        await fetch('/api/push/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            endpoint: subJson.endpoint,
-            keys:     subJson.keys,
-            igrejaId: getIgrejaIdForPush()
-          })
-        });
-        btn.textContent = 'Desativar';
-        btn.className = 'push-toggle-btn desativar';
-        document.getElementById('pushBannerTitle').textContent = 'Notificações ativas';
-        document.getElementById('pushBannerSub').textContent   = 'Você receberá avisos desta igreja.';
-      }
-    } catch (err) {
-      console.error('[push] togglePush error:', err);
-      alert('Não foi possível configurar notificações. Tente novamente.');
-    } finally {
-      btn.disabled = false;
+    const BADGE_MAP = { release:'badge-release', feature:'badge-feature', fix:'badge-fix', aviso:'badge-aviso', melhoria:'badge-melhoria', destaque:'badge-destaque' };
+
+    el.innerHTML = items.map(n => {
+      let tags = [];
+      try { tags = JSON.parse(n.tags || '[]'); } catch(_e) {}
+      const tagHtml = tags.map(t => {
+        const cls = BADGE_MAP[t] || 'badge-aviso';
+        return `<span class="novidade-badge ${cls}">${t}</span>`;
+      }).join('');
+      return `<div class="novidade-card${n.destaque?'':''}" style="border-left-color:${n.destaque?'#f59e0b':'#7c3aed'}">
+        ${tagHtml?`<div class="novidade-badges">${tagHtml}</div>`:''}
+        <div class="novidade-titulo">${n.titulo||''}</div>
+        <div class="novidade-conteudo">${n.conteudo||n.corpo||''}</div>
+        <div class="novidade-footer">${n.created_at ? new Date(n.created_at).toLocaleDateString('pt-BR') : ''}</div>
+      </div>`;
+    }).join('');
+  } catch(_e) {
+    el.innerHTML = '<div class="empty-state"><i class="fa-regular fa-bell"></i><p>Nenhuma novidade por enquanto.</p></div>';
+  }
+}
+
+// ── Push notifications ──
+function initPushBanner() {
+  const banner = document.getElementById('pushBanner');
+  const btn = document.getElementById('pushToggleBtn');
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+  if (Notification.permission === 'granted') {
+    banner.style.display = 'none';
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    banner.style.display = 'none';
+    return;
+  }
+  banner.style.display = 'flex';
+}
+
+async function togglePush() {
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') {
+      document.getElementById('pushBanner').style.display = 'none';
     }
-  }
+  } catch(_e) {}
+}
 
-  function urlBase64ToUint8Array(base64String) {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
-    const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-    const rawData = window.atob(base64);
-    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
-  }
+// ── Modal Conexão ──
+let _modalTipo = '';
 
-  // --- Navegação inferior ---
-  const panels = document.querySelectorAll('.panel');
-  const bottomItems = document.querySelectorAll('.bottom-item');
+function abrirModalConexao(tipo) {
+  _modalTipo = tipo;
+  const titles = { conexao: 'Quero me conectar', oracao: 'Pedido de Oração', ajuda: 'Preciso de ajuda', decisao: 'Decidi seguir Jesus' };
+  document.getElementById('modalTitle').textContent = titles[tipo] || 'Conectar';
+  document.getElementById('conexaoModal').classList.add('open');
+  document.getElementById('modalNome').focus();
+}
 
-  function openPanel(id) {
-    panels.forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    bottomItems.forEach(i => i.classList.remove('active'));
-    document.querySelector(`.bottom-item[data-target="${id}"]`).classList.add('active');
-    // Lazy load ao abrir a aba
-    if (id === 'panel-local'   && _congregacoes.length === 0) loadCongregacoes();
-    if (id === 'panel-video')   loadVideos();
-    if (id === 'panel-fotos')   loadFotos();
-    if (id === 'panel-eventos') loadEventos();
-    if (id === 'panel-novidades' && !_novidadesCarregadas) loadNovidades();
-    if (id === 'panel-novidades') initPushNotifications();
-  }
+document.getElementById('modalClose').addEventListener('click', () => {
+  document.getElementById('conexaoModal').classList.remove('open');
+});
 
-  bottomItems.forEach(item => {
-    item.addEventListener('click', () => openPanel(item.dataset.target));
-  });
+document.getElementById('conexaoModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('conexaoModal')) document.getElementById('conexaoModal').classList.remove('open');
+});
 
-  // Botões internos ("Ver vídeos")
-  document.querySelectorAll('[data-nav]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.dataset.nav === 'video') openPanel('panel-video');
-      if (btn.dataset.nav === 'fotos') openPanel('panel-fotos');
+document.getElementById('modalForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const nome = document.getElementById('modalNome').value.trim();
+  const celular = document.getElementById('modalCelular').value.trim();
+  const mensagem = document.getElementById('modalMensagem').value.trim();
+  const user = getCurrentMemberUser();
+
+  try {
+    await appFetch('/api/app/conexoes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo: _modalTipo, nome, celular, mensagem, igrejaId: user?.igrejaId || user?.igreja_id })
     });
-  });
+    document.getElementById('conexaoModal').classList.remove('open');
+    document.getElementById('modalForm').reset();
+    alert('✓ Mensagem enviada! Em breve entraremos em contato.');
+  } catch(_e) {
+    alert('Erro ao enviar. Tente novamente.');
+  }
+});
 
-  // Botões de conexão
-  document.querySelectorAll('[data-tipo]').forEach(btn => {
-    btn.addEventListener('click', () => abrirModal(btn.dataset.tipo));
-  });
+// ── Modal PIX ──
+function abrirModalPix(tipo) {
+  document.getElementById('pixModalTitle').textContent = tipo + ' via PIX';
+  document.getElementById('pixTipo').value = tipo;
+  document.getElementById('pixStep1').style.display = 'block';
+  document.getElementById('pixStep2').style.display = 'none';
+  document.getElementById('pixModal').classList.add('open');
+}
 
-  // --- Start ---
-  initApp();
+function fecharModalPix() {
+  document.getElementById('pixModal').classList.remove('open');
+}
+
+document.getElementById('pixModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('pixModal')) fecharModalPix();
+});
+
+async function gerarPix() {
+  const valor = parseFloat(document.getElementById('pixValor').value);
+  const tipo = document.getElementById('pixTipo').value;
+  const descricao = document.getElementById('pixDescricao').value.trim();
+  const user = getCurrentMemberUser();
+  const token = localStorage.getItem('app_member_token');
+
+  if (!valor || valor < 1) { alert('Informe um valor válido.'); return; }
+
+  const btn = document.getElementById('btnGerarPix');
+  btn.disabled = true;
+  btn.textContent = 'Gerando...';
+
+  try {
+    const resp = await fetch('/api/payment-links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ valor, tipo, descricao, igrejaId: user?.igrejaId })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Erro ao gerar PIX');
+
+    document.getElementById('pixQrCodeImg').src = data.qrCodeUrl || data.pixQrCode || '';
+    document.getElementById('pixCopiaCola').value = data.pixCopyPaste || data.pixCopiaCola || '';
+    document.getElementById('pixStep1').style.display = 'none';
+    document.getElementById('pixStep2').style.display = 'block';
+  } catch(err) {
+    alert(err.message || 'Erro ao gerar PIX. Tente novamente.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-brands fa-pix"></i> Gerar PIX';
+  }
+}
+
+function copiarPix() {
+  const val = document.getElementById('pixCopiaCola').value;
+  if (!val) return;
+  navigator.clipboard.writeText(val).then(() => {
+    const btn = document.getElementById('btnCopiarPix');
+    btn.textContent = '✓ Copiado!';
+    setTimeout(() => { btn.textContent = 'Copiar'; }, 2000);
+  }).catch(() => {
+    document.getElementById('pixCopiaCola').select();
+    document.execCommand('copy');
+  });
+}
+
+// ── Init ──
+(function init() {
+  const user = getCurrentMemberUser();
+  renderHero(user);
+  loadConfig();
+  hydrateMemberProfile();
+})();
 </script>
 </body>
 </html>

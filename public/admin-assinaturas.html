@@ -20,19 +20,58 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
 .main{flex:1;display:flex;flex-direction:column;overflow-y:auto}
 .topbar{background:var(--white);height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
 .topbar h1{font-size:20px;font-weight:800;color:var(--dark)}
-.btn{padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:7px}
+.btn{padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:7px;transition:.15s}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:#f1f5f9}
 .btn-success{background:var(--green);color:#fff}.btn-success:hover{background:#059669}
-.workspace{padding:24px}
-.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-.filters input,.filters select{padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text)}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#b91c1c}
+
+/* Summary cards */
+.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.sum-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px}
+.sum-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sum-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.sum-value{font-size:22px;font-weight:800;color:var(--dark);line-height:1.2}
+
+/* Filters */
+.filters-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.filters-row input,.filters-row select{padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:13px}
+.filters-row input{min-width:220px}
+
+/* Table */
 .panel{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
 table{width:100%;border-collapse:collapse}
-th,td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;text-align:left}
-th{background:#f8fafc;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
-.badge{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase}
-.s-pago{background:#dcfce7;color:#166534}.s-pendente{background:#fef9c3;color:#854d0e}.s-rejeitado{background:#fee2e2;color:#991b1b}
-.toast{position:fixed;right:24px;bottom:24px;background:var(--green);color:#fff;padding:12px 18px;border-radius:8px;opacity:0;transform:translateY(10px);transition:.2s}
+th,td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;text-align:left}
+th{background:#f8fafc;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:600}
+tbody tr{cursor:pointer;transition:.12s}
+tbody tr:hover{background:#f8fafc}
+tbody tr:last-child td{border-bottom:none}
+
+/* Badges - payment status */
+.badge{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.b-pago{background:#dcfce7;color:#166534}
+.b-pendente{background:#fef9c3;color:#854d0e}
+.b-rejeitado{background:#fee2e2;color:#991b1b}
+
+/* Badges - subscription status */
+.sb-ativa{background:#dcfce7;color:#166534}
+.sb-trial{background:#dbeafe;color:#1e40af}
+.sb-suspensa,.sb-inativa{background:#f3f4f6;color:#374151}
+.sb-cancelada{background:#f3f4f6;color:#6b7280}
+.sb-inadimplente,.sb-expirado{background:#fff7ed;color:#c2410c}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(3px)}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h2{font-size:18px;font-weight:800;color:var(--dark);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.modal-field label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);display:block;margin-bottom:4px}
+.modal-field span{font-size:14px;color:var(--dark);font-weight:500}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--border)}
+
+.workspace{padding:24px}
+.toast{position:fixed;right:24px;bottom:24px;color:#fff;padding:12px 18px;border-radius:8px;opacity:0;transform:translateY(10px);transition:.2s;z-index:2000;font-weight:600;font-size:14px}
 .toast.show{opacity:1;transform:translateY(0)}
 </style>
 </head>
@@ -62,66 +101,169 @@ th{background:#f8fafc;font-size:11px;text-transform:uppercase;letter-spacing:.4p
 <main class="main">
   <header class="topbar">
     <h1><i class="fa-solid fa-file-invoice-dollar" style="color:var(--blue);margin-right:8px"></i>Assinaturas & Faturas</h1>
-    <button class="btn btn-outline" onclick="load()"><i class="fa-solid fa-rotate-right"></i>Atualizar</button>
+    <button class="btn btn-outline" onclick="load()"><i class="fa-solid fa-rotate-right"></i> Atualizar</button>
   </header>
+
   <div class="workspace">
-    <div class="filters">
-      <input id="q" type="text" placeholder="Buscar igreja, referência, descrição..." oninput="render()">
-      <select id="status" onchange="render()">
-        <option value="">Todos os status</option>
-        <option value="pendente">Pendente</option>
+    <!-- Summary cards -->
+    <div class="summary-row" id="summaryRow">
+      <div class="sum-card">
+        <div class="sum-icon" style="background:#eff6ff;color:#2563eb"><i class="fa-solid fa-file-invoice"></i></div>
+        <div><div class="sum-label">Total de Faturas</div><div class="sum-value" id="s-total">—</div></div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-icon" style="background:#dcfce7;color:#16a34a"><i class="fa-solid fa-circle-check"></i></div>
+        <div><div class="sum-label">Pagas</div><div class="sum-value" id="s-pago">—</div></div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-icon" style="background:#fef9c3;color:#ca8a04"><i class="fa-solid fa-clock"></i></div>
+        <div><div class="sum-label">Pendentes</div><div class="sum-value" id="s-pendente">—</div></div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-icon" style="background:#fee2e2;color:#dc2626"><i class="fa-solid fa-circle-xmark"></i></div>
+        <div><div class="sum-label">Rejeitadas</div><div class="sum-value" id="s-rejeitado">—</div></div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-row">
+      <input id="q" type="text" placeholder="🔍  Buscar igreja, referência..." oninput="render()">
+      <select id="fStatus" onchange="render()">
+        <option value="">Todos os pagamentos</option>
         <option value="pago">Pago</option>
+        <option value="pendente">Pendente</option>
         <option value="rejeitado">Rejeitado</option>
       </select>
+      <select id="fAssinatura" onchange="render()">
+        <option value="">Todas as assinaturas</option>
+        <option value="ativa">Ativa</option>
+        <option value="trial">Trial</option>
+        <option value="suspensa">Suspensa</option>
+        <option value="cancelada">Cancelada</option>
+        <option value="inativa">Inativa</option>
+      </select>
+      <select id="fPlano" onchange="render()">
+        <option value="">Todos os planos</option>
+        <option value="hebrom">Hebrom</option>
+        <option value="betel">Betel</option>
+        <option value="siao">Sião</option>
+      </select>
+      <button class="btn btn-outline" onclick="clearFilters()"><i class="fa-solid fa-xmark"></i> Limpar</button>
     </div>
 
     <div class="panel">
       <table>
         <thead>
-          <tr><th>Igreja</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Plano</th><th>Criado em</th><th>Ações</th></tr>
+          <tr>
+            <th>Igreja</th>
+            <th>Descrição / Ref.</th>
+            <th>Valor</th>
+            <th>Pgto</th>
+            <th>Assinatura</th>
+            <th>Plano</th>
+            <th>Data</th>
+            <th>Ações</th>
+          </tr>
         </thead>
-        <tbody id="tbody"><tr><td colspan="7" style="text-align:center;color:#64748b">Carregando...</td></tr></tbody>
+        <tbody id="tbody">
+          <tr><td colspan="8" style="text-align:center;color:#64748b;padding:32px">Carregando...</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
 </main>
+
+<!-- Detail modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <h2><i class="fa-solid fa-file-invoice" style="color:var(--blue)"></i> <span id="mTitle">Detalhes da Fatura</span></h2>
+    <div class="modal-grid">
+      <div class="modal-field"><label>Igreja</label><span id="mIgreja">—</span></div>
+      <div class="modal-field"><label>Plano</label><span id="mPlano">—</span></div>
+      <div class="modal-field"><label>Assinatura</label><span id="mAssinatura">—</span></div>
+      <div class="modal-field"><label>Valor</label><span id="mValor">—</span></div>
+      <div class="modal-field"><label>Status Pagamento</label><span id="mStatus">—</span></div>
+      <div class="modal-field"><label>Referência</label><span id="mRef">—</span></div>
+      <div class="modal-field"><label>Criado em</label><span id="mCriado">—</span></div>
+      <div class="modal-field"><label>Pago em</label><span id="mPago">—</span></div>
+      <div class="modal-field" style="grid-column:1/-1"><label>Descrição</label><span id="mDesc">—</span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="document.getElementById('modalOverlay').classList.remove('open')">Fechar</button>
+      <button class="btn btn-success" id="mBtnPago" onclick="markPaidCurrent()"><i class="fa-solid fa-check"></i> Marcar como Pago</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script src="session.js?v=20260501"></script>
 <script>
 const token = () => sessionStorage.getItem('token') || localStorage.getItem('token');
 const hdr = () => ({Authorization:'Bearer ' + token(), 'Content-Type':'application/json'});
 let rows = [];
+let currentId = null;
 
 async function load() {
   try {
     const r = await fetch('/api/saas/assinaturas', {headers: hdr()});
     if (r.status === 401) { location.href = 'login.html'; return; }
     rows = await r.json();
+    updateSummary();
     render();
   } catch (e) {
     toast('Erro ao carregar faturas', false);
   }
 }
 
+function updateSummary() {
+  document.getElementById('s-total').textContent = rows.length;
+  document.getElementById('s-pago').textContent = rows.filter(r => r.status === 'pago').length;
+  document.getElementById('s-pendente').textContent = rows.filter(r => r.status === 'pendente').length;
+  document.getElementById('s-rejeitado').textContent = rows.filter(r => r.status === 'rejeitado').length;
+}
+
+function clearFilters() {
+  document.getElementById('q').value = '';
+  document.getElementById('fStatus').value = '';
+  document.getElementById('fAssinatura').value = '';
+  document.getElementById('fPlano').value = '';
+  render();
+}
+
 function render() {
   const q = document.getElementById('q').value.toLowerCase();
-  const st = document.getElementById('status').value;
+  const fSt = document.getElementById('fStatus').value;
+  const fAs = document.getElementById('fAssinatura').value;
+  const fPl = document.getElementById('fPlano').value;
+
   const out = rows.filter(r => {
     const txt = [r.igreja_nome, r.reference_code, r.descricao].join(' ').toLowerCase();
-    return (!q || txt.includes(q)) && (!st || r.status === st);
+    return (!q || txt.includes(q))
+      && (!fSt || r.status === fSt)
+      && (!fAs || r.status_assinatura === fAs)
+      && (!fPl || (r.plano || '').toLowerCase() === fPl);
   });
+
   const tb = document.getElementById('tbody');
-  if (!out.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b">Sem resultados</td></tr>'; return; }
+  if (!out.length) {
+    tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:32px">Nenhum resultado encontrado.</td></tr>';
+    return;
+  }
+
   tb.innerHTML = out.map(r => {
     const v = Number(r.valor || 0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
     const dt = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '-';
-    const stClass = r.status === 'pago' ? 's-pago' : (r.status === 'pendente' ? 's-pendente' : 's-rejeitado');
-    const payBtn = r.status === 'pago' ? '' : `<button class="btn btn-success" style="padding:6px 10px;font-size:12px" onclick="markPaid(${r.id})">Marcar Pago</button>`;
-    return `<tr>
-      <td>${esc(r.igreja_nome || '-')}</td>
-      <td>${esc(r.descricao || '-')}<br><small style="color:#64748b">${esc(r.reference_code || '')}</small></td>
-      <td>${v}</td>
-      <td><span class="badge ${stClass}">${esc(r.status || '-')}</span></td>
+    const stBadge = statusBadge(r.status);
+    const asBadge = assinaturaBadge(r.status_assinatura);
+    const payBtn = r.status !== 'pago'
+      ? `<button class="btn btn-success" style="padding:5px 10px;font-size:11px" onclick="event.stopPropagation();quickPay(${r.id})"><i class="fa-solid fa-check"></i> Pago</button>`
+      : '';
+    return `<tr onclick="openModal(${r.id})">
+      <td><strong>${esc(r.igreja_nome || '-')}</strong></td>
+      <td>${esc(r.descricao || '-')}<br><small style="color:#94a3b8">${esc(r.reference_code || '')}</small></td>
+      <td><strong>${v}</strong></td>
+      <td>${stBadge}</td>
+      <td>${asBadge}</td>
       <td>${esc(r.plano || '-')}</td>
       <td>${dt}</td>
       <td>${payBtn}</td>
@@ -129,33 +271,77 @@ function render() {
   }).join('');
 }
 
-async function markPaid(id) {
+function statusBadge(s) {
+  const map = {pago:'b-pago',pendente:'b-pendente',rejeitado:'b-rejeitado'};
+  return `<span class="badge ${map[s]||'b-pendente'}">${esc(s||'-')}</span>`;
+}
+
+function assinaturaBadge(s) {
+  const map = {ativa:'sb-ativa',trial:'sb-trial',suspensa:'sb-suspensa',cancelada:'sb-cancelada',inativa:'sb-inativa',inadimplente:'sb-inadimplente'};
+  const label = {ativa:'Ativa',trial:'Trial',suspensa:'Suspensa',cancelada:'Cancelada',inativa:'Inativa',inadimplente:'Inadimplente'};
+  return s ? `<span class="badge ${map[s]||''}">${label[s]||esc(s)}</span>` : '-';
+}
+
+function openModal(id) {
+  const r = rows.find(x => x.id === id);
+  if (!r) return;
+  currentId = id;
+  document.getElementById('mTitle').textContent = esc(r.igreja_nome || 'Fatura');
+  document.getElementById('mIgreja').textContent = esc(r.igreja_nome || '-');
+  document.getElementById('mPlano').textContent = esc(r.plano || '-');
+  document.getElementById('mAssinatura').innerHTML = assinaturaBadge(r.status_assinatura);
+  document.getElementById('mValor').textContent = Number(r.valor||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  document.getElementById('mStatus').innerHTML = statusBadge(r.status);
+  document.getElementById('mRef').textContent = esc(r.reference_code || '-');
+  document.getElementById('mCriado').textContent = r.created_at ? new Date(r.created_at).toLocaleString('pt-BR') : '-';
+  document.getElementById('mPago').textContent = r.paid_at ? new Date(r.paid_at).toLocaleString('pt-BR') : '—';
+  document.getElementById('mDesc').textContent = esc(r.descricao || '-');
+  document.getElementById('mBtnPago').style.display = r.status === 'pago' ? 'none' : 'inline-flex';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target.id === 'modalOverlay') document.getElementById('modalOverlay').classList.remove('open');
+}
+
+async function markPaidCurrent() {
+  if (!currentId) return;
+  await doMarkPaid(currentId);
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+async function quickPay(id) {
+  await doMarkPaid(id);
+}
+
+async function doMarkPaid(id) {
   try {
     const r = await fetch('/api/saas/assinaturas/' + id + '/pago', {method:'PUT', headers: hdr()});
     if (!r.ok) throw new Error(await r.text());
     await load();
-    toast('Fatura marcada como paga', true);
+    toast('Fatura marcada como paga ✓', true);
   } catch (e) {
-    toast('Erro ao atualizar fatura', false);
+    toast('Erro ao atualizar: ' + e.message, false);
   }
 }
 
-function esc(s) { return String(s || '').replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function esc(s) { return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
 function toast(msg, ok) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.style.background = ok ? '#10b981' : '#ef4444';
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-(function () {
+(function() {
   const t = token();
   if (!t) { location.href = 'login.html'; return; }
   try {
     const p = JSON.parse(atob(t.split('.')[1]));
     if (!['super-admin','super_admin','superadmin','master'].includes(p.role)) location.href = 'login.html';
-  } catch (_) {}
+  } catch(_) {}
 })();
 
 load();

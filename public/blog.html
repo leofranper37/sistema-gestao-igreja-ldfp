@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Blog LDFP — Para Líderes de Igrejas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Conteúdo prático para pastores e líderes de igrejas brasileiras.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #111827; --card: #1f2937; --border: #374151;
+      --accent: #f97316; --text: #f9fafb; --muted: #9ca3af;
+      --muted-soft: #d1d5db; --green: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* NAV */
+    .top-nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--border); }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-weight: 800; font-size: 1.1rem; }
+    .nav-logo img { width: 36px; height: 36px; object-fit: contain; }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.88rem; transition: color .15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { background: var(--accent); color: #fff; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 700; }
+
+    /* HEADER */
+    .page-header { text-align: center; padding: 60px 16px 48px; }
+    .page-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.25); border-radius: 999px; padding: 5px 14px; font-size: 0.78rem; color: #fdba74; margin-bottom: 16px; }
+    .page-title { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; margin-bottom: 12px; }
+    .page-subtitle { font-size: 0.95rem; color: var(--muted); max-width: 480px; margin: 0 auto; line-height: 1.6; }
+
+    /* FILTERS */
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 0 16px 32px; }
+    .filter-btn { padding: 6px 16px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--muted-soft); font-size: 0.82rem; cursor: pointer; transition: .15s; }
+    .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(249,115,22,0.08); }
+
+    /* GRID */
+    .posts-wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px 80px; }
+    .posts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .post-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: transform .18s, box-shadow .18s; }
+    .post-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.4); }
+    .post-img { width: 100%; height: 180px; object-fit: cover; background: #374151; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--border); }
+    .post-img img { width: 100%; height: 100%; object-fit: cover; }
+    .post-body { padding: 18px 20px; flex: 1; display: flex; flex-direction: column; }
+    .post-category { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--accent); margin-bottom: 8px; }
+    .post-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.4; }
+    .post-resumo { font-size: 0.84rem; color: var(--muted); line-height: 1.6; flex: 1; }
+    .post-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); font-size: 0.75rem; color: var(--muted); }
+    .post-read-more { color: var(--accent); font-weight: 600; }
+
+    /* EMPTY/LOADING */
+    .state-msg { text-align: center; padding: 60px; color: var(--muted); grid-column: 1/-1; }
+
+    /* CTA */
+    .cta-section { text-align: center; padding: 60px 16px; border-top: 1px solid var(--border); }
+    .cta-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 12px; }
+    .cta-sub { color: var(--muted); margin-bottom: 28px; }
+    .cta-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #fff; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.95rem; }
+    .cta-btn:hover { opacity: 0.9; }
+
+    @media (max-width: 640px) { .posts-grid { grid-template-columns: 1fr; } .top-nav { padding: 12px 16px; } .nav-links { display: none; } }
+  </style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a href="/" class="nav-logo">
+    <img src="logo.png" alt="LDFP" onerror="this.style.display='none'">
+    LDFP
+  </a>
+  <div class="nav-links">
+    <a href="planos.html">Planos</a>
+    <a href="funcionalidades.html">Funcionalidades</a>
+    <a href="blog.html" style="color:var(--text)">Blog</a>
+  </div>
+  <a href="cadastro_igreja.html" class="nav-cta">Começar grátis</a>
+</nav>
+
+<div class="page-header">
+  <div class="page-badge"><i class="fa-solid fa-pen-nib"></i> Para líderes de igrejas</div>
+  <h1 class="page-title">Blog LDFP</h1>
+  <p class="page-subtitle">Conteúdo prático sobre gestão, finanças e espiritualidade para pastores e líderes de igrejas brasileiras.</p>
+</div>
+
+<div class="filters" id="filters">
+  <button class="filter-btn active" data-cat="">Todos</button>
+  <button class="filter-btn" data-cat="Liderança">Liderança</button>
+  <button class="filter-btn" data-cat="Finanças da Igreja">Finanças da Igreja</button>
+  <button class="filter-btn" data-cat="Secretaria e Gestão">Secretaria e Gestão</button>
+  <button class="filter-btn" data-cat="Espiritualidade">Espiritualidade</button>
+  <button class="filter-btn" data-cat="Tecnologia para Igrejas">Tecnologia para Igrejas</button>
+  <button class="filter-btn" data-cat="Fé e Prática">Fé e Prática</button>
+</div>
+
+<div class="posts-wrap">
+  <div class="posts-grid" id="postsGrid">
+    <div class="state-msg"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+  </div>
+</div>
+
+<div class="cta-section">
+  <h2 class="cta-title">Gerencie sua igreja com o LDFP</h2>
+  <p class="cta-sub">30+ módulos, do primeiro membro à contabilidade avançada.</p>
+  <a href="cadastro_igreja.html" class="cta-btn"><i class="fa-solid fa-rocket"></i> Começar 7 dias grátis</a>
+</div>
+
+<script>
+  let allPosts = [];
+  let activeCat = '';
+
+  function fmtDate(s) {
+    return new Date(s).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function renderPosts(posts) {
+    const grid = document.getElementById('postsGrid');
+    if (!posts.length) {
+      grid.innerHTML = '<div class="state-msg">Nenhum post encontrado.</div>';
+      return;
+    }
+    grid.innerHTML = posts.map(p => `
+      <a href="/blog/${p.slug}" class="post-card">
+        <div class="post-img">
+          ${p.imagem_url ? `<img src="${p.imagem_url}" alt="${p.titulo}" onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-newspaper\'></i>'">` : '<i class="fa-solid fa-newspaper"></i>'}
+        </div>
+        <div class="post-body">
+          <div class="post-category">${p.categoria || 'Geral'}</div>
+          <div class="post-title">${p.titulo}</div>
+          <div class="post-resumo">${p.resumo || ''}</div>
+          <div class="post-meta">
+            <span><i class="fa-regular fa-calendar" style="margin-right:4px"></i>${fmtDate(p.created_at)}</span>
+            <span class="post-read-more">Ler mais →</span>
+          </div>
+        </div>
+      </a>`).join('');
+  }
+
+  document.getElementById('filters').addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCat = btn.dataset.cat;
+    renderPosts(activeCat ? allPosts.filter(p => p.categoria === activeCat) : allPosts);
+  });
+
+  fetch('/api/blog/posts')
+    .then(r => r.json())
+    .then(data => { allPosts = data; renderPosts(data); })
+    .catch(() => { document.getElementById('postsGrid').innerHTML = '<div class="state-msg">Erro ao carregar posts.</div>'; });
+</script>
+</body>
+</html>

@@ -41,11 +41,14 @@ const webhookRoutes    = require('./routes/webhookRoutes');
 const pixRoutes        = require('./routes/pixRoutes');
 const visitantesFollowupRoutes = require('./routes/visitantesFollowupRoutes');
 const visitaPublicaRoutes = require('./routes/visitaPublicaRoutes');
+const contabilidadeRoutes = require('./routes/contabilidadeRoutes');
+const reciboRoutes = require('./routes/reciboRoutes');
+const blogRoutes = require('./routes/blogRoutes');
 
 const app = express();
 
-// Permite que o Express identifique o IP real do usuário através de múltiplos proxies (Cloudflare + cPanel Nginx) evitando falsos Erros 429
-app.set('trust proxy', true);
+// Cloudflare + Nginx do cPanel = 2 hops de proxy confiáveis
+app.set('trust proxy', 2);
 
 // Aggregator em memória para auditoria de endpoints
 const endpointStats = new Map();
@@ -81,13 +84,15 @@ const apiRateLimiter = rateLimit({
         if (authHeader && authHeader.startsWith('Bearer ')) {
             try {
                 const token = authHeader.split(' ')[1];
-                const decoded = jwt.decode(token); // Leitura ultra-rápida sem validar hash aqui
+                const decoded = jwt.verify(token, config.security.jwtSecret);
                 if (decoded && decoded.sub) {
-                    return `user_${decoded.sub}`; // Limita POR USUÁRIO em vez de IP
+                    return `user_${decoded.sub}`;
                 }
-            } catch (e) {}
+            } catch (_) {
+                // Token inválido ou forjado — cai no fallback de IP
+            }
         }
-        return req.ip; // Fallback para IP caso visitante
+        return req.ip;
     },
     handler: (req, res, next, options) => {
         res.status(options.statusCode).setHeader('Retry-After', Math.ceil(options.windowMs / 1000));
@@ -116,7 +121,7 @@ app.use(cors(allowedOrigins.length ? {
 
         return callback(createHttpError(403, 'Origem não permitida por CORS.'));
     }
-} : undefined));
+} : { origin: false }));
 
 app.disable('x-powered-by');
 app.use(helmet({
@@ -180,6 +185,7 @@ app.get('/visita/:slug', (req, res) => {
     res.sendFile(path.join(staticAssetsPath, 'visita.html'));
 });
 app.use(visitaPublicaRoutes);
+
 
 app.use('/login', loginRateLimiter);
 app.use('/esqueci-senha', loginRateLimiter);
@@ -269,6 +275,12 @@ app.use('/api/estudo', estudoRoutes);
 app.use('/webhook', webhookRoutes);
 app.use('/api/pix', pixRoutes);
 app.use(visitantesFollowupRoutes);
+app.use(contabilidadeRoutes);
+app.use(reciboRoutes);
+app.use(blogRoutes);
+
+app.get('/blog', (req, res) => res.sendFile(path.join(staticAssetsPath, 'blog.html')));
+app.get('/blog/:slug', (req, res) => res.sendFile(path.join(staticAssetsPath, 'blog-post.html')));
 
 /* ------------------------------------------------------------------ */
 /*  ROTA DE BOOTSTRAP — cria o primeiro super-admin se não existir     */
@@ -327,7 +339,8 @@ if (setupRouteEnabled) {
                 email: email.toLowerCase().trim()
             });
         } catch (err) {
-            return res.status(500).json({ error: 'Erro interno: ' + err.message });
+            logger.error('setup/super-admin error', { error: err?.message });
+            return res.status(500).json({ error: 'Erro interno.' });
         }
     });
 }
@@ -341,6 +354,16 @@ app.post('/api/firstrun/super-admin', express.json(), async (req, res) => {
         const bcrypt = require('bcryptjs');
         const { pool } = require('./config/db');
 
+        // Exige a mesma SETUP_KEY usada pela rota /api/setup/super-admin
+        const expectedKey = process.env.SETUP_KEY;
+        if (!expectedKey) {
+            return res.status(503).json({ error: 'SETUP_KEY não configurada no ambiente.' });
+        }
+        const { nome, email, senha, setup_key } = req.body || {};
+        if (!setup_key || setup_key !== expectedKey) {
+            return res.status(401).json({ error: 'setup_key inválida.' });
+        }
+
         const [existing] = await pool.query(
             "SELECT id FROM usuarios WHERE role = 'super-admin' LIMIT 1"
         );
@@ -348,7 +371,6 @@ app.post('/api/firstrun/super-admin', express.json(), async (req, res) => {
             return res.status(403).json({ error: 'Já existe um super-admin. Rota desativada.' });
         }
 
-        const { nome, email, senha } = req.body || {};
         if (!nome || !email || !senha || senha.length < 8) {
             return res.status(400).json({ error: 'Nome, e-mail e senha (mín. 8 chars) são obrigatórios.' });
         }
@@ -360,13 +382,7 @@ app.post('/api/firstrun/super-admin', express.json(), async (req, res) => {
             'SELECT id FROM usuarios WHERE email = ? LIMIT 1', [email.toLowerCase().trim()]
         );
         if (dupEmail && dupEmail.length > 0) {
-            // Promove usuário existente para super-admin
-            const hash = await bcrypt.hash(senha, 12);
-            await pool.query(
-                "UPDATE usuarios SET role = 'super-admin', password_hash = ? WHERE email = ?",
-                [hash, email.toLowerCase().trim()]
-            );
-            return res.status(200).json({ message: 'Usuário promovido a super-admin com sucesso!', email: email.toLowerCase().trim() });
+            return res.status(409).json({ error: 'E-mail já cadastrado. Use outro e-mail.' });
         }
 
         let igrejaId;
@@ -392,7 +408,8 @@ app.post('/api/firstrun/super-admin', express.json(), async (req, res) => {
             email: email.toLowerCase().trim()
         });
     } catch (err) {
-        return res.status(500).json({ error: 'Erro interno: ' + err.message });
+        logger.error('firstrun/super-admin error', { error: err?.message });
+        return res.status(500).json({ error: 'Erro interno.' });
     }
 });
 

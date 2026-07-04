@@ -535,15 +535,33 @@ async function getMyEffectiveModules(req, res) {
     try {
         const igrejaId = Number(req.auth?.igrejaId || 0);
         const plano = req.auth?.plano || 'eden';
+        const statusAssinatura = req.auth?.statusAssinatura || 'ativa';
+        const trialEndsAt = req.auth?.trialEndsAt ? new Date(req.auth.trialEndsAt) : null;
+        const isTrialActive = statusAssinatura === 'trial' && (!trialEndsAt || trialEndsAt > new Date());
 
         if (!igrejaId) {
             return res.status(400).json({ error: 'Usuário sem igreja vinculada.' });
+        }
+
+        // Durante trial ativo → todos os módulos liberados
+        if (isTrialActive) {
+            const allModules = await moduleAccessService.listCatalog(true);
+            const featureKeys = allModules.map(m => m.feature_key).filter(Boolean);
+            return res.json({
+                igrejaId,
+                plano,
+                trial: true,
+                trialEndsAt: req.auth.trialEndsAt,
+                modules: allModules.map(m => ({ ...m, effective_enabled: true })),
+                featureKeys
+            });
         }
 
         const access = await moduleAccessService.getEffectiveAccessForChurch(igrejaId, plano);
         res.json({
             igrejaId,
             plano,
+            trial: false,
             modules: access.modules,
             featureKeys: access.featureKeys
         });

@@ -66,6 +66,20 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
 .toast{position:fixed;bottom:24px;right:24px;padding:14px 22px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;z-index:2000;opacity:0;transform:translateY(16px);transition:.3s}
 .toast.show{opacity:1;transform:translateY(0)}
 .toast.success{background:var(--green)}.toast.error{background:var(--red)}
+/* MODULE TOGGLES */
+.modulos-section{border-top:1px solid var(--border);padding-top:14px;margin-top:4px}
+.modulos-grid{display:flex;flex-direction:column;gap:2px;max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;background:#fcfcfd}
+.modulo-row{display:flex;align-items:center;gap:9px;padding:5px 6px;border-radius:6px;cursor:pointer;user-select:none;transition:background .12s}
+.modulo-row:hover{background:rgba(37,99,235,.05)}
+.mod-check{display:none}
+.mod-pill{width:34px;height:19px;background:#cbd5e1;border-radius:100px;flex-shrink:0;position:relative;transition:background .18s}
+.mod-pill::after{content:'';position:absolute;top:2.5px;left:2.5px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .18s;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.mod-check:checked+.mod-pill{background:var(--green)}
+.mod-check:checked+.mod-pill::after{transform:translateX(15px)}
+.mod-icon{font-size:11px;color:var(--muted);width:16px;text-align:center;flex-shrink:0}
+.mod-name{font-size:12px;color:var(--text);flex:1;font-weight:500}
+.mod-key{font-size:10px;color:var(--muted);font-family:monospace;background:rgba(0,0,0,.04);padding:1px 5px;border-radius:4px}
+.modulos-empty{font-size:12px;color:var(--muted);padding:8px;text-align:center}
 </style>
 </head>
 <body>
@@ -169,12 +183,31 @@ const token = () => sessionStorage.getItem('token') || localStorage.getItem('tok
 const headers = () => ({ 'Content-Type':'application/json', Authorization: 'Bearer ' + token() });
 
 let planosData = [];
+let modulosCatalog = [];
+let planoModulosMap = {};
+
+async function loadModulosCatalog() {
+  try {
+    const r = await fetch('/api/saas/modulos', { headers: headers() });
+    if (r.ok) modulosCatalog = await r.json();
+  } catch (e) { modulosCatalog = []; }
+}
+
+async function loadPlanoModulos(slug) {
+  try {
+    const r = await fetch('/api/saas/planos/' + slug + '/modulos', { headers: headers() });
+    if (r.ok) planoModulosMap[slug] = await r.json();
+    else planoModulosMap[slug] = [];
+  } catch (e) { planoModulosMap[slug] = []; }
+}
 
 async function loadPlanos() {
   try {
+    await loadModulosCatalog();
     const r = await fetch('/api/saas/planos', { headers: headers() });
     if (r.status === 401) { location.href = 'login.html'; return; }
     planosData = await r.json();
+    await Promise.all(planosData.map(p => loadPlanoModulos(p.slug)));
     renderPlanos(planosData);
   } catch (e) {
     toast('Erro ao carregar planos.', 'error');
@@ -236,8 +269,12 @@ function planCard(p) {
           <option value="0" ${!p.modulo_app_membro?'selected':''}>Não incluso</option>
         </select>
       </div>
+      <div class="form-row modulos-section">
+        <label>Módulos do plano <small style="font-weight:400;text-transform:none;color:var(--muted)">(acesso após o trial)</small></label>
+        <div class="modulos-grid" id="modulos-${p.slug}">${renderModuloToggles(p.slug)}</div>
+      </div>
       <div class="form-row">
-        <label>Benefícios <small style="font-weight:400;text-transform:none">(arraste para reordenar)</small></label>
+        <label>Benefícios <small style="font-weight:400;text-transform:none">(texto de marketing)</small></label>
         <div class="features-list" id="feats-${p.slug}">${featureRows}</div>
         <button class="btn-add-feat" onclick="addFeat('${p.slug}')"><i class="fa-solid fa-plus"></i> Adicionar benefício</button>
       </div>
@@ -251,6 +288,23 @@ function planCard(p) {
       </button>
     </div>
   </div>`;
+}
+
+function renderModuloToggles(slug) {
+  if (!modulosCatalog.length) return '<p class="modulos-empty">Nenhum módulo cadastrado no catálogo ainda.</p>';
+  const planMods = planoModulosMap[slug] || [];
+  const enabledMap = {};
+  planMods.forEach(m => { enabledMap[m.slug] = m.enabled; });
+  return modulosCatalog.map(m => {
+    const on = !!enabledMap[m.slug];
+    return `<label class="modulo-row">
+      <input type="checkbox" class="mod-check" data-modulo="${escHtml(m.slug)}" ${on ? 'checked' : ''}>
+      <span class="mod-pill"></span>
+      <i class="${escHtml(m.icon || 'fa-solid fa-puzzle-piece')} mod-icon"></i>
+      <span class="mod-name">${escHtml(m.nome)}</span>
+      <span class="mod-key">${escHtml(m.feature_key || '')}</span>
+    </label>`;
+  }).join('');
 }
 
 function addFeat(slug) {
@@ -292,6 +346,19 @@ async function savePlano(slug) {
       method: 'PUT', headers: headers(), body: JSON.stringify(body)
     });
     if (!r.ok) throw new Error(await r.text());
+
+    // Salva módulos do plano
+    const modulosEl = document.getElementById('modulos-' + slug);
+    if (modulosEl) {
+      const checks = Array.from(modulosEl.querySelectorAll('.mod-check'));
+      if (checks.length) {
+        const modules = checks.map(c => ({ modulo_slug: c.dataset.modulo, ativo: c.checked }));
+        await fetch('/api/saas/planos/' + slug + '/modulos', {
+          method: 'PUT', headers: headers(), body: JSON.stringify({ modules })
+        });
+      }
+    }
+
     const saved = document.getElementById('saved-' + slug);
     saved.style.opacity = '1';
     setTimeout(() => { saved.style.opacity = '0'; }, 2500);

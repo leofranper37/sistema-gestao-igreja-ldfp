@@ -2,6 +2,7 @@ const app = require('./app');
 const config = require('./config');
 const logger = require('./config/logger');
 const { initializeDatabase } = require('./config/db');
+const { iniciarCronCobranca } = require('./jobs/cobrancaCron');
 
 function formatStartupError(error) {
     if (!error) {
@@ -34,6 +35,7 @@ async function startServer() {
                 environment: process.env.NODE_ENV || 'development'
             });
             console.log(`🚀 Servidor ${config.app.name} rodando na porta ${config.port}`);
+            iniciarCronCobranca();
         });
     } catch (error) {
         logger.error('startup_failed', {

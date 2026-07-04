@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo! Cadastre-se como visitante</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at 20% 10%, #0ea5e9, #0f172a 70%);
+            color: #e2e8f0;
+            display: grid;
+            place-items: center;
+            padding: 16px;
+        }
+        .card {
+            width: min(520px, 96vw);
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 18px;
+            box-shadow: 0 24px 60px rgba(2, 6, 23, 0.5);
+            overflow: hidden;
+        }
+        .hero {
+            padding: 24px 24px 20px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(45, 212, 191, 0.14));
+            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+            text-align: center;
+        }
+        .hero .icon { font-size: 2rem; color: #38bdf8; margin-bottom: 8px; }
+        .hero h1 { margin: 0 0 4px; font-size: 1.25rem; color: #f0f9ff; }
+        .hero p  { margin: 0; color: #94a3b8; font-size: .9rem; }
+        form {
+            padding: 20px 24px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #7dd3fc; font-weight: 700; }
+        input, select {
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background: rgba(15, 23, 42, 0.55);
+            color: #f8fafc;
+            padding: 11px 13px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color .2s;
+        }
+        input:focus, select:focus { outline: none; border-color: #38bdf8; }
+        select option { background: #1e293b; }
+        .btn-submit {
+            margin-top: 4px;
+            border: 0;
+            border-radius: 12px;
+            padding: 13px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: #fff;
+            transition: opacity .2s;
+        }
+        .btn-submit:disabled { opacity: .5; cursor: default; }
+        .status { text-align: center; font-size: 13px; min-height: 18px; color: #67e8f9; }
+        .status.error { color: #fda4af; }
+
+        /* tela de sucesso */
+        .sucesso {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 36px 24px;
+            text-align: center;
+        }
+        .sucesso .check { font-size: 3rem; color: #4ade80; }
+        .sucesso h2 { margin: 0; font-size: 1.25rem; color: #f0fdf4; }
+        .sucesso p { margin: 0; color: #94a3b8; font-size: .9rem; }
+
+        /* estado de carregamento / erro fatal */
+        .loading-overlay {
+            padding: 36px 24px;
+            text-align: center;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+<section class="card">
+
+    <!-- Estado: carregando / erro fatal -->
+    <div class="loading-overlay" id="stateLoading">
+        <i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.5rem;color:#38bdf8"></i>
+        <p id="loadingMsg" style="margin:12px 0 0">Carregando...</p>
+    </div>
+
+    <!-- Estado: formulário -->
+    <div id="stateForm" style="display:none">
+        <header class="hero">
+            <div class="icon"><i class="fa-solid fa-hands-praying"></i></div>
+            <h1 id="nomeIgreja">Bem-vindo!</h1>
+            <p>Deixe seus dados e fique por dentro das novidades da nossa comunidade.</p>
+        </header>
+        <form id="formVisita">
+            <div class="field">
+                <label for="nome">Nome completo *</label>
+                <input id="nome" required placeholder="Seu nome">
+            </div>
+            <div class="field">
+                <label for="telefone">Telefone / WhatsApp</label>
+                <input id="telefone" type="tel" placeholder="(11) 99999-9999">
+            </div>
+            <div class="field">
+                <label for="comoConheceu">Como você conheceu a nossa igreja?</label>
+                <select id="comoConheceu">
+                    <option value="">— Selecione (opcional) —</option>
+                    <option>Indicação de amigo ou familiar</option>
+                    <option>Redes sociais</option>
+                    <option>Passei em frente / vi de perto</option>
+                    <option>Flyer ou panfleto</option>
+                    <option>Outro</option>
+                </select>
+            </div>
+            <div class="status" id="statusMsg"></div>
+            <button class="btn-submit" id="btnEnviar" type="submit">
+                <i class="fa-solid fa-paper-plane"></i> Enviar cadastro
+            </button>
+        </form>
+    </div>
+
+    <!-- Estado: sucesso -->
+    <div class="sucesso" id="stateSucesso">
+        <div class="check"><i class="fa-solid fa-circle-check"></i></div>
+        <h2>Cadastro realizado!</h2>
+        <p>Obrigado por visitar nossa comunidade.<br>Que Deus abençoe você!</p>
+    </div>
+
+</section>
+
+<script>
+    const slug = location.pathname.split('/').pop();
+    const $ = id => document.getElementById(id);
+
+    function show(stateId) {
+        ['stateLoading', 'stateForm', 'stateSucesso'].forEach(id => {
+            $(id).style.display = id === stateId ? (id === 'stateSucesso' ? 'flex' : 'block') : 'none';
+        });
+    }
+
+    function setStatus(msg, isError) {
+        const el = $('statusMsg');
+        el.textContent = msg;
+        el.className = 'status' + (isError ? ' error' : '');
+    }
+
+    async function carregarIgreja() {
+        try {
+            const r = await fetch(`/api/visita/${encodeURIComponent(slug)}`);
+            if (!r.ok) throw new Error('Igreja não encontrada.');
+            const data = await r.json();
+            $('nomeIgreja').textContent = data.nome;
+            show('stateForm');
+        } catch (e) {
+            $('loadingMsg').textContent = e.message;
+        }
+    }
+
+    $('formVisita').addEventListener('submit', async e => {
+        e.preventDefault();
+        const nome = $('nome').value.trim();
+        if (!nome) { setStatus('Informe seu nome.', true); return; }
+
+        $('btnEnviar').disabled = true;
+        setStatus('Enviando...');
+
+        try {
+            const r = await fetch(`/api/visita/${encodeURIComponent(slug)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nome,
+                    telefone: $('telefone').value.trim() || null,
+                    como_conheceu: $('comoConheceu').value || null
+                })
+            });
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.error || 'Erro ao enviar.');
+            show('stateSucesso');
+        } catch (err) {
+            setStatus(err.message, true);
+            $('btnEnviar').disabled = false;
+        }
+    });
+
+    carregarIgreja();
+</script>
+</body>
+</html>

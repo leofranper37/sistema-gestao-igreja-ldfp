@@ -459,6 +459,9 @@
             <button class="btn btn-ghost btn-sm" id="btnQr">
                 <i class="fa-solid fa-qrcode"></i> QR Público
             </button>
+            <button class="btn btn-ghost btn-sm" id="btnAutocadastro">
+                <i class="fa-solid fa-link"></i> Link Autocadastro
+            </button>
             <button class="btn btn-ghost btn-sm" id="btnRecarregar">
                 <i class="fa-solid fa-rotate"></i>
             </button>
@@ -1017,6 +1020,7 @@
 
     $('btnTelao').addEventListener('click', () => window.open('visitantes_telao.html', '_blank'));
     $('btnQr').addEventListener('click', () => window.open('visitante_qr.html', '_blank'));
+    $('btnAutocadastro').addEventListener('click', abrirModalAutocadastro);
 
     $('searchInput').addEventListener('input', e => {
         filtroTexto = e.target.value.toLowerCase().trim();
@@ -1060,6 +1064,78 @@
     preencherFiltroEvento();
     renderLista();
     updateHero(null);
+
+
+    /* ── Modal Autocadastro ── */
+    async function abrirModalAutocadastro() {
+        $('modalAutocadastro').style.display = 'flex';
+        $('qrContainer').innerHTML = '<span style="color:#94a3b8">Gerando QR...</span>';
+        $('linkAutocadastro').value = '';
+
+        try {
+            const r = await fetch('/api/minha-conta');
+            if (!r.ok) throw new Error('Erro ao buscar dados da conta.');
+            const conta = await r.json();
+
+            if (!conta.slug) {
+                $('qrContainer').innerHTML = '<span style="color:#fda4af">QR indisponível. Contate o suporte para ativar o link de autocadastro.</span>';
+                return;
+            }
+
+            const url = `${location.origin}/visita/${conta.slug}`;
+            $('linkAutocadastro').value = url;
+
+            // Gera QR via API pública do QRServer.com (sem biblioteca extra)
+            const img = document.createElement('img');
+            img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(url)}`;
+            img.alt = 'QR Code autocadastro';
+            img.style.cssText = 'width:220px;height:220px;border-radius:10px';
+            $('qrContainer').innerHTML = '';
+            $('qrContainer').appendChild(img);
+        } catch (e) {
+            $('qrContainer').innerHTML = `<span style="color:#fda4af">${e.message}</span>`;
+        }
+    }
+
+    function copiarLink() {
+        const input = $('linkAutocadastro');
+        if (!input.value) return;
+        navigator.clipboard.writeText(input.value)
+            .then(() => { $('btnCopiarLink').textContent = 'Copiado!'; setTimeout(() => { $('btnCopiarLink').textContent = 'Copiar'; }, 2000); })
+            .catch(() => { input.select(); document.execCommand('copy'); });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = $('modalAutocadastro');
+        if (!modal) return;
+        $('btnFecharModalQr').addEventListener('click', () => { modal.style.display = 'none'; });
+        $('btnCopiarLink').addEventListener('click', copiarLink);
+        $('btnImprimirQr').addEventListener('click', () => {
+            const img = $('qrContainer').querySelector('img');
+            if (!img) return;
+            const w = window.open('', '_blank');
+            w.document.write(`<html><body style="text-align:center;padding:40px"><img src="${img.src}" style="width:280px"><br><p style="font-size:14px;margin-top:16px">${$('linkAutocadastro').value}</p><script>window.onload=()=>window.print()<\/script></body></html>`);
+            w.document.close();
+        });
+        modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+    });
 </script>
+
+<!-- Modal: Link de Autocadastro de Visitantes -->
+<div id="modalAutocadastro" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;align-items:center;justify-content:center;padding:16px">
+    <div style="background:#0f172a;border:1px solid rgba(148,163,184,.25);border-radius:16px;width:min(420px,96vw);padding:24px;position:relative">
+        <button id="btnFecharModalQr" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#94a3b8;font-size:1.2rem;cursor:pointer">&times;</button>
+        <h3 style="margin:0 0 4px;color:#f0f9ff;font-size:1rem"><i class="fa-solid fa-qrcode" style="color:#38bdf8;margin-right:6px"></i>Link de Autocadastro</h3>
+        <p style="margin:0 0 16px;color:#64748b;font-size:.83rem">Visitantes escaneiam o QR e se cadastram sem precisar de celular da equipe.</p>
+        <div id="qrContainer" style="display:flex;justify-content:center;margin-bottom:16px;min-height:60px;align-items:center"></div>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+            <input id="linkAutocadastro" readonly style="flex:1;background:#1e293b;border:1px solid rgba(148,163,184,.25);border-radius:8px;color:#e2e8f0;padding:9px 12px;font-size:12px">
+            <button id="btnCopiarLink" style="background:#0ea5e9;border:none;border-radius:8px;color:#fff;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Copiar</button>
+        </div>
+        <button id="btnImprimirQr" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(148,163,184,.2);border-radius:8px;color:#cbd5e1;padding:9px;font-size:13px;cursor:pointer">
+            <i class="fa-solid fa-print"></i> Imprimir QR Code
+        </button>
+    </div>
+</div>
 </body>
 </html>

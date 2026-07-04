@@ -40,6 +40,7 @@ const estudoRoutes     = require('./routes/estudoRoutes');
 const webhookRoutes    = require('./routes/webhookRoutes');
 const pixRoutes        = require('./routes/pixRoutes');
 const visitantesFollowupRoutes = require('./routes/visitantesFollowupRoutes');
+const visitaPublicaRoutes = require('./routes/visitaPublicaRoutes');
 
 const app = express();
 
@@ -173,6 +174,12 @@ app.use((req, res, next) => {
 });
 
 app.use(express.static(staticAssetsPath));
+
+// Rota pública de autocadastro de visitantes — serve o HTML antes do churchGuard
+app.get('/visita/:slug', (req, res) => {
+    res.sendFile(path.join(staticAssetsPath, 'visita.html'));
+});
+app.use(visitaPublicaRoutes);
 
 app.use('/login', loginRateLimiter);
 app.use('/esqueci-senha', loginRateLimiter);

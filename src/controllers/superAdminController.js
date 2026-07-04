@@ -3,10 +3,26 @@ const moduleAccessService = require('../services/moduleAccessService');
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { sendMail } = require('../utils/mailer');
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
 function fmt(v) { return Number(v) || 0; }
+
+function toSlug(str) {
+    return String(str)
+        .toLowerCase()
+        .replace(/[àáâãä]/g, 'a')
+        .replace(/[èéêë]/g, 'e')
+        .replace(/[ìíîï]/g, 'i')
+        .replace(/[òóôõö]/g, 'o')
+        .replace(/[ùúûü]/g, 'u')
+        .replace(/ç/g, 'c')
+        .replace(/ñ/g, 'n')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 70);
+}
 
 function safeJson(str, fallback = []) {
     try { return JSON.parse(str); } catch (_) { return fallback; }
@@ -581,7 +597,7 @@ async function getMinhaConta(req, res) {
         const [igRows] = await pool.query(
             `SELECT i.id, i.nome, i.plano, i.status_assinatura,
                     i.trial_ends_at, i.max_cadastros, i.max_congregacoes,
-                    i.modulo_app_membro,
+                    i.modulo_app_membro, i.slug,
                     sp.nome AS plano_nome, sp.subtitulo AS plano_subtitulo,
                     sp.preco_mensal, sp.preco_anual, sp.features_json
              FROM igrejas i
@@ -941,8 +957,53 @@ async function createIgreja(req, res) {
             [nome.trim(), igrejaId, responsavel || nome.trim(), email_admin.toLowerCase().trim(), hash]
         );
 
+        // Gerar slug único a partir do nome (depende do insertId para desempate)
+        const slugBase = toSlug(nome.trim());
+        const [slugCheck] = await pool.query(
+            'SELECT id FROM igrejas WHERE slug = ? LIMIT 1', [slugBase]
+        );
+        const slug = slugCheck.length ? `${slugBase}-${igrejaId}` : slugBase;
+        await pool.query('UPDATE igrejas SET slug = ? WHERE id = ?', [slug, igrejaId]);
+
         const [newChurch] = await pool.query('SELECT * FROM igrejas WHERE id = ? LIMIT 1', [igrejaId]);
         res.status(201).json(newChurch[0]);
+
+        // Dispara boas-vindas em fire-and-forget — falha de e-mail não quebra o cadastro
+        const nomeResponsavel = responsavel || nome.trim();
+        const trialInfo = status_assinatura === 'trial'
+            ? `<p>Seu período de avaliação gratuita é de <strong>${days} dias</strong>. Após esse prazo, entre em contato para ativar seu plano.</p>`
+            : '';
+        sendMail({
+            to: email_admin.toLowerCase().trim(),
+            subject: `Bem-vindo ao LDFP Sistema — ${nome.trim()}`,
+            html: `
+<div style="font-family:'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#1e293b">
+  <div style="background:linear-gradient(135deg,#0ea5e9,#0284c7);padding:28px 32px;border-radius:12px 12px 0 0">
+    <h1 style="margin:0;color:#fff;font-size:1.4rem">Bem-vindo ao LDFP Sistema!</h1>
+    <p style="margin:8px 0 0;color:#bae6fd;font-size:.9rem">Sua igreja foi criada com sucesso</p>
+  </div>
+  <div style="background:#f8fafc;padding:28px 32px;border:1px solid #e2e8f0;border-top:none">
+    <p>Olá, <strong>${nomeResponsavel}</strong>!</p>
+    <p>A igreja <strong>${nome.trim()}</strong> foi cadastrada no sistema. Veja abaixo seus dados de acesso:</p>
+    <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:.9rem">
+      <tr><td style="padding:8px 12px;background:#e0f2fe;border-radius:6px 6px 0 0;font-weight:700">URL de acesso</td>
+          <td style="padding:8px 12px;background:#e0f2fe;border-radius:6px 6px 0 0"><a href="https://ldfp.com.br" style="color:#0284c7">https://ldfp.com.br</a></td></tr>
+      <tr><td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700">E-mail</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0">${email_admin.toLowerCase().trim()}</td></tr>
+      <tr><td style="padding:8px 12px;font-weight:700">Senha inicial</td>
+          <td style="padding:8px 12px">${senha}</td></tr>
+    </table>
+    ${trialInfo}
+    <h3 style="margin:20px 0 8px;color:#0284c7">Primeiros passos</h3>
+    <ol style="margin:0;padding-left:20px;line-height:1.9">
+      <li>Acesse o sistema e troque sua senha em <strong>Configurações</strong></li>
+      <li>Cadastre os membros da sua congregação</li>
+      <li>Configure as escalas e grupos</li>
+    </ol>
+    <p style="margin-top:24px;font-size:.85rem;color:#64748b">Em caso de dúvidas, entre em contato com o suporte LDFP.</p>
+  </div>
+</div>`
+        }).catch(err => console.error('[MAILER] boas-vindas:', err.message));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

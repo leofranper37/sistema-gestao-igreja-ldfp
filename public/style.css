@@ -159,6 +159,7 @@ main.main-content > .enterprise-top-header ~ .enterprise-top-header {
     font-size: 13px;
     color: var(--sidebar-text);
     font-weight: 600;
+    text-decoration: none;
     cursor: pointer;
     display: flex; align-items: center; justify-content: space-between;
     transition: 0.15s;

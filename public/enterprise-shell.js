@@ -63,6 +63,8 @@
         // Cargos
         'cargos.html': 'cargos',
         'situacoes.html': 'cargos',
+        // Tipos de Admissão
+        'tipos_admissao.html': 'membros',
         // Histórico Pastoral
         'historico_pastoral.html': 'historico_pastoral',
         'tipos_historico.html': 'historico_pastoral',
@@ -290,6 +292,18 @@
         const lockIcon = isLocked ? '<i class="fa-solid fa-lock menu-link-lock" aria-hidden="true"></i>' : '';
 
         return `<a href="${safeHref}" class="${classes}" data-href="${href}" data-label="${label}" ${dataFeature} ${isLocked ? 'data-locked="true"' : ''}><i class="${item.icon}"></i><span>${label}</span>${lockIcon}</a>`;
+    }
+
+    function renderFlatLink(item, activePath, user) {
+        const { href, icon, label, feature } = normalizeLinkItem(item);
+        const isLocked = feature ? !canUseFeature(user, feature) : false;
+        const isActive = isLinkActive(href, activePath);
+        const classes = ['dropdown-btn', isActive ? 'active' : '', isLocked ? 'menu-link-locked' : ''].filter(Boolean).join(' ');
+        const safeHref = isLocked ? '#' : href;
+        const dataFeature = feature ? `data-feature="${feature}"` : '';
+        const lockIcon = isLocked ? '<i class="fa-solid fa-lock menu-link-lock" aria-hidden="true"></i>' : '';
+
+        return `<a href="${safeHref}" class="${classes}" data-href="${href}" data-label="${label}" ${dataFeature} ${isLocked ? 'data-locked="true"' : ''}><span><i class="${icon} icon-left"></i> ${label}</span>${lockIcon}</a>`;
     }
 
     function ensureLockStyles() {
@@ -546,14 +560,12 @@
 
     function renderSecretariaGroup(activePath, user) {
         const membrosLinks = [
-            ['lista_membros.html', 'fa-solid fa-address-book', 'Lista de Membros', 'membros'],
+            ['lista_membros.html', 'fa-solid fa-address-book', 'Ficha Cadastral', 'membros'],
             ['membros.html', 'fa-solid fa-user-plus', 'Cadastrar Novo Membro', 'membros'],
             ['cargos.html', 'fa-solid fa-briefcase', 'Cargos', 'cargos'],
             ['situacoes.html', 'fa-solid fa-toggle-on', 'Situações', 'cargos'],
-            ['congregacoes.html', 'fa-solid fa-church', 'Congregações', 'membros']
-        ];
-
-        const historicoLinks = [
+            ['congregacoes.html', 'fa-solid fa-church', 'Congregações', 'membros'],
+            ['tipos_admissao.html', 'fa-solid fa-door-open', 'Tipos de Admissão', 'membros'],
             ['historico_pastoral.html', 'fa-solid fa-book-bible', 'Histórico Pastoral', 'historico_pastoral'],
             ['tipos_historico.html', 'fa-solid fa-list-check', 'Tipo de Histórico', 'historico_pastoral']
         ];
@@ -580,7 +592,7 @@
             ['batismos_inscricoes.html', 'fa-solid fa-clipboard-check', 'Inscrições', 'batismos']
         ];
 
-        const otherLinks = [
+        const flatLinks = [
             ['agenda.html', 'fa-solid fa-calendar-days', 'Agenda', 'agenda'],
             ['outras_igrejas.html', 'fa-solid fa-globe', 'Outras Igrejas', 'outras_igrejas'],
             ['missionarios.html', 'fa-solid fa-person-rays', 'Missionários', 'missionarios'],
@@ -595,106 +607,28 @@
             ['telao_visitantes.html', 'fa-solid fa-display', 'Telão', 'telao']
         ];
 
-        const allowedMembrosLinks = filterLinksByRole(membrosLinks, user);
-        const allowedHistoricoLinks = filterLinksByRole(historicoLinks, user);
-        const allowedGrupoLinks = filterLinksByRole(grupoLinks, user);
-        const allowedEscalaLinks = filterLinksByRole(escalaLinks, user);
-        const allowedEbdLinks = filterLinksByRole(ebdLinks, user);
-        const allowedBatismoLinks = filterLinksByRole(batismoLinks, user);
-        const allowedOtherLinks = filterLinksByRole(otherLinks, user);
+        const membrosHtml = renderLegacyGroup('Membros', 'fa-solid fa-users', membrosLinks, activePath, false, user);
+        const grupoHtml = renderLegacyGroup('Grupos', 'fa-solid fa-people-group', grupoLinks, activePath, false, user);
+        const escalaHtml = renderLegacyGroup('Escalas', 'fa-solid fa-calendar-check', escalaLinks, activePath, false, user);
+        const ebdHtml = renderLegacyGroup('EBD', 'fa-solid fa-graduation-cap', ebdLinks, activePath, false, user);
+        const batismoHtml = renderLegacyGroup('Batismos', 'fa-solid fa-water', batismoLinks, activePath, false, user);
 
-        const allLinks = [
-            ...allowedMembrosLinks,
-            ...allowedHistoricoLinks,
-            ...allowedGrupoLinks,
-            ...allowedEscalaLinks,
-            ...allowedEbdLinks,
-            ...allowedBatismoLinks,
-            ...allowedOtherLinks
-        ];
+        const allowedFlatLinks = filterLinksByRole(flatLinks, user);
+        const flatHtml = allowedFlatLinks.map((item) => renderFlatLink(item, activePath, user)).join('');
 
-        if (!allLinks.length) {
+        const hasContent = membrosHtml || grupoHtml || escalaHtml || ebdHtml || batismoHtml || flatHtml;
+        if (!hasContent) {
             return '';
         }
 
-        const secretariaHasActive = allLinks.some(({ href }) => isLinkActive(href, activePath));
-        const membrosActive = allowedMembrosLinks.some(({ href }) => isLinkActive(href, activePath));
-        const historicoActive = allowedHistoricoLinks.some(({ href }) => isLinkActive(href, activePath));
-        const grupoActive = allowedGrupoLinks.some(({ href }) => isLinkActive(href, activePath));
-        const escalaActive = allowedEscalaLinks.some(({ href }) => isLinkActive(href, activePath));
-        const ebdActive = allowedEbdLinks.some(({ href }) => isLinkActive(href, activePath));
-        const batismoActive = allowedBatismoLinks.some(({ href }) => isLinkActive(href, activePath));
-
-        const membrosHtml = allowedMembrosLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
-
-        const historicoHtml = allowedHistoricoLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
-
-        const grupoHtml = allowedGrupoLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
-
-        const escalaHtml = allowedEscalaLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
-
-        const ebdHtml = allowedEbdLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
-
-        const batismoHtml = allowedBatismoLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
-
-        const otherHtml = allowedOtherLinks.map((item) => renderMenuLink(item, activePath, user)).join('');
-
         return `
-            <button class="dropdown-btn ${secretariaHasActive ? 'active' : ''}" type="button">
-                <span><i class="fa-solid fa-folder-open icon-left"></i> Secretaria</span>
-                <i class="fa-solid fa-chevron-right arrow"></i>
-            </button>
-            <div class="dropdown-container" style="${secretariaHasActive ? 'display: block;' : 'display: none;'}">
-                ${allowedMembrosLinks.length ? `<button class="sub-dropdown-btn ${membrosActive ? 'active' : ''}" type="button">
-                    <span><i class="fa-solid fa-users icon-left"></i> Membros</span>
-                    <i class="fa-solid fa-chevron-right arrow"></i>
-                </button>
-                <div class="sub-dropdown-container" style="${membrosActive ? 'display: block;' : 'display: none;'}">
-                    ${membrosHtml}
-                </div>` : ''}
-
-                ${allowedHistoricoLinks.length ? `<button class="sub-dropdown-btn ${historicoActive ? 'active' : ''}" type="button">
-                    <span><i class="fa-solid fa-book-bible icon-left"></i> Histórico Pastoral</span>
-                    <i class="fa-solid fa-chevron-right arrow"></i>
-                </button>
-                <div class="sub-dropdown-container" style="${historicoActive ? 'display: block;' : 'display: none;'}">
-                    ${historicoHtml}
-                </div>` : ''}
-
-                ${allowedGrupoLinks.length ? `<button class="sub-dropdown-btn ${grupoActive ? 'active' : ''}" type="button">
-                    <span><i class="fa-solid fa-people-group icon-left"></i> Grupos</span>
-                    <i class="fa-solid fa-chevron-right arrow"></i>
-                </button>
-                <div class="sub-dropdown-container" style="${grupoActive ? 'display: block;' : 'display: none;'}">
-                    ${grupoHtml}
-                </div>` : ''}
-
-                ${allowedEscalaLinks.length ? `<button class="sub-dropdown-btn ${escalaActive ? 'active' : ''}" type="button">
-                    <span><i class="fa-solid fa-calendar-check icon-left"></i> Escalas</span>
-                    <i class="fa-solid fa-chevron-right arrow"></i>
-                </button>
-                <div class="sub-dropdown-container" style="${escalaActive ? 'display: block;' : 'display: none;'}">
-                    ${escalaHtml}
-                </div>` : ''}
-
-                ${allowedEbdLinks.length ? `<button class="sub-dropdown-btn ${ebdActive ? 'active' : ''}" type="button">
-                    <span><i class="fa-solid fa-graduation-cap icon-left"></i> EBD</span>
-                    <i class="fa-solid fa-chevron-right arrow"></i>
-                </button>
-                <div class="sub-dropdown-container" style="${ebdActive ? 'display: block;' : 'display: none;'}">
-                    ${ebdHtml}
-                </div>` : ''}
-
-                ${allowedBatismoLinks.length ? `<button class="sub-dropdown-btn ${batismoActive ? 'active' : ''}" type="button">
-                    <span><i class="fa-solid fa-water icon-left"></i> Batismos</span>
-                    <i class="fa-solid fa-chevron-right arrow"></i>
-                </button>
-                <div class="sub-dropdown-container" style="${batismoActive ? 'display: block;' : 'display: none;'}">
-                    ${batismoHtml}
-                </div>` : ''}
-
-                ${otherHtml}
-            </div>
+            <div class="menu-section-label">Secretaria</div>
+            ${membrosHtml}
+            ${grupoHtml}
+            ${escalaHtml}
+            ${ebdHtml}
+            ${batismoHtml}
+            ${flatHtml}
         `;
     }
 

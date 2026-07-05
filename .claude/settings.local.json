@@ -8,7 +8,8 @@
       "Bash(Select-String *)",
       "Skill(run)",
       "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('package.json','utf8'\\)\\); console.log\\('valid JSON'\\)\")",
-      "Bash(NODE_PATH=\"E:\\\\Arquivos do Pedrive\\\\sistema-gestao-igreja-main\\\\node_modules\" node \"C:\\\\Users\\\\LEO\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Arquivos-do-Pedrive-sistema-gestao-igreja-main\\\\7089490d-83df-4565-8f37-5f7c957ad735\\\\scratchpad\\\\verify-interact.js\")"
+      "Bash(NODE_PATH=\"E:\\\\Arquivos do Pedrive\\\\sistema-gestao-igreja-main\\\\node_modules\" node \"C:\\\\Users\\\\LEO\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Arquivos-do-Pedrive-sistema-gestao-igreja-main\\\\7089490d-83df-4565-8f37-5f7c957ad735\\\\scratchpad\\\\verify-interact.js\")",
+      "Bash(NODE_PATH=\"E:\\\\Arquivos do Pedrive\\\\sistema-gestao-igreja-main\\\\node_modules\" node \"C:\\\\Users\\\\LEO\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Arquivos-do-Pedrive-sistema-gestao-igreja-main\\\\7089490d-83df-4565-8f37-5f7c957ad735\\\\scratchpad\\\\verify-collapse.js\")"
     ]
   }
 }

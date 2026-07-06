@@ -309,10 +309,10 @@ async function init() {
     _authToken = auth.token;
 
     try {
-        const resp = await fetch('/api/minha-conta', { headers: { Authorization: 'Bearer ' + _authToken } });
+        const resp = await fetch('/api/app/meu-token', { headers: { Authorization: 'Bearer ' + _authToken } });
         if (resp.ok) {
             const data = await resp.json();
-            _igrejaTk = data.igrejaTk || data.public_token || null;
+            _igrejaTk = data.publicToken || null;
         }
     } catch (_) {}
 

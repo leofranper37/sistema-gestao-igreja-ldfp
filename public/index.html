@@ -462,7 +462,39 @@
             color: #f9fafb;
         }
 
+        .whatsapp-float {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 58px;
+            height: 58px;
+            background: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 30px;
+            text-decoration: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            transition: 0.3s;
+        }
+
+        .whatsapp-float:hover {
+            transform: scale(1.08);
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.5);
+        }
+
         @media (max-width: 900px) {
+            .whatsapp-float {
+                width: 52px;
+                height: 52px;
+                font-size: 26px;
+                bottom: 16px;
+                right: 16px;
+            }
+
             header {
                 padding: 16px 18px;
             }
@@ -666,6 +698,7 @@
         <div class="landing-container">
             <div>Copyright © 2026 LDFP - Liderança com Propósito. Todos os direitos reservados.</div>
             <div class="footer-links">
+                <a href="https://wa.me/5524992122018?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20LDFP." target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
                 <a href="mailto:leopereita31@gmail.com"><i class="fa-solid fa-envelope"></i> leopereita31@gmail.com</a>
                 <a href="https://instagram.com/leofranper" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-instagram"></i> @leofranper</a>
                 <a href="politica-privacidade.html">Política de Privacidade</a>
@@ -674,7 +707,9 @@
         </div>
     </footer>
 
-
+    <a href="https://wa.me/5524992122018?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20LDFP." target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Falar no WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
 
     <script src="speed-insights.js" defer></script>
 

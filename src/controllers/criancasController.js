@@ -1,6 +1,7 @@
 ﻿'use strict';
 const { pool } = require('../config/db');
 const { audit } = require('../services/auditService');
+const getIgrejaId = require('../utils/getIgrejaId');
 
 function fmtDate(d) {
     if (!d) return null;

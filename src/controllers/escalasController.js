@@ -471,6 +471,18 @@ exports.createAtribuicao = async (req, res) => {
             [instance_id, churchId]);
         if (!inst) return res.status(404).json({ error: 'Instância não encontrada' });
 
+        // Verifica se o membro pertence à igreja
+        const [[membro]] = await pool.query(
+            'SELECT id FROM membros WHERE id = ? AND igreja_id = ?',
+            [member_id, churchId]);
+        if (!membro) return res.status(404).json({ error: 'Membro não encontrado' });
+
+        // Verifica se a função pertence à igreja
+        const [[funcao]] = await pool.query(
+            'SELECT id FROM escalas_funcoes WHERE id = ? AND church_id = ?',
+            [function_id, churchId]);
+        if (!funcao) return res.status(404).json({ error: 'Função não encontrada' });
+
         const [{ insertId }] = await pool.query(
             'INSERT INTO escalas_atribuicoes (instance_id, function_id, member_id, church_id) VALUES (?, ?, ?, ?)',
             [instance_id, function_id, member_id, churchId]);

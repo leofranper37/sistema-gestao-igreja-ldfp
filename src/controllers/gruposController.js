@@ -155,6 +155,16 @@ exports.addGrupoMembro = async (req, res) => {
     const { membro_id, nome, funcao, desde } = req.body;
     if (!nome) return res.status(400).json({ error: 'Nome é obrigatório' });
     try {
+        const [[grupo]] = await pool.query(
+            'SELECT id FROM grupos WHERE id = ? AND igreja_id = ?', [grupoId, churchId]);
+        if (!grupo) return res.status(404).json({ error: 'Grupo não encontrado' });
+
+        if (membro_id) {
+            const [[membro]] = await pool.query(
+                'SELECT id FROM membros WHERE id = ? AND igreja_id = ?', [membro_id, churchId]);
+            if (!membro) return res.status(404).json({ error: 'Membro não encontrado' });
+        }
+
         const [{ insertId }] = await pool.query(
             'INSERT INTO grupo_membros (grupo_id, igreja_id, membro_id, nome, funcao, desde) VALUES (?, ?, ?, ?, ?, ?)',
             [grupoId, churchId, membro_id || null, nome.trim(), funcao || null, desde || null]);
@@ -203,6 +213,10 @@ exports.createGrupoReuniao = async (req, res) => {
     const { data, tema, presentes = 0, obs } = req.body;
     if (!data) return res.status(400).json({ error: 'Data é obrigatória' });
     try {
+        const [[grupo]] = await pool.query(
+            'SELECT id FROM grupos WHERE id = ? AND igreja_id = ?', [grupoId, churchId]);
+        if (!grupo) return res.status(404).json({ error: 'Grupo não encontrado' });
+
         const [{ insertId }] = await pool.query(
             'INSERT INTO grupo_reunioes (grupo_id, igreja_id, data, tema, presentes, obs) VALUES (?, ?, ?, ?, ?, ?)',
             [grupoId, churchId, data, tema || null, presentes, obs || null]);

@@ -62,10 +62,15 @@ exports.addFollowup = async (req, res) => {
     if (!tipo_contato || !observacao) {
         return res.status(400).json({ error: 'Tipo de contato e observação são obrigatórios.' });
     }
-    
+
     try {
+        const [[visitante]] = await pool.query(
+            'SELECT id FROM visitantes WHERE id = ? AND igreja_id = ?', [id, igrejaId]
+        );
+        if (!visitante) return res.status(404).json({ error: 'Visitante não encontrado.' });
+
         await pool.query(
-            `INSERT INTO visitante_followup 
+            `INSERT INTO visitante_followup
             (igreja_id, visitante_id, tipo_contato, observacao, responsavel_nome) 
             VALUES (?, ?, ?, ?, ?)`, 
             [igrejaId, id, tipo_contato, observacao, nome]

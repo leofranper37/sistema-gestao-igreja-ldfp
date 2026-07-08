@@ -194,6 +194,13 @@ async function addCandidato(req, res) {
         return res.status(400).json({ message: 'Nome do candidato é obrigatório.' });
     }
 
+    if (membro_id) {
+        const [[membro]] = await pool.query(
+            'SELECT id FROM membros WHERE id = ? AND igreja_id = ?', [Number(membro_id), igrejaId]
+        );
+        if (!membro) return res.status(404).json({ message: 'Membro não encontrado.' });
+    }
+
     const validStatus = ['Pendente', 'Confirmado', 'Desistiu'];
     const [result] = await pool.query(`
         INSERT INTO batismo_candidatos (batismo_id, igreja_id, nome, telefone, status, membro_id)
@@ -225,6 +232,13 @@ async function updateCandidato(req, res) {
 
     const { nome, telefone, status, membro_id } = req.body || {};
     const validStatus = ['Pendente', 'Confirmado', 'Desistiu'];
+
+    if (membro_id) {
+        const [[membro]] = await pool.query(
+            'SELECT id FROM membros WHERE id = ? AND igreja_id = ?', [Number(membro_id), igrejaId]
+        );
+        if (!membro) return res.status(404).json({ message: 'Membro não encontrado.' });
+    }
 
     await pool.query(`
         UPDATE batismo_candidatos SET

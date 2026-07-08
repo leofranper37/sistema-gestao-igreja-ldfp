@@ -264,6 +264,12 @@ exports.createAluno = async (req, res) => {
             cep, endereco, bairro, cidade, estado, obs, revistaInfo } = req.body;
     if (!nome) return res.status(400).json({ error: 'Nome é obrigatório' });
     try {
+        if (turmaId) {
+            const [[turma]] = await pool.query(
+                'SELECT id FROM ebd_turmas WHERE id = ? AND igreja_id = ?', [turmaId, churchId]);
+            if (!turma) return res.status(404).json({ error: 'Turma não encontrada' });
+        }
+
         const [{ insertId }] = await pool.query(
             `INSERT INTO ebd_alunos
              (igreja_id, turma_id, nome, matricula, estagio, situacao, sexo, nascimento,
@@ -291,6 +297,12 @@ exports.updateAluno = async (req, res) => {
             cep, endereco, bairro, cidade, estado, obs, revistaInfo } = req.body;
     if (!nome) return res.status(400).json({ error: 'Nome é obrigatório' });
     try {
+        if (turmaId) {
+            const [[turma]] = await pool.query(
+                'SELECT id FROM ebd_turmas WHERE id = ? AND igreja_id = ?', [turmaId, churchId]);
+            if (!turma) return res.status(404).json({ error: 'Turma não encontrada' });
+        }
+
         const [info] = await pool.query(
             `UPDATE ebd_alunos SET
              turma_id=?, nome=?, matricula=?, estagio=?, situacao=?, sexo=?, nascimento=?,

@@ -46,7 +46,8 @@ async function updateConta(req, res) {
 async function deleteConta(req, res) {
     const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
-    await bancoService.deleteConta(id, igrejaId);
+    const rows = await bancoService.deleteConta(id, igrejaId);
+    if (!rows) throw createHttpError(404, 'Conta não encontrada.');
     audit('banco.conta.delete', req, { id });
     res.json({ message: 'Conta removida.' });
 }
@@ -75,7 +76,8 @@ async function createLancamento(req, res) {
 async function deleteLancamento(req, res) {
     const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
-    await bancoService.deleteLancamento(id, igrejaId);
+    const rows = await bancoService.deleteLancamento(id, igrejaId);
+    if (!rows) throw createHttpError(404, 'Lançamento não encontrado.');
     audit('banco.lancamento.delete', req, { id });
     res.json({ message: 'Lançamento removido.' });
 }

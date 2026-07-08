@@ -71,7 +71,7 @@ async function createDizimo(igrejaId, payload, userId) {
 }
 
 async function deleteDizimo(id, igrejaId) {
-    await financeModel.deleteDizimo(id, igrejaId);
+    return financeModel.deleteDizimo(id, igrejaId);
 }
 
 async function listTiposReceita(igrejaId, filters) {

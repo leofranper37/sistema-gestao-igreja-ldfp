@@ -18,7 +18,7 @@ async function updateConta(id, igrejaId, payload) {
 }
 
 async function deleteConta(id, igrejaId) {
-    await bancoModel.deleteConta(id, igrejaId);
+    return bancoModel.deleteConta(id, igrejaId);
 }
 
 async function listLancamentos(contaId, igrejaId) {
@@ -31,7 +31,7 @@ async function createLancamento(igrejaId, payload, userId) {
 }
 
 async function deleteLancamento(id, igrejaId) {
-    await bancoModel.deleteLancamento(id, igrejaId);
+    return bancoModel.deleteLancamento(id, igrejaId);
 }
 
 async function getSaldoConta(contaId, igrejaId) {

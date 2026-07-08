@@ -151,7 +151,8 @@ async function updateConta(id, igrejaId, payload) {
 async function deleteConta(id, igrejaId) {
     await ensureBancoTables();
 
-    await pool.query(`DELETE FROM banco_contas WHERE id=? AND igreja_id=?`, [id, igrejaId]);
+    const [info] = await pool.query(`DELETE FROM banco_contas WHERE id=? AND igreja_id=?`, [id, igrejaId]);
+    return info.affectedRows;
 }
 
 // ─── Lançamentos ─────────────────────────────────────────────────────────────
@@ -185,7 +186,8 @@ async function createLancamento(payload) {
 async function deleteLancamento(id, igrejaId) {
     await ensureBancoTables();
 
-    await pool.query(`DELETE FROM banco_lancamentos WHERE id = ? AND igreja_id = ?`, [id, igrejaId]);
+    const [info] = await pool.query(`DELETE FROM banco_lancamentos WHERE id = ? AND igreja_id = ?`, [id, igrejaId]);
+    return info.affectedRows;
 }
 
 async function getSaldoConta(contaId, igrejaId) {

@@ -348,7 +348,8 @@ async function createDizimo(payload) {
 async function deleteDizimo(id, igrejaId) {
     await ensureFinanceTables();
 
-    await pool.query('DELETE FROM dizimos WHERE id = ? AND igreja_id = ?', [id, igrejaId]);
+    const [info] = await pool.query('DELETE FROM dizimos WHERE id = ? AND igreja_id = ?', [id, igrejaId]);
+    return info.affectedRows;
 }
 
 // ─── Tipos de Receita ──────────────────────────────────────────────────────

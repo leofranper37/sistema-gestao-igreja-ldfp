@@ -125,7 +125,8 @@ async function createDizimo(req, res) {
 async function deleteDizimo(req, res) {
     const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
-    await financeService.deleteDizimo(id, igrejaId);
+    const rows = await financeService.deleteDizimo(id, igrejaId);
+    if (!rows) return res.status(404).json({ error: 'Lançamento não encontrado.' });
     audit('finance.dizimo.delete', req, { id });
     res.json({ message: 'Lançamento removido.' });
 }

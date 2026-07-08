@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LDFP - Liderança com Propósito</title>
+    <meta name="description" content="Sistema completo de gestão para igrejas: secretaria, tesouraria, contabilidade e App do Membro em um só lugar. Teste grátis, sem cartão de crédito.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="LDFP - Liderança com Propósito">
+    <meta property="og:description" content="Sistema completo de gestão para igrejas: secretaria, tesouraria, contabilidade e App do Membro em um só lugar. Teste grátis, sem cartão de crédito.">
+    <meta property="og:image" content="https://ldfp.com.br/logo.png">
+    <meta property="og:url" content="https://ldfp.com.br/">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="LDFP - Liderança com Propósito">
+    <meta name="twitter:description" content="Sistema completo de gestão para igrejas: secretaria, tesouraria, contabilidade e App do Membro em um só lugar.">
+    <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* RESET BÁSICO */
@@ -539,117 +550,6 @@
                     <a href="planos.html" class="btn-outline" style="cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
                         <i class="fa-regular fa-circle-play"></i> Conheça nossos planos
                     </a>
-                    <!-- Modal removido: planos agora em planos.html -->
-                    <div id="modalPlanos" style="display:none">
-                        <div style="background:#fff;padding:40px 20px 30px 20px;border-radius:16px;max-width:1200px;width:98vw;box-shadow:0 8px 40px #000;position:relative;">
-                            <button onclick="document.getElementById('modalPlanos').style.display='none'" style="position:absolute;top:18px;right:18px;background:none;border:none;color:#222;font-size:22px;cursor:pointer;">&times;</button>
-                            <h2 style="color:#f59e0b;text-align:center;margin-bottom:10px;">Conheça nossos planos</h2>
-                            <p style="color:#222;text-align:center;margin-bottom:30px;">Escolha o melhor para sua igreja. Teste grátis: 7 dias nos pagos, 1 mês no gratuito.</p>
-                            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;">
-                                <!-- Gratuito -->
-                                <div style="background:#111;border-radius:12px;padding:28px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;border:2px solid #fbbf24;min-width:220px;">
-                                    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:2px;">Gratuito</div>
-                                    <div style="font-size:13px;color:#fbbf24;margin-bottom:10px;">Com Anúncios</div>
-                                    <div style="font-size:38px;font-weight:900;color:#fff;margin-bottom:2px;">0<sup style='font-size:18px;'>00</sup></div>
-                                    <div style="font-size:16px;color:#fff;margin-bottom:18px;">/mês</div>
-                                    <ul style="list-style:none;padding:0;margin-bottom:18px;color:#fff;font-size:15px;text-align:left;">
-                                        <li><span style='color:#fbbf24'>&#10003;</span> App Web Instalavel (PWA)</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> App do Membro</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> 40 cadastros</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> 1 congregação</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Escola Bíblica Dominical</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> Credencial de Membro</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Grupos/Células</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Controle Financeiro (com limites)</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Controle Contábil (com limites)</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Relatórios (com limites)</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> Suporte via e-mail</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> Suporte via WhatsApp</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> Suporte via Telefone</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> Consultoria Contábil</li>
-                                    </ul>
-                                    <div style="color:#22d3ee;font-size:13px;margin-bottom:8px;">Teste grátis: 1 mês</div>
-                                    <a href="criar_conta.html?plano=gratuito" style="background:#22c55e;color:#fff;padding:10px 0;border-radius:8px;font-weight:700;text-decoration:none;font-size:16px;width:100%;margin-top:8px;">ASSINAR</a>
-                                </div>
-                                <!-- Ararate -->
-                                <div style="background:#111;border-radius:12px;padding:28px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;border:2px solid #fbbf24;min-width:220px;">
-                                    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:2px;">Ararate</div>
-                                    <div style="font-size:13px;color:#fbbf24;margin-bottom:10px;">Igrejas Pequenas</div>
-                                    <div style="font-size:38px;font-weight:900;color:#fff;margin-bottom:2px;">50<sup style='font-size:18px;'>00</sup></div>
-                                    <div style="font-size:16px;color:#fff;margin-bottom:18px;">/mês</div>
-                                    <ul style="list-style:none;padding:0;margin-bottom:18px;color:#fff;font-size:15px;text-align:left;">
-                                        <li><span style='color:#fbbf24'>&#10003;</span> App Web Instalavel (PWA)</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> App do Membro</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> 100 cadastros</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> 1 congregação</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Escola Bíblica Dominical</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Credencial de Membro</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Grupos/Células</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Controle Financeiro</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Controle Contábil</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Relatórios</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Suporte via e-mail</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> Suporte via WhatsApp</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> Suporte via Telefone</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> Consultoria Contábil</li>
-                                    </ul>
-                                    <div style="color:#22d3ee;font-size:13px;margin-bottom:8px;">Teste grátis: 7 dias</div>
-                                    <a href="criar_conta.html?plano=ararate" style="background:#fbbf24;color:#111;padding:10px 0;border-radius:8px;font-weight:700;text-decoration:none;font-size:16px;width:100%;margin-top:8px;">TESTE 7 DIAS</a>
-                                </div>
-                                <!-- Sinai -->
-                                <div style="background:#111;border-radius:12px;padding:28px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;border:2px solid #fbbf24;min-width:220px;position:relative;">
-                                    <div style="position:absolute;top:-18px;right:-18px;background:#fbbf24;color:#111;font-size:12px;font-weight:700;padding:4px 16px;border-radius:8px 8px 8px 0;box-shadow:0 2px 8px #0002;">MAIS POPULAR</div>
-                                    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:2px;">Sinai</div>
-                                    <div style="font-size:13px;color:#fbbf24;margin-bottom:10px;">Igrejas Médias</div>
-                                    <div style="font-size:38px;font-weight:900;color:#fff;margin-bottom:2px;">80<sup style='font-size:18px;'>00</sup></div>
-                                    <div style="font-size:16px;color:#fff;margin-bottom:18px;">/mês</div>
-                                    <ul style="list-style:none;padding:0;margin-bottom:18px;color:#fff;font-size:15px;text-align:left;">
-                                        <li><span style='color:#fbbf24'>&#10003;</span> App Web Instalavel (PWA)</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> App do Membro</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> 300 cadastros</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> 5 congregações</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Escola Bíblica Dominical</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Credencial de Membro</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Grupos/Células</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Controle Financeiro</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Controle Contábil</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Relatórios</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Suporte via e-mail</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Suporte via WhatsApp</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> Suporte via Telefone</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> Consultoria Contábil</li>
-                                    </ul>
-                                    <div style="color:#22d3ee;font-size:13px;margin-bottom:8px;">Teste grátis: 7 dias</div>
-                                    <a href="criar_conta.html?plano=siao" style="background:#fbbf24;color:#111;padding:10px 0;border-radius:8px;font-weight:700;text-decoration:none;font-size:16px;width:100%;margin-top:8px;">TESTE 7 DIAS</a>
-                                </div>
-                                <!-- Carmelo -->
-                                <div style="background:#111;border-radius:12px;padding:28px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;border:2px solid #fbbf24;min-width:220px;">
-                                    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:2px;">Carmelo</div>
-                                    <div style="font-size:13px;color:#fbbf24;margin-bottom:10px;">Igrejas em Crescimento</div>
-                                    <div style="font-size:38px;font-weight:900;color:#fff;margin-bottom:2px;">100<sup style='font-size:18px;'>00</sup></div>
-                                    <div style="font-size:16px;color:#fff;margin-bottom:18px;">/mês</div>
-                                    <ul style="list-style:none;padding:0;margin-bottom:18px;color:#fff;font-size:15px;text-align:left;">
-                                        <li><span style='color:#fbbf24'>&#10003;</span> App Web Instalavel (PWA)</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> App do Membro</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> 500 cadastros</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> 10 congregações</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Escola Bíblica Dominical</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Credencial de Membro</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Grupos/Células</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Controle Financeiro</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Controle Contábil</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Relatórios</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Suporte via e-mail</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Suporte via WhatsApp</li>
-                                        <li><span style='color:#fbbf24'>&#10003;</span> Suporte via Telefone</li>
-                                        <li><span style='color:#e11d48'>&#10007;</span> Consultoria Contábil</li>
-                                    </ul>
-                                    <div style="color:#22d3ee;font-size:13px;margin-bottom:8px;">Teste grátis: 7 dias</div>
-                                    <a href="criar_conta.html?plano=carmelo" style="background:#fbbf24;color:#111;padding:10px 0;border-radius:8px;font-weight:700;text-decoration:none;font-size:16px;width:100%;margin-top:8px;">TESTE 7 DIAS</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -660,25 +560,25 @@
             <div>
                 <div class="promo-chip"><i class="fa-solid fa-mobile-screen-button"></i> App do Membro</div>
                 <h2 class="promo-title">Tudo o que o <span>App do Membro</span> oferece</h2>
-                <p class="promo-sub">Um app completo para conectar membros e lideranca com praticidade no dia a dia da igreja.</p>
+                <p class="promo-sub">Um app completo para conectar membros e liderança com praticidade no dia a dia da igreja.</p>
                 <div class="promo-offers">
                     <div class="promo-offer-item"><i class="fa-solid fa-id-card"></i> Credencial digital do membro</div>
                     <div class="promo-offer-item"><i class="fa-solid fa-user-check"></i> Login com CPF e senha</div>
                     <div class="promo-offer-item"><i class="fa-solid fa-calendar-days"></i> Agenda de cultos e eventos</div>
                     <div class="promo-offer-item"><i class="fa-solid fa-bullhorn"></i> Mural de avisos e comunicados</div>
-                    <div class="promo-offer-item"><i class="fa-solid fa-hand-holding-heart"></i> Pedidos de oracao e acompanhamento</div>
-                    <div class="promo-offer-item"><i class="fa-solid fa-bell"></i> Atualizacoes em tempo real</div>
+                    <div class="promo-offer-item"><i class="fa-solid fa-hand-holding-heart"></i> Pedidos de oração e acompanhamento</div>
+                    <div class="promo-offer-item"><i class="fa-solid fa-bell"></i> Atualizações em tempo real</div>
                 </div>
             </div>
             <div class="promo-visual">
-                <strong>Experiencia real do App do Membro</strong>
-                <p>Visualizacao da interface mobile para apresentar com clareza os recursos disponiveis para os membros.</p>
+                <strong>Experiência real do App do Membro</strong>
+                <p>Visualização da interface mobile para apresentar com clareza os recursos disponíveis para os membros.</p>
                 <div class="app-preview">
                     <div class="phone-mock" aria-hidden="true">
                         <div class="phone-screen">
                             <div class="app-header">
                                 <strong>App do Membro</strong>
-                                <span>Bem-vindo, Irmao Joao</span>
+                                <span>Bem-vindo, Irmão João</span>
                             </div>
                             <div class="app-card">
                                 <span class="line wide"></span>
@@ -699,7 +599,7 @@
                         <div class="app-feature"><i class="fa-solid fa-id-card"></i> Credencial digital do membro</div>
                         <div class="app-feature"><i class="fa-solid fa-calendar-days"></i> Agenda de cultos e eventos</div>
                         <div class="app-feature"><i class="fa-solid fa-bullhorn"></i> Mural e comunicados em tempo real</div>
-                        <div class="app-feature"><i class="fa-solid fa-hand-holding-heart"></i> Pedidos de oracao e acompanhamento</div>
+                        <div class="app-feature"><i class="fa-solid fa-hand-holding-heart"></i> Pedidos de oração e acompanhamento</div>
                     </div>
                 </div>
             </div>

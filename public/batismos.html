@@ -452,11 +452,11 @@
 <main class="main-content enterprise-main">
 <div class="page-wrap">
 
-    <!-- CabeÃ§alho -->
+    <!-- Cabeçalho -->
     <div class="page-header">
         <div class="page-header-left">
             <h2><i class="fa-solid fa-water"></i> Batismos</h2>
-            <p>Gerencie cerimÃ´nias de batismo e candidatos</p>
+            <p>Gerencie cerimônias de batismo e candidatos</p>
         </div>
         <div class="header-actions">
             <button class="btn btn-ghost btn-sm" id="btnRecarregar">
@@ -468,14 +468,14 @@
         </div>
     </div>
 
-    <!-- Dois painÃ©is -->
+    <!-- Dois painéis -->
     <div class="two-col">
 
         <!-- Painel esquerdo: lista -->
         <div class="panel">
             <div class="panel-header">
                 <div class="panel-title">
-                    <span><i class="fa-solid fa-list"></i> CerimÃ´nias</span>
+                    <span><i class="fa-solid fa-list"></i> Cerimônias</span>
                     <span class="panel-count" id="countBatismos">0</span>
                 </div>
                 <div class="search-box">
@@ -485,7 +485,7 @@
                 <div class="filtros">
                     <select id="filterStatus">
                         <option value="">Todos os status</option>
-                        <option value="NÃ£o">Em aberto</option>
+                        <option value="Não">Em aberto</option>
                         <option value="Sim">Encerrados</option>
                     </select>
                 </div>
@@ -544,7 +544,7 @@
                         <i class="fa-solid fa-users"></i> Candidatos
                     </button>
                     <button class="tab-btn" data-tab="tabObs">
-                        <i class="fa-solid fa-note-sticky"></i> ObservaÃ§Ãµes
+                        <i class="fa-solid fa-note-sticky"></i> Observações
                     </button>
                 </div>
 
@@ -554,10 +554,10 @@
                 <div class="tab-panel active" id="tabDados">
                     <form name="batForm">
                         <div class="form-section">
-                            <div class="section-title">InformaÃ§Ãµes da cerimÃ´nia</div>
+                            <div class="section-title">Informações da cerimônia</div>
                             <div class="form-grid g2">
                                 <div class="field" style="grid-column:span 2;">
-                                    <label>DescriÃ§Ã£o</label>
+                                    <label>Descrição</label>
                                     <input type="text" name="descricao" placeholder="Ex: Batismo 1Âº Semestre 2026">
                                 </div>
                                 <div class="field">
@@ -565,45 +565,45 @@
                                     <input type="date" name="dataBatismo">
                                 </div>
                                 <div class="field">
-                                    <label>HorÃ¡rio</label>
+                                    <label>Horário</label>
                                     <input type="time" name="horario">
                                 </div>
                                 <div class="field">
                                     <label>Local</label>
-                                    <input type="text" name="localBatismo" placeholder="Local da cerimÃ´nia">
+                                    <input type="text" name="localBatismo" placeholder="Local da cerimônia">
                                 </div>
                                 <div class="field">
-                                    <label>Pastor ResponsÃ¡vel</label>
+                                    <label>Pastor Responsável</label>
                                     <input type="text" name="pastor" placeholder="Nome do pastor">
                                 </div>
                                 <div class="field">
-                                    <label>SituaÃ§Ã£o</label>
+                                    <label>Situação</label>
                                     <select name="encerrado">
-                                        <option value="NÃ£o">Em aberto</option>
+                                        <option value="Não">Em aberto</option>
                                         <option value="Sim">Encerrado</option>
                                     </select>
                                 </div>
                                 <div class="field">
-                                    <label>CongregaÃ§Ã£o</label>
-                                    <input type="text" name="congregacao" placeholder="CongregaÃ§Ã£o">
+                                    <label>Congregação</label>
+                                    <input type="text" name="congregacao" placeholder="Congregação">
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-section">
-                            <div class="section-title">Aula prÃ©-batismal</div>
+                            <div class="section-title">Aula pré-batismal</div>
                             <div class="form-grid g3">
                                 <div class="field">
                                     <label>Data da aula</label>
                                     <input type="date" name="dataAula">
                                 </div>
                                 <div class="field">
-                                    <label>Professor / ResponsÃ¡vel</label>
-                                    <input type="text" name="professorAula" placeholder="Nome do responsÃ¡vel">
+                                    <label>Professor / Responsável</label>
+                                    <input type="text" name="professorAula" placeholder="Nome do responsável">
                                 </div>
                                 <div class="field">
                                     <label>Local da aula</label>
-                                    <input type="text" name="localAula" placeholder="Sala ou endereÃ§o">
+                                    <input type="text" name="localAula" placeholder="Sala ou endereço">
                                 </div>
                             </div>
                         </div>
@@ -660,7 +660,7 @@
                                     <th>Nome</th>
                                     <th>Telefone</th>
                                     <th>Status</th>
-                                    <th>AÃ§Ãµes</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="candidatosBody">
@@ -674,29 +674,29 @@
                     </div>
                 </div>
 
-                <!-- Aba ObservaÃ§Ãµes -->
+                <!-- Aba Observações -->
                 <div class="tab-panel" id="tabObs">
                     <form name="batForm">
                         <div class="form-section">
-                            <div class="section-title">ObservaÃ§Ãµes gerais</div>
+                            <div class="section-title">Observações gerais</div>
                             <div class="field">
-                                <label>ObservaÃ§Ãµes</label>
-                                <textarea name="obs" rows="5" placeholder="ObservaÃ§Ãµes sobre a cerimÃ´nia..."></textarea>
+                                <label>Observações</label>
+                                <textarea name="obs" rows="5" placeholder="Observações sobre a cerimônia..."></textarea>
                             </div>
                         </div>
                         <div class="form-section">
-                            <div class="section-title">Registros pÃ³s-cerimÃ´nia</div>
+                            <div class="section-title">Registros pós-cerimônia</div>
                             <div class="form-grid g2">
                                 <div class="field">
                                     <label>Total de batizados</label>
                                     <input type="number" name="totalBatizados" min="0" placeholder="0">
                                 </div>
                                 <div class="field">
-                                    <label>FotÃ³grafo / ResponsÃ¡vel mÃ­dia</label>
+                                    <label>Fotógrafo / Responsável mídia</label>
                                     <input type="text" name="fotografo" placeholder="Nome">
                                 </div>
                                 <div class="field" style="grid-column:span 2;">
-                                    <label>Link de fotos / vÃ­deo</label>
+                                    <label>Link de fotos / vídeo</label>
                                     <input type="url" name="linkMidia" placeholder="https://...">
                                 </div>
                             </div>
@@ -704,7 +704,7 @@
                     </form>
                     <div class="form-actions">
                         <button class="btn btn-primary" id="btnSalvarObs">
-                            <i class="fa-solid fa-floppy-disk"></i> Salvar observaÃ§Ãµes
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar observações
                         </button>
                     </div>
                 </div>
@@ -778,7 +778,7 @@
                         <i class="fa-solid fa-water"></i>
                     </div>
                     <div class="bat-info">
-                        <div class="bat-name">${b.descricao || 'Sem descriÃ§Ã£o'}</div>
+                        <div class="bat-name">${b.descricao || 'Sem descrição'}</div>
                         <div class="bat-sub">
                             ${fmtDate(b.data_batismo)}
                             ${b.pastor ? 'Â· ' + b.pastor : ''}
@@ -829,7 +829,7 @@
         if (!bat) {
             document.querySelectorAll('form[name="batForm"] [name]').forEach(el => el.value = '');
             const enc = document.querySelector('[name="encerrado"]');
-            if (enc) enc.value = 'NÃ£o';
+            if (enc) enc.value = 'Não';
             renderCandidatos(null);
             return;
         }
@@ -839,7 +839,7 @@
         setVal('horario',        bat.horario);
         setVal('localBatismo',   bat.local_batismo);
         setVal('pastor',         bat.pastor);
-        setVal('encerrado',      bat.encerrado || 'NÃ£o');
+        setVal('encerrado',      bat.encerrado || 'Não');
         setVal('congregacao',    bat.congregacao);
         setVal('dataAula',       bat.data_aula);
         setVal('professorAula',  bat.professor_aula);
@@ -943,7 +943,7 @@
             horario:        get('horario')         || null,
             local_batismo:  get('localBatismo')    || null,
             pastor:         get('pastor')          || null,
-            encerrado:      get('encerrado')       || 'NÃ£o',
+            encerrado:      get('encerrado')       || 'Não',
             congregacao:    get('congregacao')     || null,
             data_aula:      get('dataAula')        || null,
             professor_aula: get('professorAula')   || null,
@@ -959,7 +959,7 @@
     const salvar = async () => {
         setStatus('');
         const payload = getPayload();
-        if (!payload.descricao) { setStatus('Informe a descriÃ§Ã£o do batismo.', true); return; }
+        if (!payload.descricao) { setStatus('Informe a descrição do batismo.', true); return; }
         try {
             if (batismoAtual?.id) {
                 batismoAtual = await api(`/api/batismos/${batismoAtual.id}`, {
@@ -980,12 +980,12 @@
     /* â”€â”€ Excluir â”€â”€ */
     const excluir = async () => {
         if (!batismoAtual?.id) { setStatus('Selecione um batismo para excluir.', true); return; }
-        if (!confirm(`Excluir o batismo "${batismoAtual.descricao}"? Esta aÃ§Ã£o nÃ£o pode ser desfeita.`)) return;
+        if (!confirm(`Excluir o batismo "${batismoAtual.descricao}"? Esta ação não pode ser desfeita.`)) return;
         try {
             await api(`/api/batismos/${batismoAtual.id}`, { method: 'DELETE' });
             batismoAtual = null;
             limpar();
-            setStatus('Batismo excluÃ­do.');
+            setStatus('Batismo excluído.');
             await loadBatismos();
         } catch (e) { setStatus(e.message, true); }
     };

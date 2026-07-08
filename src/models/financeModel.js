@@ -47,21 +47,24 @@ async function ensureFinanceTables() {
                     competencia VARCHAR(20) NOT NULL,
                     saldo_inicial DECIMAL(12,2) NOT NULL,
                     igreja_id INTEGER NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE (igreja_id, competencia)
                 )`,
                 `CREATE TABLE IF NOT EXISTS caixa_saldo_inicial (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     competencia VARCHAR(20) NOT NULL,
                     saldo_inicial DECIMAL(12,2) NOT NULL,
                     igreja_id INT NOT NULL,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE KEY uq_csi_igreja_comp (igreja_id, competencia)
                 )`,
                 `CREATE TABLE IF NOT EXISTS caixa_saldo_inicial (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     competencia TEXT NOT NULL,
                     saldo_inicial REAL NOT NULL,
                     igreja_id INTEGER NOT NULL,
-                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE (igreja_id, competencia)
                 )`
             ], [
                 'CREATE INDEX IF NOT EXISTS idx_csi_igreja_comp ON caixa_saldo_inicial (igreja_id, competencia)'
@@ -228,28 +231,13 @@ async function createTransacao(payload) {
     );
 }
 
-async function findSaldoInicialByCompetencia(igrejaId, competencia) {
-    await ensureFinanceTables();
-
-    const [rows] = await pool.query(
-        'SELECT id FROM caixa_saldo_inicial WHERE igreja_id = ? AND competencia = ? LIMIT 1',
-        [igrejaId, competencia]
-    );
-
-    return rows[0] || null;
-}
-
-async function updateSaldoInicialById(id, saldoInicial) {
-    await ensureFinanceTables();
-
-    await pool.query('UPDATE caixa_saldo_inicial SET saldo_inicial = ? WHERE id = ?', [saldoInicial, id]);
-}
-
-async function createSaldoInicial(payload) {
+async function upsertSaldoInicial(payload) {
     await ensureFinanceTables();
 
     await pool.query(
-        'INSERT INTO caixa_saldo_inicial (competencia, saldo_inicial, igreja_id) VALUES (?, ?, ?)',
+        `INSERT INTO caixa_saldo_inicial (competencia, saldo_inicial, igreja_id)
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE saldo_inicial = VALUES(saldo_inicial)`,
         [payload.competencia, payload.saldoInicial, payload.igrejaId]
     );
 }
@@ -632,14 +620,12 @@ async function deleteCaixaLancamento(id, igrejaId) {
 
 module.exports = {
     ensureFinanceTables,
-    createSaldoInicial,
+    upsertSaldoInicial,
     createTransacao,
-    findSaldoInicialByCompetencia,
     getLatestSaldoInicial,
     getTotais,
     listTransacoesWithFilters,
     listTransacoes,
-    updateSaldoInicialById,
     createDizimo,
     deleteDizimo,
     getTotaisDizimos,

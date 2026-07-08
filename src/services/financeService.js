@@ -27,14 +27,7 @@ async function getSaldoInicial(igrejaId) {
 }
 
 async function upsertSaldoInicial(payload) {
-    const existing = await financeModel.findSaldoInicialByCompetencia(payload.igrejaId, payload.competencia);
-
-    if (existing) {
-        await financeModel.updateSaldoInicialById(existing.id, payload.saldoInicial);
-        return;
-    }
-
-    await financeModel.createSaldoInicial(payload);
+    await financeModel.upsertSaldoInicial(payload);
 }
 
 // ─── Dízimos ────────────────────────────────────────────────────────────────

@@ -197,14 +197,11 @@ async function listCaixaLancamentos(req, res) {
 async function createCaixaLancamento(req, res) {
     const igrejaId = getIgrejaId(req.auth);
     const userId = req.auth?.id || null;
-    const { data, doc, historico, valor, tipo, observacao } = req.body;
+    const { data, doc, historico, valor, tipo, observacao } = req.validatedBody;
 
-    if (!historico || !historico.trim()) {
-        return res.status(400).json({ error: 'O histórico é obrigatório.' });
-    }
     const valorNum = parseDecimal(valor);
     if (Number.isNaN(valorNum) || valorNum <= 0) {
-        return res.status(400).json({ error: 'Valor inválido.' });
+        throw createHttpError(400, 'Valor inválido.');
     }
 
     const id = await financeService.createCaixaLancamento(igrejaId, userId, { data, doc, historico: historico.trim(), valor: valorNum, tipo, observacao });
@@ -223,9 +220,9 @@ async function deleteCaixaLancamento(req, res) {
 
 async function upsertCaixaMes(req, res) {
     const igrejaId = getIgrejaId(req.auth);
-    const { mesCompetencia, saldoInicial, observacao } = req.body;
-    if (!mesCompetencia) return res.status(400).json({ error: 'Mês de competência é obrigatório.' });
+    const { mesCompetencia, saldoInicial, observacao } = req.validatedBody;
     await financeService.upsertCaixaMes(igrejaId, { mesCompetencia, saldoInicial: parseDecimal(saldoInicial) || 0, observacao });
+    audit('finance.caixa.mes.upsert', req, { mesCompetencia });
     res.json({ message: 'Mês de caixa configurado com sucesso.' });
 }
 

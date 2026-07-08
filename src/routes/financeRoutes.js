@@ -2,6 +2,8 @@ const express = require('express');
 
 const { authorize, requireAuth } = require('../middlewares/auth');
 const {
+    caixaLancamentoSchema,
+    caixaMesSchema,
     dizimoFiltroSchema,
     dizimoSchema,
     saldoInicialSchema,
@@ -55,8 +57,8 @@ router.delete('/tipos-receita/:id', requireAuth, authorize(['admin', 'financeiro
 
 router.get('/caixa/resumo', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), getCaixaResumo);
 router.get('/caixa/lancamentos', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), listCaixaLancamentos);
-router.post('/caixa/lancamentos', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), createCaixaLancamento);
+router.post('/caixa/lancamentos', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), validateBody(caixaLancamentoSchema), createCaixaLancamento);
 router.delete('/caixa/lancamentos/:id', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), deleteCaixaLancamento);
-router.post('/caixa/mes', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), upsertCaixaMes);
+router.post('/caixa/mes', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), validateBody(caixaMesSchema), upsertCaixaMes);
 
 module.exports = router;

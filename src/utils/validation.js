@@ -41,6 +41,21 @@ const saldoInicialSchema = Joi.object({
     saldoInicial: decimalInput.label('Saldo inicial')
 });
 
+const caixaLancamentoSchema = Joi.object({
+    data: Joi.string().trim().pattern(/^\d{4}-\d{2}-\d{2}$/).allow('', null).optional().label('Data'),
+    doc: Joi.string().trim().max(50).allow('', null).optional().label('Documento'),
+    historico: Joi.string().trim().min(1).max(500).required().label('Histórico'),
+    valor: decimalInput.label('Valor'),
+    tipo: Joi.string().valid('ENTRADA', 'SAIDA').required().label('Tipo'),
+    observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação')
+});
+
+const caixaMesSchema = Joi.object({
+    mesCompetencia: Joi.string().trim().pattern(/^\d{4}-\d{2}$/).required().label('Mês de competência'),
+    saldoInicial: decimalInput.label('Saldo inicial'),
+    observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação')
+});
+
 const cargoSchema = Joi.object({
     descricao: Joi.string().trim().min(1).max(255).required().label('Descrição')
 });
@@ -534,6 +549,8 @@ module.exports = {
     outrasIgrejasQuerySchema,
     outrasIgrejasSchema,
     saldoInicialSchema,
+    caixaLancamentoSchema,
+    caixaMesSchema,
     transacaoSchema,
     bancoContaSchema,
     bancoLancamentoSchema,

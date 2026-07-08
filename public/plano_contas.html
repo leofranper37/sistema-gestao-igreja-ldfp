@@ -22,31 +22,32 @@
         <div class="enterprise-page-hero">
             <div>
                 <h2>Plano de Contas</h2>
-                <p>Cadastre e organize contas contabeis para classificacao das movimentacoes.</p>
+                <p>Cadastre e organize contas contábeis para classificação das movimentações.</p>
             </div>
-            <div class="enterprise-page-badge"><i class="fa-solid fa-list-ol"></i> Estrutura contabil</div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-list-ol"></i> Estrutura contábil</div>
         </div>
 
         <section class="card">
             <h3>Nova conta</h3>
             <div class="grid">
-                <input id="codigo" class="field" placeholder="Codigo (ex: 1.1.01)">
-                <input id="descricao" class="field" placeholder="Descricao da conta">
-                <select id="natureza" class="field">
-                    <option value="Ativo">Ativo</option>
-                    <option value="Passivo">Passivo</option>
-                    <option value="Receita">Receita</option>
-                    <option value="Despesa">Despesa</option>
+                <input id="codigo" class="field" placeholder="Código (ex: 1.1.01)">
+                <input id="descricao" class="field" placeholder="Descrição da conta">
+                <select id="natureza" class="field" title="Natureza da conta" aria-label="Natureza da conta">
+                    <option value="ativo">Ativo</option>
+                    <option value="passivo">Passivo</option>
+                    <option value="receita">Receita</option>
+                    <option value="despesa">Despesa</option>
                 </select>
                 <button id="btnAdd" class="btn" type="button">Adicionar</button>
             </div>
+            <p id="msg" style="margin-top:10px;font-size:13px;"></p>
         </section>
 
         <section class="card">
             <h3>Contas cadastradas</h3>
             <table class="table">
-                <thead><tr><th>Codigo</th><th>Descricao</th><th>Natureza</th></tr></thead>
-                <tbody id="tbody"></tbody>
+                <thead><tr><th>Código</th><th>Descrição</th><th>Natureza</th></tr></thead>
+                <tbody id="tbody"><tr><td colspan="3">Carregando...</td></tr></tbody>
             </table>
         </section>
     </div>
@@ -57,43 +58,64 @@
 <script>
 requireAuthSession();
 
-const KEY = 'ldfp_plano_contas_v1';
+const NATUREZA_LABEL = { ativo: 'Ativo', passivo: 'Passivo', receita: 'Receita', despesa: 'Despesa' };
 
-function getItems() {
-    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (_) { return []; }
+function setMsg(text, isError) {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.style.color = isError ? '#b91c1c' : '#0f766e';
 }
 
-function setItems(items) {
-    localStorage.setItem(KEY, JSON.stringify(items));
-}
-
-function render() {
+function render(items) {
     const tbody = document.getElementById('tbody');
-    const items = getItems();
     if (!items.length) {
         tbody.innerHTML = '<tr><td colspan="3">Nenhuma conta cadastrada.</td></tr>';
         return;
     }
 
-    tbody.innerHTML = items.map((i) => '<tr><td>' + i.codigo + '</td><td>' + i.descricao + '</td><td>' + i.natureza + '</td></tr>').join('');
+    tbody.innerHTML = items.map((i) => '<tr><td>' + i.codigo + '</td><td>' + i.nome + '</td><td>' + (NATUREZA_LABEL[i.natureza] || i.natureza) + '</td></tr>').join('');
 }
 
-document.getElementById('btnAdd').addEventListener('click', () => {
+async function carregar() {
+    try {
+        const resp = await fetch('/contabilidade/plano-contas');
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || 'Erro ao carregar plano de contas.');
+        render(data.items || []);
+    } catch (err) {
+        document.getElementById('tbody').innerHTML = '<tr><td colspan="3">Não foi possível carregar as contas.</td></tr>';
+        setMsg(err.message, true);
+    }
+}
+
+document.getElementById('btnAdd').addEventListener('click', async () => {
     const codigo = document.getElementById('codigo').value.trim();
-    const descricao = document.getElementById('descricao').value.trim();
+    const nome = document.getElementById('descricao').value.trim();
     const natureza = document.getElementById('natureza').value;
-    if (!codigo || !descricao) return;
+    if (!codigo || !nome) {
+        setMsg('Informe código e descrição.', true);
+        return;
+    }
 
-    const items = getItems();
-    items.push({ codigo, descricao, natureza });
-    setItems(items);
+    try {
+        const resp = await fetch('/contabilidade/plano-contas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ codigo, nome, natureza })
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || 'Erro ao adicionar conta.');
 
-    document.getElementById('codigo').value = '';
-    document.getElementById('descricao').value = '';
-    render();
+        document.getElementById('codigo').value = '';
+        document.getElementById('descricao').value = '';
+        setMsg('Conta adicionada com sucesso.', false);
+        await carregar();
+    } catch (err) {
+        setMsg(err.message, true);
+    }
 });
 
-render();
+carregar();
 </script>
 </body>
 </html>

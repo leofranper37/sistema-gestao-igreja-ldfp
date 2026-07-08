@@ -15,6 +15,8 @@
         .table th, .table td { border-bottom:1px solid #e5e7eb; text-align:left; padding:10px; font-size:13px; }
         .total { font-weight:800; color:#0f172a; margin-top:10px; }
         @media (max-width:1100px) { .grid { grid-template-columns: 1fr 1fr; } }
+        .grid5 { display:grid; grid-template-columns: 160px 1fr 150px 170px auto; gap:10px; align-items:end; }
+        @media (max-width:1200px) { .grid5 { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body class="theme-petroleo enterprise-shell-page" data-shell-active="balancete_abertura.html" data-shell-title="Balancete de Abertura" data-shell-breadcrumb="LDFP / Contabilidade / Balancete de Abertura" data-shell-chip="Contabilidade" data-shell-role="Financeiro">
@@ -23,26 +25,31 @@
         <div class="enterprise-page-hero">
             <div>
                 <h2>Balancete de Abertura</h2>
-                <p>Registre os saldos iniciais das contas para iniciar um novo periodo contabil.</p>
+                <p>Registre os saldos iniciais das contas para iniciar um novo período contábil.</p>
             </div>
             <div class="enterprise-page-badge"><i class="fa-solid fa-book-open"></i> Saldo inicial</div>
         </div>
 
         <section class="card">
             <h3>Adicionar saldo inicial</h3>
-            <div class="grid">
+            <div class="grid5">
                 <input id="conta" class="field" placeholder="Conta">
-                <input id="descricao" class="field" placeholder="Descricao">
+                <input id="descricao" class="field" placeholder="Descrição">
+                <select id="tipo" class="field" title="Tipo de saldo" aria-label="Tipo de saldo">
+                    <option value="debito">Débito</option>
+                    <option value="credito">Crédito</option>
+                </select>
                 <input id="saldo" class="field" type="number" step="0.01" placeholder="Saldo inicial">
                 <button id="btnAdd" class="btn" type="button">Adicionar</button>
             </div>
+            <p id="msg" style="margin-top:10px;font-size:13px;"></p>
         </section>
 
         <section class="card">
             <h3>Itens do balancete</h3>
             <table class="table">
-                <thead><tr><th>Conta</th><th>Descricao</th><th>Saldo inicial</th></tr></thead>
-                <tbody id="tbody"></tbody>
+                <thead><tr><th>Conta</th><th>Tipo</th><th>Valor</th></tr></thead>
+                <tbody id="tbody"><tr><td colspan="3">Carregando...</td></tr></tbody>
             </table>
             <div id="total" class="total"></div>
         </section>
@@ -54,24 +61,19 @@
 <script>
 requireAuthSession();
 
-const KEY = 'ldfp_balancete_abertura_v1';
-
 function moeda(v) {
     return Number(v || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
 }
 
-function getItems() {
-    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (_) { return []; }
+function setMsg(text, isError) {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.style.color = isError ? '#b91c1c' : '#0f766e';
 }
 
-function setItems(items) {
-    localStorage.setItem(KEY, JSON.stringify(items));
-}
-
-function render() {
+function render(items) {
     const tbody = document.getElementById('tbody');
     const totalEl = document.getElementById('total');
-    const items = getItems();
 
     if (!items.length) {
         tbody.innerHTML = '<tr><td colspan="3">Nenhum saldo inicial informado.</td></tr>';
@@ -81,30 +83,66 @@ function render() {
 
     let total = 0;
     tbody.innerHTML = items.map((i) => {
-        total += Number(i.saldo || 0);
-        return '<tr><td>' + i.conta + '</td><td>' + i.descricao + '</td><td>' + moeda(i.saldo) + '</td></tr>';
+        const debito = Number(i.debito || 0);
+        const credito = Number(i.credito || 0);
+        const valor = debito || credito;
+        total += debito - credito;
+        return '<tr><td>' + i.conta + '</td><td>' + (debito ? 'Débito' : 'Crédito') + '</td><td>' + moeda(valor) + '</td></tr>';
     }).join('');
 
-    totalEl.textContent = 'Total: ' + moeda(total);
+    totalEl.textContent = 'Total (débito - crédito): ' + moeda(total);
 }
 
-document.getElementById('btnAdd').addEventListener('click', () => {
-    const conta = document.getElementById('conta').value.trim();
+async function carregar() {
+    try {
+        const resp = await fetch('/contabilidade/balancete-abertura');
+        const data = await resp.json().catch(() => ([]));
+        if (!resp.ok) throw new Error(data.error || 'Erro ao carregar balancete.');
+        render(Array.isArray(data) ? data : []);
+    } catch (err) {
+        document.getElementById('tbody').innerHTML = '<tr><td colspan="3">Não foi possível carregar o balancete.</td></tr>';
+        setMsg(err.message, true);
+    }
+}
+
+document.getElementById('btnAdd').addEventListener('click', async () => {
+    const contaBase = document.getElementById('conta').value.trim();
     const descricao = document.getElementById('descricao').value.trim();
+    const tipo = document.getElementById('tipo').value;
     const saldo = document.getElementById('saldo').value;
-    if (!conta || !descricao || !saldo) return;
+    if (!contaBase || !descricao || !saldo) {
+        setMsg('Preencha conta, descrição e saldo inicial.', true);
+        return;
+    }
 
-    const items = getItems();
-    items.push({ conta, descricao, saldo: Number(saldo) });
-    setItems(items);
+    const conta = contaBase + ' — ' + descricao;
+    const valor = Number(saldo);
+    const body = {
+        conta,
+        debito: tipo === 'debito' ? valor : 0,
+        credito: tipo === 'credito' ? valor : 0
+    };
 
-    document.getElementById('conta').value = '';
-    document.getElementById('descricao').value = '';
-    document.getElementById('saldo').value = '';
-    render();
+    try {
+        const resp = await fetch('/contabilidade/balancete-abertura', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || 'Erro ao adicionar saldo inicial.');
+
+        document.getElementById('conta').value = '';
+        document.getElementById('descricao').value = '';
+        document.getElementById('saldo').value = '';
+        setMsg('Saldo inicial adicionado com sucesso.', false);
+        await carregar();
+    } catch (err) {
+        setMsg(err.message, true);
+    }
 });
 
-render();
+carregar();
 </script>
 </body>
 </html>

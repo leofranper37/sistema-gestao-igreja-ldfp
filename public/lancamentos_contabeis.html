@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Lancamentos Contabeis</title>
+    <title>LDFP - Lançamentos Contábeis</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -16,33 +16,35 @@
         @media (max-width:1200px) { .grid { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-active="lancamentos_contabeis.html" data-shell-title="Lancamentos Contabeis" data-shell-breadcrumb="LDFP / Contabilidade / Lancamentos Contabeis" data-shell-chip="Contabilidade" data-shell-role="Financeiro">
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="lancamentos_contabeis.html" data-shell-title="Lançamentos Contábeis" data-shell-breadcrumb="LDFP / Contabilidade / Lançamentos Contábeis" data-shell-chip="Contabilidade" data-shell-role="Financeiro">
 <main class="main-content enterprise-main">
     <div class="enterprise-page-shell">
         <div class="enterprise-page-hero">
             <div>
-                <h2>Lancamentos Contabeis</h2>
-                <p>Registre partidas com conta de debito e credito para o controle contabil.</p>
+                <h2>Lançamentos Contábeis</h2>
+                <p>Registre partidas com conta de débito e crédito para o controle contábil.</p>
             </div>
-            <div class="enterprise-page-badge"><i class="fa-solid fa-clipboard-list"></i> Diario contabil</div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-clipboard-list"></i> Diário contábil</div>
         </div>
 
         <section class="card">
-            <h3>Novo lancamento</h3>
+            <h3>Novo lançamento</h3>
             <div class="grid">
-                <input id="debito" class="field" placeholder="Conta debito">
-                <input id="credito" class="field" placeholder="Conta credito">
+                <input id="historico" class="field" placeholder="Histórico (descrição do lançamento)" style="grid-column:1 / -1;">
+                <input id="debito" class="field" placeholder="Conta débito">
+                <input id="credito" class="field" placeholder="Conta crédito">
                 <input id="valor" class="field" type="number" step="0.01" placeholder="Valor">
                 <input id="data" class="field" type="date">
                 <button id="btnAdd" class="btn" type="button">Registrar</button>
             </div>
+            <p id="msg" style="margin-top:10px;font-size:13px;"></p>
         </section>
 
         <section class="card">
-            <h3>Livro diario</h3>
+            <h3>Livro diário</h3>
             <table class="table">
-                <thead><tr><th>Data</th><th>Debito</th><th>Credito</th><th>Valor</th></tr></thead>
-                <tbody id="tbody"></tbody>
+                <thead><tr><th>Data</th><th>Histórico</th><th>Débito</th><th>Crédito</th><th>Valor</th></tr></thead>
+                <tbody id="tbody"><tr><td colspan="5">Carregando...</td></tr></tbody>
             </table>
         </section>
     </div>
@@ -53,52 +55,80 @@
 <script>
 requireAuthSession();
 
-const KEY = 'ldfp_lancamentos_contabeis_v1';
-
 function moeda(v) {
     return Number(v || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
 }
 
-function getItems() {
-    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (_) { return []; }
+function setMsg(text, isError) {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.style.color = isError ? '#b91c1c' : '#0f766e';
 }
 
-function setItems(items) {
-    localStorage.setItem(KEY, JSON.stringify(items));
-}
-
-function render() {
+function render(items) {
     const tbody = document.getElementById('tbody');
-    const items = getItems().sort((a, b) => String(b.data).localeCompare(String(a.data)));
-    if (!items.length) {
-        tbody.innerHTML = '<tr><td colspan="4">Nenhum lancamento contabil registrado.</td></tr>';
+    const sorted = [...items].sort((a, b) => String(b.data_lancamento).localeCompare(String(a.data_lancamento)));
+    if (!sorted.length) {
+        tbody.innerHTML = '<tr><td colspan="5">Nenhum lançamento contábil registrado.</td></tr>';
         return;
     }
 
-    tbody.innerHTML = items.map((i) => {
-        return '<tr><td>' + new Date(i.data + 'T00:00:00').toLocaleDateString('pt-BR') + '</td><td>' + i.debito + '</td><td>' + i.credito + '</td><td>' + moeda(i.valor) + '</td></tr>';
+    tbody.innerHTML = sorted.map((i) => {
+        return '<tr><td>' + new Date(i.data_lancamento + 'T00:00:00').toLocaleDateString('pt-BR') + '</td><td>' + i.historico + '</td><td>' + i.conta_debito + '</td><td>' + i.conta_credito + '</td><td>' + moeda(i.valor) + '</td></tr>';
     }).join('');
 }
 
-document.getElementById('btnAdd').addEventListener('click', () => {
+async function carregar() {
+    try {
+        const resp = await fetch('/contabilidade/lancamentos');
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || 'Erro ao carregar lançamentos.');
+        render(data.items || []);
+    } catch (err) {
+        document.getElementById('tbody').innerHTML = '<tr><td colspan="5">Não foi possível carregar os lançamentos.</td></tr>';
+        setMsg(err.message, true);
+    }
+}
+
+document.getElementById('btnAdd').addEventListener('click', async () => {
+    const historico = document.getElementById('historico').value.trim();
     const debito = document.getElementById('debito').value.trim();
     const credito = document.getElementById('credito').value.trim();
     const valor = document.getElementById('valor').value;
     const data = document.getElementById('data').value;
-    if (!debito || !credito || !valor || !data) return;
+    if (!historico || !debito || !credito || !valor || !data) {
+        setMsg('Preencha histórico, contas, valor e data.', true);
+        return;
+    }
 
-    const items = getItems();
-    items.push({ debito, credito, valor: Number(valor), data });
-    setItems(items);
+    try {
+        const resp = await fetch('/contabilidade/lancamentos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dataLancamento: data,
+                historico,
+                contaDebito: debito,
+                contaCredito: credito,
+                valor: Number(valor)
+            })
+        });
+        const respData = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(respData.error || 'Erro ao registrar lançamento.');
 
-    document.getElementById('debito').value = '';
-    document.getElementById('credito').value = '';
-    document.getElementById('valor').value = '';
-    document.getElementById('data').value = '';
-    render();
+        document.getElementById('historico').value = '';
+        document.getElementById('debito').value = '';
+        document.getElementById('credito').value = '';
+        document.getElementById('valor').value = '';
+        document.getElementById('data').value = '';
+        setMsg('Lançamento registrado com sucesso.', false);
+        await carregar();
+    } catch (err) {
+        setMsg(err.message, true);
+    }
 });
 
-render();
+carregar();
 </script>
 </body>
 </html>

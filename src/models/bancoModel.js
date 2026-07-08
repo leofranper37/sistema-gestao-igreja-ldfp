@@ -162,7 +162,7 @@ async function listLancamentos(contaId, igrejaId) {
     const [rows] = await pool.query(
         `SELECT bl.*, bc.nome AS conta_nome
          FROM banco_lancamentos bl
-         JOIN banco_contas bc ON bc.id = bl.conta_id
+         JOIN banco_contas bc ON bc.id = bl.conta_id AND bc.igreja_id = bl.igreja_id
          WHERE bl.conta_id = ? AND bl.igreja_id = ?
          ORDER BY bl.data_lancamento DESC, bl.id DESC`,
         [contaId, igrejaId]

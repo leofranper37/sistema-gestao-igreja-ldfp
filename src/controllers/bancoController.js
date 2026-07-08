@@ -63,6 +63,10 @@ async function createLancamento(req, res) {
     const igrejaId = getIgrejaId(req.auth);
     const contaId = Number(req.params.contaId);
     const { descricao, tipo, valor, dataLancamento, observacao } = req.validatedBody;
+
+    const conta = await bancoService.getConta(contaId, igrejaId);
+    if (!conta) throw createHttpError(404, 'Conta não encontrada.');
+
     const id = await bancoService.createLancamento(igrejaId, { contaId, descricao, tipo, valor, dataLancamento, observacao }, req.auth.id);
     audit('banco.lancamento.create', req, { id, contaId });
     res.status(201).json({ message: 'Lançamento registrado.', id });

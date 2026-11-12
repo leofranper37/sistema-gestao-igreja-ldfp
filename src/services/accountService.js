@@ -7,6 +7,7 @@ const accountModel = require('../models/accountModel');
 const { sendMail } = require('../utils/mailer');
 const { createHttpError } = require('../utils/httpError');
 const doisFatores = require('./doisFatoresService');
+const googleAuth = require('./googleAuthService');
 
 function normalizePlanoSlug(plano) {
     const normalized = String(plano || '').trim().toLowerCase();
@@ -109,6 +110,18 @@ async function login(payload) {
     return buildAuthResponse(userRecord);
 }
 
+/** Lote 8: login com Google → mesmo resultado do /login (token, ou desafio do 2FA). */
+async function loginGoogle(credential) {
+    const perfil = await googleAuth.verificarIdToken(credential);
+    const u = await googleAuth.resolverUsuario(perfil);
+    const userRecord = await accountModel.findUserByEmail(u.email);
+    if (!userRecord) throw createHttpError(401, 'Usuário não encontrado.');
+    if (await doisFatores.estaAtivo(userRecord.id)) {
+        return { requer2fa: true, desafio: doisFatores.criarDesafio(userRecord.id), email: userRecord.email };
+    }
+    return buildAuthResponse(userRecord);
+}
+
 /** Lote 7: segunda etapa do login — desafio (do /login) + código do app ou de recuperação. */
 async function concluirLogin2fa(desafio, codigo) {
     const p = doisFatores.lerDesafio(desafio);
@@ -181,6 +194,7 @@ async function resetPassword(token, novaSenha) {
 
 module.exports = {
     login,
+    loginGoogle,
     concluirLogin2fa,
     registerAccount,
     requestPasswordReset,

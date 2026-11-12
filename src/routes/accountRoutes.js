@@ -1,7 +1,8 @@
 const express = require('express');
 const { listPlanosPublico } = require('../controllers/superAdminController');
 
-const { createConta, login, login2fa, esqueciSenha, redefinirSenha } = require('../controllers/accountController');
+const { createConta, login, login2fa, loginGoogle, esqueciSenha, redefinirSenha } = require('../controllers/accountController');
+const googleAuth = require('../services/googleAuthService');
 const { createContaSchema, loginSchema, validateBody } = require('../utils/validation');
 const { pool } = require('../config/db');
 
@@ -13,6 +14,9 @@ router.post('/criar-conta', validateBody(createContaSchema), createConta);
 router.post('/api/cadastro-igreja', validateBody(createContaSchema), createConta);
 router.post('/login', validateBody(loginSchema), login);
 router.post('/login/2fa', login2fa); // Lote 7 — segunda etapa (protegida pelo loginRateLimiter de /login)
+// Lote 8 — login com Google (desligado sem GOOGLE_CLIENT_ID no .env)
+router.post('/login/google', loginGoogle);
+router.get('/api/auth/google/config', (req, res) => res.json({ ativo: googleAuth.ativo(), clientId: googleAuth.ativo() ? googleAuth.clientIds()[0] : null }));
 router.post('/esqueci-senha', esqueciSenha);
 router.post('/redefinir-senha', redefinirSenha);
 

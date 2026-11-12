@@ -102,6 +102,21 @@
             <button class="rl-btn ghost" id="btnDesligar" type="button" style="color:#b91c1c;border-color:#fecaca"><i class="fa-solid fa-power-off"></i> Desligar verificação em duas etapas</button>
             <p class="sg-msg" id="msgGer"></p>
         </section>
+
+        <!-- Lote 8: conta Google -->
+        <section class="rl-card" id="secGoogle" hidden>
+            <h3><i class="fa-brands fa-google"></i> Entrar com Google</h3>
+            <div id="googleStatus" style="font-size:14px;color:#475569;"></div>
+            <div id="googleVincular" hidden style="margin-top:12px;">
+                <p style="font-size:13px;color:#64748b;margin:0 0 10px;">Vincule sua conta Google para entrar com um clique na tela de login. Pode ser um Gmail diferente do seu e-mail do LDFP.</p>
+                <div id="googleBtnVinc"></div>
+            </div>
+            <div id="googleDesvincular" hidden style="margin-top:12px;">
+                <label class="sg-campo">Senha (para desvincular)<input type="password" id="senhaGoogle" autocomplete="current-password"></label>
+                <button class="rl-btn ghost" id="btnDesvincular" type="button"><i class="fa-solid fa-link-slash"></i> Desvincular conta Google</button>
+            </div>
+            <p class="sg-msg" id="msgGoogle"></p>
+        </section>
     </div>
 </main>
 
@@ -207,6 +222,51 @@ requireAuthSession();
     $('btnGuardei').onclick = () => { $('secCodigos').hidden = true; codigosAtuais = []; $('codigos').innerHTML = ''; };
 
     carregar();
+
+    // ── Lote 8: conta Google ──
+    let googleCarregado = false;
+    async function carregarGoogle() {
+        let st;
+        try { st = await api('/api/minha-conta/google'); } catch (_) { return; }
+        if (!st.disponivel) { $('secGoogle').hidden = true; return; }
+        $('secGoogle').hidden = false;
+        const quando = st.vinculado_em ? new Date(String(st.vinculado_em).replace(' ', 'T') + (String(st.vinculado_em).includes('Z') ? '' : 'Z')).toLocaleDateString('pt-BR') : '';
+        $('googleStatus').innerHTML = st.vinculado
+            ? `<i class="fa-solid fa-circle-check" style="color:#15803d"></i> Vinculada a <strong></strong>${quando ? ' desde ' + quando : ''}.`
+            : 'Nenhuma conta Google vinculada.';
+        if (st.vinculado) $('googleStatus').querySelector('strong').textContent = st.email || 'conta Google';
+        $('googleVincular').hidden = st.vinculado;
+        $('googleDesvincular').hidden = !st.vinculado;
+        if (!st.vinculado && !googleCarregado) {
+            googleCarregado = true;
+            const sc = document.createElement('script');
+            sc.src = 'https://accounts.google.com/gsi/client';
+            sc.async = true;
+            sc.onload = () => {
+                google.accounts.id.initialize({ client_id: st.clientId, callback: vincularGoogle, ux_mode: 'popup' });
+                google.accounts.id.renderButton($('googleBtnVinc'), { theme: 'outline', size: 'large', text: 'continue_with', locale: 'pt-BR' });
+            };
+            document.head.appendChild(sc);
+        }
+    }
+    async function vincularGoogle(resp) {
+        try {
+            const d = await api('/api/minha-conta/google', { credential: resp.credential });
+            msg($('msgGoogle'), `Conta Google ${d.email} vinculada. Já pode usar "Entrar com Google" no login.`);
+            carregarGoogle();
+        } catch (e) { msg($('msgGoogle'), e.message, true); }
+    }
+    $('btnDesvincular').onclick = async () => {
+        try {
+            const r = await fetch('/api/minha-conta/google', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ senha: $('senhaGoogle').value }) });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d.error || 'Não foi possível desvincular.');
+            $('senhaGoogle').value = '';
+            msg($('msgGoogle'), 'Conta Google desvinculada.');
+            carregarGoogle();
+        } catch (e) { msg($('msgGoogle'), e.message, true); }
+    };
+    carregarGoogle();
 })();
 </script>
 </body>

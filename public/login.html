@@ -55,6 +55,11 @@
             </div>
 
             <button type="button" class="btn-login" id="btnLogin" onclick="fazerLogin()">Login</button>
+            <!-- Lote 8: login com Google (só aparece se GOOGLE_CLIENT_ID estiver configurado) -->
+            <div id="blocoGoogle" style="display:none;margin-top:14px;">
+                <div style="display:flex;align-items:center;gap:8px;color:#888;font-size:12px;margin-bottom:10px;"><span style="flex:1;height:1px;background:#ddd"></span>ou<span style="flex:1;height:1px;background:#ddd"></span></div>
+                <div id="googleBtn" style="display:flex;justify-content:center;"></div>
+            </div>
         </form>
         <!-- Lote 7: verificação em duas etapas -->
         <form id="form2fa" onsubmit="return false;" style="display:none">
@@ -177,6 +182,51 @@
             }
         }
         document.getElementById('codigo2fa').addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmar2fa(); });
+
+        // ── Lote 8: Entrar com Google ──
+        async function iniciarGoogle() {
+            try {
+                const r = await fetch('/api/auth/google/config');
+                const cfg = await r.json().catch(() => ({}));
+                if (!cfg.ativo || !cfg.clientId) return;
+                const sc = document.createElement('script');
+                sc.src = 'https://accounts.google.com/gsi/client';
+                sc.async = true;
+                sc.onload = () => {
+                    google.accounts.id.initialize({ client_id: cfg.clientId, callback: entrarComGoogle, ux_mode: 'popup' });
+                    google.accounts.id.renderButton(document.getElementById('googleBtn'), { theme: 'outline', size: 'large', text: 'signin_with', locale: 'pt-BR', width: 280 });
+                    document.getElementById('blocoGoogle').style.display = '';
+                };
+                document.head.appendChild(sc);
+            } catch (_) { /* sem Google: segue só com senha */ }
+        }
+        async function entrarComGoogle(resposta) {
+            const status = document.getElementById('status');
+            status.style.color = '#475569';
+            status.textContent = 'Verificando conta Google...';
+            try {
+                const resp = await fetch('/login/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ credential: resposta.credential })
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) throw new Error(extractErrorMessage(data, 'Não foi possível entrar com o Google.'));
+                if (data.requer_2fa) {
+                    window._desafio2fa = data.desafio;
+                    document.querySelector('form:not(#form2fa)').style.display = 'none';
+                    document.getElementById('form2fa').style.display = '';
+                    status.textContent = '';
+                    document.getElementById('codigo2fa').focus();
+                    return;
+                }
+                concluirLogin(data);
+            } catch (err) {
+                status.style.color = '#b91c1c';
+                status.textContent = err.message;
+            }
+        }
+        iniciarGoogle();
 
         function concluirLogin(data) {
             const status = document.getElementById('status');

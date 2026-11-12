@@ -142,6 +142,17 @@ O super admin **não acessa dados de clientes diretamente**. Para suporte, usa o
 - Testes: `tests/lote7-dois-fatores.test.js` (13, inclui vetor oficial da RFC)
 - **SQL pendente em produção:** `INOVACOES_LOTE7_VERIFICACAO_DUAS_ETAPAS.sql`
 
+## Inovações — Lote 8: Login com Google (11/11/2026)
+- Google Identity Services no `login.html` (botão só aparece com `GOOGLE_CLIENT_ID` no `.env`; `GET /api/auth/google/config`)
+- `POST /login/google { credential }` → `src/services/googleAuthService.js` confere o ID token RS256 com as chaves públicas do Google (cache), audiência = nosso Client ID, emissor e `email_verified`
+- Sem autocadastro: entra quem já é usuário do painel — por `usuarios.google_sub` (vínculo) ou, no 1º acesso, pelo e-mail (aí grava o vínculo). Mesmo e-mail com outra conta Google → 401. Super-admin NÃO entra com Google
+- 2FA continua valendo (Google devolve o mesmo `requer_2fa`/desafio do `/login`)
+- `seguranca.html` → "Entrar com Google": vincular outra conta Google (pode ser Gmail diferente do e-mail do LDFP) / desvincular (pede senha). Rotas `GET/POST/DELETE /api/minha-conta/google`
+- helmet: `crossOriginOpenerPolicy: same-origin-allow-popups` (necessário para a janela do Google)
+- Colunas `usuarios.google_sub` (UNIQUE), `google_email`, `google_vinculado_em`
+- Testes: `tests/lote8-login-google.test.js` (10; chaves RSA locais no lugar das do Google)
+- **SQL pendente em produção:** `INOVACOES_LOTE8_LOGIN_GOOGLE.sql` + configurar `GOOGLE_CLIENT_ID` no `.env` do servidor (`/home/ldfp8965/ldfp.com.br/.env`) e reiniciar
+
 ## Repositório local
 - Clone git real: `G:\sistema-gestao-igreja-main` (branch `main`). A cópia em `OneDrive\Imagens\sistema-gestao-igreja-ldfp-main` NÃO é repositório — não editar lá.
 

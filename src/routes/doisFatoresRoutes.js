@@ -58,6 +58,32 @@ router.post('/api/2fa/recuperacao', requireAuth, async (req, res) => {
     res.json(r);
 });
 
+// ─── Lote 8: vínculo com conta Google ───────────────────────────────────────
+const googleAuth = require('../services/googleAuthService');
+const { pool } = require('../config/db');
+
+router.get('/api/minha-conta/google', requireAuth, async (req, res) => {
+    res.json(await googleAuth.statusVinculo(usuarioPainel(req)));
+});
+
+router.post('/api/minha-conta/google', requireAuth, async (req, res) => {
+    const id = usuarioPainel(req);
+    const r = await googleAuth.vincular(id, req.body?.credential);
+    audit('account.google.vinculado', req, { userId: id, google: r.email });
+    res.json({ ok: true, email: r.email });
+});
+
+router.delete('/api/minha-conta/google', requireAuth, async (req, res) => {
+    const id = usuarioPainel(req);
+    const [[u]] = await pool.query('SELECT password_hash FROM usuarios WHERE id = ? LIMIT 1', [id]);
+    if (!u || !req.body?.senha || !(await bcrypt.compare(String(req.body.senha), u.password_hash))) {
+        throw createHttpError(401, 'Senha incorreta.');
+    }
+    await googleAuth.desvincular(id);
+    audit('account.google.desvinculado', req, { userId: id });
+    res.json({ ok: true });
+});
+
 router.post('/api/saas/usuarios/:id/2fa/desativar', requireAuth, authorize(['super-admin']), async (req, res) => {
     const alvo = Number(req.params.id);
     if (!Number.isInteger(alvo) || alvo <= 0) throw createHttpError(400, 'Usuário inválido.');

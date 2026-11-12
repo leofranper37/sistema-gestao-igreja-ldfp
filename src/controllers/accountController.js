@@ -48,6 +48,16 @@ async function login(req, res) {
     });
 }
 
+async function loginGoogle(req, res) {
+    const auth = await accountService.loginGoogle(req.body?.credential);
+    if (auth.requer2fa) {
+        audit('account.login.google.2fa_pendente', req, { email: auth.email });
+        return res.json({ requer_2fa: true, desafio: auth.desafio, message: 'Digite o código do seu aplicativo autenticador.' });
+    }
+    audit('account.login', req, { email: auth.user.email, userId: auth.user.id, via: 'google' });
+    res.json({ message: 'Login realizado com sucesso.', token: auth.token, user: auth.user });
+}
+
 async function login2fa(req, res) {
     const { desafio, codigo } = req.body || {};
     if (!desafio || !codigo) throw createHttpError(400, 'Informe o código.');
@@ -64,6 +74,7 @@ module.exports = {
     createConta,
     login,
     login2fa,
+    loginGoogle,
     esqueciSenha,
     redefinirSenha
 };

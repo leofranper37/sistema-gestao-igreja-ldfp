@@ -134,7 +134,9 @@ app.use(cors(allowedOrigins.length ? {
 app.disable('x-powered-by');
 app.use(helmet({
     contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false
+    crossOriginEmbedderPolicy: false,
+    // Lote 8: a janela do "Entrar com Google" precisa conversar com a página que a abriu
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' }
 }));
 
 app.use(express.json({

@@ -1,5 +1,6 @@
 const { pool } = require('../config/db');
 const { ensureTable } = require('./tableEnsure');
+const cadastrosTesouraria = require('./cadastrosTesourariaModel');
 
 let bancoTablesReadyPromise = null;
 
@@ -100,6 +101,9 @@ async function ensureBancoTables() {
     }
 
     await bancoTablesReadyPromise;
+    // Lote 5: centro de custo / fornecedor no lançamento bancário
+    await cadastrosTesouraria.ensureTabelas();
+    await cadastrosTesouraria.ensureColunas('banco_lancamentos');
 }
 
 async function listContas(igrejaId) {
@@ -161,9 +165,10 @@ async function listLancamentos(contaId, igrejaId) {
     await ensureBancoTables();
 
     const [rows] = await pool.query(
-        `SELECT bl.*, bc.nome AS conta_nome
+        `SELECT bl.*, bc.nome AS conta_nome, cc.nome AS centro_custo_nome
          FROM banco_lancamentos bl
          JOIN banco_contas bc ON bc.id = bl.conta_id AND bc.igreja_id = bl.igreja_id
+         LEFT JOIN centros_custo cc ON cc.id = bl.centro_custo_id AND cc.igreja_id = bl.igreja_id
          WHERE bl.conta_id = ? AND bl.igreja_id = ?
          ORDER BY bl.data_lancamento DESC, bl.id DESC`,
         [contaId, igrejaId]
@@ -174,11 +179,11 @@ async function listLancamentos(contaId, igrejaId) {
 async function createLancamento(payload) {
     await ensureBancoTables();
 
-    const { contaId, igrejaId, descricao, tipo, valor, dataLancamento, observacao, createdBy } = payload;
+    const { contaId, igrejaId, descricao, tipo, valor, dataLancamento, observacao, createdBy, centroCustoId, fornecedorId } = payload;
     const [result] = await pool.query(
-        `INSERT INTO banco_lancamentos (conta_id, igreja_id, descricao, tipo, valor, data_lancamento, observacao, created_by)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [contaId, igrejaId, descricao, tipo, valor, dataLancamento, observacao || null, createdBy || null]
+        `INSERT INTO banco_lancamentos (conta_id, igreja_id, descricao, tipo, valor, data_lancamento, observacao, created_by, centro_custo_id, fornecedor_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [contaId, igrejaId, descricao, tipo, valor, dataLancamento, observacao || null, createdBy || null, centroCustoId || null, fornecedorId || null]
     );
     return result.insertId;
 }

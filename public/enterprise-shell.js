@@ -129,6 +129,7 @@
         // Tesouraria — outros
         'pagamentos.html': 'pagamentos',
         'contas_pagar.html': 'contas_pagar',
+        'tesouraria_cadastros.html': 'contas_pagar',
         'recibo.html': 'recibos',
         'transferencias.html': 'transferencias',
         // Contabilidade
@@ -703,6 +704,7 @@
         const otherLinks = [
             ['pagamentos.html', 'fa-solid fa-link', 'Links de Pagamento', 'pagamentos'],
             ['contas_pagar.html', 'fa-solid fa-file-invoice-dollar', 'Contas a Pagar', 'contas_pagar'],
+            ['tesouraria_cadastros.html', 'fa-solid fa-address-book', 'Fornecedores e Centros de Custo', 'contas_pagar'],
             ['recibo.html', 'fa-solid fa-receipt', 'Recibos', 'recibos'],
             ['transferencias.html', 'fa-solid fa-right-left', 'Transferências', 'transferencias']
         ];

@@ -1,5 +1,6 @@
 const { pool } = require('../config/db');
 const { ensureTable } = require('./tableEnsure');
+const cadastrosTesouraria = require('./cadastrosTesourariaModel');
 
 const BASE_TIPOS_RECEITA = [
     { slug: 'dizimos', descricao: 'Dízimos', planoConta: '4.01.01.01 - Dízimo de Membros' },
@@ -504,6 +505,10 @@ async function ensureCaixaTables() {
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )`
     ]);
+
+    // Lote 5: centro de custo / fornecedor no lançamento do caixa
+    await cadastrosTesouraria.ensureTabelas();
+    await cadastrosTesouraria.ensureColunas('caixa_lancamentos');
 }
 
 async function getCaixaMes(igrejaId, mesCompetencia) {
@@ -596,18 +601,20 @@ async function listCaixaLancamentos(igrejaId, { page = 1, limit = 50, inicio, fi
     const total = Number(countRow?.total || 0);
 
     const [items] = await pool.query(
-        `SELECT * FROM caixa_lancamentos WHERE ${whereStr} ORDER BY data DESC, id DESC LIMIT ? OFFSET ?`,
+        `SELECT cl.*,
+                (SELECT cc.nome FROM centros_custo cc WHERE cc.id = cl.centro_custo_id AND cc.igreja_id = cl.igreja_id) AS centro_custo_nome
+         FROM caixa_lancamentos cl WHERE ${whereStr} ORDER BY data DESC, id DESC LIMIT ? OFFSET ?`,
         [...params, limitNum, offset]
     );
 
     return { items, meta: { page: pageNum, totalPages: Math.max(1, Math.ceil(total / limitNum)) } };
 }
 
-async function createCaixaLancamento(igrejaId, userId, { data, doc, historico, valor, tipo, observacao }) {
+async function createCaixaLancamento(igrejaId, userId, { data, doc, historico, valor, tipo, observacao, centroCustoId, fornecedorId }) {
     await ensureCaixaTables();
     const [{ insertId }] = await pool.query(
-        'INSERT INTO caixa_lancamentos (igreja_id, data, doc, historico, valor, tipo, observacao, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [igrejaId, data || null, doc || null, historico, valor, (tipo || 'ENTRADA').toUpperCase(), observacao || null, userId || null]
+        'INSERT INTO caixa_lancamentos (igreja_id, data, doc, historico, valor, tipo, observacao, created_by, centro_custo_id, fornecedor_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [igrejaId, data || null, doc || null, historico, valor, (tipo || 'ENTRADA').toUpperCase(), observacao || null, userId || null, centroCustoId || null, fornecedorId || null]
     );
     return insertId;
 }

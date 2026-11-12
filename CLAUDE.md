@@ -101,12 +101,27 @@ O super admin **não acessa dados de clientes diretamente**. Para suporte, usa o
 ## Inovações — Lote 4: Relatórios Contábeis (11/11/2026)
 - `relatorios_contabilidade.html` refeito (antes lia localStorage): Livro Diário, Razão, Balancete de Verificação, Balanço Patrimonial, DRE, Resumo Anual (DRE mês a mês), Fluxo de Caixa (método direto contábil OU base Tesouraria) e DMPL
 - Service: `src/services/relatoriosContabeisService.js`, rotas `/api/relatorios/contabil/*` (em `relatoriosRoutes.js`)
-- `contabilidade_lancamentos.conta_debito/credito` são TEXTO LIVRE → casados com o plano pelo código no início do texto ou pelo nome; o que não casar aparece no diagnóstico ("fora do plano"); natureza inferida pelo 1º dígito (1 ativo, 2 passivo, 3 receita, 4 despesa)
+- `contabilidade_lancamentos.conta_debito/credito` são TEXTO LIVRE → casados com o plano pelo código no início do texto ou pelo nome; o que não casar aparece no diagnóstico ("fora do plano"); natureza inferida pelo 1º dígito (1 ativo, 2 passivo, 3 despesa, 4 receita — padrão do sistema: 4.01.01.01 Dízimo de Membros)
 - Patrimônio Social = conta passivo cujo nome (ou da conta-mãe) contém Patrimônio/Superávit/Déficit/Reserva; Caixa = ativo com código 1.1.1* ou nome Caixa/Banco/Disponível/Aplicação
 - Balancete de abertura = saldos antes de qualquer lançamento; Encerramento do Exercício continua só um registro (não zera contas de resultado — resultado anterior vira "superávits acumulados" no Balanço)
 - `lancamentos_contabeis.html`: datalist com as contas do plano + histórico escapado (XSS)
 - **Sem SQL**
-- Próximo: Lote 5 (fornecedores, centros de custo, tipos de documento — exige SQL); SPED/ECD/ECF deixados por último
+
+## Inovações — Lote 5: Cadastros da Tesouraria (11/11/2026)
+- Tabelas `fornecedores`, `centros_custo`, `tipos_documento` (por `igreja_id`, desativação lógica `ativo=0`)
+- Colunas de vínculo: `contas_pagar.fornecedor_id/centro_custo_id/tipo_documento_id/numero_documento`, `caixa_lancamentos.centro_custo_id/fornecedor_id`, `banco_lancamentos.centro_custo_id/fornecedor_id`
+- API: `/api/tesouraria/{fornecedores|centros-custo|tipos-documento}` (`src/routes/cadastrosTesourariaRoutes.js`, `src/models/cadastrosTesourariaModel.js`)
+- `validarVinculos()` impede uma igreja usar cadastro de outra (400) — usado em Contas a Pagar, Caixa e Bancos
+- `ensureTabelas()/ensureColunas()` criam tabelas/colunas se o SQL não tiver sido rodado (rede de segurança), mas o oficial é o SQL
+- Tela `tesouraria_cadastros.html` (menu Tesouraria → "Fornecedores e Centros de Custo"); selects via `public/cadastros-tesouraria.js`
+- Relatório "Despesas por centro de custo / fornecedor" + gráfico por centro de custo; filtro "Vencido" de Contas a Pagar corrigido (status `vencido` é gravado no banco por `markVencidas`)
+- `contas_pagar` no SQLite local criava `id` NULL (SERIAL) → corrigido com DDL por dialeto (produção MySQL não muda)
+- Testes: `tests/lote5-tesouraria.test.js` (22 testes, inclui isolamento + smoke dos relatórios dos Lotes 3/4)
+- **SQL pendente em produção:** `INOVACOES_LOTE5_CADASTROS_TESOURARIA.sql`
+- Próximo: estados civis / locais de frequência configuráveis; Lote 6 (Mural, cursos/eventos com inscrição, carteirinha, dirigentes, login Google, 2FA); SPED/ECD/ECF por último
+
+## Repositório local
+- Clone git real: `G:\sistema-gestao-igreja-main` (branch `main`). A cópia em `OneDrive\Imagens\sistema-gestao-igreja-ldfp-main` NÃO é repositório — não editar lá.
 
 ## Fluxo para criar novo cliente
 1. Super admin → admin-igrejas.html → botão "Nova Igreja"

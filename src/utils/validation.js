@@ -16,6 +16,8 @@ const JOI_MESSAGES = {
 const emailSchema = Joi.string().trim().email({ tlds: { allow: false } }).max(255);
 
 const decimalInput = Joi.alternatives().try(Joi.number(), Joi.string().trim()).required();
+// ID opcional de cadastro auxiliar (fornecedor, centro de custo, tipo de documento) — Lote 5
+const idVinculo = Joi.number().integer().positive().allow(null, '').optional().empty('').default(null);
 
 const createContaSchema = Joi.object({
     igreja: Joi.string().trim().min(2).max(255).required().label('Igreja'),
@@ -47,7 +49,9 @@ const caixaLancamentoSchema = Joi.object({
     historico: Joi.string().trim().min(1).max(500).required().label('Histórico'),
     valor: decimalInput.label('Valor'),
     tipo: Joi.string().valid('ENTRADA', 'SAIDA').required().label('Tipo'),
-    observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação')
+    observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação'),
+    centroCustoId: idVinculo.label('Centro de custo'),
+    fornecedorId: idVinculo.label('Fornecedor')
 });
 
 const caixaMesSchema = Joi.object({
@@ -418,7 +422,9 @@ const bancoLancamentoSchema = Joi.object({
     tipo: Joi.string().valid('entrada', 'saida').required().label('Tipo'),
     valor: decimalInput.label('Valor'),
     dataLancamento: Joi.string().trim().pattern(/^\d{4}-\d{2}-\d{2}$/).required().label('Data'),
-    observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação')
+    observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação'),
+    centroCustoId: idVinculo.label('Centro de custo'),
+    fornecedorId: idVinculo.label('Fornecedor')
 });
 
 const contaPagarSchema = Joi.object({
@@ -427,7 +433,11 @@ const contaPagarSchema = Joi.object({
     valor: decimalInput.label('Valor'),
     vencimento: Joi.string().trim().pattern(/^\d{4}-\d{2}-\d{2}$/).required().label('Vencimento'),
     categoria: Joi.string().trim().max(120).allow('', null).optional().label('Categoria'),
-    observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação')
+    observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação'),
+    fornecedorId: idVinculo.label('Fornecedor'),
+    centroCustoId: idVinculo.label('Centro de custo'),
+    tipoDocumentoId: idVinculo.label('Tipo de documento'),
+    numeroDocumento: Joi.string().trim().max(60).allow('', null).optional().label('Nº do documento')
 });
 
 const transacaoFiltroSchema = Joi.object({

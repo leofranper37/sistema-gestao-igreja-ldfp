@@ -481,6 +481,17 @@
                                 </div>
                             </div>
 
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label>Centro de custo</label>
+                                    <select id="centroCustoId"><option value="">— nenhum —</option></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Fornecedor</label>
+                                    <select id="fornecedorId"><option value="">— nenhum —</option></select>
+                                </div>
+                            </div>
+
                             <div class="form-group">
                                 <label>Observação</label>
                                 <textarea id="obs" placeholder="Opcional..."></textarea>
@@ -585,10 +596,15 @@
 
     <script src="session.js?v=20260501"></script>
     <script src="enterprise-shell.js?v=20260501"></script>
+    <script src="cadastros-tesouraria.js?v=20261111"></script>
     <script>
         requireAuthSession();
 
         const $ = id => document.getElementById(id);
+        const esc = (v) => String(v === null || v === undefined ? '' : v)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        CadastrosTesouraria.preencher($('centroCustoId'), 'centros-custo');
+        CadastrosTesouraria.preencher($('fornecedorId'), 'fornecedores');
 
         function fmtVal(v) {
             return Number(v || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
@@ -698,8 +714,8 @@
                     return `
                         <tr>
                             <td>${data}</td>
-                            <td>${l.doc || '-'}</td>
-                            <td>${l.historico || '-'}</td>
+                            <td>${esc(l.doc || '-')}</td>
+                            <td>${esc(l.historico || '-')}${l.centro_custo_nome ? `<br><small style="color:#64748b">${esc(l.centro_custo_nome)}</small>` : ''}</td>
                             <td><span class="badge ${tipoBadge}">${tipoLabel}</span></td>
                             <td style="font-weight:700;${l.tipo==='SAIDA'?'color:#b91c1c;':'color:#15803d;'}}">${fmtVal(l.valor)}</td>
                             <td>
@@ -750,7 +766,9 @@
                 historico: $('historico').value.trim(),
                 valor,
                 tipo: $('tipo').value,
-                observacao: $('obs').value.trim() || null
+                observacao: $('obs').value.trim() || null,
+                centroCustoId: $('centroCustoId').value || null,
+                fornecedorId: $('fornecedorId').value || null
             };
 
             try {

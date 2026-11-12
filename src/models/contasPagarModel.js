@@ -1,13 +1,17 @@
 const { pool } = require('../config/db');
+const cadastrosTesouraria = require('./cadastrosTesourariaModel');
+const { ensureTable } = require('./tableEnsure');
 
 let tableReadyPromise = null;
 
 async function ensureContasPagarTable() {
     if (!tableReadyPromise) {
-        tableReadyPromise = pool.query(
+        // MySQL primeiro; se falhar (SQLite local), usa INTEGER PRIMARY KEY AUTOINCREMENT
+        // — com "SERIAL" o SQLite criava id NULL e as contas não podiam ser pagas/excluídas.
+        tableReadyPromise = ensureTable('contas_pagar', [
             `CREATE TABLE IF NOT EXISTS contas_pagar (
-                id SERIAL PRIMARY KEY,
-                igreja_id INTEGER NOT NULL,
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                igreja_id INT NOT NULL,
                 descricao VARCHAR(255) NOT NULL,
                 fornecedor VARCHAR(255) NULL,
                 valor DECIMAL(12,2) NOT NULL,
@@ -16,14 +20,33 @@ async function ensureContasPagarTable() {
                 observacao TEXT NULL,
                 status VARCHAR(20) NOT NULL DEFAULT 'pendente',
                 data_pagamento DATE NULL,
-                created_by INTEGER NULL,
+                created_by INT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_contas_pagar_igreja (igreja_id)
+            )`,
+            `CREATE TABLE IF NOT EXISTS contas_pagar (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                igreja_id INTEGER NOT NULL,
+                descricao TEXT NOT NULL,
+                fornecedor TEXT,
+                valor REAL NOT NULL,
+                vencimento TEXT NOT NULL,
+                categoria TEXT,
+                observacao TEXT,
+                status TEXT NOT NULL DEFAULT 'pendente',
+                data_pagamento TEXT,
+                created_by INTEGER,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             )`
-        );
+        ]);
     }
 
     await tableReadyPromise;
+    // Lote 5: tabelas de cadastro + colunas de vínculo (rede de segurança se o SQL não foi rodado)
+    await cadastrosTesouraria.ensureTabelas();
+    await cadastrosTesouraria.ensureColunas('contas_pagar');
 }
 
 async function listContasPagar(igrejaId, filters = {}) {
@@ -51,6 +74,16 @@ async function listContasPagar(igrejaId, filters = {}) {
         params.push(filters.vencimentoAte);
     }
 
+    if (filters.centroCustoId) {
+        conditions.push('cp.centro_custo_id = ?');
+        params.push(filters.centroCustoId);
+    }
+
+    if (filters.fornecedorId) {
+        conditions.push('cp.fornecedor_id = ?');
+        params.push(filters.fornecedorId);
+    }
+
     if (filters.descricao) {
         conditions.push('(cp.descricao LIKE ? OR cp.fornecedor LIKE ?)');
         const like = `%${filters.descricao}%`;
@@ -69,7 +102,11 @@ async function listContasPagar(igrejaId, filters = {}) {
     );
 
     const [rows] = await pool.query(
-        `SELECT * FROM contas_pagar cp ${where} ORDER BY cp.vencimento ASC, cp.created_at DESC LIMIT ? OFFSET ?`,
+        `SELECT cp.*, cc.nome AS centro_custo_nome, cc.codigo AS centro_custo_codigo, td.nome AS tipo_documento_nome
+         FROM contas_pagar cp
+         LEFT JOIN centros_custo cc ON cc.id = cp.centro_custo_id AND cc.igreja_id = cp.igreja_id
+         LEFT JOIN tipos_documento td ON td.id = cp.tipo_documento_id AND td.igreja_id = cp.igreja_id
+         ${where} ORDER BY cp.vencimento ASC, cp.created_at DESC LIMIT ? OFFSET ?`,
         [...params, limit, offset]
     );
 
@@ -78,11 +115,16 @@ async function listContasPagar(igrejaId, filters = {}) {
 
 async function createContaPagar(payload) {
     await ensureContasPagarTable();
-    const { igrejaId, descricao, fornecedor, valor, vencimento, categoria, observacao, createdBy } = payload;
+    const {
+        igrejaId, descricao, fornecedor, valor, vencimento, categoria, observacao, createdBy,
+        fornecedorId, centroCustoId, tipoDocumentoId, numeroDocumento
+    } = payload;
     const [result] = await pool.query(
-        `INSERT INTO contas_pagar (igreja_id, descricao, fornecedor, valor, vencimento, categoria, observacao, created_by)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [igrejaId, descricao, fornecedor || null, valor, vencimento, categoria || null, observacao || null, createdBy || null]
+        `INSERT INTO contas_pagar (igreja_id, descricao, fornecedor, valor, vencimento, categoria, observacao, created_by,
+                                   fornecedor_id, centro_custo_id, tipo_documento_id, numero_documento)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [igrejaId, descricao, fornecedor || null, valor, vencimento, categoria || null, observacao || null, createdBy || null,
+            fornecedorId || null, centroCustoId || null, tipoDocumentoId || null, numeroDocumento || null]
     );
 
     return result.insertId;

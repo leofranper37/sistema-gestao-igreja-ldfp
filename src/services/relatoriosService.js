@@ -347,21 +347,72 @@ async function carregarMovimentos(igrejaId, inicio, fim) {
     ]);
     const nomeConta = new Map(contasBanco.map((c) => [c.id, c.nome || c.banco || `Conta ${c.id}`]));
     const mov = [];
+    // Lote 5: vínculos (centro de custo / fornecedor) — colunas podem não existir em instalações antigas
+    const vinc = (r) => ({ centroCustoId: r.centro_custo_id || null, fornecedorId: r.fornecedor_id || null });
     for (const r of caixa) {
         const ent = String(r.tipo).toUpperCase() === 'ENTRADA';
         mov.push({ data: toISODate(r.data), fonte: 'Caixa', descricao: r.historico, doc: r.doc || '',
-            entrada: ent ? num(r.valor) : 0, saida: ent ? 0 : num(r.valor) });
+            entrada: ent ? num(r.valor) : 0, saida: ent ? 0 : num(r.valor), ...vinc(r) });
     }
     for (const r of banco) {
         const ent = String(r.tipo).toLowerCase() === 'entrada';
         mov.push({ data: toISODate(r.data_lancamento), fonte: `Banco: ${nomeConta.get(r.conta_id) || r.conta_id}`, contaId: r.conta_id,
-            descricao: r.descricao, doc: '', entrada: ent ? num(r.valor) : 0, saida: ent ? 0 : num(r.valor) });
+            descricao: r.descricao, doc: '', entrada: ent ? num(r.valor) : 0, saida: ent ? 0 : num(r.valor), ...vinc(r) });
     }
     for (const r of contas) {
         mov.push({ data: toISODate(r.data_pagamento), fonte: 'Contas a Pagar', descricao: [r.descricao, r.fornecedor].filter(Boolean).join(' — '),
-            doc: r.categoria || '', entrada: 0, saida: num(r.valor) });
+            doc: r.categoria || '', entrada: 0, saida: num(r.valor), ...vinc(r), fornecedorTexto: r.fornecedor || '' });
     }
     return mov;
+}
+
+/** Nomes dos cadastros auxiliares (Lote 5) por id. */
+async function carregarCadastros(igrejaId) {
+    const [centros, fornecedores] = await Promise.all([
+        safeQuery('SELECT id, codigo, nome FROM centros_custo WHERE igreja_id = ?', [igrejaId]),
+        safeQuery('SELECT id, nome FROM fornecedores WHERE igreja_id = ?', [igrejaId])
+    ]);
+    return {
+        centro: new Map(centros.map((c) => [c.id, c.codigo ? `${c.codigo} - ${c.nome}` : c.nome])),
+        fornecedor: new Map(fornecedores.map((f) => [f.id, f.nome]))
+    };
+}
+
+/**
+ * Lote 5 — Despesas/receitas agrupadas por centro de custo ou por fornecedor.
+ * agrupar: 'centro' | 'fornecedor'
+ */
+async function tesourariaPorCentro(igrejaId, { inicio, fim, agrupar = 'centro' } = {}) {
+    const hoje = toISODate(new Date());
+    const ini = inicio || `${hoje.slice(0, 4)}-01-01`;
+    const fi = fim || hoje;
+    const [mov, cad] = await Promise.all([carregarMovimentos(igrejaId, ini, fi), carregarCadastros(igrejaId)]);
+    const grupos = new Map();
+    for (const m of mov) {
+        let nome;
+        if (agrupar === 'fornecedor') {
+            if (m.entrada > 0 && !m.fornecedorId) continue; // entrada sem fornecedor não é despesa de fornecedor
+            nome = (m.fornecedorId && cad.fornecedor.get(m.fornecedorId)) || m.fornecedorTexto || 'Sem fornecedor';
+        } else {
+            nome = (m.centroCustoId && cad.centro.get(m.centroCustoId)) || 'Sem centro de custo';
+        }
+        const g = grupos.get(nome) || { nome, entradas: 0, saidas: 0, lancamentos: [] };
+        g.entradas += m.entrada;
+        g.saidas += m.saida;
+        g.lancamentos.push({ data: m.data, fonte: m.fonte, descricao: m.descricao, entrada: m.entrada, saida: m.saida });
+        grupos.set(nome, g);
+    }
+    const semNome = agrupar === 'fornecedor' ? 'Sem fornecedor' : 'Sem centro de custo';
+    const lista = [...grupos.values()]
+        .map((g) => ({ ...g, entradas: round2(g.entradas), saidas: round2(g.saidas), saldo: round2(g.entradas - g.saidas),
+            lancamentos: g.lancamentos.sort((a, b) => String(a.data).localeCompare(String(b.data))) }))
+        .sort((a, b) => (a.nome === semNome) - (b.nome === semNome) || b.saidas - a.saidas || a.nome.localeCompare(b.nome, 'pt-BR'));
+    const totSaidas = round2(lista.reduce((s, g) => s + g.saidas, 0));
+    lista.forEach((g) => { g.percentual = totSaidas ? round2((g.saidas / totSaidas) * 100) : 0; });
+    return {
+        inicio: ini, fim: fi, agrupar, grupos: lista,
+        totais: { entradas: round2(lista.reduce((s, g) => s + g.entradas, 0)), saidas: totSaidas }
+    };
 }
 
 async function carregarDizimosAno(igrejaId, ano) {
@@ -505,19 +556,29 @@ async function tesourariaMovimento(igrejaId, { inicio, fim, fonte = 'caixa', con
     };
 }
 
-async function tesourariaContasPagar(igrejaId, { inicio, fim, status } = {}) {
+async function tesourariaContasPagar(igrejaId, { inicio, fim, status, centroCustoId } = {}) {
     const params = [igrejaId];
     let where = 'igreja_id = ?';
     if (inicio) { where += ' AND vencimento >= ?'; params.push(inicio); }
     if (fim) { where += ' AND vencimento <= ?'; params.push(fim); }
-    if (status) { where += ' AND status = ?'; params.push(status); }
-    const rows = (await safeQuery(`SELECT * FROM contas_pagar WHERE ${where} ORDER BY vencimento ASC`, params)).map((r) => {
+    const [lista, cad, tipos] = await Promise.all([
+        safeQuery(`SELECT * FROM contas_pagar WHERE ${where} ORDER BY vencimento ASC`, params),
+        carregarCadastros(igrejaId),
+        safeQuery('SELECT id, nome FROM tipos_documento WHERE igreja_id = ?', [igrejaId])
+    ]);
+    const nomeTipo = new Map(tipos.map((t) => [t.id, t.nome]));
+    const hoje = toISODate(new Date());
+    let rows = lista.map((r) => {
         const venc = toISODate(r.vencimento);
-        const hoje = toISODate(new Date());
+        // 'vencido' pode estar gravado no banco (markVencidas) ou ainda como 'pendente' com data passada
         const st = r.status === 'pendente' && venc && venc < hoje ? 'vencido' : r.status;
-        return { descricao: r.descricao, fornecedor: r.fornecedor || '', categoria: r.categoria || '', vencimento: venc,
-            valor: num(r.valor), status: st, pagamento: toISODate(r.data_pagamento) };
+        return { descricao: r.descricao, fornecedor: (r.fornecedor_id && cad.fornecedor.get(r.fornecedor_id)) || r.fornecedor || '',
+            categoria: r.categoria || '', centroCusto: (r.centro_custo_id && cad.centro.get(r.centro_custo_id)) || '', centroCustoId: r.centro_custo_id || null,
+            documento: [r.tipo_documento_id && nomeTipo.get(r.tipo_documento_id), r.numero_documento].filter(Boolean).join(' nº '),
+            vencimento: venc, valor: num(r.valor), status: st, pagamento: toISODate(r.data_pagamento) };
     });
+    if (status) rows = rows.filter((r) => r.status === status);
+    if (centroCustoId) rows = rows.filter((r) => String(r.centroCustoId) === String(centroCustoId));
     const tot = (st) => round2(rows.filter((r) => r.status === st).reduce((s, r) => s + r.valor, 0));
     return { rows, totais: { total: round2(rows.reduce((s, r) => s + r.valor, 0)), pago: tot('pago'), pendente: tot('pendente'), vencido: tot('vencido'), cancelado: tot('cancelado') } };
 }
@@ -537,6 +598,8 @@ module.exports = {
     tesourariaMovimento,
     tesourariaContasPagar,
     tesourariaContasBancarias,
+    tesourariaPorCentro,
+    carregarCadastros,
     // exportados para teste
     _internals: { toISODate, idade, faixaEtaria, normSexo, parseCompetencia }
 };

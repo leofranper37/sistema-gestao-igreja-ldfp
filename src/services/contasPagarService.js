@@ -26,6 +26,10 @@ async function createContaPagar(igrejaId, payload, userId) {
         vencimento: payload.vencimento,
         categoria: payload.categoria || null,
         observacao: payload.observacao || null,
+        fornecedorId: payload.fornecedorId || null,
+        centroCustoId: payload.centroCustoId || null,
+        tipoDocumentoId: payload.tipoDocumentoId || null,
+        numeroDocumento: payload.numeroDocumento || null,
         createdBy: userId
     });
 

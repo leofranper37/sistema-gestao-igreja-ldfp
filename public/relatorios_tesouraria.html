@@ -44,6 +44,19 @@
                         <option value="todos">Todos</option>
                     </select>
                 </label>
+                <label data-f="centro">Centro de custo <select id="centro"><option value="">Todos</option></select></label>
+                <label data-f="agrupar">Agrupar por
+                    <select id="agrupar">
+                        <option value="centro">Centro de custo</option>
+                        <option value="fornecedor">Fornecedor</option>
+                    </select>
+                </label>
+                <label data-f="agrupar">Exibir
+                    <select id="detalheCentro">
+                        <option value="nao">Resumo</option>
+                        <option value="sim">Com os lançamentos</option>
+                    </select>
+                </label>
                 <label data-f="pessoa">Pessoa <input type="search" id="pessoa" placeholder="Nome do membro" list="listaPessoas"></label>
                 <datalist id="listaPessoas"></datalist>
                 <button class="rl-btn" id="btnGerar" type="button"><i class="fa-solid fa-magnifying-glass"></i> Gerar</button>
@@ -67,7 +80,8 @@
 
 <script src="session.js?v=20260501"></script>
 <script src="enterprise-shell.js?v=20260501"></script>
-<script src="relatorios-core.js?v=20261111"></script>
+<script src="relatorios-core.js?v=20261111b"></script>
+<script src="cadastros-tesouraria.js?v=20261111"></script>
 <script>
 requireAuthSession();
 (function () {
@@ -130,16 +144,16 @@ requireAuthSession();
             nota: 'Junta caixa, bancos e contas pagas. Dízimos lançados no módulo de Dízimos aparecem no relatório "Dízimos por período".'
         },
         contas: {
-            titulo: 'Contas a pagar', grupo: 'Movimentação', filtros: ['periodo', 'status'],
+            titulo: 'Contas a pagar', grupo: 'Movimentação', filtros: ['periodo', 'status', 'centro'],
             run: async () => {
-                const st = v('statusConta');
-                const r = await RL.get('/api/relatorios/tesouraria/contas-pagar', { inicio: v('inicio'), fim: v('fim'), status: st === 'vencido' ? 'pendente' : st });
-                const rows = st === 'vencido' ? r.rows.filter((x) => x.status === 'vencido') : r.rows;
+                const r = await RL.get('/api/relatorios/tesouraria/contas-pagar', { inicio: v('inicio'), fim: v('fim'), status: v('statusConta'), centroCustoId: v('centro') });
+                const rows = r.rows;
                 kpis([['Total', RL.moeda(r.totais.total)], ['Pago', RL.moeda(r.totais.pago), 'pos'], ['Pendente', RL.moeda(r.totais.pendente)], ['Vencido', RL.moeda(r.totais.vencido), 'neg']]);
                 return {
                     cols: [
                         { key: 'vencimento', label: 'Vencimento', fmt: 'data' }, { key: 'descricao', label: 'Descrição' }, { key: 'fornecedor', label: 'Fornecedor' },
-                        { key: 'categoria', label: 'Categoria' }, { key: 'valor', label: 'Valor', fmt: 'moeda' },
+                        { key: 'centroCusto', label: 'Centro de custo' }, { key: 'documento', label: 'Documento' }, { key: 'categoria', label: 'Categoria' },
+                        { key: 'valor', label: 'Valor', fmt: 'moeda' },
                         { key: 'status', label: 'Status', fmt: (x) => `<span class="rl-badge ${RL.esc(x.status)}">${RL.esc(x.status)}</span>`, csv: (x) => x.status },
                         { key: 'pagamento', label: 'Pago em', fmt: 'data' }
                     ],
@@ -147,6 +161,32 @@ requireAuthSession();
                 };
             },
             nota: 'Período filtra pela data de vencimento.'
+        },
+        centros: {
+            titulo: 'Despesas por centro de custo / fornecedor', grupo: 'Movimentação', filtros: ['periodo', 'agrupar'],
+            run: async () => {
+                const r = await RL.get('/api/relatorios/tesouraria/por-centro', { inicio: v('inicio'), fim: v('fim'), agrupar: v('agrupar') });
+                const porFornecedor = r.agrupar === 'fornecedor';
+                const detalhado = v('detalheCentro') === 'sim';
+                const rows = [];
+                r.grupos.forEach((g) => {
+                    if (detalhado) {
+                        rows.push({ __grupo: `${g.nome} — saídas ${RL.moeda(g.saidas)} (${g.percentual.toLocaleString('pt-BR')}%)` });
+                        g.lancamentos.forEach((l) => rows.push({ nome: '', data: l.data, fonte: l.fonte, descricao: l.descricao, entradas: l.entrada, saidas: l.saida, percentual: null }));
+                    } else {
+                        rows.push({ nome: g.nome, entradas: g.entradas, saidas: g.saidas, percentual: g.percentual, qtd: g.lancamentos.length });
+                    }
+                });
+                kpis([['Total de saídas', RL.moeda(r.totais.saidas), 'neg'], ['Total de entradas', RL.moeda(r.totais.entradas), 'pos'], [porFornecedor ? 'Fornecedores' : 'Centros de custo', RL.numero(r.grupos.length)]]);
+                const cols = detalhado
+                    ? [{ key: 'data', label: 'Data', fmt: 'data' }, { key: 'fonte', label: 'Origem' }, { key: 'descricao', label: 'Histórico' },
+                        { key: 'entradas', label: 'Entrada', fmt: 'moeda' }, { key: 'saidas', label: 'Saída', fmt: 'moeda' }]
+                    : [{ key: 'nome', label: porFornecedor ? 'Fornecedor' : 'Centro de custo' }, { key: 'qtd', label: 'Lançamentos', fmt: 'numero' },
+                        { key: 'entradas', label: 'Entradas', fmt: 'moeda' }, { key: 'saidas', label: 'Saídas', fmt: 'moeda' },
+                        { key: 'percentual', label: '% das saídas', num: true, fmt: (x) => `${(x.percentual || 0).toLocaleString('pt-BR')}%`, csv: (x) => String(x.percentual || 0).replace('.', ',') }];
+                return { cols, rows, footer: { entradas: r.totais.entradas, saidas: r.totais.saidas }, resumo: `Período ${RL.data(r.inicio)} a ${RL.data(r.fim)}` };
+            },
+            nota: 'Junta caixa, bancos e contas pagas. Cadastre centros de custo e fornecedores em Tesouraria → Fornecedores e Centros de Custo e escolha-os ao lançar.'
         },
         dizimosPeriodo: {
             titulo: 'Dízimos e ofertas por período', grupo: 'Dízimos', filtros: ['periodo'],
@@ -294,6 +334,7 @@ requireAuthSession();
     RL.get('/api/relatorios/tesouraria/contas-bancarias').then((contas) => {
         (contas || []).forEach((c) => $('conta').insertAdjacentHTML('beforeend', `<option value="${c.id}">${RL.esc(c.nome || c.banco)}${c.conta ? ' · ' + RL.esc(c.conta) : ''}</option>`));
     }).catch(() => { /* sem contas */ });
+    if (window.CadastrosTesouraria) CadastrosTesouraria.preencher($('centro'), 'centros-custo', { vazio: 'Todos' });
 
     let inicial = 'caixa';
     try { const s = localStorage.getItem('ldfpRelTes'); if (s && RELATORIOS[s]) inicial = s; } catch (_) { /* ignore */ }

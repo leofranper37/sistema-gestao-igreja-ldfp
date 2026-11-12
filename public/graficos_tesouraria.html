@@ -37,6 +37,9 @@
             <section class="rl-card full"><h3><i class="fa-solid fa-scale-balanced"></i> Receita x Despesa (mensal)</h3><div class="rl-chart alto"><canvas id="gRxD"></canvas></div></section>
             <section class="rl-card"><h3><i class="fa-solid fa-circle-dollar-to-slot"></i> Origem das receitas (ano)</h3><div class="rl-chart"><canvas id="gReceitaFonte"></canvas></div></section>
             <section class="rl-card"><h3><i class="fa-solid fa-file-invoice-dollar"></i> Origem das despesas (ano)</h3><div class="rl-chart"><canvas id="gDespesaFonte"></canvas></div></section>
+            <section class="rl-card full"><h3><i class="fa-solid fa-sitemap"></i> Despesas por centro de custo (ano)</h3><div class="rl-chart"><canvas id="gCentros"></canvas></div>
+                <p class="rl-nota" id="notaCentros"></p>
+            </section>
             <section class="rl-card"><h3><i class="fa-solid fa-hand-holding-heart"></i> Dízimos e ofertas por mês</h3><div class="rl-chart"><canvas id="gDizimos"></canvas></div></section>
             <section class="rl-card"><h3><i class="fa-solid fa-users"></i> Dizimistas por mês</h3><div class="rl-chart"><canvas id="gDizimistas"></canvas></div></section>
             <section class="rl-card full"><h3><i class="fa-solid fa-user"></i> Dízimo per capita</h3><div class="rl-chart"><canvas id="gPerCapita"></canvas></div>
@@ -134,6 +137,18 @@ requireAuthSession();
                 { key: 'dizimistas', label: 'Dizimistas', fmt: 'numero' }
             ], rows, { footer: { contribuicoes: t.contribuicoes, receita: t.receita, despesa: t.despesa, saldo: RL.moeda(t.saldo), dizimistas: '' } });
             RL.status($('status'), t.receita || t.despesa ? '' : `Nenhum lançamento financeiro em ${r.ano}.`);
+
+            // Lote 5: despesas por centro de custo
+            const pc = await RL.get('/api/relatorios/tesouraria/por-centro', { inicio: `${r.ano}-01-01`, fim: `${r.ano}-12-31`, agrupar: 'centro' });
+            const centros = pc.grupos.filter((g) => g.saidas > 0);
+            RL.grafico('gCentros', {
+                type: 'bar',
+                data: { labels: centros.map((g) => g.nome), datasets: [{ label: 'Despesas', data: centros.map((g) => g.saidas), backgroundColor: centros.map((g) => (g.nome === 'Sem centro de custo' ? '#cbd5e1' : C[3])), borderRadius: 4, maxBarThickness: 32 }] },
+                options: { indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `${RL.moeda(ctx.parsed.x)} (${centros[ctx.dataIndex].percentual.toLocaleString('pt-BR')}%)` } } }, scales: { x: { ticks: moedaTick, beginAtZero: true } } }
+            });
+            $('notaCentros').innerHTML = centros.length && centros.every((g) => g.nome === 'Sem centro de custo')
+                ? 'Nenhuma despesa tem centro de custo ainda. Cadastre em <a href="tesouraria_cadastros.html#centros-custo">Fornecedores e Centros de Custo</a> e escolha o centro ao lançar.'
+                : '';
         } catch (e) {
             RL.status($('status'), e.message, true);
         }

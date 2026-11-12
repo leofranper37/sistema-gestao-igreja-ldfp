@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Cadastros da Tesouraria</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="relatorios.css?v=20261111b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .cad-form { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; align-items:end; }
+        .cad-form label { display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#475569; }
+        .cad-form input, .cad-form textarea { padding:9px 10px; border:1px solid #dbe3ef; border-radius:8px; font-size:14px; font-family:inherit; }
+        .cad-form .full { grid-column:1 / -1; }
+        .cad-acoes-linha { display:flex; gap:6px; justify-content:flex-end; }
+        .cad-acoes-linha button { border:1px solid #dbe3ef; background:#fff; border-radius:6px; padding:5px 9px; cursor:pointer; color:#334155; }
+        .cad-acoes-linha button:hover { border-color:#0f766e; color:#0f766e; }
+        .cad-inativo td { color:#94a3b8; }
+        .cad-msg { font-size:13px; margin-top:8px; }
+        .cad-msg.ok { color:#047857; } .cad-msg.erro { color:#b91c1c; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="tesouraria_cadastros.html" data-shell-title="Cadastros da Tesouraria" data-shell-breadcrumb="LDFP / Tesouraria / Cadastros Auxiliares" data-shell-chip="Tesouraria ativa">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Cadastros Auxiliares</h2>
+                <p>Fornecedores, centros de custo e tipos de documento usados em Contas a Pagar, Caixa e Bancos.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-address-book"></i> Tesouraria</div>
+        </div>
+
+        <section class="rl-card">
+            <div class="rl-tipos" id="abas">
+                <button type="button" class="rl-tipo" data-r="fornecedores"><i class="fa-solid fa-truck"></i> Fornecedores</button>
+                <button type="button" class="rl-tipo" data-r="centros-custo"><i class="fa-solid fa-sitemap"></i> Centros de Custo</button>
+                <button type="button" class="rl-tipo" data-r="tipos-documento"><i class="fa-solid fa-file-lines"></i> Tipos de Documento</button>
+            </div>
+            <h3 id="tituloForm"></h3>
+            <form class="cad-form" id="form" autocomplete="off"></form>
+            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+                <button class="rl-btn" id="btnSalvar" type="button"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                <button class="rl-btn ghost" id="btnCancelar" type="button" style="display:none">Cancelar edição</button>
+            </div>
+            <p class="cad-msg" id="msg"></p>
+        </section>
+
+        <section class="rl-card">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+                <h3 id="tituloLista" style="margin:0"></h3>
+                <label style="margin-left:auto;font-size:13px;color:#475569;display:flex;gap:6px;align-items:center;"><input type="checkbox" id="mostrarInativos"> Mostrar desativados</label>
+            </div>
+            <div id="lista"></div>
+        </section>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script src="relatorios-core.js?v=20261111b"></script>
+<script>
+requireAuthSession();
+(function () {
+    const $ = (id) => document.getElementById(id);
+    const esc = RL.esc;
+
+    const CONFIG = {
+        fornecedores: {
+            singular: 'fornecedor', plural: 'Fornecedores',
+            campos: [
+                { k: 'nome', l: 'Nome / Razão social *' }, { k: 'cpf_cnpj', l: 'CPF / CNPJ' }, { k: 'telefone', l: 'Telefone' },
+                { k: 'email', l: 'E-mail', tipo: 'email' }, { k: 'endereco', l: 'Endereço' }, { k: 'cidade', l: 'Cidade' },
+                { k: 'observacao', l: 'Observação', area: true }
+            ],
+            colunas: [['nome', 'Nome'], ['cpf_cnpj', 'CPF/CNPJ'], ['telefone', 'Telefone'], ['email', 'E-mail'], ['cidade', 'Cidade']]
+        },
+        'centros-custo': {
+            singular: 'centro de custo', plural: 'Centros de Custo',
+            campos: [{ k: 'codigo', l: 'Código (opcional, ex.: 01)' }, { k: 'nome', l: 'Nome * (ex.: Missões, Manutenção, Jovens)' }, { k: 'descricao', l: 'Descrição' }],
+            colunas: [['codigo', 'Código'], ['nome', 'Nome'], ['descricao', 'Descrição']]
+        },
+        'tipos-documento': {
+            singular: 'tipo de documento', plural: 'Tipos de Documento',
+            campos: [{ k: 'nome', l: 'Nome * (ex.: Nota Fiscal, Boleto, Recibo)' }],
+            colunas: [['nome', 'Nome']]
+        }
+    };
+
+    let recurso = 'fornecedores';
+    let editandoId = null;
+    let itens = [];
+
+    function msg(texto, tipo) { $('msg').textContent = texto || ''; $('msg').className = 'cad-msg ' + (tipo || ''); }
+
+    function montarForm() {
+        const c = CONFIG[recurso];
+        $('form').innerHTML = c.campos.map((f) => f.area
+            ? `<label class="full">${esc(f.l)}<textarea name="${f.k}" rows="2"></textarea></label>`
+            : `<label>${esc(f.l)}<input name="${f.k}" type="${f.tipo || 'text'}"></label>`).join('');
+        $('tituloForm').textContent = editandoId ? `Editar ${c.singular}` : `Novo ${c.singular}`;
+        $('tituloLista').textContent = c.plural;
+        $('btnCancelar').style.display = editandoId ? '' : 'none';
+    }
+
+    function lerForm() {
+        const dados = {};
+        CONFIG[recurso].campos.forEach((f) => { dados[f.k] = $('form').elements[f.k].value.trim(); });
+        return dados;
+    }
+
+    async function carregar() {
+        $('lista').innerHTML = '<div class="rl-vazio">Carregando…</div>';
+        try {
+            const r = await RL.get(`/api/tesouraria/${recurso}`, { todos: $('mostrarInativos').checked ? '1' : '' });
+            itens = r.items || [];
+            const c = CONFIG[recurso];
+            if (!itens.length) { $('lista').innerHTML = `<div class="rl-vazio">Nenhum ${esc(c.singular)} cadastrado ainda.</div>`; return; }
+            $('lista').innerHTML = `<div class="rl-tabela-wrap"><table class="rl-tabela"><thead><tr>${c.colunas.map(([, l]) => `<th>${esc(l)}</th>`).join('')}<th></th></tr></thead><tbody>` +
+                itens.map((i) => `<tr class="${Number(i.ativo) ? '' : 'cad-inativo'}">${c.colunas.map(([k]) => `<td>${esc(i[k])}</td>`).join('')}
+                    <td><div class="cad-acoes-linha">
+                        <button type="button" data-acao="editar" data-id="${i.id}" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                        ${Number(i.ativo)
+                            ? `<button type="button" data-acao="desativar" data-id="${i.id}" title="Desativar"><i class="fa-solid fa-ban"></i></button>`
+                            : `<button type="button" data-acao="reativar" data-id="${i.id}" title="Reativar"><i class="fa-solid fa-rotate-left"></i></button>`}
+                    </div></td></tr>`).join('') + '</tbody></table></div>';
+        } catch (e) {
+            $('lista').innerHTML = `<div class="rl-vazio">${esc(e.message)}</div>`;
+        }
+    }
+
+    async function enviar(url, method, body) {
+        const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.error || d.message || `Erro ${r.status}`);
+        return d;
+    }
+
+    $('btnSalvar').addEventListener('click', async () => {
+        const dados = lerForm();
+        if (!dados.nome) { msg('Preencha o nome.', 'erro'); return; }
+        try {
+            if (editandoId) await enviar(`/api/tesouraria/${recurso}/${editandoId}`, 'PUT', dados);
+            else await enviar(`/api/tesouraria/${recurso}`, 'POST', dados);
+            msg(editandoId ? 'Cadastro atualizado.' : 'Cadastro salvo.', 'ok');
+            editandoId = null;
+            montarForm();
+            carregar();
+        } catch (e) { msg(e.message, 'erro'); }
+    });
+
+    $('btnCancelar').addEventListener('click', () => { editandoId = null; montarForm(); msg(''); });
+    $('mostrarInativos').addEventListener('change', carregar);
+
+    $('lista').addEventListener('click', async (e) => {
+        const b = e.target.closest('button[data-acao]');
+        if (!b) return;
+        const id = Number(b.dataset.id);
+        const item = itens.find((i) => i.id === id);
+        if (!item) return;
+        try {
+            if (b.dataset.acao === 'editar') {
+                editandoId = id;
+                montarForm();
+                CONFIG[recurso].campos.forEach((f) => { $('form').elements[f.k].value = item[f.k] || ''; });
+                msg('');
+                $('form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            if (b.dataset.acao === 'desativar') {
+                await enviar(`/api/tesouraria/${recurso}/${id}`, 'DELETE');
+                msg('Desativado. Ele some das listas de seleção, mas os lançamentos antigos continuam com o nome.', 'ok');
+            } else {
+                await enviar(`/api/tesouraria/${recurso}/${id}`, 'PUT', { nome: item.nome, ativo: true });
+                msg('Reativado.', 'ok');
+            }
+            carregar();
+        } catch (err) { msg(err.message, 'erro'); }
+    });
+
+    function selecionar(r) {
+        recurso = r;
+        editandoId = null;
+        document.querySelectorAll('#abas .rl-tipo').forEach((b) => b.classList.toggle('ativo', b.dataset.r === r));
+        try { history.replaceState(null, '', '#' + r); } catch (_) { /* ignore */ }
+        montarForm();
+        msg('');
+        carregar();
+    }
+    $('abas').addEventListener('click', (e) => { const b = e.target.closest('.rl-tipo'); if (b) selecionar(b.dataset.r); });
+
+    const hash = location.hash.replace('#', '');
+    selecionar(CONFIG[hash] ? hash : 'fornecedores');
+})();
+</script>
+</body>
+</html>

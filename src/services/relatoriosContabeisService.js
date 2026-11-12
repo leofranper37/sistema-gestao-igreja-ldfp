@@ -52,7 +52,7 @@ const RE_DISPONIVEL = /caixa|banco|disponib|aplica[cç][aã]o\s+financeira|conta
 
 function inferirNatureza(codigo) {
     const d = String(codigo || '').charAt(0);
-    return { 1: 'ativo', 2: 'passivo', 3: 'receita', 4: 'despesa' }[d] || null;
+    return { 1: 'ativo', 2: 'passivo', 3: 'despesa', 4: 'receita' }[d] || null;
 }
 
 const devedora = (nat) => nat === 'ativo' || nat === 'despesa';

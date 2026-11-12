@@ -76,11 +76,19 @@ router.get('/api/relatorios/tesouraria/movimento', requireAuth, authorize(TESOUR
 router.get('/api/relatorios/tesouraria/contas-pagar', requireAuth, authorize(TESOURARIA),
     handle((igrejaId, q) => svc.tesourariaContasPagar(igrejaId, {
         ...datas(q),
-        status: ['pendente', 'pago', 'cancelado'].includes(q.status) ? q.status : undefined
+        status: ['pendente', 'vencido', 'pago', 'cancelado'].includes(q.status) ? q.status : undefined,
+        centroCustoId: /^\d+$/.test(String(q.centroCustoId || '')) ? Number(q.centroCustoId) : undefined
     })));
 
 router.get('/api/relatorios/tesouraria/contas-bancarias', requireAuth, authorize(TESOURARIA),
     handle((igrejaId) => svc.tesourariaContasBancarias(igrejaId)));
+
+// Lote 5: despesas por centro de custo / por fornecedor
+router.get('/api/relatorios/tesouraria/por-centro', requireAuth, authorize(TESOURARIA),
+    handle((igrejaId, q) => svc.tesourariaPorCentro(igrejaId, {
+        ...datas(q),
+        agrupar: q.agrupar === 'fornecedor' ? 'fornecedor' : 'centro'
+    })));
 
 // ─── Contabilidade (Lote 4) ─────────────────────────────────────────────────
 const contabil = require('../services/relatoriosContabeisService');

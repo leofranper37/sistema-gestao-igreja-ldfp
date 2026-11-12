@@ -3,6 +3,7 @@ const parseDecimal = require('../utils/parseDecimal');
 const financeService = require('../services/financeService');
 const getIgrejaId = require('../utils/getIgrejaId');
 const { audit } = require('../services/auditService');
+const cadastrosTesouraria = require('../models/cadastrosTesourariaModel');
 
 async function getSaldo(req, res) {
     const igrejaId = getIgrejaId(req.auth);
@@ -198,14 +199,15 @@ async function listCaixaLancamentos(req, res) {
 async function createCaixaLancamento(req, res) {
     const igrejaId = getIgrejaId(req.auth);
     const userId = req.auth?.id || null;
-    const { data, doc, historico, valor, tipo, observacao } = req.validatedBody;
+    const { data, doc, historico, valor, tipo, observacao, centroCustoId, fornecedorId } = req.validatedBody;
 
     const valorNum = parseDecimal(valor);
     if (Number.isNaN(valorNum) || valorNum <= 0) {
         throw createHttpError(400, 'Valor inválido.');
     }
 
-    const id = await financeService.createCaixaLancamento(igrejaId, userId, { data, doc, historico: historico.trim(), valor: valorNum, tipo, observacao });
+    await cadastrosTesouraria.validarVinculos(igrejaId, { centroCustoId, fornecedorId });
+    const id = await financeService.createCaixaLancamento(igrejaId, userId, { data, doc, historico: historico.trim(), valor: valorNum, tipo, observacao, centroCustoId, fornecedorId });
     audit('finance.caixa.lancamento.create', req, { tipo, valor: valorNum });
     res.status(201).json({ id, message: 'Lançamento registrado com sucesso.' });
 }

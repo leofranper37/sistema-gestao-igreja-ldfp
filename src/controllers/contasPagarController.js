@@ -3,6 +3,7 @@ const contasPagarService = require('../services/contasPagarService');
 const getIgrejaId = require('../utils/getIgrejaId');
 const { audit } = require('../services/auditService');
 const { createHttpError } = require('../utils/httpError');
+const cadastrosTesouraria = require('../models/cadastrosTesourariaModel');
 
 async function listContasPagar(req, res) {
     const igrejaId = getIgrejaId(req.auth);
@@ -13,6 +14,8 @@ async function listContasPagar(req, res) {
         vencimentoDe: q.vencimentoDe || null,
         vencimentoAte: q.vencimentoAte || null,
         descricao: q.descricao || null,
+        centroCustoId: /^\d+$/.test(String(q.centroCustoId || '')) ? Number(q.centroCustoId) : null,
+        fornecedorId: /^\d+$/.test(String(q.fornecedorId || '')) ? Number(q.fornecedorId) : null,
         page: Number(q.page) || 1,
         limit: Number(q.limit) || 50
     });
@@ -34,6 +37,12 @@ async function createContaPagar(req, res) {
     if (Number.isNaN(valor) || valor <= 0) {
         throw createHttpError(400, 'Valor inválido.');
     }
+
+    // Lote 5: vínculos precisam ser da mesma igreja (isolamento multi-tenant)
+    const vinculos = await cadastrosTesouraria.validarVinculos(igrejaId, {
+        fornecedorId: rest.fornecedorId, centroCustoId: rest.centroCustoId, tipoDocumentoId: rest.tipoDocumentoId
+    });
+    if (vinculos.fornecedor && !rest.fornecedor) rest.fornecedor = vinculos.fornecedor.nome;
 
     const id = await contasPagarService.createContaPagar(igrejaId, { ...rest, valor }, req.auth.id);
     audit('financeiro.contas_pagar.create', req, { id, descricao: rest.descricao });

@@ -3,6 +3,7 @@ const bancoService = require('../services/bancoService');
 const getIgrejaId = require('../utils/getIgrejaId');
 const { audit } = require('../services/auditService');
 const { createHttpError } = require('../utils/httpError');
+const cadastrosTesouraria = require('../models/cadastrosTesourariaModel');
 
 async function listContas(req, res) {
     const igrejaId = getIgrejaId(req.auth);
@@ -63,12 +64,13 @@ async function listLancamentos(req, res) {
 async function createLancamento(req, res) {
     const igrejaId = getIgrejaId(req.auth);
     const contaId = Number(req.params.contaId);
-    const { descricao, tipo, valor, dataLancamento, observacao } = req.validatedBody;
+    const { descricao, tipo, valor, dataLancamento, observacao, centroCustoId, fornecedorId } = req.validatedBody;
 
     const conta = await bancoService.getConta(contaId, igrejaId);
     if (!conta) throw createHttpError(404, 'Conta não encontrada.');
+    await cadastrosTesouraria.validarVinculos(igrejaId, { centroCustoId, fornecedorId });
 
-    const id = await bancoService.createLancamento(igrejaId, { contaId, descricao, tipo, valor, dataLancamento, observacao }, req.auth.id);
+    const id = await bancoService.createLancamento(igrejaId, { contaId, descricao, tipo, valor, dataLancamento, observacao, centroCustoId, fornecedorId }, req.auth.id);
     audit('banco.lancamento.create', req, { id, contaId });
     res.status(201).json({ message: 'Lançamento registrado.', id });
 }

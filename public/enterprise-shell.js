@@ -86,6 +86,9 @@
         'batismos_inscricoes.html': 'batismos',
         // Agenda
         'agenda.html': 'agenda',
+        'eventos_inscricoes.html': 'agenda',
+        'mural.html': 'app_membro',
+        'carteirinhas.html': 'membros',
         // Outras Igrejas
         'outras_igrejas.html': 'outras_igrejas',
         // Missionários
@@ -559,7 +562,8 @@
             ['tipos_admissao.html', 'fa-solid fa-door-open', 'Tipos de Admissão', 'membros'],
             ['historico_pastoral.html', 'fa-solid fa-book-bible', 'Histórico Pastoral', 'historico_pastoral'],
             ['tipos_historico.html', 'fa-solid fa-list-check', 'Tipo de Histórico', 'historico_pastoral'],
-            ['cartas.html', 'fa-solid fa-file-signature', 'Cartas e Certificados', 'membros']
+            ['cartas.html', 'fa-solid fa-file-signature', 'Cartas e Certificados', 'membros'],
+            ['carteirinhas.html', 'fa-solid fa-id-card', 'Carteirinhas', 'membros']
         ];
 
         const grupoLinks = [
@@ -586,6 +590,8 @@
 
         const flatLinks = [
             ['agenda.html', 'fa-solid fa-calendar-days', 'Agenda', 'agenda'],
+            ['eventos_inscricoes.html', 'fa-solid fa-clipboard-check', 'Inscrições em Eventos', 'agenda'],
+            ['mural.html', 'fa-solid fa-comments', 'Mural da Igreja', 'app_membro'],
             ['outras_igrejas.html', 'fa-solid fa-globe', 'Outras Igrejas', 'outras_igrejas'],
             ['missionarios.html', 'fa-solid fa-person-rays', 'Missionários', 'missionarios'],
             ['visitantes.html', 'fa-solid fa-user-plus', 'Visitantes', 'visitantes'],

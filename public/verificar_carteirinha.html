@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Verificação de Carteirinha</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg:#f1f5f9; --card:#fff; --txt:#0f172a; --muted:#64748b; --ok:#16a34a; --warn:#d97706; --err:#dc2626; }
+        @media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --card:#141d2b; --txt:#e2e8f0; --muted:#94a3b8; } }
+        * { box-sizing:border-box; }
+        body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--txt); font-family:'Segoe UI', system-ui, Arial, sans-serif; padding:16px; }
+        .card { width:100%; max-width:420px; background:var(--card); border-radius:18px; padding:28px 24px; text-align:center; box-shadow:0 10px 30px rgba(15,23,42,.12); }
+        .icone { font-size:56px; margin-bottom:10px; }
+        .ok .icone { color:var(--ok); } .warn .icone { color:var(--warn); } .err .icone { color:var(--err); }
+        h1 { font-size:20px; margin:0 0 6px; }
+        .sub { color:var(--muted); font-size:14px; margin:0 0 18px; }
+        dl { text-align:left; margin:0; border-top:1px solid rgba(100,116,139,.2); }
+        dl div { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid rgba(100,116,139,.2); font-size:15px; }
+        dt { color:var(--muted); } dd { margin:0; font-weight:600; text-align:right; }
+        .rodape { margin-top:16px; font-size:12px; color:var(--muted); }
+    </style>
+</head>
+<body>
+    <div class="card" id="card">
+        <div class="icone"><i class="fa-solid fa-spinner fa-spin"></i></div>
+        <h1>Verificando carteirinha...</h1>
+    </div>
+<script>
+(async function () {
+    const card = document.getElementById('card');
+    const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const t = new URLSearchParams(location.search).get('t') || '';
+    function erro(msg) {
+        card.className = 'card err';
+        card.innerHTML = `<div class="icone"><i class="fa-solid fa-circle-xmark"></i></div><h1>Carteirinha não confirmada</h1><p class="sub">${esc(msg)}</p>`;
+    }
+    if (!t) return erro('Link incompleto. Leia o QR Code da carteirinha novamente.');
+    try {
+        const r = await fetch('/api/carteirinha/verificar/' + encodeURIComponent(t), { headers: { Accept: 'application/json' } });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || !d.valido) return erro(d.error || 'Carteirinha inválida.');
+        const quando = new Date(d.verificado_em).toLocaleString('pt-BR');
+        card.className = 'card ' + (d.ativo ? 'ok' : 'warn');
+        card.innerHTML = `
+            <div class="icone"><i class="fa-solid ${d.ativo ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i></div>
+            <h1>${d.ativo ? 'Carteirinha válida' : 'Membro não está ativo'}</h1>
+            <p class="sub">${esc(d.igreja)}</p>
+            <dl>
+                <div><dt>Nome</dt><dd>${esc(d.membro.nome)}</dd></div>
+                <div><dt>Cargo</dt><dd>${esc(d.membro.cargo)}</dd></div>
+                <div><dt>Situação</dt><dd>${esc(d.membro.situacao)}</dd></div>
+                <div><dt>Matrícula</dt><dd>${esc(d.membro.matricula)}</dd></div>
+            </dl>
+            <p class="rodape">Consultado em ${esc(quando)} · LDFP Sistema de Gestão</p>`;
+    } catch (_) {
+        erro('Não foi possível consultar agora. Verifique a internet e tente de novo.');
+    }
+})();
+</script>
+</body>
+</html>

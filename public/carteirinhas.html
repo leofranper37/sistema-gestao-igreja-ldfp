@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Carteirinhas de Membro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="relatorios.css?v=20261111b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        .ct-lista { max-height:420px; overflow:auto; border:1px solid #e2e8f0; border-radius:10px; }
+        .ct-lista label { display:flex; gap:10px; align-items:center; padding:8px 12px; border-bottom:1px solid #f1f5f9; font-size:14px; cursor:pointer; }
+        .ct-lista label:hover { background:#f8fafc; }
+        .ct-lista small { color:#64748b; margin-left:auto; }
+        .ct-cor { display:flex; gap:8px; align-items:center; font-size:13px; color:#475569; }
+
+        /* Cartão CR80: 85,6 × 54 mm */
+        .ct-folha { display:grid; grid-template-columns:repeat(2, 85.6mm); gap:6mm 8mm; justify-content:center; }
+        .ct-card { width:85.6mm; height:54mm; border-radius:3.2mm; overflow:hidden; box-sizing:border-box; background:#fff; border:0.3mm solid #cbd5e1;
+                   display:flex; flex-direction:column; font-family:'Segoe UI', Arial, sans-serif; color:#0f172a; break-inside:avoid; page-break-inside:avoid; }
+        .ct-top { background:var(--ct-cor, #0f766e); color:#fff; padding:2.2mm 3.5mm; display:flex; justify-content:space-between; align-items:center; }
+        .ct-top strong { font-size:3.3mm; line-height:1.1; max-width:58mm; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .ct-top span { font-size:2.3mm; letter-spacing:.3mm; text-transform:uppercase; opacity:.9; }
+        .ct-corpo { flex:1; display:flex; gap:3mm; padding:3mm 3.5mm 2mm; align-items:center; }
+        .ct-foto { width:19mm; height:24mm; border-radius:2mm; background:#e2e8f0; object-fit:cover; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:8mm; font-weight:800; color:#64748b; }
+        .ct-dados { flex:1; min-width:0; }
+        .ct-nome { font-size:3.6mm; font-weight:800; line-height:1.15; margin-bottom:1.5mm; }
+        .ct-campo { font-size:2.3mm; color:#64748b; text-transform:uppercase; margin-top:1mm; }
+        .ct-valor { font-size:2.9mm; font-weight:600; }
+        .ct-qr { width:19mm; height:19mm; flex-shrink:0; }
+        .ct-qr img, .ct-qr canvas { width:19mm !important; height:19mm !important; }
+        .ct-rodape { font-size:2.1mm; color:#64748b; padding:0 3.5mm 1.8mm; display:flex; justify-content:space-between; }
+
+        #previa { margin-top:14px; }
+        @media print {
+            @page { size:A4 portrait; margin:10mm; }
+            body * { visibility:hidden !important; }
+            #areaImpressao, #areaImpressao * { visibility:visible !important; }
+            #areaImpressao { position:absolute; left:0; top:0; width:100%; }
+            .ct-card { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="carteirinhas.html" data-shell-title="Carteirinhas de Membro" data-shell-breadcrumb="LDFP / Secretaria / Carteirinhas" data-shell-chip="Ambiente autenticado">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Carteirinhas de Membro</h2>
+                <p>Imprima carteirinhas no tamanho de cartão (85,6 × 54 mm, 10 por folha A4). O QR Code confirma, em qualquer celular, se a carteirinha é verdadeira e se o membro está ativo. O membro também tem a versão digital no App (Carteirinha).</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-id-card"></i> Secretaria</div>
+        </div>
+
+        <section class="rl-card">
+            <div class="rl-filtros">
+                <label>Buscar por nome <input id="busca" placeholder="Digite parte do nome"></label>
+                <label>Situação <select id="situacao"><option value="">Todas</option><option>Ativo</option><option>Inativo</option></select></label>
+                <label class="ct-cor">Cor <input type="color" id="cor" value="#0f766e"></label>
+                <button class="rl-btn ghost" id="btnTodos" type="button">Marcar todos</button>
+                <button class="rl-btn ghost" id="btnNenhum" type="button">Desmarcar</button>
+                <button class="rl-btn" id="btnImprimir" type="button"><i class="fa-solid fa-print"></i> Imprimir selecionadas</button>
+            </div>
+            <div id="status" class="rl-status"></div>
+            <div class="ct-lista" id="lista"></div>
+        </section>
+
+        <section class="rl-card">
+            <h3>Prévia</h3>
+            <div id="areaImpressao"><div class="ct-folha" id="previa"></div></div>
+        </section>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script src="relatorios-core.js?v=20261111b"></script>
+<script>
+requireAuthSession();
+(function () {
+    const $ = (id) => document.getElementById(id);
+    const esc = RL.esc;
+    let membros = [];
+    let igreja = '';
+    const marcados = new Set();
+    const ano = new Date().getFullYear();
+    const urlVerificar = (t) => `${location.origin}/verificar_carteirinha.html?t=${encodeURIComponent(t)}`;
+
+    try { const c = localStorage.getItem('ldfp_cart_cor'); if (c) $('cor').value = c; } catch (_) { /* sem storage */ }
+
+    async function carregar() {
+        RL.status($('status'), 'Carregando...');
+        try {
+            const d = await RL.get('/api/carteirinhas', { busca: $('busca').value.trim(), situacao: $('situacao').value });
+            membros = d.items; igreja = d.igreja;
+            RL.status($('status'), `${membros.length} membro(s). Marque quem vai receber a carteirinha.`);
+            $('lista').innerHTML = membros.length ? membros.map((m) => `<label>
+                <input type="checkbox" value="${m.id}" ${marcados.has(m.id) ? 'checked' : ''}>
+                ${esc(m.nome)} <small>${esc(m.cargo)} · ${esc(m.situacao)} · ${esc(m.matricula)}</small></label>`).join('')
+                : '<div style="padding:20px;text-align:center;color:#94a3b8">Nenhum membro encontrado.</div>';
+            previa();
+        } catch (e) { RL.status($('status'), e.message, true); }
+    }
+
+    function cartao(m) {
+        const ini = esc((m.nome || '?').trim().charAt(0).toUpperCase());
+        const foto = m.foto_url ? `<img class="ct-foto" src="${esc(m.foto_url)}" alt="" onerror="this.style.visibility='hidden'">` : `<div class="ct-foto">${ini}</div>`;
+        return `<div class="ct-card">
+            <div class="ct-top"><strong>${esc(igreja)}</strong><span>Membro</span></div>
+            <div class="ct-corpo">
+                ${foto}
+                <div class="ct-dados">
+                    <div class="ct-nome">${esc(m.nome)}</div>
+                    <div class="ct-campo">Cargo</div><div class="ct-valor">${esc(m.cargo)}</div>
+                    <div class="ct-campo">Matrícula</div><div class="ct-valor">${esc(m.matricula)}</div>
+                </div>
+                <div class="ct-qr" data-qr="${esc(urlVerificar(m.token))}"></div>
+            </div>
+            <div class="ct-rodape"><span>Válida em ${ano} · verifique pelo QR</span><span>LDFP</span></div>
+        </div>`;
+    }
+
+    function previa() {
+        const sel = membros.filter((m) => marcados.has(m.id));
+        document.documentElement.style.setProperty('--ct-cor', $('cor').value);
+        $('previa').innerHTML = sel.length ? sel.map(cartao).join('') : '<div style="color:#94a3b8;grid-column:1/-1;text-align:center;padding:20px">Marque membros na lista para ver a prévia.</div>';
+        $('previa').querySelectorAll('[data-qr]').forEach((el) => {
+            try { new QRCode(el, { text: el.dataset.qr, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.M }); } catch (_) { /* lib indisponível */ }
+        });
+    }
+
+    $('lista').addEventListener('change', (ev) => {
+        const id = Number(ev.target.value);
+        if (ev.target.checked) marcados.add(id); else marcados.delete(id);
+        previa();
+    });
+    $('btnTodos').onclick = () => { membros.forEach((m) => marcados.add(m.id)); carregar(); };
+    $('btnNenhum').onclick = () => { marcados.clear(); carregar(); };
+    $('cor').addEventListener('input', () => { document.documentElement.style.setProperty('--ct-cor', $('cor').value); try { localStorage.setItem('ldfp_cart_cor', $('cor').value); } catch (_) { /* sem storage */ } });
+    let t = null;
+    $('busca').addEventListener('input', () => { clearTimeout(t); t = setTimeout(carregar, 350); });
+    $('situacao').addEventListener('change', carregar);
+    $('btnImprimir').onclick = () => {
+        if (!marcados.size) { alert('Marque pelo menos um membro.'); return; }
+        window.print();
+    };
+
+    carregar();
+})();
+</script>
+</body>
+</html>

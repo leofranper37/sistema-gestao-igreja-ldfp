@@ -552,6 +552,7 @@
 
     /* ── Helpers ── */
     const $ = id => document.getElementById(id);
+    const escH = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
     const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -703,12 +704,15 @@
                         ${ev.tipo || 'Culto'}
                     </span>
                 </div>
-                <h4>${ev.titulo}</h4>
+                <h4>${escH(ev.titulo)}</h4>
                 <p><i class="fa-regular fa-clock" style="margin-right:4px"></i>
                    ${fmtDateTime(ev.inicio)} → ${fmtDateTime(ev.fim)}</p>
-                ${ev.local ? `<p><i class="fa-solid fa-location-dot" style="margin-right:4px"></i>${ev.local}</p>` : ''}
-                ${ev.descricao ? `<p style="margin-top:4px">${ev.descricao}</p>` : ''}
+                ${ev.local ? `<p><i class="fa-solid fa-location-dot" style="margin-right:4px"></i>${escH(ev.local)}</p>` : ''}
+                ${ev.descricao ? `<p style="margin-top:4px">${escH(ev.descricao)}</p>` : ''}
                 <div class="event-card-actions">
+                    <a class="btn btn-ghost btn-sm" href="eventos_inscricoes.html?evento=${Number(ev.id)}" title="Inscrições pelo App do Membro">
+                        <i class="fa-solid fa-clipboard-check"></i> Inscrições
+                    </a>
                     <button class="btn btn-ghost btn-sm" data-edit="${ev.id}">
                         <i class="fa-solid fa-pen"></i> Editar
                     </button>

@@ -469,6 +469,40 @@
     .esc-btn-ok { background: #16a34a; color: #fff; }
     .esc-btn-no { background: rgba(239,68,68,.15); color: #f87171; }
 
+    /* ── Mural (Lote 6) ── */
+    .mu-novo { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 14px; }
+    .mu-novo textarea { width: 100%; min-height: 70px; background: transparent; border: none; color: var(--text); font: inherit; font-size: 14px; resize: vertical; outline: none; }
+    .mu-novo-acoes { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 6px; }
+    .mu-novo-acoes small { color: var(--muted2); font-size: 11px; }
+    .mu-btn { border: none; border-radius: 10px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; background: var(--primary); color: #fff; }
+    .mu-post { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 12px; }
+    .mu-post.fixado { border-color: rgba(124,58,237,.5); }
+    .mu-post.pendente { border-style: dashed; opacity: .85; }
+    .mu-cab { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted2); margin-bottom: 8px; flex-wrap: wrap; }
+    .mu-cab strong { color: var(--text); font-size: 14px; }
+    .mu-tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(124,58,237,.15); color: #a78bfa; }
+    .mu-tag.pendente { background: rgba(250,204,21,.15); color: #facc15; }
+    .mu-texto { font-size: 14px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+    .mu-reacoes { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+    .mu-reacoes button { border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--muted2); border-radius: 999px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+    .mu-reacoes button.ativa { background: rgba(124,58,237,.2); border-color: rgba(124,58,237,.6); color: #fff; }
+    .mu-links { display: flex; gap: 14px; margin-top: 10px; font-size: 12px; }
+    .mu-links button { background: none; border: none; color: var(--muted2); cursor: pointer; padding: 0; font-size: 12px; }
+    .mu-coments { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
+    .mu-com { font-size: 13px; padding: 6px 0; line-height: 1.45; word-break: break-word; }
+    .mu-com strong { color: var(--text); }
+    .mu-com button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 11px; margin-left: 6px; }
+    .mu-com-form { display: flex; gap: 6px; margin-top: 6px; }
+    .mu-com-form input { flex: 1; background: rgba(255,255,255,.05); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; color: var(--text); font-size: 13px; }
+
+    /* ── Inscrição em eventos (Lote 6) ── */
+    .ev-insc { margin-top: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .ev-insc button { border: none; border-radius: 10px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .ev-insc .ev-sim { background: #10b981; color: #fff; }
+    .ev-insc .ev-nao { background: rgba(239,68,68,.15); color: #f87171; }
+    .ev-insc small { font-size: 11px; color: var(--muted2); }
+    .ev-insc .ev-ok { font-size: 12px; font-weight: 700; color: #22c55e; }
+
     /* ── EVENTOS ── */
     .month-nav {
       display: flex;
@@ -974,6 +1008,14 @@
             </div>
             <i class="fa-solid fa-chevron-right quick-arrow"></i>
           </div>
+          <div class="quick-item" data-nav="panel-mural">
+            <div class="quick-icon" style="background:rgba(167,139,250,0.15);color:#a78bfa;"><i class="fa-solid fa-comments"></i></div>
+            <div class="quick-info">
+              <div class="quick-title">Mural da Igreja</div>
+              <div class="quick-sub">Avisos e testemunhos</div>
+            </div>
+            <i class="fa-solid fa-chevron-right quick-arrow"></i>
+          </div>
           <div class="quick-item" data-nav="panel-novidades">
             <div class="quick-icon quick-icon-novidades"><i class="fa-solid fa-bell"></i></div>
             <div class="quick-info">
@@ -1232,6 +1274,25 @@
       </div>
     </section>
 
+    <!-- ── MURAL (Lote 6) ── -->
+    <section id="panel-mural" class="panel">
+      <div class="panel-header">
+        <h1><i class="fa-solid fa-comments" style="color:#a78bfa;margin-right:8px;"></i>Mural da Igreja</h1>
+        <p>Avisos, testemunhos e palavras da nossa família</p>
+      </div>
+      <div class="panel-body">
+        <div class="mu-novo" id="muNovo" style="display:none">
+          <textarea id="muTexto" maxlength="2000" placeholder="Compartilhe um testemunho ou uma palavra..."></textarea>
+          <div class="mu-novo-acoes">
+            <small id="muAviso"></small>
+            <button type="button" class="mu-btn" id="muPublicar"><i class="fa-solid fa-paper-plane"></i> Publicar</button>
+          </div>
+        </div>
+        <div id="muLista"><div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando...</p></div></div>
+        <div style="text-align:center"><button type="button" class="mu-btn" id="muMais" style="display:none;background:rgba(255,255,255,.08)">Ver mais</button></div>
+      </div>
+    </section>
+
     <!-- ── MAIS ── -->
     <section id="panel-mais" class="panel">
       <div class="panel-header">
@@ -1259,6 +1320,15 @@
           <div class="mais-item" onclick="abrirModalConexao('decisao')">
             <div class="mais-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="fa-solid fa-cross"></i></div>
             <div class="mais-info"><div class="mais-title">Decidi seguir a Jesus</div><div class="mais-sub">Queremos celebrar!</div></div>
+            <i class="fa-solid fa-chevron-right mais-arrow"></i>
+          </div>
+        </div>
+
+        <div class="section-label">Comunidade</div>
+        <div class="mais-list">
+          <div class="mais-item" data-nav="panel-mural">
+            <div class="mais-icon" style="background:rgba(167,139,250,0.15);color:#a78bfa;"><i class="fa-solid fa-comments"></i></div>
+            <div class="mais-info"><div class="mais-title">Mural da Igreja</div><div class="mais-sub">Avisos, testemunhos e reações</div></div>
             <i class="fa-solid fa-chevron-right mais-arrow"></i>
           </div>
         </div>
@@ -1465,6 +1535,7 @@ function showPanel(id) {
   // Escalas recarrega sempre: o líder pode ter mudado algo
   if (id === 'panel-escalas') loadMinhasEscalas();
   if (id === 'panel-meusdados') loadMeusDados();
+  if (id === 'panel-mural') loadMural(true);
 }
 
 document.querySelectorAll('.nav-item[data-target]').forEach(btn => {
@@ -1712,17 +1783,60 @@ async function loadEventos() {
     const list = Array.isArray(eventos) ? eventos : (eventos.data || []);
     if (!list.length) throw new Error('vazio');
     el.innerHTML = list.map(e => {
-      const d = e.data ? new Date(e.data) : null;
+      const d = e.data ? dataAgenda(e.data) : null;
       const day = d ? d.getDate() : '';
       const wday = d ? d.toLocaleDateString('pt-BR', { weekday: 'short' }) : '';
+      const hora = d ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
       return `<div class="event-card">
-        <div class="event-date-box"><div class="event-day">${day}</div><div class="event-weekday">${wday}</div></div>
-        <div class="event-info"><div class="event-title">${e.titulo || 'Evento'}</div>${e.descricao?`<div class="event-desc">${e.descricao}</div>`:''}</div>
+        <div class="event-date-box"><div class="event-day">${day}</div><div class="event-weekday">${escTxt(wday)}</div></div>
+        <div class="event-info"><div class="event-title">${escTxt(e.titulo || 'Evento')}</div>
+          ${hora ? `<div class="event-desc"><i class="fa-regular fa-clock"></i> ${hora}</div>` : ''}
+          ${e.descricao ? `<div class="event-desc">${escTxt(e.descricao)}</div>` : ''}
+          ${htmlInscricao(e)}
+        </div>
       </div>`;
     }).join('');
   } catch(_e) {
     el.innerHTML = '<div class="empty-state"><i class="fa-regular fa-clipboard"></i><p>Nenhum evento encontrado.</p></div>';
   }
+}
+
+// Agenda grava UTC "YYYY-MM-DD HH:MM:SS"
+function dataAgenda(v) {
+  const t = String(v || '');
+  const d = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(t) ? new Date(t.replace(' ', 'T') + 'Z') : new Date(t);
+  return isNaN(d) ? null : d;
+}
+function htmlInscricao(e) {
+  const i = e.inscricao;
+  if (!i) return '';
+  const vagas = i.vagas ? `<small>${i.vagas_restantes} de ${i.vagas} vaga(s) restante(s)</small>` : '';
+  if (i.minha) {
+    return `<div class="ev-insc"><span class="ev-ok"><i class="fa-solid fa-circle-check"></i> Você está inscrito</span>
+      <button type="button" class="ev-nao" onclick="inscreverEvento(${Number(e.id)}, false)">Cancelar</button></div>`;
+  }
+  if (!i.pode_inscrever) {
+    const txt = { esgotada: 'Vagas esgotadas', encerrada: 'Inscrições encerradas' }[i.motivo] || 'Inscrições fechadas';
+    return `<div class="ev-insc"><small>${txt}</small></div>`;
+  }
+  const prazo = i.prazo ? `<small>até ${new Date(i.prazo).toLocaleDateString('pt-BR')}</small>` : '';
+  return `<div class="ev-insc"><button type="button" class="ev-sim" onclick="inscreverEvento(${Number(e.id)}, true)"><i class="fa-solid fa-pen-to-square"></i> Inscrever-se</button>${vagas}${prazo}</div>`;
+}
+async function inscreverEvento(id, sim) {
+  if (!sim && !confirm('Cancelar sua inscrição neste evento?')) return;
+  try {
+    const r = await appFetch('/api/app/eventos/' + id + '/inscricao', {
+      method: sim ? 'POST' : 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Não foi possível concluir.');
+    if (d.message) alert(d.message);
+  } catch (err) {
+    alert(err.message);
+  }
+  loadEventos();
 }
 
 // ── Congregações ──
@@ -1815,16 +1929,34 @@ function renderCarteirinha(user) {
 
   if (!_qrGenerated) {
     _qrGenerated = true;
-    const qrEl = document.getElementById('cart-qrcode');
+    gerarQrCarteirinha();
+  }
+}
+
+// Lote 6: QR assinado pelo servidor → /verificar_carteirinha.html confirma se é verdadeira
+async function gerarQrCarteirinha() {
+  const qrEl = document.getElementById('cart-qrcode');
+  qrEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color:#94a3b8"></i>';
+  try {
+    const r = await appFetch('/api/carteirinha/minha');
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.membro) throw new Error(d.error || 'erro');
+    const m = d.membro;
+    document.getElementById('cart-nome').textContent = m.nome;
+    document.getElementById('cart-cargo').textContent = m.cargo;
+    document.getElementById('cart-situacao').textContent = m.situacao;
+    document.getElementById('cart-matricula').textContent = m.matricula;
+    if (d.igreja) document.getElementById('cart-nome-igreja').textContent = d.igreja;
     qrEl.innerHTML = '';
-    try {
-      new QRCode(qrEl, {
-        text: 'LDFP:MEMBRO:' + (user.id || '') + ':' + nome,
-        width: 120, height: 120,
-        colorDark: '#000000', colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } catch(_e) {}
+    new QRCode(qrEl, {
+      text: location.origin + '/verificar_carteirinha.html?t=' + encodeURIComponent(m.token),
+      width: 120, height: 120,
+      colorDark: '#000000', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch (_e) {
+    _qrGenerated = false;
+    qrEl.innerHTML = '<small style="color:#94a3b8;font-size:11px">QR indisponível sem conexão</small>';
   }
 }
 
@@ -1849,6 +1981,122 @@ document.getElementById('btnBaixarCarteirinha').addEventListener('click', async 
 });
 
 // ── Novidades ──
+// ── Mural da Igreja (Lote 6) ──
+const MU_REAC = [['amem', '🙏', 'Amém'], ['orando', '🤲', 'Orando'], ['gratidao', '💛', 'Gratidão'], ['curtir', '👍', 'Curtir']];
+let _muPagina = 1;
+let _muPosts = [];
+let _muConfig = {};
+function muQuando(v) {
+  const t = String(v || '');
+  const d = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(t) ? new Date(t.replace(' ', 'T') + 'Z') : new Date(t);
+  return isNaN(d) ? '' : d.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+async function muApi(url, method, body) {
+  const opts = { method: method || 'GET' };
+  if (method && method !== 'GET') { opts.headers = { 'Content-Type': 'application/json' }; opts.body = JSON.stringify(body || {}); }
+  const r = await appFetch(url, opts);
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Não foi possível concluir.');
+  return d;
+}
+function muHtmlPost(p) {
+  const reac = MU_REAC.map(([k, ico, nome]) => {
+    const n = (p.reacoes || {})[k] || 0;
+    return `<button type="button" class="${p.minha_reacao === k ? 'ativa' : ''}" onclick="muReagir(${Number(p.id)}, '${k}')" title="${nome}">${ico} ${n || ''}</button>`;
+  }).join('');
+  const pend = p.status === 'pendente' ? '<span class="mu-tag pendente">aguardando aprovação</span>' : '';
+  const fix = p.fixado ? '<span class="mu-tag"><i class="fa-solid fa-thumbtack"></i> fixado</span>' : '';
+  const id = Number(p.id);
+  return `<div class="mu-post ${p.status === 'pendente' ? 'pendente' : ''} ${p.fixado ? 'fixado' : ''}" id="mu-post-${id}">
+    <div class="mu-cab"><strong>${escTxt(p.autor_nome || 'Igreja')}</strong>${fix}${pend}<span>${escTxt(muQuando(p.created_at))}</span></div>
+    <div class="mu-texto">${escTxt(p.texto)}</div>
+    ${p.status === 'publicado' ? `<div class="mu-reacoes">${reac}</div>` : ''}
+    <div class="mu-links">
+      ${p.status === 'publicado' ? `<button type="button" onclick="muComentarios(${id})"><i class="fa-regular fa-comment"></i> ${p.comentarios || ''} Comentários</button>` : ''}
+      ${p.meu ? `<button type="button" onclick="muExcluir(${id})"><i class="fa-regular fa-trash-can"></i> Excluir</button>`
+              : `<button type="button" onclick="muDenunciar('post', ${id})"><i class="fa-regular fa-flag"></i> Denunciar</button>`}
+    </div>
+    <div class="mu-coments" id="mu-com-${id}" style="display:none"></div>
+  </div>`;
+}
+async function loadMural(reset) {
+  const box = document.getElementById('muLista');
+  if (reset) { _muPagina = 1; _muPosts = []; }
+  try {
+    const d = await muApi('/api/mural?limit=15&pagina=' + _muPagina);
+    _muConfig = d.config || {};
+    _muPosts = _muPosts.concat(d.items || []);
+    document.getElementById('muNovo').style.display = _muConfig.membros_publicam ? '' : 'none';
+    document.getElementById('muAviso').textContent = _muConfig.exige_aprovacao ? 'A liderança aprova antes de aparecer' : '';
+    box.innerHTML = _muPosts.length ? _muPosts.map(muHtmlPost).join('')
+      : '<div class="empty-state"><i class="fa-regular fa-comments"></i><p>Ainda não há publicações no mural.</p></div>';
+    document.getElementById('muMais').style.display = d.meta && d.meta.pagina < d.meta.totalPaginas ? '' : 'none';
+  } catch (_e) {
+    box.innerHTML = '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Não foi possível carregar o mural.</p></div>';
+  }
+}
+document.getElementById('muMais').addEventListener('click', () => { _muPagina += 1; loadMural(false); });
+document.getElementById('muPublicar').addEventListener('click', async () => {
+  const el = document.getElementById('muTexto');
+  const texto = el.value.trim();
+  if (!texto) return;
+  const btn = document.getElementById('muPublicar');
+  btn.disabled = true;
+  try {
+    const d = await muApi('/api/mural', 'POST', { texto });
+    el.value = '';
+    if (d.message) alert(d.message);
+    loadMural(true);
+  } catch (err) { alert(err.message); }
+  btn.disabled = false;
+});
+async function muReagir(id, tipo) {
+  const p = _muPosts.find(x => x.id === id);
+  if (!p) return;
+  try {
+    const d = await muApi('/api/mural/' + id + '/reacao', 'POST', { tipo: p.minha_reacao === tipo ? null : tipo });
+    p.minha_reacao = d.minha_reacao; p.reacoes = d.reacoes;
+    document.getElementById('mu-post-' + id).outerHTML = muHtmlPost(p);
+  } catch (err) { alert(err.message); }
+}
+async function muComentarios(id, forcar) {
+  const box = document.getElementById('mu-com-' + id);
+  if (box.style.display !== 'none' && !forcar) { box.style.display = 'none'; return; }
+  box.style.display = '';
+  box.innerHTML = '<div class="mu-com" style="color:var(--muted2)">Carregando...</div>';
+  try {
+    const d = await muApi('/api/mural/' + id + '/comentarios');
+    const lista = d.items.map(c => `<div class="mu-com"><strong>${escTxt(c.autor_nome)}</strong> ${escTxt(c.texto)}
+      ${c.meu ? `<button type="button" onclick="muExcluirComentario(${Number(c.id)}, ${id})">excluir</button>` : `<button type="button" onclick="muDenunciar('comentario', ${Number(c.id)})">denunciar</button>`}</div>`).join('');
+    const form = _muConfig.comentarios ? `<div class="mu-com-form"><input id="mu-in-${id}" maxlength="600" placeholder="Escreva um comentário...">
+      <button type="button" class="mu-btn" onclick="muComentar(${id})"><i class="fa-solid fa-paper-plane"></i></button></div>` : '';
+    box.innerHTML = (lista || '<div class="mu-com" style="color:var(--muted2)">Seja o primeiro a comentar.</div>') + form;
+  } catch (err) { box.innerHTML = '<div class="mu-com">' + escTxt(err.message) + '</div>'; }
+}
+async function muComentar(id) {
+  const el = document.getElementById('mu-in-' + id);
+  const texto = (el.value || '').trim();
+  if (!texto) return;
+  try {
+    await muApi('/api/mural/' + id + '/comentarios', 'POST', { texto });
+    const p = _muPosts.find(x => x.id === id); if (p) p.comentarios = (p.comentarios || 0) + 1;
+    muComentarios(id, true);
+  } catch (err) { alert(err.message); }
+}
+async function muExcluirComentario(cid, postId) {
+  if (!confirm('Excluir seu comentário?')) return;
+  try { await muApi('/api/mural/comentarios/' + cid, 'DELETE'); muComentarios(postId, true); } catch (err) { alert(err.message); }
+}
+async function muExcluir(id) {
+  if (!confirm('Excluir sua publicação?')) return;
+  try { await muApi('/api/mural/' + id, 'DELETE'); loadMural(true); } catch (err) { alert(err.message); }
+}
+async function muDenunciar(tipo, id) {
+  const motivo = prompt('Por que este conteúdo é inadequado? (opcional)', '');
+  if (motivo === null) return;
+  try { const d = await muApi('/api/mural/denuncias', 'POST', { alvo_tipo: tipo, alvo_id: id, motivo }); alert(d.message || 'Denúncia enviada.'); } catch (err) { alert(err.message); }
+}
+
 // ── Meus Dados (membro atualiza o próprio cadastro) ──
 const MD_CAMPOS = ['nome', 'cpf', 'nascimento', 'sexo', 'estado_civil', 'profissao', 'rg', 'nacionalidade', 'naturalidade', 'celular', 'telefone', 'email', 'cep', 'numero', 'endereco', 'bairro', 'cidade', 'estado'];
 function mdMsg(txt, erro) {

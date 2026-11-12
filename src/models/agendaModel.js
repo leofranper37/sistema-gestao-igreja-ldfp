@@ -8,17 +8,9 @@ async function ensureAgendaTable() {
     }
 
     agendaTableReadyPromise = (async () => {
+        // Ordem: MySQL (INDEX inline faz falhar no SQLite/PG) → SQLite → PostgreSQL.
+        // Antes o BIGSERIAL vinha primeiro e o SQLite o aceitava, criando "id" NULL.
         const createStatements = [
-            `CREATE TABLE IF NOT EXISTS agenda_eventos (
-                id BIGSERIAL PRIMARY KEY,
-                igreja_id INTEGER NOT NULL DEFAULT 1,
-                titulo VARCHAR(255) NOT NULL,
-                descricao TEXT NULL,
-                inicio TIMESTAMP NOT NULL,
-                fim TIMESTAMP NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )`,
             `CREATE TABLE IF NOT EXISTS agenda_eventos (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 igreja_id INT NOT NULL DEFAULT 1,
@@ -27,7 +19,8 @@ async function ensureAgendaTable() {
                 inicio DATETIME NOT NULL,
                 fim DATETIME NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_agenda_eventos_igreja_inicio (igreja_id, inicio)
             )`,
             `CREATE TABLE IF NOT EXISTS agenda_eventos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,6 +31,16 @@ async function ensureAgendaTable() {
                 fim TEXT NOT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )`,
+            `CREATE TABLE IF NOT EXISTS agenda_eventos (
+                id BIGSERIAL PRIMARY KEY,
+                igreja_id INTEGER NOT NULL DEFAULT 1,
+                titulo VARCHAR(255) NOT NULL,
+                descricao TEXT NULL,
+                inicio TIMESTAMP NOT NULL,
+                fim TIMESTAMP NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )`
         ];
 

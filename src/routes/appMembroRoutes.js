@@ -18,6 +18,7 @@ const crypto = require('crypto');
 const express = require('express');
 const { pool } = require('../config/db');
 const agendaService = require('../services/agendaService');
+const { enriquecerEventosApp } = require('./eventosInscricaoRoutes');
 const { requireAuth, authorize } = require('../middlewares/auth');
 
 const router = express.Router();
@@ -687,13 +688,28 @@ router.get('/api/app/eventos', resolveIgreja, async (req, res) => {
             end: endDate
         });
 
-        return res.json(rows.map((r) => ({
+        const eventos = rows.map((r) => ({
             id: r.id,
             titulo: r.titulo,
             descricao: r.descricao,
             data: r.inicio,
             fim: r.fim
-        })));
+        }));
+
+        // Lote 6: dados de inscrição (+ "minha inscrição" se for membro logado desta igreja)
+        let membroId = null;
+        const authHeader = req.headers.authorization || '';
+        if (authHeader.startsWith('Bearer ')) {
+            try {
+                const p = jwt.verify(authHeader.slice(7).trim(), config.security.jwtSecret);
+                if (p.app_mode && Number(p.igrejaId) === Number(id)) membroId = Number(p.membro_id || p.id) || null;
+            } catch (_) { /* token inválido: segue sem "minha inscrição" */ }
+        }
+        try {
+            return res.json(await enriquecerEventosApp(id, eventos, membroId));
+        } catch (_) {
+            return res.json(eventos);
+        }
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }

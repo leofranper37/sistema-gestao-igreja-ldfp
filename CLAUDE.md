@@ -120,6 +120,17 @@ O super admin **não acessa dados de clientes diretamente**. Para suporte, usa o
 - **SQL pendente em produção:** `INOVACOES_LOTE5_CADASTROS_TESOURARIA.sql`
 - Próximo: estados civis / locais de frequência configuráveis; Lote 6 (Mural, cursos/eventos com inscrição, carteirinha, dirigentes, login Google, 2FA); SPED/ECD/ECF por último
 
+## Inovações — Lote 6: Mural, Inscrição em Eventos, Carteirinha (11/11/2026)
+- **Mural** (`src/routes/muralRoutes.js`, `/api/mural/*`): mesmas rotas para equipe e membro (diferencia por `req.auth.app_mode`). Moderam: admin/secretaria/pastor. Tabelas `mural_posts`, `mural_comentarios`, `mural_reacoes` (amem/orando/gratidao/curtir, 1 por pessoa), `mural_denuncias`, `mural_config` (membros_publicam, exige_aprovacao, comentarios — padrão tudo 1)
+- Telas: `mural.html` (painel: regras, publicar/fixar, aprovar/ocultar, comentários, denúncias) + painel `panel-mural` no `app_membro_v2.html` (Início e Mais → Comunidade)
+- **Eventos com inscrição** (`src/routes/eventosInscricaoRoutes.js`): colunas `agenda_eventos.inscricao_aberta/vagas/inscricao_ate` + tabela `evento_inscricoes` (UNIQUE evento+membro, status inscrito/cancelado, presença). App: `POST/DELETE /api/app/eventos/:id/inscricao`; `GET /api/app/eventos` agora traz `inscricao` (vagas, prazo, `minha`). Equipe: `/api/eventos-inscricao/*` → tela `eventos_inscricoes.html` (botão "Inscrições" em cada evento da `agenda.html`; CSV e lista de presença para imprimir)
+- **Carteirinha** (`src/routes/carteirinhaRoutes.js`, SEM tabela): QR = `verificar_carteirinha.html?t=<igrejaId>-<membroId>-<HMAC>` (segredo derivado do JWT_SECRET — trocar o JWT_SECRET invalida as carteirinhas impressas). Verificação pública `GET /api/carteirinha/verificar/:token` devolve só nome, cargo, situação, matrícula e igreja (LGPD). Impressão em lote CR80 (10 por A4) em `carteirinhas.html`; versão digital no App usa `GET /api/carteirinha/minha`
+- `agendaModel`: DDL reordenada (MySQL → SQLite → PG) — antes o SQLite local criava `id` NULL
+- Rede de segurança: `src/models/lote6Schema.js` (`ensureMural`, `ensureEventos`)
+- Testes: `tests/lote6-mural-eventos-carteirinha.test.js` (27 testes, inclui isolamento entre igrejas)
+- **SQL pendente em produção:** `INOVACOES_LOTE6_MURAL_EVENTOS_CARTEIRINHA.sql`
+- Adiado (lote próprio): login com Google e verificação em duas etapas (precisam de credenciais Google Cloud / e-mail)
+
 ## Repositório local
 - Clone git real: `G:\sistema-gestao-igreja-main` (branch `main`). A cópia em `OneDrive\Imagens\sistema-gestao-igreja-ldfp-main` NÃO é repositório — não editar lá.
 

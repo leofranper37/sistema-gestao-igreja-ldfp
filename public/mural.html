@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Mural da Igreja</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="relatorios.css?v=20261111b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .mu-config { display:flex; gap:18px; flex-wrap:wrap; font-size:14px; color:#334155; }
+        .mu-config label { display:flex; gap:8px; align-items:center; cursor:pointer; }
+        .mu-novo textarea { width:100%; min-height:90px; padding:10px 12px; border:1px solid #dbe3ef; border-radius:10px; font:inherit; font-size:14px; resize:vertical; box-sizing:border-box; }
+        .mu-novo .linha { display:flex; gap:12px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+        .mu-post { border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; margin-bottom:12px; background:#fff; }
+        .mu-post.pendente { border-color:#f59e0b; background:#fffbeb; }
+        .mu-post.oculto { opacity:.65; background:#f8fafc; }
+        .mu-post.fixado { border-left:4px solid #0f766e; }
+        .mu-cab { display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13px; color:#64748b; margin-bottom:8px; }
+        .mu-cab strong { color:#0f172a; font-size:14px; }
+        .mu-texto { white-space:pre-wrap; word-break:break-word; color:#1e293b; font-size:14px; line-height:1.55; }
+        .mu-tag { font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:#e2e8f0; color:#334155; }
+        .mu-tag.pendente { background:#fef3c7; color:#92400e; }
+        .mu-tag.oculto { background:#e5e7eb; color:#4b5563; }
+        .mu-tag.membro { background:#e0f2fe; color:#075985; }
+        .mu-tag.denuncia { background:#fee2e2; color:#991b1b; }
+        .mu-rodape { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top:10px; font-size:13px; color:#475569; }
+        .mu-rodape .reac { margin-right:10px; }
+        .mu-rodape button { border:1px solid #dbe3ef; background:#fff; border-radius:6px; padding:5px 9px; cursor:pointer; color:#334155; font-size:12px; }
+        .mu-rodape button:hover { border-color:#0f766e; color:#0f766e; }
+        .mu-rodape button.perigo:hover { border-color:#b91c1c; color:#b91c1c; }
+        .mu-coments { margin-top:10px; border-top:1px dashed #e2e8f0; padding-top:8px; }
+        .mu-com { display:flex; gap:8px; align-items:flex-start; padding:6px 0; font-size:13px; }
+        .mu-com .t { flex:1; white-space:pre-wrap; word-break:break-word; }
+        .mu-com.oculto .t { color:#94a3b8; text-decoration:line-through; }
+        .mu-com button { border:none; background:none; cursor:pointer; color:#64748b; }
+        .mu-com button:hover { color:#b91c1c; }
+        .mu-msg { font-size:13px; margin-top:8px; } .mu-msg.ok { color:#047857; } .mu-msg.erro { color:#b91c1c; }
+        .mu-vazio { text-align:center; color:#94a3b8; padding:30px 10px; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="mural.html" data-shell-title="Mural da Igreja" data-shell-breadcrumb="LDFP / Secretaria / Mural da Igreja" data-shell-chip="Ambiente autenticado">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Mural da Igreja</h2>
+                <p>Avisos e testemunhos que aparecem no App do Membro. Os membros podem reagir, comentar e publicar — você decide o que fica visível.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-comments"></i> Comunicação</div>
+        </div>
+
+        <section class="rl-card">
+            <h3>Regras do mural</h3>
+            <div class="mu-config">
+                <label><input type="checkbox" id="cfgPublicam"> Membros podem publicar pelo App</label>
+                <label><input type="checkbox" id="cfgAprovacao"> Publicações de membros precisam de aprovação</label>
+                <label><input type="checkbox" id="cfgComentarios"> Permitir comentários</label>
+            </div>
+            <p class="mu-msg" id="cfgMsg"></p>
+        </section>
+
+        <section class="rl-card mu-novo">
+            <h3>Nova publicação</h3>
+            <textarea id="novoTexto" maxlength="2000" placeholder="Escreva um aviso, convite ou palavra para a igreja..."></textarea>
+            <div class="linha">
+                <label style="display:flex;gap:6px;align-items:center;font-size:13px;color:#475569;"><input type="checkbox" id="novoFixado"> Fixar no topo</label>
+                <span id="contador" style="font-size:12px;color:#94a3b8;">0/2000</span>
+                <button class="rl-btn" id="btnPublicar" type="button" style="margin-left:auto"><i class="fa-solid fa-paper-plane"></i> Publicar</button>
+            </div>
+            <p class="mu-msg" id="novoMsg"></p>
+        </section>
+
+        <section class="rl-card">
+            <div class="rl-tipos" id="abas">
+                <button type="button" class="rl-tipo ativo" data-f=""><i class="fa-solid fa-list"></i> Todas</button>
+                <button type="button" class="rl-tipo" data-f="pendente"><i class="fa-solid fa-hourglass-half"></i> Aguardando aprovação <span id="nPend"></span></button>
+                <button type="button" class="rl-tipo" data-f="oculto"><i class="fa-solid fa-eye-slash"></i> Ocultas</button>
+                <button type="button" class="rl-tipo" data-f="denuncias"><i class="fa-solid fa-flag"></i> Denúncias <span id="nDen"></span></button>
+            </div>
+            <div id="lista"><div class="mu-vazio">Carregando...</div></div>
+            <div style="text-align:center;margin-top:8px;"><button class="rl-btn ghost" id="btnMais" type="button" style="display:none">Carregar mais</button></div>
+        </section>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script src="relatorios-core.js?v=20261111b"></script>
+<script>
+requireAuthSession();
+(function () {
+    const $ = (id) => document.getElementById(id);
+    const esc = RL.esc;
+    const REAC = { amem: '🙏 Amém', orando: '🤲 Orando', gratidao: '💛 Gratidão', curtir: '👍 Curtir' };
+    let filtro = '';
+    let pagina = 1;
+    let posts = [];
+
+    async function api(url, method = 'GET', body) {
+        const opts = { method, headers: { Accept: 'application/json' } };
+        if (method !== 'GET') { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body || {}); }
+        const r = await fetch(url, opts);
+        let d = null; try { d = await r.json(); } catch (_) { /* vazio */ }
+        if (!r.ok) throw new Error((d && (d.error || d.message)) || `Erro ${r.status}`);
+        return d;
+    }
+    function msg(el, t, erro) { el.textContent = t || ''; el.className = 'mu-msg ' + (erro ? 'erro' : 'ok'); }
+    function quando(v) {
+        if (!v) return '';
+        const s = String(v);
+        const d = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(s) ? new Date(s.replace(' ', 'T') + 'Z') : new Date(s);
+        return isNaN(d) ? '' : d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    // ── configuração ──
+    async function carregarConfig() {
+        try {
+            const c = await api('/api/mural/config');
+            $('cfgPublicam').checked = c.membros_publicam;
+            $('cfgAprovacao').checked = c.exige_aprovacao;
+            $('cfgComentarios').checked = c.comentarios;
+            if (!c.modera) { msg($('cfgMsg'), 'Seu perfil pode ver o mural, mas só admin, secretaria ou pastor moderam.', true); }
+        } catch (e) { msg($('cfgMsg'), e.message, true); }
+    }
+    ['cfgPublicam', 'cfgAprovacao', 'cfgComentarios'].forEach((id) => {
+        $(id).addEventListener('change', async () => {
+            try {
+                await api('/api/mural/config', 'PUT', {
+                    membros_publicam: $('cfgPublicam').checked,
+                    exige_aprovacao: $('cfgAprovacao').checked,
+                    comentarios: $('cfgComentarios').checked
+                });
+                msg($('cfgMsg'), 'Regras salvas.');
+            } catch (e) { msg($('cfgMsg'), e.message, true); carregarConfig(); }
+        });
+    });
+
+    // ── nova publicação ──
+    $('novoTexto').addEventListener('input', () => { $('contador').textContent = `${$('novoTexto').value.length}/2000`; });
+    $('btnPublicar').addEventListener('click', async () => {
+        const texto = $('novoTexto').value.trim();
+        if (!texto) { msg($('novoMsg'), 'Escreva algo antes de publicar.', true); return; }
+        try {
+            await api('/api/mural', 'POST', { texto, fixado: $('novoFixado').checked });
+            $('novoTexto').value = ''; $('novoFixado').checked = false; $('contador').textContent = '0/2000';
+            msg($('novoMsg'), 'Publicado! Já aparece no App do Membro.');
+            recarregar();
+        } catch (e) { msg($('novoMsg'), e.message, true); }
+    });
+
+    // ── lista ──
+    function htmlPost(p) {
+        const reacs = Object.entries(p.reacoes || {}).map(([k, n]) => `${REAC[k] || k} ${n}`).join(' · ');
+        const cls = ['mu-post', p.status, p.fixado ? 'fixado' : ''].join(' ');
+        return `<article class="${cls}" data-id="${p.id}">
+            <div class="mu-cab">
+                <strong>${esc(p.autor_nome || '—')}</strong>
+                ${p.autor_tipo === 'membro' ? '<span class="mu-tag membro">membro</span>' : ''}
+                ${p.status !== 'publicado' ? `<span class="mu-tag ${p.status}">${p.status === 'pendente' ? 'aguardando aprovação' : 'oculta'}</span>` : ''}
+                ${p.fixado ? '<span class="mu-tag"><i class="fa-solid fa-thumbtack"></i> fixada</span>' : ''}
+                ${p.denuncias ? `<span class="mu-tag denuncia"><i class="fa-solid fa-flag"></i> ${p.denuncias} denúncia(s)</span>` : ''}
+                <span>${esc(quando(p.created_at))}</span>
+            </div>
+            <div class="mu-texto">${esc(p.texto)}</div>
+            <div class="mu-rodape">
+                <span class="reac">${reacs || 'Sem reações'}</span>
+                ${p.status === 'pendente' ? '<button data-a="aprovar"><i class="fa-solid fa-check"></i> Aprovar</button>' : ''}
+                ${p.status === 'publicado' ? '<button data-a="ocultar"><i class="fa-solid fa-eye-slash"></i> Ocultar</button>' : ''}
+                ${p.status === 'oculto' ? '<button data-a="aprovar"><i class="fa-solid fa-eye"></i> Mostrar</button>' : ''}
+                <button data-a="fixar"><i class="fa-solid fa-thumbtack"></i> ${p.fixado ? 'Desafixar' : 'Fixar'}</button>
+                <button data-a="coments"><i class="fa-regular fa-comment"></i> Comentários (${p.comentarios})</button>
+                ${p.denuncias ? '<button data-a="resolver"><i class="fa-solid fa-flag-checkered"></i> Denúncia analisada</button>' : ''}
+                <button data-a="excluir" class="perigo"><i class="fa-solid fa-trash-can"></i> Excluir</button>
+            </div>
+            <div class="mu-coments" hidden></div>
+        </article>`;
+    }
+
+    async function carregarContadores() {
+        try {
+            const [pend, den] = await Promise.all([api('/api/mural?status=pendente&limit=1'), api('/api/mural/denuncias')]);
+            $('nPend').textContent = pend.meta.total ? `(${pend.meta.total})` : '';
+            $('nDen').textContent = den.items.length ? `(${den.items.length})` : '';
+        } catch (_) { /* sem permissão */ }
+    }
+
+    async function carregarDenuncias() {
+        $('btnMais').style.display = 'none';
+        try {
+            const d = await api('/api/mural/denuncias');
+            if (!d.items.length) { $('lista').innerHTML = '<div class="mu-vazio">Nenhuma denúncia aberta. 🙌</div>'; return; }
+            $('lista').innerHTML = d.items.map((x) => `<article class="mu-post" data-alvo-tipo="${x.alvo_tipo}" data-alvo-id="${x.alvo_id}">
+                <div class="mu-cab"><span class="mu-tag denuncia">${x.total} denúncia(s)</span>
+                    <span class="mu-tag">${x.alvo_tipo === 'post' ? 'publicação' : 'comentário'}</span>
+                    <strong>${esc(x.autor_nome)}</strong> <span>${esc(x.status)}</span></div>
+                <div class="mu-texto">${esc(x.texto)}</div>
+                ${x.motivo ? `<div style="font-size:12px;color:#64748b;margin-top:6px;">Motivo: ${esc(x.motivo)}</div>` : ''}
+                <div class="mu-rodape">
+                    <button data-d="ocultar"><i class="fa-solid fa-eye-slash"></i> Ocultar conteúdo</button>
+                    <button data-d="manter"><i class="fa-solid fa-check"></i> Manter (denúncia improcedente)</button>
+                </div></article>`).join('');
+        } catch (e) { $('lista').innerHTML = `<div class="rl-alerta erro">${esc(e.message)}</div>`; }
+    }
+
+    async function carregar(reset) {
+        if (filtro === 'denuncias') return carregarDenuncias();
+        if (reset) { pagina = 1; posts = []; }
+        try {
+            const d = await api(`/api/mural?pagina=${pagina}&limit=20${filtro ? '&status=' + filtro : ''}`);
+            posts = posts.concat(d.items);
+            $('lista').innerHTML = posts.length ? posts.map(htmlPost).join('') : '<div class="mu-vazio">Nada por aqui ainda.</div>';
+            $('btnMais').style.display = d.meta.pagina < d.meta.totalPaginas ? '' : 'none';
+        } catch (e) { $('lista').innerHTML = `<div class="rl-alerta erro">${esc(e.message)}</div>`; }
+    }
+    function recarregar() { carregar(true); carregarContadores(); }
+
+    $('btnMais').addEventListener('click', () => { pagina += 1; carregar(false); });
+    document.querySelectorAll('#abas .rl-tipo').forEach((b) => b.addEventListener('click', () => {
+        document.querySelectorAll('#abas .rl-tipo').forEach((x) => x.classList.toggle('ativo', x === b));
+        filtro = b.dataset.f; carregar(true);
+    }));
+
+    async function abrirComentarios(art, id) {
+        const box = art.querySelector('.mu-coments');
+        box.hidden = false;
+        box.innerHTML = 'Carregando...';
+        try {
+            const d = await api(`/api/mural/${id}/comentarios`);
+            box.innerHTML = d.items.length ? d.items.map((c) => `<div class="mu-com ${c.status}" data-cid="${c.id}">
+                <div class="t"><strong>${esc(c.autor_nome)}</strong>: ${esc(c.texto)} <small style="color:#94a3b8">${esc(quando(c.created_at))}</small></div>
+                <button title="${c.status === 'oculto' ? 'Mostrar' : 'Ocultar'}" data-c="${c.status === 'oculto' ? 'mostrar' : 'ocultar'}"><i class="fa-solid ${c.status === 'oculto' ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+                <button title="Excluir" data-c="excluir"><i class="fa-solid fa-trash-can"></i></button></div>`).join('')
+                : '<div style="font-size:13px;color:#94a3b8">Sem comentários.</div>';
+        } catch (e) { box.textContent = e.message; }
+    }
+
+    $('lista').addEventListener('click', async (ev) => {
+        const btn = ev.target.closest('button');
+        if (!btn) return;
+        const art = btn.closest('article');
+        try {
+            if (btn.dataset.d) {
+                const alvo = { alvo_tipo: art.dataset.alvoTipo, alvo_id: Number(art.dataset.alvoId) };
+                if (btn.dataset.d === 'ocultar') {
+                    if (alvo.alvo_tipo === 'post') await api(`/api/mural/${alvo.alvo_id}`, 'PATCH', { status: 'oculto' });
+                    else await api(`/api/mural/comentarios/${alvo.alvo_id}`, 'PATCH', { status: 'oculto' });
+                }
+                await api('/api/mural/denuncias/resolver', 'POST', alvo);
+                carregarDenuncias(); carregarContadores();
+                return;
+            }
+            if (btn.dataset.c) {
+                const cid = btn.closest('.mu-com').dataset.cid;
+                if (btn.dataset.c === 'excluir') {
+                    if (!confirm('Excluir este comentário?')) return;
+                    await api(`/api/mural/comentarios/${cid}`, 'DELETE');
+                } else {
+                    await api(`/api/mural/comentarios/${cid}`, 'PATCH', { status: btn.dataset.c === 'ocultar' ? 'oculto' : 'publicado' });
+                }
+                abrirComentarios(art, art.dataset.id);
+                return;
+            }
+            const id = art.dataset.id;
+            const p = posts.find((x) => String(x.id) === id) || {};
+            switch (btn.dataset.a) {
+            case 'aprovar': await api(`/api/mural/${id}`, 'PATCH', { status: 'publicado' }); break;
+            case 'ocultar': await api(`/api/mural/${id}`, 'PATCH', { status: 'oculto' }); break;
+            case 'fixar': await api(`/api/mural/${id}`, 'PATCH', { fixado: !p.fixado }); break;
+            case 'resolver': await api('/api/mural/denuncias/resolver', 'POST', { alvo_tipo: 'post', alvo_id: Number(id) }); break;
+            case 'excluir':
+                if (!confirm('Excluir esta publicação, com comentários e reações?')) return;
+                await api(`/api/mural/${id}`, 'DELETE'); break;
+            case 'coments': {
+                const box = art.querySelector('.mu-coments');
+                if (!box.hidden) { box.hidden = true; return; }
+                return abrirComentarios(art, id);
+            }
+            default: return;
+            }
+            recarregar();
+        } catch (e) { alert(e.message); }
+    });
+
+    carregarConfig();
+    recarregar();
+})();
+</script>
+</body>
+</html>

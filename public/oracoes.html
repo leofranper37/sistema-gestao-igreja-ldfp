@@ -28,6 +28,17 @@
         .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; }
         .badge.pendente { background: #fef3c7; color: #92400e; }
         .badge.respondido { background: #dcfce7; color: #166534; }
+        .badge.testemunho { background: #ede9fe; color: #5b21b6; }
+        .testemunho-txt { margin-top: 6px; padding: 8px 10px; background: #f5f3ff; border-left: 3px solid #7c3aed; border-radius: 6px; font-size: 12px; color: #4c1d95; }
+        .row-actions .testemunho { border-color: #ddd6fe; color: #6d28d9; background: #f5f3ff; }
+        .testemunhos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; padding: 14px; }
+        .testemunho-card { border: 1px solid #ede9fe; border-radius: 12px; padding: 16px; background: linear-gradient(180deg, #faf5ff, #fff); }
+        .testemunho-card .tc-autor { font-size: 12px; font-weight: 700; color: #7c3aed; text-transform: uppercase; letter-spacing: .3px; }
+        .testemunho-card .tc-pedido { font-size: 12px; color: #64748b; margin: 6px 0 10px; }
+        .testemunho-card .tc-texto { font-size: 14px; color: #1e293b; line-height: 1.5; }
+        .testemunho-card .tc-resp { margin-top: 10px; font-size: 12px; color: #0f766e; }
+        .testemunho-card .tc-data { margin-top: 10px; font-size: 11px; color: #94a3b8; }
+        .empty-box { color: #64748b; padding: 24px; text-align: center; font-size: 13px; }
 
         .status-msg { margin: 10px 0 14px; font-size: 13px; color: #0f766e; }
         .status-msg.error { color: #b91c1c; }
@@ -64,6 +75,7 @@
             <div class="tabs">
                 <button type="button" class="tab-btn active" data-tab="meus">Meus Pedidos</button>
                 <button type="button" class="tab-btn" data-tab="mural">Mural de Orações</button>
+                <button type="button" class="tab-btn" data-tab="testemunhos"><i class="fa-solid fa-hands-clapping"></i> Testemunhos</button>
             </div>
 
             <div id="pageStatus" class="status-msg"></div>
@@ -111,6 +123,15 @@
                             <tbody></tbody>
                         </table>
                     </div>
+                </article>
+            </section>
+
+            <section id="panel-testemunhos" class="panel">
+                <article class="card">
+                    <header class="card-header">
+                        <h3>Orações respondidas — testemunhos da igreja</h3>
+                    </header>
+                    <div id="listaTestemunhos" class="testemunhos-grid"></div>
                 </article>
             </section>
         </div>
@@ -162,6 +183,24 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="modalTestemunho">
+        <div class="modal">
+            <h3><i class="fa-solid fa-hands-clapping" style="color:#7c3aed"></i> Deus respondeu!</h3>
+            <p style="font-size:13px;color:#64748b;margin:0 0 12px;">Conte como essa oração foi respondida. Se o pedido for público, o testemunho aparece no mural para edificar a igreja.</p>
+            <input type="hidden" id="testemunhoOracaoId">
+            <div class="field">
+                <label>Testemunho</label>
+                <textarea id="testemunhoTexto" rows="5" placeholder="Ex.: Recebi o resultado do exame e está tudo bem. Obrigado a todos que oraram!"></textarea>
+            </div>
+            <div id="modalTestemunhoStatusMsg" class="status-msg"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn" id="btnRemoverTestemunho" style="margin-right:auto;color:#b91c1c;">Remover testemunho</button>
+                <button type="button" class="btn" id="btnCancelarTestemunho">Cancelar</button>
+                <button type="button" class="btn primary" id="btnSalvarTestemunho">Salvar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="session.js?v=20260501"></script>
     <script src="enterprise-shell.js?v=20260501"></script>
     <script>
@@ -201,7 +240,20 @@
 
         function canReply() {
             const role = getUserRole();
-            return role === 'admin' || role === 'secretaria';
+            return role === 'admin' || role === 'secretaria' || role === 'pastor';
+        }
+
+        function testemunhoHtml(row) {
+            return row.testemunho
+                ? `<div class="testemunho-txt"><i class="fa-solid fa-hands-clapping"></i> ${sanitizeText(row.testemunho)}</div>`
+                : '';
+        }
+
+        function badgeHtml(row) {
+            if (row.testemunho) return '<span class="badge testemunho">testemunho</span>';
+            const status = String(row.status || 'pendente').toLowerCase();
+            const badgeClass = status === 'respondido' ? 'respondido' : 'pendente';
+            return `<span class="badge ${badgeClass}">${sanitizeText(status)}</span>`;
         }
 
         function renderMeusPedidos(rows) {
@@ -212,19 +264,18 @@
             }
 
             tbody.innerHTML = rows.map((row) => {
-                const status = String(row.status || 'pendente').toLowerCase();
-                const badgeClass = status === 'respondido' ? 'respondido' : 'pendente';
                 const privado = Number(row.is_private) === 1 ? 'Sim' : 'Não';
 
                 return `
                     <tr>
-                        <td>${sanitizeText(row.pedido || '-')}</td>
-                        <td><span class="badge ${badgeClass}">${sanitizeText(status)}</span></td>
+                        <td>${sanitizeText(row.pedido || '-')}${testemunhoHtml(row)}</td>
+                        <td>${badgeHtml(row)}</td>
                         <td>${privado}</td>
                         <td>${sanitizeText(row.resposta || '-')}</td>
                         <td>
                             <div class="row-actions">
                                 <button type="button" onclick="abrirModalPedido(${Number(row.id)})">Editar</button>
+                                <button type="button" class="testemunho" onclick="abrirModalTestemunho(${Number(row.id)}, 'meus')">${row.testemunho ? 'Editar testemunho' : 'Deus respondeu'}</button>
                                 <button type="button" class="delete" onclick="excluirPedido(${Number(row.id)})">Excluir</button>
                             </div>
                         </td>
@@ -242,17 +293,16 @@
 
             const allowReply = canReply();
             tbody.innerHTML = rows.map((row) => {
-                const status = String(row.status || 'pendente').toLowerCase();
-                const badgeClass = status === 'respondido' ? 'respondido' : 'pendente';
                 const actionHtml = allowReply
-                    ? `<button type="button" onclick="abrirModalResposta(${Number(row.id)})">Responder</button>`
+                    ? `<button type="button" onclick="abrirModalResposta(${Number(row.id)})">Responder</button>
+                       <button type="button" class="testemunho" onclick="abrirModalTestemunho(${Number(row.id)}, 'mural')">Testemunho</button>`
                     : '-';
 
                 return `
                     <tr>
                         <td>${sanitizeText(row.user_name || '-')}</td>
-                        <td>${sanitizeText(row.pedido || '-')}</td>
-                        <td><span class="badge ${badgeClass}">${sanitizeText(status)}</span></td>
+                        <td>${sanitizeText(row.pedido || '-')}${testemunhoHtml(row)}</td>
+                        <td>${badgeHtml(row)}</td>
                         <td>${sanitizeText(row.resposta || '-')}</td>
                         <td><div class="row-actions">${actionHtml}</div></td>
                     </tr>
@@ -293,6 +343,7 @@
 
                 muralCache = Array.isArray(data) ? data : [];
                 renderMural(muralCache);
+                renderTestemunhos(muralCache);
             } catch (error) {
                 tbody.innerHTML = `<tr><td colspan="5" style="color:#b91c1c;">${sanitizeText(error.message || 'Erro ao carregar mural.')}</td></tr>`;
             }
@@ -382,7 +433,7 @@
 
         function abrirModalResposta(id) {
             if (!canReply()) {
-                setStatus('pageStatus', 'Apenas administração/secretaria pode responder pedidos.', true);
+                setStatus('pageStatus', 'Apenas administração, secretaria ou pastor pode responder pedidos.', true);
                 return;
             }
 
@@ -431,6 +482,70 @@
             }
         }
 
+        function renderTestemunhos(rows) {
+            const box = mapField('listaTestemunhos');
+            const lista = rows.filter((row) => row.testemunho);
+            if (!lista.length) {
+                box.innerHTML = '<div class="empty-box">Ainda não há testemunhos. Quando uma oração for respondida, clique em <strong>Deus respondeu</strong> no pedido.</div>';
+                return;
+            }
+            box.innerHTML = lista.map((row) => {
+                const data = row.testemunho_at ? new Date(row.testemunho_at).toLocaleDateString('pt-BR') : '';
+                return `
+                    <div class="testemunho-card">
+                        <div class="tc-autor"><i class="fa-solid fa-user"></i> ${sanitizeText(row.user_name || 'Irmão(ã)')}</div>
+                        <div class="tc-pedido">Pedido: ${sanitizeText(row.pedido || '')}</div>
+                        <div class="tc-texto"><i class="fa-solid fa-quote-left" style="color:#c4b5fd"></i> ${sanitizeText(row.testemunho)}</div>
+                        ${row.resposta ? `<div class="tc-resp"><i class="fa-solid fa-comment-dots"></i> Pastoral: ${sanitizeText(row.resposta)}</div>` : ''}
+                        ${data ? `<div class="tc-data">${data}</div>` : ''}
+                    </div>`;
+            }).join('');
+        }
+
+        function abrirModalTestemunho(id, origem) {
+            const cache = origem === 'mural' ? muralCache : meusPedidosCache;
+            const row = cache.find((item) => Number(item.id) === Number(id));
+            if (!row) return;
+            setStatus('modalTestemunhoStatusMsg', '', false);
+            mapField('testemunhoOracaoId').value = String(row.id);
+            mapField('testemunhoTexto').value = row.testemunho || '';
+            mapField('btnRemoverTestemunho').style.display = row.testemunho ? '' : 'none';
+            mapField('modalTestemunho').style.display = 'flex';
+        }
+
+        function fecharModalTestemunho() {
+            mapField('modalTestemunho').style.display = 'none';
+            setStatus('modalTestemunhoStatusMsg', '', false);
+        }
+
+        async function salvarTestemunho(remover = false) {
+            const id = mapField('testemunhoOracaoId').value;
+            const testemunho = remover ? '' : mapField('testemunhoTexto').value.trim();
+            if (!remover && !testemunho) {
+                setStatus('modalTestemunhoStatusMsg', 'Escreva o testemunho.', true);
+                return;
+            }
+            if (remover && !confirm('Remover o testemunho deste pedido?')) return;
+
+            try {
+                const response = await fetch(`/oracoes/${id}/testemunho`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ testemunho })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(extractErrorMessage(data, 'Não foi possível salvar o testemunho.'));
+                }
+                setStatus('pageStatus', data.message || 'Testemunho salvo.');
+                fecharModalTestemunho();
+                await carregarMeusPedidos();
+                await carregarMural();
+            } catch (error) {
+                setStatus('modalTestemunhoStatusMsg', error.message || 'Erro ao salvar testemunho.', true);
+            }
+        }
+
         function bindTabs() {
             document.querySelectorAll('.tab-btn').forEach((btn) => {
                 btn.addEventListener('click', () => {
@@ -451,6 +566,10 @@
         mapField('btnSalvarResposta').addEventListener('click', salvarResposta);
         mapField('modalPedido').addEventListener('click', (event) => { if (event.target === mapField('modalPedido')) fecharModalPedido(); });
         mapField('modalResposta').addEventListener('click', (event) => { if (event.target === mapField('modalResposta')) fecharModalResposta(); });
+        mapField('btnCancelarTestemunho').addEventListener('click', fecharModalTestemunho);
+        mapField('btnSalvarTestemunho').addEventListener('click', () => salvarTestemunho(false));
+        mapField('btnRemoverTestemunho').addEventListener('click', () => salvarTestemunho(true));
+        mapField('modalTestemunho').addEventListener('click', (event) => { if (event.target === mapField('modalTestemunho')) fecharModalTestemunho(); });
 
         bindTabs();
         carregarMeusPedidos();

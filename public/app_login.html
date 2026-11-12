@@ -267,6 +267,7 @@
         </div>
         <button type="submit" class="btn-main" id="loginBtn">Entrar</button>
         <span class="hint-text"><i class="fa-solid fa-circle-info"></i>Primeiro acesso? Use os 6 primeiros dígitos do CPF como senha.</span>
+        <a id="linkFicha" href="autocadastro.html" class="hint-text" style="display:block;margin-top:10px;color:inherit;font-weight:700;text-decoration:underline;"><i class="fa-solid fa-id-card"></i> Ainda não tem cadastro? Preencha sua ficha</a>
         <div id="loginMsg" class="alert"></div>
       </form>
     </div>
@@ -297,6 +298,7 @@
     // ── Pegar igrejaTk da URL e carregar config da igreja ──
     const params = new URLSearchParams(location.search);
     const igrejaTk = params.get('igrejaTk') || '';
+    if (igrejaTk) document.getElementById('linkFicha').href = 'autocadastro.html?c=' + encodeURIComponent(igrejaTk);
 
     if (igrejaTk) {
       localStorage.setItem('ldfp_login_igrejaTk', igrejaTk);

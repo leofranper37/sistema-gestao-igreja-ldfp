@@ -29,6 +29,7 @@ const superAdminRoutes = require('./routes/superAdminRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const pushRoutes = require('./routes/pushRoutes');
 const relatorioMembroRoutes = require('./routes/relatorioMembroRoutes');
+const relatoriosRoutes = require('./routes/relatoriosRoutes');
 const batismosRoutes  = require('./routes/batismosRoutes');
 const escalasRoutes   = require('./routes/escalasRoutes');
 const gruposRoutes    = require('./routes/gruposRoutes');
@@ -44,6 +45,8 @@ const visitaPublicaRoutes = require('./routes/visitaPublicaRoutes');
 const contabilidadeRoutes = require('./routes/contabilidadeRoutes');
 const reciboRoutes = require('./routes/reciboRoutes');
 const blogRoutes = require('./routes/blogRoutes');
+const documentosRoutes = require('./routes/documentosRoutes');
+const fichaMembroRoutes = require('./routes/fichaMembroRoutes');
 
 const app = express();
 
@@ -264,6 +267,7 @@ app.use(superAdminRoutes);
 app.use(paymentRoutes);
 app.use(pushRoutes);
 app.use(relatorioMembroRoutes);
+app.use(relatoriosRoutes);
 app.use(batismosRoutes);
 app.use(escalasRoutes);
 app.use(gruposRoutes);
@@ -278,6 +282,8 @@ app.use(visitantesFollowupRoutes);
 app.use(contabilidadeRoutes);
 app.use(reciboRoutes);
 app.use(blogRoutes);
+app.use(documentosRoutes);
+app.use(fichaMembroRoutes);
 
 app.get('/blog', (req, res) => res.sendFile(path.join(staticAssetsPath, 'blog.html')));
 app.get('/blog/:slug', (req, res) => res.sendFile(path.join(staticAssetsPath, 'blog-post.html')));

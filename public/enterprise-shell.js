@@ -60,6 +60,7 @@
         'lista_membros.html': 'membros',
         'congregados.html': 'membros',
         'congregacoes.html': 'membros',
+        'cartas.html': 'membros',
         // Cargos
         'cargos.html': 'cargos',
         'situacoes.html': 'cargos',
@@ -102,6 +103,7 @@
         'comunicacao_whatsapp.html': 'whatsapp',
         // Autocadastro
         'autocadastro_aprovacoes.html': 'autocadastro',
+        'acesso_membro.html': 'autocadastro',
         // Portaria QR
         'portaria_checkin.html': 'portaria_qr',
         // App Mídia (legado → app_membro)
@@ -555,7 +557,8 @@
             ['congregacoes.html', 'fa-solid fa-church', 'Congregações', 'membros'],
             ['tipos_admissao.html', 'fa-solid fa-door-open', 'Tipos de Admissão', 'membros'],
             ['historico_pastoral.html', 'fa-solid fa-book-bible', 'Histórico Pastoral', 'historico_pastoral'],
-            ['tipos_historico.html', 'fa-solid fa-list-check', 'Tipo de Histórico', 'historico_pastoral']
+            ['tipos_historico.html', 'fa-solid fa-list-check', 'Tipo de Histórico', 'historico_pastoral'],
+            ['cartas.html', 'fa-solid fa-file-signature', 'Cartas e Certificados', 'membros']
         ];
 
         const grupoLinks = [
@@ -590,6 +593,7 @@
             ['criancas.html', 'fa-solid fa-child-reaching', 'Crianças', 'criancas'],
             ['oracoes.html', 'fa-solid fa-hands-praying', 'Orações', 'oracoes'],
             ['comunicacao_whatsapp.html', 'fa-brands fa-whatsapp', 'WhatsApp', 'whatsapp'],
+            ['acesso_membro.html', 'fa-solid fa-qrcode', 'Acesso do Membro', 'autocadastro'],
             ['autocadastro_aprovacoes.html', 'fa-solid fa-user-check', 'Aprovação de Cadastro', 'autocadastro'],
             ['portaria_checkin.html', 'fa-solid fa-qrcode', 'Portaria QR', 'portaria_qr'],
             ['telao_visitantes.html', 'fa-solid fa-display', 'Telão', 'telao']

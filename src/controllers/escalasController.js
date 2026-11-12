@@ -443,11 +443,23 @@ exports.getMatriz = async (req, res) => {
 
         // Atribuições para as instâncias encontradas
         const instanceIds = instances.map(i => i.instance_id);
-        const [assignments] = await pool.query(
-            `SELECT a.id, a.instance_id, a.function_id, a.member_id, m.nome AS full_name
-             FROM escalas_atribuicoes a
-             JOIN membros m ON m.id = a.member_id
-             WHERE a.instance_id IN (?)`, [instanceIds]);
+        let assignments;
+        try {
+            [assignments] = await pool.query(
+                `SELECT a.id, a.instance_id, a.function_id, a.member_id, m.nome AS full_name,
+                        a.status, a.status_motivo, a.status_at
+                 FROM escalas_atribuicoes a
+                 JOIN membros m ON m.id = a.member_id
+                 WHERE a.instance_id IN (?) AND a.church_id = ?`, [instanceIds, churchId]);
+        } catch (err) {
+            // Banco ainda sem as colunas de confirmação (SQL não rodado) — mantém a tela funcionando
+            if (err.code !== 'ER_BAD_FIELD_ERROR') throw err;
+            [assignments] = await pool.query(
+                `SELECT a.id, a.instance_id, a.function_id, a.member_id, m.nome AS full_name
+                 FROM escalas_atribuicoes a
+                 JOIN membros m ON m.id = a.member_id
+                 WHERE a.instance_id IN (?) AND a.church_id = ?`, [instanceIds, churchId]);
+        }
 
         res.json({ instances, functions, assignments });
     } catch (err) {
@@ -504,6 +516,83 @@ exports.deleteAtribuicao = async (req, res) => {
         res.json({ ok: true });
     } catch (err) {
         console.error('deleteAtribuicao:', err);
+        res.status(500).json({ error: 'Erro interno' });
+    }
+};
+
+// ───────────────────────────────────────────────
+// Confirmação de disponibilidade
+// ───────────────────────────────────────────────
+const STATUS_VALIDOS = ['pendente', 'confirmado', 'recusado'];
+
+function normalizarStatus(body) {
+    const status = String(body?.status || '').toLowerCase();
+    if (!STATUS_VALIDOS.includes(status)) return null;
+    const motivo = status === 'recusado'
+        ? String(body?.motivo || '').trim().slice(0, 255) || null
+        : null;
+    return { status, motivo };
+}
+
+// Admin/líder marca o status em nome do escalado
+exports.updateAtribuicaoStatus = async (req, res) => {
+    const churchId = req.auth.igrejaId;
+    const dados = normalizarStatus(req.body);
+    if (!dados) return res.status(400).json({ error: 'Status inválido' });
+    try {
+        const [info] = await pool.query(
+            `UPDATE escalas_atribuicoes SET status = ?, status_motivo = ?, status_at = NOW()
+             WHERE id = ? AND church_id = ?`,
+            [dados.status, dados.motivo, req.params.id, churchId]);
+        if (!info.affectedRows) return res.status(404).json({ error: 'Atribuição não encontrada' });
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('updateAtribuicaoStatus:', err);
+        res.status(500).json({ error: 'Erro interno' });
+    }
+};
+
+// App do Membro: lista as próximas escalas do próprio membro
+exports.listMinhasEscalas = async (req, res) => {
+    if (!req.auth.app_mode) return res.status(403).json({ error: 'Rota exclusiva do App de Membros' });
+    const churchId = req.auth.igrejaId;
+    const membroId = req.auth.membro_id || req.auth.id;
+    try {
+        const [rows] = await pool.query(
+            `SELECT a.id, a.status, a.status_motivo, i.instance_date, e.title, f.name AS funcao, g.name AS grupo
+             FROM escalas_atribuicoes a
+             JOIN escalas_instancias i ON i.id = a.instance_id AND i.church_id = a.church_id
+             JOIN escalas_eventos e    ON e.id = i.event_id
+             JOIN escalas_funcoes f    ON f.id = a.function_id
+             LEFT JOIN escalas_grupos g ON g.id = f.group_id
+             WHERE a.church_id = ? AND a.member_id = ? AND i.is_cancelled = 0
+               AND i.instance_date >= CURDATE()
+             ORDER BY i.instance_date, e.title
+             LIMIT 100`, [churchId, membroId]);
+        rows.forEach(r => { r.instance_date = fmtDate(r.instance_date); });
+        res.json(rows);
+    } catch (err) {
+        console.error('listMinhasEscalas:', err);
+        res.status(500).json({ error: 'Erro interno' });
+    }
+};
+
+// App do Membro: confirma ou recusa a própria escala
+exports.responderMinhaEscala = async (req, res) => {
+    if (!req.auth.app_mode) return res.status(403).json({ error: 'Rota exclusiva do App de Membros' });
+    const churchId = req.auth.igrejaId;
+    const membroId = req.auth.membro_id || req.auth.id;
+    const dados = normalizarStatus(req.body);
+    if (!dados || dados.status === 'pendente') return res.status(400).json({ error: 'Use confirmado ou recusado' });
+    try {
+        const [info] = await pool.query(
+            `UPDATE escalas_atribuicoes SET status = ?, status_motivo = ?, status_at = NOW()
+             WHERE id = ? AND church_id = ? AND member_id = ?`,
+            [dados.status, dados.motivo, req.params.id, churchId, membroId]);
+        if (!info.affectedRows) return res.status(404).json({ error: 'Escala não encontrada' });
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('responderMinhaEscala:', err);
         res.status(500).json({ error: 'Erro interno' });
     }
 };

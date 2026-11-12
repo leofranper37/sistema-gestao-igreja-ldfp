@@ -3,65 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Relatorios Tesouraria</title>
+    <title>LDFP - Relatórios Tesouraria</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="relatorios.css?v=20261111">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); margin-bottom:16px; }
-        .row { display:grid; grid-template-columns: 180px 180px auto; gap:10px; align-items:end; }
-        .field { width:100%; padding:10px; border:1px solid #dbe3ef; border-radius:8px; }
-        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
-        .result { background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:14px; }
-        @media (max-width:900px) { .row { grid-template-columns:1fr; } }
-    </style>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-active="relatorios_tesouraria.html" data-shell-title="Relatorios Tesouraria" data-shell-breadcrumb="LDFP / Relatorios / Tesouraria" data-shell-chip="Relatorios" data-shell-role="Tesouraria">
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="relatorios_tesouraria.html" data-shell-title="Relatórios Tesouraria" data-shell-breadcrumb="LDFP / Relatórios / Tesouraria" data-shell-chip="Relatórios" data-shell-role="Financeiro">
 <main class="main-content enterprise-main">
     <div class="enterprise-page-shell">
         <div class="enterprise-page-hero">
             <div>
-                <h2>Relatorios da Tesouraria</h2>
-                <p>Gere resumo financeiro por periodo para prestacao de contas.</p>
+                <h2>Relatórios da Tesouraria</h2>
+                <p>Caixa, extrato bancário, contas a pagar e dízimos, prontos para imprimir ou abrir no Excel.</p>
             </div>
             <div class="enterprise-page-badge"><i class="fa-regular fa-file-lines"></i> Tesouraria</div>
         </div>
 
-        <section class="card">
-            <div class="row">
-                <input id="inicio" class="field" type="date">
-                <input id="fim" class="field" type="date">
-                <button id="gerar" class="btn" type="button">Gerar relatorio</button>
+        <section class="rl-card">
+            <div class="rl-tipos" id="tipos"></div>
+            <div class="rl-filtros">
+                <label data-f="periodo">De <input type="date" id="inicio"></label>
+                <label data-f="periodo">Até <input type="date" id="fim"></label>
+                <label data-f="ano">Ano <select id="ano"></select></label>
+                <label data-f="conta">Conta bancária <select id="conta"><option value="">Todas as contas</option></select></label>
+                <label data-f="status">Status
+                    <select id="statusConta">
+                        <option value="">Todos</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="vencido">Vencido</option>
+                        <option value="pago">Pago</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </label>
+                <label data-f="tipoDiz">Tipo
+                    <select id="tipoDiz">
+                        <option value="dizimo">Dízimos</option>
+                        <option value="oferta">Ofertas</option>
+                        <option value="missoes">Missões</option>
+                        <option value="outros">Outros</option>
+                        <option value="todos">Todos</option>
+                    </select>
+                </label>
+                <label data-f="pessoa">Pessoa <input type="search" id="pessoa" placeholder="Nome do membro" list="listaPessoas"></label>
+                <datalist id="listaPessoas"></datalist>
+                <button class="rl-btn" id="btnGerar" type="button"><i class="fa-solid fa-magnifying-glass"></i> Gerar</button>
+                <div class="rl-acoes">
+                    <button class="rl-btn ghost" id="btnCSV" type="button"><i class="fa-solid fa-file-excel"></i> Excel</button>
+                    <button class="rl-btn ghost" id="btnImprimir" type="button"><i class="fa-solid fa-print"></i> Imprimir / PDF</button>
+                </div>
             </div>
-            <div id="saida" class="result" style="margin-top:12px">Selecione o periodo e clique em gerar.</div>
+            <p class="rl-status" id="status"></p>
+        </section>
+
+        <div class="rl-kpis" id="kpis"></div>
+
+        <section class="rl-card">
+            <h3 id="titulo"></h3>
+            <div id="saida"></div>
+            <p class="rl-nota" id="nota"></p>
         </section>
     </div>
 </main>
 
 <script src="session.js?v=20260501"></script>
 <script src="enterprise-shell.js?v=20260501"></script>
+<script src="relatorios-core.js?v=20261111"></script>
 <script>
 requireAuthSession();
+(function () {
+    const $ = (id) => document.getElementById(id);
+    const v = (id) => $(id).value;
+    const kpis = (lista) => { $('kpis').innerHTML = lista.map(([a, b, cls]) => `<div class="rl-kpi ${cls || ''}"><small>${a}</small><strong>${b}</strong></div>`).join(''); };
+    const saldoFmt = (r) => `<span class="${r.saldo >= 0 ? 'rl-pos' : 'rl-neg'}">${RL.moeda(r.saldo)}</span>`;
+    const colsMov = (comFonte) => [
+        { key: 'data', label: 'Data', fmt: 'data' },
+        ...(comFonte ? [{ key: 'fonte', label: 'Origem' }] : []),
+        { key: 'doc', label: 'Doc.' }, { key: 'descricao', label: 'Histórico' },
+        { key: 'entrada', label: 'Entrada', fmt: 'moeda' }, { key: 'saida', label: 'Saída', fmt: 'moeda' },
+        { key: 'saldo', label: 'Saldo', fmt: saldoFmt, num: true, csv: (r) => r.saldo.toFixed(2).replace('.', ',') }
+    ];
 
-function moeda(v) {
-    return Number(v || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
-}
+    async function movimento(fonte, comFonte) {
+        const r = await RL.get('/api/relatorios/tesouraria/movimento', { inicio: v('inicio'), fim: v('fim'), fonte, contaId: fonte === 'banco' ? v('conta') : '' });
+        const rows = [{ data: r.inicio, fonte: '', doc: '', descricao: 'Saldo anterior', entrada: 0, saida: 0, saldo: r.saldoAnterior }, ...r.rows];
+        kpis([
+            ['Saldo anterior', RL.moeda(r.saldoAnterior)],
+            ['Entradas', RL.moeda(r.totais.entrada), 'pos'],
+            ['Saídas', RL.moeda(r.totais.saida), 'neg'],
+            ['Saldo final', RL.moeda(r.totais.saldoFinal), r.totais.saldoFinal >= 0 ? 'pos' : 'neg']
+        ]);
+        return { cols: colsMov(comFonte), rows, footer: { entrada: r.totais.entrada, saida: r.totais.saida, saldo: RL.moeda(r.totais.saldoFinal) }, resumo: `${r.rows.length} lançamento(s)` };
+    }
 
-document.getElementById('gerar').addEventListener('click', () => {
-    const i = document.getElementById('inicio').value;
-    const f = document.getElementById('fim').value;
-    const out = document.getElementById('saida');
-    if (!i || !f) { out.textContent = 'Informe inicio e fim para gerar.'; return; }
+    const MESES_COLS = RL.MESES.map((m, i) => ({ key: (r) => r.meses[i], label: m, fmt: (r) => (r.meses[i] ? RL.moeda(r.meses[i]) : '—'), num: true, csv: (r) => r.meses[i].toFixed(2).replace('.', ',') }));
 
-    const entradas = 38250;
-    const saidas = 14520;
-    out.innerHTML = [
-        '<strong>Relatorio da Tesouraria</strong><br>',
-        'Periodo: ' + new Date(i + 'T00:00:00').toLocaleDateString('pt-BR') + ' a ' + new Date(f + 'T00:00:00').toLocaleDateString('pt-BR') + '.<br>',
-        'Total de entradas: ' + moeda(entradas) + '.<br>',
-        'Total de saidas: ' + moeda(saidas) + '.<br>',
-        'Saldo do periodo: ' + moeda(entradas - saidas) + '.'
-    ].join('');
-});
+    let dizimistasCache = null;
+    async function carregarDizimistas() {
+        const r = await RL.get('/api/relatorios/tesouraria/dizimistas', { ano: v('ano'), tipo: v('tipoDiz') });
+        dizimistasCache = r;
+        $('listaPessoas').innerHTML = r.dizimistas.map((d) => `<option value="${RL.esc(d.nome)}">`).join('');
+        return r;
+    }
+
+    const RELATORIOS = {
+        caixa: {
+            titulo: 'Movimento do caixa', grupo: 'Movimentação', filtros: ['periodo'],
+            run: () => movimento('caixa', false),
+            nota: 'Saldo anterior = soma de todos os lançamentos do caixa antes da data inicial.'
+        },
+        banco: {
+            titulo: 'Extrato bancário', grupo: 'Movimentação', filtros: ['periodo', 'conta'],
+            run: () => movimento('banco', !v('conta')),
+            nota: 'Saldo anterior = saldo inicial da(s) conta(s) + lançamentos antes da data inicial.'
+        },
+        geral: {
+            titulo: 'Financeiro geral (todas as origens)', grupo: 'Movimentação', filtros: ['periodo'],
+            run: async () => {
+                const r = await movimento('geral', true);
+                r.rows = r.rows.slice(1); // sem saldo anterior: origens diferentes
+                r.rows.forEach((x, i, a) => { x.saldo = (i ? a[i - 1].saldo : 0) + x.entrada - x.saida; });
+                const fim = r.rows.length ? r.rows[r.rows.length - 1].saldo : 0;
+                r.footer.saldo = RL.moeda(fim);
+                kpis([['Entradas', RL.moeda(r.footer.entrada), 'pos'], ['Saídas', RL.moeda(r.footer.saida), 'neg'], ['Resultado do período', RL.moeda(fim), fim >= 0 ? 'pos' : 'neg']]);
+                return r;
+            },
+            nota: 'Junta caixa, bancos e contas pagas. Dízimos lançados no módulo de Dízimos aparecem no relatório "Dízimos por período".'
+        },
+        contas: {
+            titulo: 'Contas a pagar', grupo: 'Movimentação', filtros: ['periodo', 'status'],
+            run: async () => {
+                const st = v('statusConta');
+                const r = await RL.get('/api/relatorios/tesouraria/contas-pagar', { inicio: v('inicio'), fim: v('fim'), status: st === 'vencido' ? 'pendente' : st });
+                const rows = st === 'vencido' ? r.rows.filter((x) => x.status === 'vencido') : r.rows;
+                kpis([['Total', RL.moeda(r.totais.total)], ['Pago', RL.moeda(r.totais.pago), 'pos'], ['Pendente', RL.moeda(r.totais.pendente)], ['Vencido', RL.moeda(r.totais.vencido), 'neg']]);
+                return {
+                    cols: [
+                        { key: 'vencimento', label: 'Vencimento', fmt: 'data' }, { key: 'descricao', label: 'Descrição' }, { key: 'fornecedor', label: 'Fornecedor' },
+                        { key: 'categoria', label: 'Categoria' }, { key: 'valor', label: 'Valor', fmt: 'moeda' },
+                        { key: 'status', label: 'Status', fmt: (x) => `<span class="rl-badge ${RL.esc(x.status)}">${RL.esc(x.status)}</span>`, csv: (x) => x.status },
+                        { key: 'pagamento', label: 'Pago em', fmt: 'data' }
+                    ],
+                    rows, footer: { valor: rows.reduce((s, x) => s + x.valor, 0) }, resumo: `${rows.length} conta(s)`
+                };
+            },
+            nota: 'Período filtra pela data de vencimento.'
+        },
+        dizimosPeriodo: {
+            titulo: 'Dízimos e ofertas por período', grupo: 'Dízimos', filtros: ['periodo'],
+            run: async () => {
+                const r = await RL.get('/api/relatorios/tesouraria/movimento', { inicio: v('inicio'), fim: v('fim'), fonte: 'dizimos' });
+                const nomes = { dizimo: 'Dízimos', oferta: 'Ofertas', missoes: 'Missões', outros: 'Outros' };
+                kpis([['Total', RL.moeda(r.totais.entrada), 'pos'], ...Object.entries(r.porTipo).map(([k, val]) => [nomes[k] || k, RL.moeda(val)])]);
+                return {
+                    cols: [{ key: 'competencia', label: 'Competência' }, { key: 'descricao', label: 'Contribuinte' },
+                        { key: 'doc', label: 'Tipo', fmt: (x) => RL.esc(nomes[x.doc] || x.doc), csv: (x) => nomes[x.doc] || x.doc },
+                        { key: 'entrada', label: 'Valor', fmt: 'moeda' }, { key: 'data', label: 'Lançado em', fmt: 'data' }],
+                    rows: r.rows, footer: { entrada: r.totais.entrada }, resumo: `${r.rows.length} lançamento(s)`
+                };
+            },
+            nota: 'Filtra pelo mês de competência (MM/AAAA) do lançamento.'
+        },
+        controleAnual: {
+            titulo: 'Controle anual de dízimos', grupo: 'Dízimos', filtros: ['ano', 'tipoDiz'],
+            run: async () => {
+                const r = await carregarDizimistas();
+                const footer = { nome: 'Total', total: r.total };
+                const cols = [{ key: 'nome', label: 'Nome' }, ...MESES_COLS, { key: 'total', label: 'Total', fmt: 'moeda' }];
+                // rodapé dos meses
+                cols.forEach((c, i) => { if (i >= 1 && i <= 12) footer[`__${i}`] = RL.moeda(r.totaisMes[i - 1]); });
+                const mesesComDizimo = r.totaisMes.filter((x) => x > 0).length;
+                kpis([['Total no ano', RL.moeda(r.total), 'pos'], ['Contribuintes', RL.numero(r.dizimistas.length)], ['Média mensal', RL.moeda(mesesComDizimo ? r.total / mesesComDizimo : 0)]]);
+                return { cols, rows: r.dizimistas, footer, resumo: `${r.dizimistas.length} contribuinte(s)` };
+            },
+            nota: '"—" = sem lançamento no mês. Útil para acompanhar a fidelidade mês a mês.'
+        },
+        ficha: {
+            titulo: 'Ficha financeira do membro', grupo: 'Dízimos', filtros: ['ano', 'tipoDiz', 'pessoa'],
+            run: async () => {
+                const r = (dizimistasCache && dizimistasCache.ano === Number(v('ano')) && dizimistasCache.tipo === v('tipoDiz')) ? dizimistasCache : await carregarDizimistas();
+                const alvo = v('pessoa').trim().toLowerCase();
+                const lista = alvo ? r.dizimistas.filter((d) => String(d.nome).toLowerCase().includes(alvo)) : r.dizimistas;
+                const rows = [];
+                lista.forEach((d) => {
+                    rows.push({ __grupo: `${d.nome} — total ${RL.moeda(d.total)}` });
+                    d.lancamentos
+                        .slice()
+                        .sort((a, b) => a.competencia.split('/').reverse().join('').localeCompare(b.competencia.split('/').reverse().join('')))
+                        .forEach((l) => rows.push({ nome: d.nome, ...l }));
+                });
+                const total = lista.reduce((s, d) => s + d.total, 0);
+                kpis([['Total', RL.moeda(total), 'pos'], ['Pessoas', RL.numero(lista.length)], ['Lançamentos', RL.numero(rows.length - lista.length)]]);
+                return {
+                    cols: [{ key: 'nome', label: 'Nome' }, { key: 'competencia', label: 'Competência' }, { key: 'tipo', label: 'Tipo' },
+                        { key: 'valor', label: 'Valor', fmt: 'moeda' }, { key: 'observacao', label: 'Observação' }, { key: 'lancadoEm', label: 'Lançado em', fmt: 'data' }],
+                    rows, footer: { valor: total }, resumo: alvo ? `Filtro: "${v('pessoa')}"` : 'Todos os contribuintes'
+                };
+            },
+            nota: 'Digite o nome para emitir a ficha de uma pessoa (ex.: para declaração de contribuição).'
+        },
+        anual: {
+            titulo: 'Receita x despesa anual', grupo: 'Resumos', filtros: ['ano'],
+            run: async () => {
+                const r = await RL.get('/api/relatorios/tesouraria/anual', { ano: v('ano') });
+                const t = r.totais;
+                kpis([['Receitas', RL.moeda(t.receita), 'pos'], ['Despesas', RL.moeda(t.despesa), 'neg'], ['Saldo', RL.moeda(t.saldo), t.saldo >= 0 ? 'pos' : 'neg'], ['Per capita', RL.moeda(t.perCapitaAnual)]]);
+                return {
+                    cols: [
+                        { key: (x) => RL.MESES_LONGOS[x.mes - 1], label: 'Mês', csv: (x) => RL.MESES_LONGOS[x.mes - 1] },
+                        { key: 'dizimos', label: 'Dízimos', fmt: 'moeda' }, { key: 'ofertas', label: 'Ofertas', fmt: 'moeda' },
+                        { key: (x) => x.missoes + x.outros, label: 'Missões/Outros', fmt: 'moeda' },
+                        { key: 'caixaEntrada', label: 'Entr. caixa', fmt: 'moeda' }, { key: 'bancoEntrada', label: 'Entr. banco', fmt: 'moeda' },
+                        { key: 'receita', label: 'Receita', fmt: 'moeda' },
+                        { key: 'caixaSaida', label: 'Saí. caixa', fmt: 'moeda' }, { key: 'bancoSaida', label: 'Saí. banco', fmt: 'moeda' },
+                        { key: 'contasPagas', label: 'Contas pagas', fmt: 'moeda' }, { key: 'despesa', label: 'Despesa', fmt: 'moeda' },
+                        { key: 'saldo', label: 'Saldo', fmt: saldoFmt, num: true, csv: (x) => x.saldo.toFixed(2).replace('.', ',') },
+                        { key: 'dizimistas', label: 'Dizimistas', fmt: 'numero' }, { key: 'perCapitaMembro', label: 'Per capita', fmt: 'moeda' }
+                    ],
+                    rows: r.meses,
+                    footer: { dizimos: t.dizimos, ofertas: t.ofertas, __3: RL.moeda(t.missoes + t.outros), caixaEntrada: t.caixaEntrada, bancoEntrada: t.bancoEntrada,
+                        receita: t.receita, caixaSaida: t.caixaSaida, bancoSaida: t.bancoSaida, contasPagas: t.contasPagas, despesa: t.despesa,
+                        saldo: RL.moeda(t.saldo), dizimistas: t.dizimistasUnicos, perCapitaMembro: t.perCapitaAnual },
+                    resumo: `Ano ${r.ano}`
+                };
+            },
+            nota: 'Se a igreja lança o mesmo valor em dois lugares (ex.: dízimo também no caixa, ou transferência caixa→banco), ele é somado duas vezes.'
+        }
+    };
+
+    let atual = 'caixa';
+    let ultimo = null;
+    let grupoAnterior = '';
+    Object.entries(RELATORIOS).forEach(([k, r]) => {
+        if (r.grupo !== grupoAnterior) { $('tipos').insertAdjacentHTML('beforeend', `<div class="rl-grupo-titulo">${r.grupo}</div>`); grupoAnterior = r.grupo; }
+        $('tipos').insertAdjacentHTML('beforeend', `<button type="button" class="rl-tipo" data-k="${k}">${RL.esc(r.titulo)}</button>`);
+    });
+    $('tipos').addEventListener('click', (e) => {
+        const b = e.target.closest('.rl-tipo');
+        if (!b) return;
+        selecionar(b.dataset.k);
+        gerar();
+    });
+
+    function selecionar(k) {
+        atual = k;
+        document.querySelectorAll('.rl-tipo').forEach((b) => b.classList.toggle('ativo', b.dataset.k === k));
+        const f = RELATORIOS[k].filtros;
+        document.querySelectorAll('[data-f]').forEach((el) => { el.style.display = f.includes(el.dataset.f) ? '' : 'none'; });
+        $('titulo').textContent = RELATORIOS[k].titulo;
+        $('nota').textContent = RELATORIOS[k].nota || '';
+        try { localStorage.setItem('ldfpRelTes', k); } catch (_) { /* ignore */ }
+    }
+
+    async function gerar() {
+        RL.status($('status'), 'Gerando…');
+        $('saida').innerHTML = '';
+        $('kpis').innerHTML = '';
+        try {
+            ultimo = await RELATORIOS[atual].run();
+            RL.tabela($('saida'), ultimo.cols, ultimo.rows, { footer: ultimo.footer });
+            RL.status($('status'), ultimo.resumo || '');
+        } catch (e) {
+            ultimo = null;
+            RL.status($('status'), e.message, true);
+        }
+    }
+
+    function subtitulo() {
+        const f = RELATORIOS[atual].filtros;
+        const p = [];
+        if (f.includes('periodo')) p.push(`Período ${RL.data(v('inicio'))} a ${RL.data(v('fim'))}`);
+        if (f.includes('ano')) p.push(`Ano ${v('ano')}`);
+        if (f.includes('conta') && v('conta')) p.push($('conta').selectedOptions[0].textContent);
+        if (ultimo && ultimo.resumo) p.push(ultimo.resumo);
+        return p.join(' · ');
+    }
+
+    const anoAtual = new Date().getFullYear();
+    for (let a = anoAtual + 1; a >= anoAtual - 6; a -= 1) $('ano').insertAdjacentHTML('beforeend', `<option ${a === anoAtual ? 'selected' : ''}>${a}</option>`);
+    $('inicio').value = RL.inicioMesISO();
+    $('fim').value = RL.hojeISO();
+    ['ano', 'tipoDiz'].forEach((id) => $(id).addEventListener('change', () => { dizimistasCache = null; }));
+    $('btnGerar').addEventListener('click', gerar);
+    $('pessoa').addEventListener('keydown', (e) => { if (e.key === 'Enter') gerar(); });
+    $('btnCSV').addEventListener('click', () => {
+        if (!ultimo || !ultimo.rows.length) { RL.status($('status'), 'Gere o relatório antes de exportar.', true); return; }
+        RL.exportarCSV(`${RELATORIOS[atual].titulo} ${RL.hojeISO()}`, ultimo.cols, ultimo.rows);
+    });
+    $('btnImprimir').addEventListener('click', () => RL.imprimir(RELATORIOS[atual].titulo, subtitulo()));
+
+    RL.get('/api/relatorios/tesouraria/contas-bancarias').then((contas) => {
+        (contas || []).forEach((c) => $('conta').insertAdjacentHTML('beforeend', `<option value="${c.id}">${RL.esc(c.nome || c.banco)}${c.conta ? ' · ' + RL.esc(c.conta) : ''}</option>`));
+    }).catch(() => { /* sem contas */ });
+
+    let inicial = 'caixa';
+    try { const s = localStorage.getItem('ldfpRelTes'); if (s && RELATORIOS[s]) inicial = s; } catch (_) { /* ignore */ }
+    selecionar(inicial);
+    gerar();
+})();
 </script>
 </body>
 </html>

@@ -17,13 +17,18 @@
         .no { background:#dc2626; color:#fff; }
         .msg { font-size:13px; color:#0f766e; margin-top:8px; }
         .msg.error { color:#b91c1c; }
+        .ficha { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:6px 16px; background:#f8fafc; border-radius:8px; padding:10px 12px; font-size:12px; color:#334155; }
+        .ficha b { color:#64748b; font-weight:700; text-transform:uppercase; font-size:10px; display:block; }
+        .tag-cpf { display:inline-block; background:#e0f2fe; color:#0369a1; border-radius:999px; padding:1px 8px; font-size:10px; font-weight:700; margin-left:6px; }
+        .btn.ver { background:#f1f5f9; color:#334155; }
     </style>
 </head>
 <body class="theme-petroleo enterprise-shell-page" data-shell-title="Autocadastros" data-shell-breadcrumb="LDFP / Secretaria / Autocadastros" data-shell-active="autocadastro_aprovacoes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Secretaria">
     <main class="main-content enterprise-main">
         <div class="wrap">
             <section class="card">
-                <h2 style="margin:0 0 10px;">Fila de aprovação</h2>
+                <h2 style="margin:0 0 4px;">Fila de aprovação</h2>
+                <p style="margin:0 0 12px;font-size:13px;color:#64748b;">Fichas enviadas pelos membros. Para divulgar o link ou QR Code, use <a href="acesso_membro.html">Acesso do Membro</a>.</p>
                 <table>
                     <thead>
                         <tr>
@@ -54,43 +59,97 @@
             statusMsg.textContent = message || '';
         }
 
+        // Dados vêm de formulário público: SEMPRE escapar antes de pôr no HTML
+        function esc(v) {
+            return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        const ROTULOS = {
+            cpf: 'CPF', rg: 'RG', nascimento: 'Nascimento', sexo: 'Sexo', estado_civil: 'Estado civil',
+            profissao: 'Profissão', nacionalidade: 'Nacionalidade', naturalidade: 'Naturalidade', celular: 'Celular',
+            telefone: 'Telefone', email: 'E-mail', cep: 'CEP', endereco: 'Endereço', numero: 'Número',
+            bairro: 'Bairro', cidade: 'Cidade', estado: 'UF', apelido: 'Apelido'
+        };
+
+        function lerFicha(item) {
+            try { if (item.dados_ficha) return JSON.parse(item.dados_ficha); } catch (_) {}
+            const m = String(item.observacao || '').match(/FICHA: (\{.*\})\s*$/s);
+            if (m) { try { return JSON.parse(m[1]); } catch (_) {} }
+            return {};
+        }
+
+        function fmtValor(k, v) {
+            if (k === 'cpf') {
+                const n = String(v).replace(/\D/g, '');
+                return n.length === 11 ? n.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : v;
+            }
+            if (k === 'nascimento' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v.split('-').reverse().join('/');
+            return v;
+        }
+
+        let itensCache = [];
+
         async function loadItems() {
             const response = await fetch('/autocadastro?status=pendente');
             const data = await response.json().catch(() => []);
             if (!response.ok) {
                 throw new Error(data.error || 'Nao foi possivel carregar autocadastros.');
             }
-
-            tbItems.innerHTML = data.map((item) => `
-                <tr>
-                    <td>${item.nome}</td>
-                    <td>${item.email || '-'}<br>${item.telefone || '-'}</td>
-                    <td>${item.cidade || '-'}</td>
-                    <td>${item.status}</td>
-                    <td>
-                        <button class="btn ok" onclick="aprovar(${item.id})">Aprovar</button>
-                        <button class="btn no" onclick="rejeitar(${item.id})">Rejeitar</button>
-                    </td>
-                </tr>
-            `).join('');
+            itensCache = data;
 
             if (!data.length) {
-                tbItems.innerHTML = '<tr><td colspan="5">Sem itens pendentes no momento.</td></tr>';
+                tbItems.innerHTML = '<tr><td colspan="5">Sem fichas pendentes no momento.</td></tr>';
+                return;
             }
+
+            tbItems.innerHTML = data.map((item) => {
+                const ficha = lerFicha(item);
+                const obs = String(item.observacao || '').replace(/\n?FICHA: \{.*\}\s*$/s, '').trim();
+                const detalhes = Object.keys(ROTULOS)
+                    .filter(k => ficha[k])
+                    .map(k => `<div><b>${ROTULOS[k]}</b>${esc(fmtValor(k, ficha[k]))}</div>`).join('');
+                const enviado = item.created_at ? new Date(item.created_at).toLocaleString('pt-BR') : '';
+                return `
+                <tr>
+                    <td><strong>${esc(item.nome)}</strong>${ficha.cpf ? '<span class="tag-cpf">CPF</span>' : ''}<br><small style="color:#94a3b8">${esc(enviado)}</small></td>
+                    <td>${esc(item.email || '-')}<br>${esc(item.telefone || '-')}</td>
+                    <td>${esc(item.cidade || '-')}</td>
+                    <td>${esc(item.status)}</td>
+                    <td style="white-space:nowrap">
+                        ${detalhes || obs ? `<button class="btn ver" onclick="toggleFicha(${Number(item.id)})">Ver ficha</button>` : ''}
+                        <button class="btn ok" onclick="aprovar(${Number(item.id)})">Aprovar</button>
+                        <button class="btn no" onclick="rejeitar(${Number(item.id)})">Rejeitar</button>
+                    </td>
+                </tr>
+                <tr id="ficha-${Number(item.id)}" hidden>
+                    <td colspan="5">
+                        <div class="ficha">${detalhes}${obs ? `<div style="grid-column:1/-1"><b>Observação</b>${esc(obs)}</div>` : ''}</div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function toggleFicha(id) {
+            const tr = document.getElementById('ficha-' + id);
+            if (tr) tr.hidden = !tr.hidden;
         }
 
         async function aprovar(id) {
-            const criarAcesso = window.confirm('Deseja aprovar e criar acesso de membro?');
+            const item = itensCache.find(i => Number(i.id) === Number(id));
+            if (!window.confirm(`Aprovar a ficha de ${item ? item.nome : 'este membro'}? Se o CPF já estiver cadastrado, os dados do membro serão atualizados.`)) return;
 
             try {
                 const response = await fetch(`/autocadastro/${id}/aprovar`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ criarAcesso })
+                    body: JSON.stringify({ criarAcesso: false })
                 });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) throw new Error(data.error || 'Erro ao aprovar.');
-                setStatus('Autocadastro aprovado com sucesso.');
+                const r = data.result || {};
+                let msg = r.atualizado ? 'Ficha aprovada: cadastro do membro atualizado.' : 'Ficha aprovada: membro incluído no rol.';
+                if (r.acessoAppPorCpf) msg += ' Ele já pode entrar no App do Membro com o CPF (senha inicial: 6 primeiros dígitos do CPF).';
+                setStatus(msg);
                 await loadItems();
             } catch (error) {
                 setStatus(error.message, true);
@@ -98,7 +157,8 @@
         }
 
         async function rejeitar(id) {
-            const motivo = window.prompt('Motivo da rejeição (opcional):') || '';
+            const motivo = window.prompt('Motivo da rejeição (opcional):');
+            if (motivo === null) return;
             try {
                 const response = await fetch(`/autocadastro/${id}/rejeitar`, {
                     method: 'PUT',
@@ -107,13 +167,14 @@
                 });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) throw new Error(data.error || 'Erro ao rejeitar.');
-                setStatus('Autocadastro rejeitado.');
+                setStatus('Ficha rejeitada.');
                 await loadItems();
             } catch (error) {
                 setStatus(error.message, true);
             }
         }
 
+        window.toggleFicha = toggleFicha;
         window.aprovar = aprovar;
         window.rejeitar = rejeitar;
 

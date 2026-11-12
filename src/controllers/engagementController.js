@@ -236,11 +236,11 @@ async function triggerOracaoResposta(req, res) {
     res.status(201).json(result);
 }
 
+// Desativado: aceitava igrejaId vindo do navegador (ou caía na igreja 1).
+// O cadastro público agora é POST /api/ficha, identificado pelo código da igreja.
 async function createAutocadastro(req, res) {
-    const id = await engagementService.createAutocadastro(req.validatedBody);
-    res.status(201).json({
-        id,
-        message: 'Seu cadastro foi recebido e está aguardando aprovação da secretaria.'
+    res.status(410).json({
+        error: 'Este formulário mudou. Peça à secretaria da sua igreja o link ou QR Code de cadastro.'
     });
 }
 

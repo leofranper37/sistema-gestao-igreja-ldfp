@@ -544,6 +544,24 @@
         .chart-panel.loading { min-height: 200px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px; }
         .chart-panel.loading canvas { display: none; }
 
+        /* ── Dashboard configurável ───────────────────────── */
+        .dash-widget[hidden] { display: none !important; }
+        .dash-config-box { width: 420px; padding: 22px 24px 24px; }
+        .dash-config-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .dash-config-head strong { font-size: 16px; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+        .dash-config-head strong i { color: #0f766e; }
+        .dash-config-x { background: #f1f5f9; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; color: #64748b; }
+        .dash-config-hint { font-size: 12px; color: #64748b; margin: 8px 0 14px; line-height: 1.5; }
+        .dash-config-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+        .dash-config-item { display: flex; align-items: center; gap: 10px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; background: #fff; }
+        .dash-config-item.off { opacity: .55; background: #f8fafc; }
+        .dash-config-item label { flex: 1; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: #1e293b; cursor: pointer; }
+        .dash-config-item label i { width: 18px; text-align: center; color: #0f766e; }
+        .dash-config-move { background: #f1f5f9; border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; color: #475569; }
+        .dash-config-move:disabled { opacity: .35; cursor: default; }
+        .dash-config-actions { display: flex; gap: 10px; margin-top: 18px; }
+        .dash-config-actions .modal-btn-primary { border: none; }
+
         /* ── Responsive ─────────────────────────────────── */
         @media(max-width:1200px) { .dash-grid { grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); } }
         @media(max-width:768px)  { .dash-grid { grid-template-columns: repeat(2,1fr); } .members-grid { grid-template-columns: 1fr; } }
@@ -565,6 +583,7 @@
                         <a href="membros.html" class="hero-btn"><i class="fa-solid fa-user-plus"></i> Novo Membro</a>
                         <a href="agenda.html" class="hero-btn"><i class="fa-solid fa-calendar-plus"></i> Novo Evento</a>
                         <a href="oracoes.html" class="hero-btn"><i class="fa-solid fa-hands-praying"></i> Oração</a>
+                        <button type="button" class="hero-btn" onclick="openDashConfig()"><i class="fa-solid fa-sliders"></i> Personalizar</button>
                     </div>
                 </div>
             </div>
@@ -573,7 +592,9 @@
                 <!-- Banner status do plano -->
                 <div id="planStatusBanner" style="display:none"></div>
 
+                <div id="dashWidgets">
                 <!-- Seção: Comunidade -->
+                <section class="dash-widget" data-widget="comunidade">
                 <div class="section-title"><i class="fa-solid fa-people-group" style="color:#0ea5e9"></i>Comunidade</div>
                 <div class="dash-grid">
                     <div class="stat-card members" onclick="location.href='membros.html'">
@@ -610,7 +631,10 @@
                     </div>
                 </div>
 
+                </section>
+
                 <!-- Seção: Espiritualidade -->
+                <section class="dash-widget" data-widget="espiritualidade">
                 <div class="section-title"><i class="fa-solid fa-hands-praying" style="color:#ec4899"></i>Espiritualidade</div>
                 <div class="dash-grid">
                     <div class="stat-card prayers" onclick="location.href='oracoes.html'">
@@ -631,7 +655,10 @@
                     </div>
                 </div>
 
+                </section>
+
                 <!-- Seção: Missões -->
+                <section class="dash-widget" data-widget="missoes">
                 <div class="section-title"><i class="fa-solid fa-globe" style="color:#f59e0b"></i>Missões e Comunhão</div>
                 <div class="dash-grid">
                     <div class="stat-card missionaries" onclick="location.href='missionarios.html'">
@@ -652,7 +679,10 @@
                     </div>
                 </div>
 
+                </section>
+
                 <!-- Seção: Aniversariantes do Mês -->
+                <section class="dash-widget" data-widget="aniversariantes">
                 <div class="section-title"><i class="fa-solid fa-cake-candles" style="color:#f59e0b"></i>Aniversariantes do Mês</div>
                 <div id="anivScroll" class="aniv-scroll">
                     <div class="aniv-item skeleton-box" style="min-width: 88px; height: 110px; border: none;"></div>
@@ -661,7 +691,10 @@
                     <div class="aniv-item skeleton-box" style="min-width: 88px; height: 110px; border: none;"></div>
                 </div>
 
+                </section>
+
                 <!-- Seção: Membros Recentes -->
+                <section class="dash-widget" data-widget="recentes">
                 <div class="recent-panel">
                     <div class="recent-head">
                         <strong><i class="fa-solid fa-users" style="margin-right:8px;color:#0284c7"></i>Membros Recentes</strong>
@@ -677,7 +710,10 @@
                     </div>
                 </div>
 
+                </section>
+
                 <!-- Seção: Gráficos -->
+                <section class="dash-widget" data-widget="graficos">
                 <div class="section-title" style="margin-top:36px"><i class="fa-solid fa-chart-bar" style="color:#0f766e"></i>Crescimento e Finanças</div>
                 <div class="charts-grid">
                     <div class="chart-panel loading" id="chartPanelMembros">
@@ -691,9 +727,27 @@
                         <div class="skeleton-text" style="width: 80%; height: 150px; margin-top: 20px;"></div> <!-- Placeholder para o gráfico -->
                     </div>
                 </div>
+                </section>
+                </div><!-- /dashWidgets -->
             </div><!-- /dash-inner -->
         </div>
     </main>
+
+    <!-- Modal: Personalizar Dashboard -->
+    <div class="modal-overlay" id="dashConfigModal" onclick="if(event.target===this)closeDashConfig()">
+        <div class="modal-box dash-config-box">
+            <div class="dash-config-head">
+                <strong><i class="fa-solid fa-sliders"></i> Personalizar Visão Geral</strong>
+                <button type="button" class="dash-config-x" onclick="closeDashConfig()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="dash-config-hint">Marque os blocos que deseja ver e use as setas para mudar a ordem. A configuração fica salva neste navegador.</p>
+            <ul class="dash-config-list" id="dashConfigList"></ul>
+            <div class="dash-config-actions">
+                <button type="button" class="modal-btn-close" onclick="resetDashConfig()">Restaurar padrão</button>
+                <button type="button" class="modal-btn-primary" onclick="saveDashConfig()">Salvar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal de Credencial do Membro -->
     <div class="modal-overlay" id="memberModal" onclick="if(event.target===this)closeMemberModal()">
@@ -1128,6 +1182,83 @@
         }
 
         initDashboard();
+
+        // ── Dashboard configurável (widgets) ─────────────────────
+        const DASH_WIDGETS = [
+            { id: 'comunidade',      label: 'Comunidade',             icon: 'fa-people-group' },
+            { id: 'espiritualidade', label: 'Espiritualidade',        icon: 'fa-hands-praying' },
+            { id: 'missoes',         label: 'Missões e Comunhão',     icon: 'fa-globe' },
+            { id: 'aniversariantes', label: 'Aniversariantes do Mês', icon: 'fa-cake-candles' },
+            { id: 'recentes',        label: 'Membros Recentes',       icon: 'fa-users' },
+            { id: 'graficos',        label: 'Crescimento e Finanças', icon: 'fa-chart-bar' }
+        ];
+        const dashDefault = () => DASH_WIDGETS.map(w => ({ id: w.id, on: true }));
+        let dashDraft = [];
+
+        function dashConfigKey() {
+            const auth = window.getStoredAuth ? window.getStoredAuth() : null;
+            const u = auth?.user || {};
+            return `ldfpDashLayout:${u.igrejaId || u.igreja_id || 'x'}:${u.id || u.email || 'x'}`;
+        }
+        function loadDashConfig() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(dashConfigKey()) || 'null');
+                if (!Array.isArray(saved)) return dashDefault();
+                const known = new Set(DASH_WIDGETS.map(w => w.id));
+                const list = saved.filter(w => w && known.has(w.id)).map(w => ({ id: w.id, on: w.on !== false }));
+                // Widgets criados depois entram no fim, visíveis
+                DASH_WIDGETS.forEach(w => { if (!list.some(x => x.id === w.id)) list.push({ id: w.id, on: true }); });
+                return list;
+            } catch (_) { return dashDefault(); }
+        }
+        function applyDashConfig(cfg) {
+            const container = document.getElementById('dashWidgets');
+            if (!container) return;
+            cfg.forEach(w => {
+                const el = container.querySelector(`.dash-widget[data-widget="${w.id}"]`);
+                if (!el) return;
+                el.hidden = !w.on;
+                container.appendChild(el);
+            });
+        }
+        function renderDashConfigList() {
+            const ul = document.getElementById('dashConfigList');
+            ul.innerHTML = '';
+            dashDraft.forEach((w, i) => {
+                const meta = DASH_WIDGETS.find(x => x.id === w.id);
+                const li = document.createElement('li');
+                li.className = 'dash-config-item' + (w.on ? '' : ' off');
+                li.innerHTML = `
+                    <label><input type="checkbox" ${w.on ? 'checked' : ''}> <i class="fa-solid ${meta.icon}"></i> ${meta.label}</label>
+                    <button type="button" class="dash-config-move" title="Subir" ${i === 0 ? 'disabled' : ''}><i class="fa-solid fa-arrow-up"></i></button>
+                    <button type="button" class="dash-config-move" title="Descer" ${i === dashDraft.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-arrow-down"></i></button>`;
+                li.querySelector('input').onchange = (e) => { w.on = e.target.checked; renderDashConfigList(); };
+                const [up, down] = li.querySelectorAll('.dash-config-move');
+                up.onclick = () => { [dashDraft[i - 1], dashDraft[i]] = [dashDraft[i], dashDraft[i - 1]]; renderDashConfigList(); };
+                down.onclick = () => { [dashDraft[i + 1], dashDraft[i]] = [dashDraft[i], dashDraft[i + 1]]; renderDashConfigList(); };
+                ul.appendChild(li);
+            });
+        }
+        function openDashConfig() {
+            dashDraft = loadDashConfig();
+            renderDashConfigList();
+            document.getElementById('dashConfigModal').classList.add('open');
+        }
+        function closeDashConfig() { document.getElementById('dashConfigModal').classList.remove('open'); }
+        function saveDashConfig() {
+            try { localStorage.setItem(dashConfigKey(), JSON.stringify(dashDraft)); } catch (_) {}
+            applyDashConfig(dashDraft);
+            closeDashConfig();
+            // Gráficos que estavam escondidos precisam recalcular o tamanho
+            if (chartMembrosInst) chartMembrosInst.resize();
+            if (chartDizimosInst) chartDizimosInst.resize();
+        }
+        function resetDashConfig() {
+            dashDraft = dashDefault();
+            renderDashConfigList();
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDashConfig(); });
+        applyDashConfig(loadDashConfig());
 
         // Botão Painel Admin visível apenas para super-admin (SaaS owner)
         (function showAdminButton() {

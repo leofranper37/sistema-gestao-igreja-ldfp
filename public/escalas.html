@@ -50,6 +50,17 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .filters input, .filters select { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; }
+        /* Confirmação de disponibilidade */
+        .esc-chip { display: inline-flex; align-items: center; gap: 4px; margin: 2px 0; padding: 3px 4px 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; border: 1px solid transparent; }
+        .esc-chip .esc-st { border: none; background: transparent; cursor: pointer; padding: 0 2px; font-size: 12px; color: inherit; }
+        .esc-chip .esc-rm { border: none; background: transparent; cursor: pointer; padding: 0 4px; font-size: 11px; color: #dc2626; }
+        .esc-chip.pendente   { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+        .esc-chip.confirmado { background: #dcfce7; color: #166534; border-color: #86efac; }
+        .esc-chip.recusado   { background: #fee2e2; color: #991b1b; border-color: #fca5a5; text-decoration: line-through; }
+        .esc-legenda { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: #475569; margin: -6px 0 14px; }
+        .esc-legenda span { display: inline-flex; align-items: center; gap: 6px; }
+        .esc-legenda i.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .esc-resumo { font-size: 12px; color: #475569; margin-bottom: 10px; }
     </style>
 </head>
 <body class="theme-petroleo enterprise-shell-page" data-shell-title="Gestão de Escalas" data-shell-breadcrumb="LDFP / Secretaria / Escalas" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
@@ -113,6 +124,13 @@
                         <button type="button" class="btn btn-primary" id="btnCarregarMatriz">Atualizar</button>
                     </div>
                 </div>
+                <div class="esc-legenda">
+                    <span><i class="dot" style="background:#facc15"></i> Aguardando confirmação</span>
+                    <span><i class="dot" style="background:#22c55e"></i> Confirmado</span>
+                    <span><i class="dot" style="background:#ef4444"></i> Recusou / indisponível</span>
+                    <span style="color:#94a3b8">Clique no ícone do nome para mudar o status. O membro também confirma pelo App do Membro.</span>
+                </div>
+                <div class="esc-resumo" id="matriz-resumo"></div>
                 <p id="matriz-empty" class="empty-msg" style="display:none;">Nenhuma ocorrência no período. Crie eventos (com recorrência) e ajuste as datas acima.</p>
                 <div style="overflow-x:auto;">
                     <table class="matriz-table" id="tabela-matriz"><thead id="matriz-thead"></thead><tbody id="matriz-tbody"></tbody></table>
@@ -549,14 +567,26 @@
                 row.innerHTML = '<td><strong>' + i.instance_date + '</strong><br><small>' + (i.title || '') + '</small></td>';
                 funcs.forEach(f => {
                     const cellAssigns = assign.filter(a => a.instance_id === i.instance_id && a.function_id === f.id);
-                    const namesHtml = cellAssigns.length ? cellAssigns.map(a =>
-                        '<span style="display:inline-block;margin:2px 0;">' + a.full_name + ' <button type="button" class="btn btn-sm" style="padding:0 6px;font-size:10px;color:#dc2626;" onclick="removerAtribuicao(' + a.id + ')">x</button></span>'
-                    ).join('') : '-';
+                    const namesHtml = cellAssigns.length ? cellAssigns.map(a => {
+                        const st = ESC_STATUS[a.status] ? a.status : 'pendente';
+                        const tip = ESC_STATUS[st].label + (a.status_motivo ? ' — ' + a.status_motivo : '');
+                        return '<span class="esc-chip ' + st + '" title="' + escHtml(tip) + '">' + escHtml(a.full_name)
+                            + ' <button type="button" class="esc-st" title="Mudar status" data-st="' + st + '" onclick="ciclarStatusAtribuicao(' + a.id + ', this.dataset.st)"><i class="fa-solid ' + ESC_STATUS[st].icon + '"></i></button>'
+                            + '<button type="button" class="esc-rm" title="Remover" onclick="removerAtribuicao(' + a.id + ')">×</button></span>';
+                    }).join('<br>') : '-';
                     const addBtn = '<div class="btn-add" data-iid="' + i.instance_id + '" data-fid="' + f.id + '"><i class="fa-solid fa-plus"></i> Atribuir</div>';
                     row.innerHTML += '<td class="cell-assign"><div class="nome">' + namesHtml + '</div>' + addBtn + '</td>';
                 });
                 tbody.appendChild(row);
             });
+            const resumo = qs('#matriz-resumo');
+            if (resumo) {
+                const cont = { pendente: 0, confirmado: 0, recusado: 0 };
+                assign.forEach(a => { cont[ESC_STATUS[a.status] ? a.status : 'pendente']++; });
+                resumo.innerHTML = assign.length
+                    ? `<strong>${assign.length}</strong> escalados no período · <span style="color:#166534">${cont.confirmado} confirmados</span> · <span style="color:#854d0e">${cont.pendente} aguardando</span> · <span style="color:#991b1b">${cont.recusado} recusaram</span>`
+                    : '';
+            }
             tbody.querySelectorAll('.btn-add').forEach(btn => {
                 btn.addEventListener('click', () => abrirModalAtribuir(btn.dataset.iid, btn.dataset.fid));
             });
@@ -591,6 +621,34 @@
             carregarMatriz();
             carregarDashboard();
         });
+
+        const ESC_STATUS = {
+            pendente:   { label: 'Aguardando confirmação', icon: 'fa-clock',        next: 'confirmado' },
+            confirmado: { label: 'Confirmado',             icon: 'fa-circle-check', next: 'recusado' },
+            recusado:   { label: 'Recusou / indisponível', icon: 'fa-circle-xmark', next: 'pendente' }
+        };
+        function escHtml(v) {
+            return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        async function ciclarStatusAtribuicao(assignmentId, atual) {
+            const status = (ESC_STATUS[atual] || ESC_STATUS.pendente).next;
+            let motivo = null;
+            if (status === 'recusado') {
+                motivo = prompt('Motivo da indisponibilidade (opcional):', '');
+                if (motivo === null) return;
+            }
+            const r = await fetch(API + '/api/escalas/atribuicoes/' + assignmentId + '/status', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status, motivo })
+            });
+            if (!r.ok) {
+                const data = await r.json().catch(() => ({}));
+                alert(data.error || 'Não foi possível alterar o status. Verifique se o SQL de escalas foi aplicado.');
+                return;
+            }
+            carregarMatriz();
+        }
 
         async function removerAtribuicao(assignmentId) {
             if (!confirm('Remover esta atribuicao?')) return;

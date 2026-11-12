@@ -49,7 +49,7 @@ O super admin **não acessa dados de clientes diretamente**. Para suporte, usa o
 - Sidebar colapsada → remove `margin-left` do header; mobile (< 1080px) → margin-left: 0
 
 ## Service Worker
-- Arquivo: `public/sw.js`, versão atual `ldfp-v11`
+- Arquivo: `public/sw.js`, versão atual `ldfp-v13`
 - CSS/JS: network-first | Imagens/fontes: cache-first
 
 ## Regra de deploy (SEMPRE seguir)
@@ -74,6 +74,39 @@ O super admin **não acessa dados de clientes diretamente**. Para suporte, usa o
 - `usuarios`: super-admin id=1 (leopereita31@gmail.com, igreja_id=2)
 - Seed de "Igreja Padrão" removida do db.js — não volta mais no restart
 - Usuários órfãos (igreja deletada) devem ser limpos com: `DELETE FROM usuarios WHERE igreja_id NOT IN (SELECT id FROM igrejas) AND role != 'super-admin'`
+
+## Inovações — Lote 1 (11/11/2026, inspirado no Zeke)
+- Dashboard configurável (`dashboard.html`, botão "Personalizar"; layout salvo no localStorage por usuário)
+- Escalas: confirmação de disponibilidade (`escalas_atribuicoes.status`) — matriz colorida + "Minhas Escalas" no App do Membro (`/api/escalas/minhas`)
+- Orações: testemunho de oração respondida (`oracoes_pedidos.testemunho`) + aba Testemunhos; pastor agora pode responder
+- Editor de cartas/certificados (`cartas.html`, `src/routes/documentosRoutes.js`, tabela `documentos_modelos`)
+- **SQL pendente em produção:** `INOVACOES_LOTE1_2026-11.sql` (rodar ANTES do deploy)
+
+## Inovações — Lote 2: Acesso do Membro (11/11/2026)
+- `acesso_membro.html` (admin): QR Code, código de 6 caracteres (= início do `igrejas.public_token`) e link `autocadastro.html?c=<token>`
+- `autocadastro.html` (público): ficha completa → `POST /api/ficha` (`src/routes/fichaMembroRoutes.js`); igreja resolvida pelo código, nunca pelo navegador
+- Aprovação: se o CPF já existe na igreja, ATUALIZA o membro em vez de duplicar; com CPF o membro entra no App
+- App do Membro → Mais → Meus Dados (`GET/PUT /api/ficha/meus-dados`; CPF não editável)
+- `POST /autocadastro` antigo desativado (410): mandava tudo para igreja_id=1
+- **SQL pendente em produção:** `INOVACOES_LOTE2_ACESSO_MEMBRO.sql`
+- Próximos candidatos: Mural com comentários/reações, verificação em duas etapas, cadastro configurável, cursos/materiais, login Google
+
+## Inovações — Lote 3: Relatórios e Gráficos reais (11/11/2026)
+- Antes: `relatorios_secretaria/tesouraria.html` e `graficos_*.html` mostravam números FIXOS no código (falsos)
+- API somente leitura: `src/routes/relatoriosRoutes.js` + `src/services/relatoriosService.js` (`/api/relatorios/secretaria/*`, `/api/relatorios/tesouraria/*`), sempre por `req.auth.igrejaId`
+- Front compartilhado: `public/relatorios-core.js` (window.RL: tabela, CSV `;` p/ Excel, imprimir/PDF, Chart.js) + `public/relatorios.css`
+- Receita = dízimos/ofertas + entradas caixa + entradas banco; Despesa = saídas caixa + saídas banco + contas pagas (lançamento duplicado entre módulos soma 2x)
+- **Sem SQL** — não altera schema
+
+## Inovações — Lote 4: Relatórios Contábeis (11/11/2026)
+- `relatorios_contabilidade.html` refeito (antes lia localStorage): Livro Diário, Razão, Balancete de Verificação, Balanço Patrimonial, DRE, Resumo Anual (DRE mês a mês), Fluxo de Caixa (método direto contábil OU base Tesouraria) e DMPL
+- Service: `src/services/relatoriosContabeisService.js`, rotas `/api/relatorios/contabil/*` (em `relatoriosRoutes.js`)
+- `contabilidade_lancamentos.conta_debito/credito` são TEXTO LIVRE → casados com o plano pelo código no início do texto ou pelo nome; o que não casar aparece no diagnóstico ("fora do plano"); natureza inferida pelo 1º dígito (1 ativo, 2 passivo, 3 receita, 4 despesa)
+- Patrimônio Social = conta passivo cujo nome (ou da conta-mãe) contém Patrimônio/Superávit/Déficit/Reserva; Caixa = ativo com código 1.1.1* ou nome Caixa/Banco/Disponível/Aplicação
+- Balancete de abertura = saldos antes de qualquer lançamento; Encerramento do Exercício continua só um registro (não zera contas de resultado — resultado anterior vira "superávits acumulados" no Balanço)
+- `lancamentos_contabeis.html`: datalist com as contas do plano + histórico escapado (XSS)
+- **Sem SQL**
+- Próximo: Lote 5 (fornecedores, centros de custo, tipos de documento — exige SQL); SPED/ECD/ECF deixados por último
 
 ## Fluxo para criar novo cliente
 1. Super admin → admin-igrejas.html → botão "Nova Igreja"

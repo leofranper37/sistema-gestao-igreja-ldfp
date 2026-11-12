@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Acesso do Membro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        .am-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 6px 18px rgba(15,23,42,.06); display: grid; grid-template-columns: 320px 1fr; gap: 28px; padding: 28px; align-items: start; }
+        @media (max-width: 900px) { .am-card { grid-template-columns: 1fr; padding: 18px; } }
+        .am-qr { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; display: grid; place-items: center; }
+        .am-qr img, .am-qr canvas { width: 100% !important; max-width: 280px; height: auto !important; }
+        .am-info p { color: #334155; font-size: 14px; line-height: 1.6; margin: 0 0 12px; }
+        .am-label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin: 16px 0 6px; }
+        .am-codigo { display: inline-block; font-size: 30px; font-weight: 900; letter-spacing: .35em; padding: 10px 18px 10px 26px; border: 2px dashed #0f766e; border-radius: 10px; color: #0f766e; background: #f0fdfa; font-family: ui-monospace, Consolas, monospace; }
+        .am-link { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .am-link input { flex: 1; min-width: 220px; border: 1px solid #dbe3ef; border-radius: 8px; padding: 9px 10px; font-size: 13px; color: #0f172a; background: #f8fafc; }
+        .btn { border: 1px solid #dbe3ef; background: #fff; border-radius: 8px; padding: 9px 14px; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; color: #1e293b; text-decoration: none; }
+        .btn.primary { background: #0f766e; color: #fff; border-color: #0f766e; }
+        .btn.whats { background: #16a34a; color: #fff; border-color: #16a34a; }
+        .am-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+        .am-passos { margin: 22px 0 0; padding: 16px 18px; background: #f8fafc; border-radius: 10px; font-size: 13px; color: #475569; }
+        .am-passos ol { margin: 8px 0 0; padding-left: 18px; line-height: 1.8; }
+        .status-msg { margin: 0 0 12px; font-size: 13px; color: #b91c1c; }
+        .status-msg:empty { display: none; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Acesso do Membro" data-shell-breadcrumb="LDFP / Secretaria / Acesso do Membro" data-shell-active="acesso_membro.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
+            <div class="enterprise-page-hero">
+                <div>
+                    <h2>Acesso do Membro</h2>
+                    <p>Com este QR Code ou link, o membro preenche ou atualiza a própria ficha cadastral pelo celular. A secretaria confere em <a href="autocadastro_aprovacoes.html">Aprovação de Cadastro</a>.</p>
+                </div>
+                <div class="enterprise-page-badge"><i class="fa-solid fa-qrcode"></i> Secretaria</div>
+            </div>
+
+            <div id="pageStatus" class="status-msg"></div>
+
+            <div class="am-card">
+                <div class="am-qr" id="qr"><i class="fa-solid fa-spinner fa-spin" style="font-size:28px;color:#94a3b8"></i></div>
+                <div class="am-info">
+                    <p>O membro abre a câmera do celular e lê o QR Code (ou acessa o link). Também pode abrir <strong id="urlCurta"></strong> e digitar o código da igreja.</p>
+                    <p><strong>Igreja:</strong> <span id="igreja">—</span></p>
+
+                    <div class="am-label">Código da igreja</div>
+                    <div class="am-codigo" id="codigo">······</div>
+
+                    <div class="am-label">Link para cadastro</div>
+                    <div class="am-link">
+                        <input id="link" readonly>
+                        <button type="button" class="btn" id="btnCopiar"><i class="fa-regular fa-copy"></i> Copiar</button>
+                    </div>
+
+                    <div class="am-actions">
+                        <button type="button" class="btn primary" id="btnImprimir"><i class="fa-solid fa-print"></i> Imprimir QR Code</button>
+                        <a class="btn whats" id="btnWhats" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Enviar no WhatsApp</a>
+                    </div>
+
+                    <div class="am-passos">
+                        <strong>Como funciona</strong>
+                        <ol>
+                            <li>O membro preenche a ficha (dados pessoais, contato e endereço).</li>
+                            <li>A ficha aparece em <em>Aprovação de Cadastro</em>. Ao aprovar, o membro entra no rol. Se o CPF já existir, o cadastro dele é <strong>atualizado</strong> em vez de duplicado.</li>
+                            <li>Com CPF informado, ele entra no <strong>App do Membro</strong> (senha inicial: 6 primeiros dígitos do CPF) e pode atualizar os próprios dados em <em>Mais → Meus Dados</em>.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+        const $ = (id) => document.getElementById(id);
+        let dados = null;
+
+        function qrDataUrl() {
+            const el = $('qr').querySelector('canvas') || $('qr').querySelector('img');
+            return el?.toDataURL ? el.toDataURL('image/png') : el?.src || '';
+        }
+
+        (async function init() {
+            try {
+                const r = await fetch('/api/ficha/acesso');
+                dados = await r.json().catch(() => ({}));
+                if (!r.ok) throw new Error(dados.error || 'Não foi possível carregar.');
+                $('igreja').textContent = dados.igreja;
+                $('codigo').textContent = dados.codigo;
+                $('link').value = dados.link;
+                $('urlCurta').textContent = new URL(dados.link).origin.replace(/^https?:\/\//, '') + '/autocadastro.html';
+                $('qr').innerHTML = '';
+                new QRCode($('qr'), { text: dados.link, width: 512, height: 512, correctLevel: QRCode.CorrectLevel.M });
+                const texto = `Olá! Faça ou atualize seu cadastro na ${dados.igreja} pelo link: ${dados.link}`;
+                $('btnWhats').href = 'https://wa.me/?text=' + encodeURIComponent(texto);
+            } catch (e) {
+                $('pageStatus').textContent = e.message;
+                $('qr').innerHTML = '';
+            }
+        })();
+
+        $('btnCopiar').onclick = async () => {
+            try { await navigator.clipboard.writeText($('link').value); } catch (_) { $('link').select(); document.execCommand('copy'); }
+            $('btnCopiar').innerHTML = '<i class="fa-solid fa-check"></i> Copiado';
+            setTimeout(() => { $('btnCopiar').innerHTML = '<i class="fa-regular fa-copy"></i> Copiar'; }, 2000);
+        };
+
+        $('btnImprimir').onclick = () => {
+            if (!dados) return;
+            const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const w = window.open('', '_blank');
+            if (!w) { alert('Permita pop-ups para imprimir.'); return; }
+            w.document.write(`<!DOCTYPE html><html lang="pt-br"><head><meta charset="UTF-8"><title>QR Code - Cadastro de Membros</title>
+                <style>
+                    @page { size: A4 portrait; margin: 20mm; }
+                    body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; color: #0f172a; }
+                    h1 { font-size: 30px; margin: 10px 0 4px; }
+                    h2 { font-size: 20px; font-weight: 600; color: #0f766e; margin: 0 0 24px; }
+                    img { width: 360px; height: 360px; }
+                    .cod { display: inline-block; font-size: 34px; font-weight: 900; letter-spacing: .3em; border: 3px dashed #0f766e; border-radius: 12px; padding: 8px 14px 8px 24px; margin: 14px 0; font-family: Consolas, monospace; }
+                    p { font-size: 16px; line-height: 1.6; max-width: 520px; margin: 8px auto; }
+                </style></head><body>
+                <h1>Faça seu cadastro de membro</h1>
+                <h2>${esc(dados.igreja)}</h2>
+                <img src="${qrDataUrl()}" alt="QR Code">
+                <p>Aponte a câmera do celular para o QR Code e preencha sua ficha.</p>
+                <p>Ou acesse <strong>${esc($('urlCurta').textContent)}</strong> e digite o código:</p>
+                <div class="cod">${esc(dados.codigo)}</div>
+                </body></html>`);
+            w.document.close();
+            let feito = false;
+            const imprimir = () => { if (feito) return; feito = true; w.focus(); w.print(); };
+            w.onload = imprimir;
+            setTimeout(imprimir, 700);
+        };
+    </script>
+</body>
+</html>

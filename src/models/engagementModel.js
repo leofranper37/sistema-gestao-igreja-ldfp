@@ -394,9 +394,9 @@ async function listAutocadastros(igrejaId, status) {
     await ensureEngagementTables();
 
     const values = [igrejaId];
+    // SELECT * para incluir dados_ficha quando a coluna existir (INOVACOES_LOTE2 SQL)
     let sql = `
-        SELECT id, igreja_id, igreja_nome, nome, email, telefone, cidade,
-               ministerio_interesse, status, observacao, analisado_por, analisado_em, created_at
+        SELECT *
         FROM autocadastros
         WHERE igreja_id = ?
     `;
@@ -416,8 +416,7 @@ async function getAutocadastroById(id, igrejaId) {
     await ensureEngagementTables();
 
     const [rows] = await pool.query(
-        `SELECT id, igreja_id, igreja_nome, nome, email, telefone, cidade,
-                ministerio_interesse, status, observacao, created_at
+        `SELECT *
          FROM autocadastros
          WHERE id = ? AND igreja_id = ?
          LIMIT 1`,
@@ -438,16 +437,55 @@ async function updateAutocadastroStatus(id, igrejaId, status, analisadoPor, obse
     );
 }
 
+// Colunas de membros que a ficha pública pode preencher (lista fixa: nunca vem do usuário)
+const FICHA_COLUNAS = ['nome', 'apelido', 'email', 'telefone', 'celular', 'cpf', 'rg', 'sexo', 'estado_civil',
+    'profissao', 'nacionalidade', 'naturalidade', 'nascimento', 'cep', 'endereco', 'numero', 'bairro',
+    'cidade', 'estado'];
+
+function fichaParaColunas(payload) {
+    const out = {};
+    for (const c of FICHA_COLUNAS) {
+        const v = payload[c];
+        if (v !== undefined && v !== null && String(v).trim() !== '') out[c] = String(v).trim();
+    }
+    return out;
+}
+
 async function createMemberFromAutocadastro(payload) {
     await ensureEngagementTables();
 
+    const dados = fichaParaColunas(payload);
+    const cols = Object.keys(dados);
     const [result] = await pool.query(
-        `INSERT INTO membros (igreja_id, nome, email, telefone, cidade)
-         VALUES (?, ?, ?, ?, ?)`,
-        [payload.igrejaId, payload.nome, payload.email || null, payload.telefone || null, payload.cidade || null]
+        `INSERT INTO membros (igreja_id, ${cols.join(', ')}) VALUES (?, ${cols.map(() => '?').join(', ')})`,
+        [payload.igrejaId, ...cols.map(c => dados[c])]
     );
 
     return result.insertId;
+}
+
+async function findMemberByCpf(igrejaId, cpf) {
+    const limpo = String(cpf || '').replace(/\D/g, '');
+    if (limpo.length !== 11) return null;
+    const [rows] = await pool.query(
+        `SELECT id FROM membros
+         WHERE igreja_id = ? AND REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), '/', '') = ?
+         LIMIT 1`,
+        [igrejaId, limpo]
+    );
+    return rows[0] || null;
+}
+
+// Atualiza só os campos que vieram preenchidos na ficha (não apaga o que já existe)
+async function updateMemberFromAutocadastro(igrejaId, membroId, payload) {
+    const dados = fichaParaColunas(payload);
+    const cols = Object.keys(dados);
+    if (!cols.length) return 0;
+    const [result] = await pool.query(
+        `UPDATE membros SET ${cols.map(c => `${c} = ?`).join(', ')} WHERE id = ? AND igreja_id = ?`,
+        [...cols.map(c => dados[c]), membroId, igrejaId]
+    );
+    return result.affectedRows;
 }
 
 async function findUserByEmailAndChurch(email, igrejaId) {
@@ -711,6 +749,8 @@ async function listVisitorsForTelao(igrejaId) {
 module.exports = {
     createAutocadastro,
     createMemberFromAutocadastro,
+    findMemberByCpf,
+    updateMemberFromAutocadastro,
     createMemberUser,
     createPaymentLink,
     createPortariaCheckin,

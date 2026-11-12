@@ -184,13 +184,32 @@ async function approveAutocadastro(igrejaId, id, payload, reviewer) {
         return null;
     }
 
-    await engagementModel.createMemberFromAutocadastro({
-        igrejaId,
+    // Ficha completa (Acesso do Membro). Cadastros antigos só têm nome/email/telefone/cidade.
+    let ficha = {};
+    try { ficha = item.dados_ficha ? JSON.parse(item.dados_ficha) : {}; } catch (_) { ficha = {}; }
+    if (!item.dados_ficha && item.observacao) {
+        const m = String(item.observacao).match(/FICHA: (\{.*\})\s*$/s);
+        if (m) { try { ficha = JSON.parse(m[1]); } catch (_) {} }
+    }
+    const dadosMembro = {
         nome: item.nome,
         email: item.email,
-        telefone: item.telefone,
-        cidade: item.cidade
-    });
+        celular: item.telefone,
+        cidade: item.cidade,
+        ...ficha
+    };
+
+    // Mesmo CPF já cadastrado nesta igreja → atualiza o membro em vez de duplicar
+    const existente = dadosMembro.cpf ? await engagementModel.findMemberByCpf(igrejaId, dadosMembro.cpf) : null;
+    let membroId;
+    let atualizado = false;
+    if (existente) {
+        await engagementModel.updateMemberFromAutocadastro(igrejaId, existente.id, dadosMembro);
+        membroId = existente.id;
+        atualizado = true;
+    } else {
+        membroId = await engagementModel.createMemberFromAutocadastro({ igrejaId, ...dadosMembro });
+    }
 
     let accessUser = null;
 
@@ -222,6 +241,9 @@ async function approveAutocadastro(igrejaId, id, payload, reviewer) {
     return {
         id,
         status: 'aprovado',
+        membroId,
+        atualizado,
+        acessoAppPorCpf: Boolean(dadosMembro.cpf),
         accessUser
     };
 }

@@ -187,6 +187,10 @@ const oracaoRespostaSchema = Joi.object({
     status: Joi.string().valid('pendente', 'respondido').optional().label('Situação')
 });
 
+const oracaoTestemunhoSchema = Joi.object({
+    testemunho: Joi.string().trim().max(4000).allow('', null).required().label('Testemunho')
+});
+
 const oracaoFiltroSchema = Joi.object({
     status: Joi.string().valid('pendente', 'respondido').optional().label('Situação')
 });
@@ -532,6 +536,7 @@ module.exports = {
     midiaVisitanteQuerySchema,
     midiaVisitanteStatusSchema,
     oracaoFiltroSchema,
+    oracaoTestemunhoSchema,
     oracaoRespostaSchema,
     oracaoSchema,
     pagamentoLinkSchema,

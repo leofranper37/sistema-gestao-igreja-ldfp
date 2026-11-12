@@ -92,6 +92,10 @@ async function updateOracaoResposta(payload) {
     return systemModel.updateOracaoResposta(payload);
 }
 
+async function updateOracaoTestemunho(payload) {
+    return systemModel.updateOracaoTestemunho(payload);
+}
+
 async function deleteOracao(payload) {
     return systemModel.deleteOracao(payload);
 }
@@ -171,5 +175,6 @@ module.exports = {
     updateCongregado,
     updateOracao,
     updateOracaoResposta,
+    updateOracaoTestemunho,
     updateVisitante
 };

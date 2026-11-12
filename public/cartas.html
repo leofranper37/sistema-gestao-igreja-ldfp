@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Cartas e Certificados</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+    <style>
+        .doc-layout { display: grid; grid-template-columns: 260px 1fr; gap: 18px; align-items: start; }
+        @media (max-width: 1000px) { .doc-layout { grid-template-columns: 1fr; } }
+
+        .doc-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 6px 18px rgba(15,23,42,.06); }
+        .doc-card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid #eef2f7; }
+        .doc-card-head h3 { margin: 0; font-size: 14px; color: #1e293b; }
+
+        .btn { border: 1px solid #dbe3ef; background: #fff; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; color: #1e293b; }
+        .btn:hover { background: #f8fafc; }
+        .btn.primary { background: #0f766e; color: #fff; border-color: #0f766e; }
+        .btn.primary:hover { background: #115e59; }
+        .btn.danger { color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
+        .btn.sm { padding: 5px 9px; font-size: 12px; }
+
+        .modelo-list { list-style: none; margin: 0; padding: 8px; display: flex; flex-direction: column; gap: 4px; max-height: 60vh; overflow: auto; }
+        .modelo-list li { padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; color: #334155; }
+        .modelo-list li:hover { background: #f1f5f9; }
+        .modelo-list li.active { background: #ccfbf1; color: #134e4a; font-weight: 700; }
+        .modelo-list li small { margin-left: auto; color: #94a3b8; font-size: 10px; text-transform: uppercase; }
+        .modelo-empty { padding: 14px; font-size: 13px; color: #64748b; }
+        .prontos { padding: 10px 14px 14px; border-top: 1px solid #eef2f7; }
+        .prontos p { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin: 0 0 8px; }
+        .prontos button { width: 100%; justify-content: flex-start; margin-bottom: 6px; }
+
+        .meta-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #eef2f7; }
+        @media (max-width: 700px) { .meta-row { grid-template-columns: 1fr; } }
+        .meta-row label { display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+        .meta-row input, .meta-row select, .gerar-row select, .gerar-row input { width: 100%; box-sizing: border-box; border: 1px solid #dbe3ef; border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; }
+
+        .toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 14px; border-bottom: 1px solid #eef2f7; background: #f8fafc; align-items: center; }
+        .toolbar button { border: 1px solid transparent; background: transparent; border-radius: 6px; width: 32px; height: 32px; cursor: pointer; color: #334155; }
+        .toolbar button:hover { background: #e2e8f0; }
+        .toolbar select { border: 1px solid #dbe3ef; border-radius: 6px; height: 32px; padding: 0 6px; font-size: 12px; }
+        .toolbar input[type=color] { width: 32px; height: 32px; border: none; background: none; padding: 0; cursor: pointer; }
+        .toolbar .sep { width: 1px; height: 22px; background: #cbd5e1; margin: 0 4px; }
+
+        .campos { padding: 10px 14px; border-bottom: 1px solid #eef2f7; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .campos span.lbl { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-right: 4px; }
+        .campo-chip { border: 1px dashed #0f766e; background: #f0fdfa; color: #0f766e; border-radius: 999px; padding: 3px 10px; font-size: 12px; cursor: pointer; font-weight: 600; }
+        .campo-chip:hover { background: #ccfbf1; }
+
+        .page-wrap { background: #e2e8f0; padding: 24px; overflow: auto; border-radius: 0 0 12px 12px; }
+        .page { background: #fff; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,.12); padding: 64px 72px; box-sizing: border-box; outline: none; font-family: Georgia, 'Times New Roman', serif; font-size: 15px; line-height: 1.6; color: #111; }
+        .page.retrato { width: 794px; min-height: 1123px; }
+        .page.paisagem { width: 1123px; min-height: 794px; }
+        @media (max-width: 900px) { .page { padding: 32px 28px; } .page.retrato, .page.paisagem { width: 100%; min-height: 600px; } }
+
+        .gerar-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #eef2f7; align-items: end; background: #fffbeb; }
+        .gerar-row label { display: block; font-size: 11px; font-weight: 700; color: #92400e; text-transform: uppercase; margin-bottom: 4px; }
+        @media (max-width: 700px) { .gerar-row { grid-template-columns: 1fr; } }
+
+        .status-msg { margin: 0 0 12px; font-size: 13px; color: #0f766e; }
+        .status-msg.error { color: #b91c1c; }
+        .status-msg:empty { display: none; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,.6); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+        .modal { background: #fff; padding: 22px; border-radius: 12px; width: min(92vw, 520px); max-height: 88vh; overflow: auto; }
+        .modal h3 { margin: 0 0 6px; }
+        .modal p { font-size: 13px; color: #64748b; margin: 0 0 14px; }
+        .modal .field { margin-bottom: 10px; }
+        .modal .field label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+        .modal .field input { width: 100%; box-sizing: border-box; border: 1px solid #dbe3ef; border-radius: 8px; padding: 9px 10px; font: inherit; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-title="Cartas e Certificados" data-shell-breadcrumb="LDFP / Secretaria / Cartas e Certificados" data-shell-active="cartas.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+    <main class="main-content enterprise-main">
+        <div class="enterprise-page-shell">
+            <div class="enterprise-page-hero">
+                <div>
+                    <h2>Cartas e Certificados</h2>
+                    <p>Monte modelos de cartas de recomendação, transferência e certificados. Os campos entre chaves, como {nome}, são preenchidos automaticamente com os dados do membro.</p>
+                </div>
+                <div class="enterprise-page-badge"><i class="fa-solid fa-file-signature"></i> Secretaria</div>
+            </div>
+
+            <div id="pageStatus" class="status-msg"></div>
+
+            <div class="doc-layout">
+                <aside class="doc-card">
+                    <div class="doc-card-head">
+                        <h3>Meus modelos</h3>
+                        <button type="button" class="btn sm primary" id="btnNovo"><i class="fa-solid fa-plus"></i> Novo</button>
+                    </div>
+                    <ul class="modelo-list" id="listaModelos"><li class="modelo-empty">Carregando...</li></ul>
+                    <div class="prontos">
+                        <p>Começar de um modelo pronto</p>
+                        <div id="listaProntos"></div>
+                    </div>
+                </aside>
+
+                <section class="doc-card">
+                    <div class="meta-row">
+                        <div>
+                            <label for="mNome">Nome do modelo</label>
+                            <input id="mNome" maxlength="150" placeholder="Ex.: Carta de Recomendação">
+                        </div>
+                        <div>
+                            <label for="mTipo">Tipo</label>
+                            <select id="mTipo">
+                                <option value="carta">Carta</option>
+                                <option value="certificado">Certificado</option>
+                                <option value="declaracao">Declaração</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="mOrientacao">Página</label>
+                            <select id="mOrientacao">
+                                <option value="retrato">A4 retrato</option>
+                                <option value="paisagem">A4 paisagem</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="gerar-row">
+                        <div>
+                            <label for="gMembro">Gerar para o membro</label>
+                            <input id="gMembro" list="dlMembros" placeholder="Digite o nome do membro (ou deixe vazio)">
+                            <datalist id="dlMembros"></datalist>
+                        </div>
+                        <button type="button" class="btn primary" id="btnGerar"><i class="fa-solid fa-print"></i> Gerar / Imprimir PDF</button>
+                        <div style="display:flex;gap:8px;">
+                            <button type="button" class="btn" id="btnSalvar"><i class="fa-solid fa-floppy-disk"></i> Salvar modelo</button>
+                            <button type="button" class="btn danger" id="btnExcluir" title="Excluir modelo"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="toolbar" id="toolbar">
+                        <select data-cmd="formatBlock" title="Estilo">
+                            <option value="p">Parágrafo</option>
+                            <option value="h1">Título</option>
+                            <option value="h2">Subtítulo</option>
+                            <option value="h3">Título menor</option>
+                        </select>
+                        <select data-cmd="fontName" title="Fonte">
+                            <option value="Georgia">Georgia</option>
+                            <option value="Times New Roman">Times</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Garamond">Garamond</option>
+                            <option value="Brush Script MT">Cursiva</option>
+                        </select>
+                        <select data-cmd="fontSize" title="Tamanho">
+                            <option value="3">Normal</option>
+                            <option value="2">Pequeno</option>
+                            <option value="4">Médio</option>
+                            <option value="5">Grande</option>
+                            <option value="6">Muito grande</option>
+                            <option value="7">Enorme</option>
+                        </select>
+                        <span class="sep"></span>
+                        <button type="button" data-cmd="bold" title="Negrito"><i class="fa-solid fa-bold"></i></button>
+                        <button type="button" data-cmd="italic" title="Itálico"><i class="fa-solid fa-italic"></i></button>
+                        <button type="button" data-cmd="underline" title="Sublinhado"><i class="fa-solid fa-underline"></i></button>
+                        <input type="color" data-cmd="foreColor" title="Cor do texto" value="#111111">
+                        <span class="sep"></span>
+                        <button type="button" data-cmd="justifyLeft" title="Alinhar à esquerda"><i class="fa-solid fa-align-left"></i></button>
+                        <button type="button" data-cmd="justifyCenter" title="Centralizar"><i class="fa-solid fa-align-center"></i></button>
+                        <button type="button" data-cmd="justifyRight" title="Alinhar à direita"><i class="fa-solid fa-align-right"></i></button>
+                        <button type="button" data-cmd="justifyFull" title="Justificar"><i class="fa-solid fa-align-justify"></i></button>
+                        <span class="sep"></span>
+                        <button type="button" data-cmd="insertUnorderedList" title="Lista"><i class="fa-solid fa-list-ul"></i></button>
+                        <button type="button" data-cmd="insertHorizontalRule" title="Linha"><i class="fa-solid fa-minus"></i></button>
+                        <button type="button" data-action="assinatura" title="Linha de assinatura"><i class="fa-solid fa-signature"></i></button>
+                        <button type="button" data-action="imagem" title="Imagem por link (logo, brasão)"><i class="fa-regular fa-image"></i></button>
+                        <button type="button" data-action="moldura" title="Moldura de certificado"><i class="fa-regular fa-square"></i></button>
+                        <span class="sep"></span>
+                        <button type="button" data-cmd="undo" title="Desfazer"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button type="button" data-cmd="redo" title="Refazer"><i class="fa-solid fa-rotate-right"></i></button>
+                    </div>
+
+                    <div class="campos" id="campos"><span class="lbl">Inserir campo:</span></div>
+
+                    <div class="page-wrap">
+                        <div class="page retrato" id="editor" contenteditable="true" spellcheck="true"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalCampos">
+        <div class="modal">
+            <h3>Completar campos</h3>
+            <p>Estes campos não vêm do cadastro. Preencha para este documento:</p>
+            <div id="camposExtras"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn" id="btnCamposCancelar">Cancelar</button>
+                <button type="button" class="btn primary" id="btnCamposOk"><i class="fa-solid fa-print"></i> Gerar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="session.js?v=20260501"></script>
+    <script src="enterprise-shell.js?v=20260501"></script>
+    <script>
+        requireAuthSession();
+
+        // ── Campos inteligentes ───────────────────────────────────
+        const CAMPOS = [
+            ['nome', 'Nome'], ['cpf', 'CPF'], ['rg', 'RG'], ['cargo', 'Cargo'], ['data_nascimento', 'Nascimento'],
+            ['estado_civil', 'Estado civil'], ['nacionalidade', 'Nacionalidade'], ['naturalidade', 'Naturalidade'],
+            ['endereco_completo', 'Endereço'], ['cidade', 'Cidade'], ['estado', 'UF'], ['membro_desde', 'Membro desde'],
+            ['situacao', 'Situação'], ['igreja', 'Igreja'], ['pastor', 'Pastor/Responsável'], ['cnpj_igreja', 'CNPJ'],
+            ['data_hoje', 'Data de hoje'], ['data_hoje_extenso', 'Data por extenso']
+        ];
+
+        const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+        const PRONTOS = [
+            {
+                nome: 'Carta de Recomendação', tipo: 'carta', orientacao: 'retrato',
+                conteudo: '<h1 style="text-align:center">{igreja}</h1><p style="text-align:center">CNPJ {cnpj_igreja}</p><hr><h2 style="text-align:center">CARTA DE RECOMENDAÇÃO</h2><p style="text-align:justify">Amados irmãos em Cristo, graça e paz.</p><p style="text-align:justify">Recomendamos aos vossos cuidados o(a) irmão(ã) <b>{nome}</b>, portador(a) do CPF {cpf}, membro desta igreja desde {membro_desde}, exercendo a função de {cargo}, que se encontra em plena comunhão com esta igreja.</p><p style="text-align:justify">Pedimos que o(a) recebais no Senhor, como convém aos santos. Esta carta é válida por 30 dias a partir da data de emissão.</p><p style="text-align:right">{cidade}, {data_hoje_extenso}.</p><p><br></p><p style="text-align:center">_________________________________<br>{pastor}<br>Pastor responsável</p>'
+            },
+            {
+                nome: 'Carta de Transferência', tipo: 'carta', orientacao: 'retrato',
+                conteudo: '<h1 style="text-align:center">{igreja}</h1><hr><h2 style="text-align:center">CARTA DE TRANSFERÊNCIA</h2><p style="text-align:justify">À {igreja_destino},</p><p style="text-align:justify">Graça e paz da parte de Deus Pai e do Senhor Jesus Cristo.</p><p style="text-align:justify">Comunicamos que o(a) irmão(ã) <b>{nome}</b>, CPF {cpf}, membro desta igreja desde {membro_desde}, solicitou sua transferência para essa amada igreja. Declaramos que se encontra em plena comunhão, nada havendo que desabone sua conduta cristã.</p><p style="text-align:justify">Ao recebê-lo(a), pedimos a gentileza de nos comunicar, para que seja efetuado o desligamento de nosso rol de membros.</p><p style="text-align:right">{cidade}, {data_hoje_extenso}.</p><p><br></p><p style="text-align:center">_________________________________<br>{pastor}<br>Pastor responsável</p>'
+            },
+            {
+                nome: 'Certificado de Batismo', tipo: 'certificado', orientacao: 'paisagem',
+                conteudo: '<div style="border:6px double #8a6d1d;padding:36px 48px;min-height:560px"><h1 style="text-align:center"><font face="Garamond" size="7" color="#8a6d1d">Certificado de Batismo</font></h1><p style="text-align:center"><font size="4">{igreja}</font></p><p><br></p><p style="text-align:center"><font size="4">Certificamos que</font></p><p style="text-align:center"><font face="Brush Script MT" size="7">{nome}</font></p><p style="text-align:center"><font size="4">foi batizado(a) nas águas em nome do Pai, do Filho e do Espírito Santo, no dia {data_batismo}, conforme Mateus 28:19.</font></p><p><br></p><p style="text-align:center">{cidade}, {data_hoje_extenso}.</p><p><br></p><p style="text-align:center">_____________________________<br>{pastor}</p></div>'
+            },
+            {
+                nome: 'Certificado de Conclusão', tipo: 'certificado', orientacao: 'paisagem',
+                conteudo: '<div style="border:6px double #0f766e;padding:36px 48px;min-height:560px"><h1 style="text-align:center"><font face="Garamond" size="7" color="#0f766e">Certificado</font></h1><p style="text-align:center"><font size="4">{igreja} certifica que</font></p><p style="text-align:center"><font face="Brush Script MT" size="7">{nome}</font></p><p style="text-align:center"><font size="4">concluiu com êxito o curso <b>{curso}</b>, com carga horária de {carga_horaria} horas.</font></p><p><br></p><p style="text-align:center">{cidade}, {data_hoje_extenso}.</p><p><br></p><p style="text-align:center">_____________________________<br>{pastor}</p></div>'
+            }
+        ];
+
+        let modelos = [];
+        let membros = [];
+        let atualId = null;
+        let igrejaDados = {};
+
+        const $ = (id) => document.getElementById(id);
+        const editor = $('editor');
+
+        function esc(v) {
+            return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function limpar(html) {
+            return window.DOMPurify ? DOMPurify.sanitize(html, { ADD_ATTR: ['face', 'size', 'color'], ADD_TAGS: ['font'] }) : esc(html);
+        }
+        function setStatus(msg, erro = false) {
+            const el = $('pageStatus');
+            el.textContent = msg;
+            el.classList.toggle('error', erro);
+            if (msg && !erro) setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 4000);
+        }
+        async function api(url, opts = {}) {
+            const r = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(data.error || data.message || 'Erro ' + r.status);
+            return data;
+        }
+
+        // ── Datas ─────────────────────────────────────────────────
+        function parseData(v) {
+            if (!v) return null;
+            const s = String(v).trim();
+            let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+            m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+            if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+            const d = new Date(s);
+            return isNaN(d) ? null : d;
+        }
+        function fmtData(v) { const d = parseData(v); return d ? d.toLocaleDateString('pt-BR') : ''; }
+        function extenso(d) { return `${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`; }
+        function fmtCpf(v) {
+            const n = String(v || '').replace(/\D/g, '');
+            return n.length === 11 ? n.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : (v || '');
+        }
+
+        function valoresCampos(membro) {
+            const m = membro || {};
+            const hoje = new Date();
+            const end = [m.endereco, m.numero].filter(Boolean).join(', ');
+            const endCompleto = [end, m.bairro, m.cidade && m.estado ? `${m.cidade}/${m.estado}` : m.cidade].filter(Boolean).join(' - ');
+            const v = {
+                nome: m.nome, apelido: m.apelido, cpf: fmtCpf(m.cpf), rg: m.rg, cargo: m.cargo, situacao: m.situacao,
+                email: m.email, telefone: m.telefone || m.celular, celular: m.celular,
+                data_nascimento: fmtData(m.data_nascimento || m.nascimento),
+                estado_civil: m.estado_civil, profissao: m.profissao, nacionalidade: m.nacionalidade, naturalidade: m.naturalidade,
+                endereco: m.endereco, numero: m.numero, bairro: m.bairro, cidade: m.cidade, estado: m.estado, cep: m.cep,
+                endereco_completo: endCompleto,
+                membro_desde: fmtData(m.created_at),
+                igreja: igrejaDados.nome, pastor: igrejaDados.responsavel, cnpj_igreja: igrejaDados.cnpj,
+                telefone_igreja: igrejaDados.telefone,
+                data_hoje: hoje.toLocaleDateString('pt-BR'), data_hoje_extenso: extenso(hoje)
+            };
+            // Sem membro selecionado, os campos de membro ficam para preencher à mão
+            Object.keys(v).forEach(k => { if (v[k] === undefined || v[k] === null || v[k] === '') delete v[k]; });
+            return v;
+        }
+
+        // ── Lista de modelos ──────────────────────────────────────
+        function renderLista() {
+            const ul = $('listaModelos');
+            if (!modelos.length) {
+                ul.innerHTML = '<li class="modelo-empty">Nenhum modelo salvo ainda. Comece por um modelo pronto abaixo.</li>';
+                return;
+            }
+            ul.innerHTML = modelos.map(m => `
+                <li data-id="${Number(m.id)}" class="${Number(m.id) === Number(atualId) ? 'active' : ''}">
+                    <i class="fa-solid ${m.tipo === 'certificado' ? 'fa-award' : 'fa-file-lines'}"></i>
+                    ${esc(m.nome)} <small>${esc(m.tipo)}</small>
+                </li>`).join('');
+            ul.querySelectorAll('li[data-id]').forEach(li => li.onclick = () => abrirModelo(Number(li.dataset.id)));
+        }
+
+        function carregarNoEditor(m) {
+            $('mNome').value = m.nome || '';
+            $('mTipo').value = m.tipo || 'carta';
+            $('mOrientacao').value = m.orientacao || 'retrato';
+            editor.className = 'page ' + (m.orientacao || 'retrato');
+            editor.innerHTML = limpar(m.conteudo || '<p><br></p>');
+            $('btnExcluir').style.display = atualId ? '' : 'none';
+            renderLista();
+        }
+
+        function abrirModelo(id) {
+            const m = modelos.find(x => Number(x.id) === id);
+            if (!m) return;
+            atualId = id;
+            carregarNoEditor(m);
+        }
+
+        function novoModelo(base) {
+            atualId = null;
+            carregarNoEditor(base || { nome: '', tipo: 'carta', orientacao: 'retrato', conteudo: '<p><br></p>' });
+            $('mNome').focus();
+        }
+
+        async function carregarModelos() {
+            try {
+                modelos = await api('/api/documentos/modelos');
+                renderLista();
+                if (modelos.length) abrirModelo(Number(modelos[0].id));
+                else novoModelo(PRONTOS[0]);
+            } catch (e) {
+                $('listaModelos').innerHTML = `<li class="modelo-empty" style="color:#b91c1c">${esc(e.message)}</li>`;
+                novoModelo(PRONTOS[0]);
+            }
+        }
+
+        async function salvar() {
+            const payload = {
+                nome: $('mNome').value.trim(),
+                tipo: $('mTipo').value,
+                orientacao: $('mOrientacao').value,
+                conteudo: limpar(editor.innerHTML)
+            };
+            if (!payload.nome) { setStatus('Dê um nome ao modelo.', true); $('mNome').focus(); return; }
+            try {
+                if (atualId) {
+                    await api('/api/documentos/modelos/' + atualId, { method: 'PUT', body: JSON.stringify(payload) });
+                } else {
+                    const r = await api('/api/documentos/modelos', { method: 'POST', body: JSON.stringify(payload) });
+                    atualId = r.id;
+                }
+                modelos = await api('/api/documentos/modelos');
+                abrirModelo(Number(atualId));
+                setStatus('Modelo salvo.');
+            } catch (e) { setStatus(e.message, true); }
+        }
+
+        async function excluir() {
+            if (!atualId || !confirm('Excluir este modelo?')) return;
+            try {
+                await api('/api/documentos/modelos/' + atualId, { method: 'DELETE' });
+                modelos = modelos.filter(m => Number(m.id) !== Number(atualId));
+                setStatus('Modelo excluído.');
+                if (modelos.length) abrirModelo(Number(modelos[0].id)); else novoModelo(PRONTOS[0]);
+            } catch (e) { setStatus(e.message, true); }
+        }
+
+        // ── Editor ────────────────────────────────────────────────
+        function inserirHtml(html) {
+            editor.focus();
+            document.execCommand('insertHTML', false, html);
+        }
+
+        $('toolbar').querySelectorAll('[data-cmd]').forEach(el => {
+            const run = () => { editor.focus(); document.execCommand(el.dataset.cmd, false, el.value || null); };
+            if (el.tagName === 'BUTTON') el.addEventListener('mousedown', e => { e.preventDefault(); run(); });
+            else el.addEventListener('change', run);
+        });
+        $('toolbar').querySelectorAll('[data-action]').forEach(el => {
+            el.addEventListener('mousedown', e => {
+                e.preventDefault();
+                const a = el.dataset.action;
+                if (a === 'assinatura') inserirHtml('<p style="text-align:center"><br>_________________________________<br>{pastor}</p>');
+                if (a === 'imagem') {
+                    const url = prompt('Link da imagem (https://...) — ex.: logo da igreja:');
+                    if (url && /^https?:\/\//i.test(url.trim())) inserirHtml(`<p style="text-align:center"><img src="${esc(url.trim())}" style="max-height:110px"></p>`);
+                }
+                if (a === 'moldura') {
+                    editor.innerHTML = `<div style="border:6px double #0f766e;padding:36px 48px;min-height:560px">${editor.innerHTML}</div>`;
+                }
+            });
+        });
+        $('mOrientacao').addEventListener('change', () => { editor.className = 'page ' + $('mOrientacao').value; });
+
+        const camposBox = $('campos');
+        CAMPOS.forEach(([k, label]) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'campo-chip';
+            b.textContent = label;
+            b.title = `{${k}}`;
+            b.addEventListener('mousedown', e => { e.preventDefault(); inserirHtml(`{${k}}`); });
+            camposBox.appendChild(b);
+        });
+        const outro = document.createElement('button');
+        outro.type = 'button';
+        outro.className = 'campo-chip';
+        outro.innerHTML = '<i class="fa-solid fa-plus"></i> Campo livre';
+        outro.title = 'Cria um campo que você preenche na hora de gerar (ex.: curso, igreja de destino)';
+        outro.addEventListener('mousedown', e => {
+            e.preventDefault();
+            const nome = (prompt('Nome do campo (ex.: curso, igreja_destino):') || '').trim().toLowerCase()
+                .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9_]+/g, '_').replace(/^_|_$/g, '');
+            if (nome) inserirHtml(`{${nome}}`);
+        });
+        camposBox.appendChild(outro);
+
+        PRONTOS.forEach((p, i) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'btn sm';
+            b.innerHTML = `<i class="fa-solid ${p.tipo === 'certificado' ? 'fa-award' : 'fa-file-lines'}"></i> ${esc(p.nome)}`;
+            b.onclick = () => novoModelo({ ...PRONTOS[i] });
+            $('listaProntos').appendChild(b);
+        });
+
+        // ── Gerar documento ───────────────────────────────────────
+        let pendenteGerar = null;
+
+        function camposUsados(html) {
+            return [...new Set([...html.matchAll(/\{([a-z0-9_]+)\}/gi)].map(m => m[1].toLowerCase()))];
+        }
+
+        async function gerar() {
+            let membro = null;
+            const nomeDigitado = $('gMembro').value.trim();
+            if (nomeDigitado) {
+                const achado = membros.find(m => m.nome.toLowerCase() === nomeDigitado.toLowerCase());
+                if (!achado) { setStatus('Membro não encontrado. Escolha um nome da lista.', true); return; }
+                try {
+                    const d = await api('/api/documentos/dados?membroId=' + achado.id);
+                    membro = d.membro;
+                    igrejaDados = d.igreja || igrejaDados;
+                } catch (e) { setStatus(e.message, true); return; }
+            }
+            const html = limpar(editor.innerHTML);
+            const valores = valoresCampos(membro);
+            const faltando = camposUsados(html).filter(k => !(k in valores));
+            if (faltando.length) {
+                pendenteGerar = { html, valores };
+                $('camposExtras').innerHTML = faltando.map(k => `
+                    <div class="field">
+                        <label for="cx_${k}">${esc(k.replace(/_/g, ' '))}</label>
+                        <input id="cx_${k}" data-campo="${k}">
+                    </div>`).join('');
+                $('modalCampos').style.display = 'flex';
+                $('camposExtras').querySelector('input')?.focus();
+                return;
+            }
+            imprimir(html, valores);
+        }
+
+        function imprimir(html, valores) {
+            const final = html.replace(/\{([a-z0-9_]+)\}/gi, (_, k) => esc(valores[k.toLowerCase()] ?? ''));
+            const orient = $('mOrientacao').value === 'paisagem' ? 'landscape' : 'portrait';
+            const titulo = esc($('mNome').value || 'Documento');
+            const w = window.open('', '_blank');
+            if (!w) { setStatus('O navegador bloqueou a janela. Permita pop-ups para este site.', true); return; }
+            w.document.write(`<!DOCTYPE html><html lang="pt-br"><head><meta charset="UTF-8"><title>${titulo}</title>
+                <style>
+                    @page { size: A4 ${orient}; margin: 18mm; }
+                    body { font-family: Georgia, 'Times New Roman', serif; font-size: 15px; line-height: 1.6; color: #111; margin: 0; }
+                    img { max-width: 100%; }
+                    @media screen { body { max-width: ${orient === 'landscape' ? '1000px' : '760px'}; margin: 24px auto; padding: 0 16px; } }
+                </style></head><body>${final}</body></html>`);
+            w.document.close();
+            // onload nem sempre dispara após document.write; o timeout cobre esse caso sem abrir dois diálogos
+            let impresso = false;
+            const abrirImpressao = () => { if (impresso) return; impresso = true; try { w.focus(); w.print(); } catch (_) {} };
+            w.onload = abrirImpressao;
+            setTimeout(abrirImpressao, 800);
+        }
+
+        $('btnCamposOk').onclick = () => {
+            if (!pendenteGerar) return;
+            $('camposExtras').querySelectorAll('input[data-campo]').forEach(i => { pendenteGerar.valores[i.dataset.campo] = i.value.trim(); });
+            $('modalCampos').style.display = 'none';
+            imprimir(pendenteGerar.html, pendenteGerar.valores);
+            pendenteGerar = null;
+        };
+        $('btnCamposCancelar').onclick = () => { $('modalCampos').style.display = 'none'; pendenteGerar = null; };
+
+        $('btnNovo').onclick = () => novoModelo();
+        $('btnSalvar').onclick = salvar;
+        $('btnExcluir').onclick = excluir;
+        $('btnGerar').onclick = gerar;
+
+        (async function init() {
+            carregarModelos();
+            try {
+                membros = await api('/api/documentos/membros');
+                $('dlMembros').innerHTML = membros.map(m => `<option value="${esc(m.nome)}">${esc(m.cargo || '')}</option>`).join('');
+            } catch (_) {}
+            try { igrejaDados = (await api('/api/documentos/dados')).igreja || {}; } catch (_) {}
+        })();
+    </script>
+</body>
+</html>

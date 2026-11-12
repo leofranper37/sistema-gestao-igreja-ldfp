@@ -37,6 +37,11 @@ router.get('/api/escalas/matriz',        ...auth, c.getMatriz);
 // Atribuições
 router.post('/api/escalas/atribuicoes',        ...auth, c.createAtribuicao);
 router.delete('/api/escalas/atribuicoes/:id',  ...auth, c.deleteAtribuicao);
+router.put('/api/escalas/atribuicoes/:id/status', ...auth, c.updateAtribuicaoStatus);
+
+// App do Membro — confirmação de disponibilidade (token app_mode)
+router.get('/api/escalas/minhas',     requireAuth, authorize(['membro']), c.listMinhasEscalas);
+router.put('/api/escalas/minhas/:id', requireAuth, authorize(['membro']), c.responderMinhaEscala);
 
 // Conflitos
 router.get('/api/escalas/conflitos',     ...auth, c.listConflitos);

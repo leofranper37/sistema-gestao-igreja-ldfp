@@ -12,6 +12,7 @@ const {
     oracaoFiltroSchema,
     oracaoRespostaSchema,
     oracaoSchema,
+    oracaoTestemunhoSchema,
     validateBody,
     validateQuery,
     visitanteFiltroSchema,
@@ -42,6 +43,7 @@ const {
     updateCongregado,
     updateOracao,
     updateOracaoResposta,
+    updateOracaoTestemunho,
     updateVisitante
 } = require('../controllers/systemController');
 
@@ -70,6 +72,7 @@ router.get('/oracoes/mural', requireAuth, requireModuleEnabled('muralOracao'), a
 router.post('/oracoes', requireAuth, requireModuleEnabled('pedidosOracao'), authorize(['admin', 'secretaria', 'membro', 'financeiro', 'pastor', 'oficial', 'ministerio', 'visitante']), validateBody(oracaoSchema), createOracao);
 router.put('/oracoes/:id', requireAuth, requireModuleEnabled('pedidosOracao'), authorize(['admin', 'secretaria', 'membro', 'financeiro', 'pastor', 'oficial', 'ministerio', 'visitante']), validateBody(oracaoSchema), updateOracao);
 router.put('/oracoes/:id/resposta', requireAuth, requireModuleEnabled('pedidosOracao'), authorize(['admin', 'secretaria', 'pastor']), validateBody(oracaoRespostaSchema), updateOracaoResposta);
+router.put('/oracoes/:id/testemunho', requireAuth, requireModuleEnabled('pedidosOracao'), authorize(['admin', 'secretaria', 'membro', 'financeiro', 'pastor', 'oficial', 'ministerio', 'visitante']), validateBody(oracaoTestemunhoSchema), updateOracaoTestemunho);
 router.delete('/oracoes/:id', requireAuth, requireModuleEnabled('pedidosOracao'), authorize(['admin', 'secretaria', 'membro', 'financeiro', 'pastor', 'oficial', 'ministerio', 'visitante']), deleteOracao);
 router.get('/total-visitantes', requireAuth, authorize(['admin', 'secretaria', 'pastor', 'oficial']), getTotalVisitantes);
 

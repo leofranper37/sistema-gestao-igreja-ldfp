@@ -3,968 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Relatórios</title>
+    <title>LDFP - Relatórios Contábeis</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="relatorios.css?v=20261111b">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --brand:   #0f766e;
-            --teal:    #0d9488;
-            --blue:    #0284c7;
-            --green:   #10b981;
-            --red:     #dc2626;
-            --yellow:  #f59e0b;
-            --purple:  #8b5cf6;
-            --surface: #ffffff;
-            --bg:      #f1f5f9;
-            --border:  #e2e8f0;
-            --text:    #0f172a;
-            --muted:   #64748b;
-            --radius:  14px;
-            --shadow:  0 4px 16px rgba(15,23,42,.08);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        .page-wrap {
-            padding: 24px 28px 48px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .page-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .page-header-left h2 {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .page-header-left h2 i { color: var(--teal); }
-        .page-header-left p { font-size: 13px; color: var(--muted); margin-top: 4px; }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 9px 15px;
-            border-radius: 8px;
-            border: none;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all .2s;
-            white-space: nowrap;
-        }
-        .btn-primary { background: linear-gradient(90deg, var(--brand), var(--teal)); color: #fff; }
-        .btn-primary:hover { opacity: .9; }
-        .btn-ghost { background: var(--bg); color: var(--muted); border: 1.5px solid var(--border); }
-        .btn-ghost:hover { background: var(--border); }
-        .btn-green { background: var(--green); color: #fff; }
-        .btn-green:hover { background: #059669; }
-        .btn-sm { padding: 7px 11px; font-size: 12px; border-radius: 7px; }
-
-        /* Tabs principais */
-        .main-tabs {
-            display: flex;
-            gap: 6px;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 0;
-        }
-
-        .main-tab {
-            padding: 10px 18px;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--muted);
-            border: none;
-            background: none;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            border-radius: 8px 8px 0 0;
-            transition: all .2s;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-        .main-tab:hover { color: var(--text); background: var(--bg); }
-        .main-tab.active { color: var(--brand); border-bottom-color: var(--brand); background: #f0fdfa; }
-
-        .main-panel { display: none; }
-        .main-panel.active { display: flex; flex-direction: column; gap: 18px; }
-
-        /* Filtros */
-        .filter-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 18px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: flex-end;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            min-width: 150px;
-        }
-
-        .filter-group label {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--muted);
-            text-transform: uppercase;
-        }
-
-        .filter-group input,
-        .filter-group select {
-            padding: 9px 11px;
-            border-radius: 8px;
-            border: 1.5px solid var(--border);
-            font-size: 13px;
-            background: var(--bg);
-            color: var(--text);
-        }
-        .filter-group input:focus,
-        .filter-group select:focus {
-            outline: none;
-            border-color: var(--teal);
-            background: #fff;
-        }
-
-        /* Cards de métricas */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 14px;
-        }
-
-        .metric-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .metric-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 4px;
-            background: var(--metric-color, var(--teal));
-        }
-
-        .metric-icon {
-            width: 36px; height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            color: #fff;
-            background: var(--metric-color, var(--teal));
-        }
-
-        .metric-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--muted);
-            text-transform: uppercase;
-        }
-
-        .metric-value {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--text);
-            line-height: 1;
-        }
-
-        .metric-sub {
-            font-size: 11px;
-            color: var(--muted);
-        }
-
-        /* Tabela de detalhes */
-        .detail-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        .detail-header {
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .detail-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .detail-title i { color: var(--teal); }
-
-        table { width: 100%; border-collapse: collapse; }
-        th, td {
-            padding: 11px 14px;
-            text-align: left;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 13px;
-            color: var(--text);
-        }
-        th {
-            background: #f8fafc;
-            color: var(--muted);
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #fafafa; }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 9px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-        .badge-green  { background: #dcfce7; color: #166534; }
-        .badge-blue   { background: #dbeafe; color: #1e40af; }
-        .badge-yellow { background: #fef9c3; color: #854d0e; }
-        .badge-red    { background: #fee2e2; color: #991b1b; }
-        .badge-gray   { background: #f1f5f9; color: var(--muted); }
-        .badge-purple { background: #ede9fe; color: #5b21b6; }
-
-        .empty-row td {
-            text-align: center;
-            color: var(--muted);
-            padding: 28px;
-            font-size: 13px;
-        }
-
-        /* Gráfico de barras simples */
-        .bar-chart {
-            padding: 16px 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .bar-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .bar-label {
-            font-size: 12px;
-            color: var(--text);
-            font-weight: 600;
-            min-width: 120px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .bar-track {
-            flex: 1;
-            height: 10px;
-            background: var(--bg);
-            border-radius: 999px;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            height: 100%;
-            border-radius: 999px;
-            background: var(--metric-color, var(--teal));
-            transition: width .5s ease;
-        }
-
-        .bar-val {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text);
-            min-width: 36px;
-            text-align: right;
-        }
-
-        .status-msg {
-            font-size: 12px;
-            color: var(--muted);
-            padding: 4px 0;
-        }
-        .status-msg.ok    { color: var(--green); }
-        .status-msg.error { color: var(--red); }
-
-        @media print {
-            .page-header, .filter-card, .main-tabs { display: none !important; }
-            .page-wrap { padding: 0; }
-        }
-    </style>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-title="Relatórios" data-shell-breadcrumb="LDFP / Relatórios" data-shell-active="relatorios.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="relatorios_contabilidade.html" data-shell-title="Relatórios Contábeis" data-shell-breadcrumb="LDFP / Relatórios / Contabilidade" data-shell-chip="Relatórios" data-shell-role="Contabilidade">
 <main class="main-content enterprise-main">
-<div class="page-wrap">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Relatórios Contábeis</h2>
+                <p>Livro Diário, Razão, Balancete, Balanço Patrimonial, DRE, Fluxo de Caixa e DMPL, a partir dos lançamentos contábeis.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-scale-balanced"></i> Contabilidade</div>
+        </div>
 
-    <!-- Cabeçalho -->
-    <div class="page-header">
-        <div class="page-header-left">
-            <h2><i class="fa-regular fa-chart-bar"></i> Relatórios</h2>
-            <p>Consolide dados de Secretaria, Tesouraria e EBD por período.</p>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-ghost btn-sm" onclick="window.print()">
-                <i class="fa-solid fa-print"></i> Imprimir
-            </button>
-            <button class="btn btn-green btn-sm" id="btnExportar">
-                <i class="fa-solid fa-file-csv"></i> Exportar CSV
-            </button>
-        </div>
+        <div id="diagnostico"></div>
+
+        <section class="rl-card">
+            <div class="rl-tipos" id="tipos"></div>
+            <div class="rl-filtros">
+                <label data-f="periodo">De <input type="date" id="inicio"></label>
+                <label data-f="periodo">Até <input type="date" id="fim"></label>
+                <label data-f="data">Posição em <input type="date" id="data"></label>
+                <label data-f="ano">Ano <select id="ano"></select></label>
+                <label data-f="conta">Conta <select id="conta"><option value="">Todas as contas com movimento</option></select></label>
+                <label data-f="fonte">Base
+                    <select id="fonte">
+                        <option value="contabil">Lançamentos contábeis</option>
+                        <option value="tesouraria">Tesouraria (caixa + bancos)</option>
+                    </select>
+                </label>
+                <label data-f="zeradas" style="flex-direction:row;align-items:center;gap:6px;padding-bottom:10px;"><input type="checkbox" id="zeradas" style="min-width:0"> Mostrar contas zeradas</label>
+                <button class="rl-btn" id="btnGerar" type="button"><i class="fa-solid fa-magnifying-glass"></i> Gerar</button>
+                <div class="rl-acoes">
+                    <button class="rl-btn ghost" id="btnCSV" type="button"><i class="fa-solid fa-file-excel"></i> Excel</button>
+                    <button class="rl-btn ghost" id="btnImprimir" type="button"><i class="fa-solid fa-print"></i> Imprimir / PDF</button>
+                </div>
+            </div>
+            <p class="rl-status" id="status"></p>
+        </section>
+
+        <div class="rl-kpis" id="kpis"></div>
+
+        <section class="rl-card">
+            <h3 id="titulo"></h3>
+            <div id="aviso"></div>
+            <div id="saida"></div>
+            <p class="rl-nota" id="nota"></p>
+        </section>
     </div>
-
-    <!-- Abas principais -->
-    <div class="main-tabs">
-        <button class="main-tab active" data-tab="tabSecretaria">
-            <i class="fa-solid fa-users"></i> Secretaria
-        </button>
-        <button class="main-tab" data-tab="tabTesouraria">
-            <i class="fa-solid fa-coins"></i> Tesouraria
-        </button>
-        <button class="main-tab" data-tab="tabEbd">
-            <i class="fa-solid fa-book-open"></i> EBD
-        </button>
-    </div>
-
-    <!-- ══════════════════════════════════════════
-         SECRETARIA
-    ══════════════════════════════════════════ -->
-    <div class="main-panel active" id="tabSecretaria">
-
-        <!-- Filtros -->
-        <div class="filter-card">
-            <div class="filter-group">
-                <label>De</label>
-                <input type="date" id="secInicio">
-            </div>
-            <div class="filter-group">
-                <label>Até</label>
-                <input type="date" id="secFim">
-            </div>
-            <div class="filter-group">
-                <label>Situação Membro</label>
-                <select id="secSituacao">
-                    <option value="">Todos</option>
-                    <option value="Ativo">Ativo</option>
-                    <option value="Inativo">Inativo</option>
-                    <option value="Transferido">Transferido</option>
-                    <option value="Falecido">Falecido</option>
-                </select>
-            </div>
-            <button class="btn btn-primary" id="btnGerarSec">
-                <i class="fa-solid fa-magnifying-glass"></i> Gerar
-            </button>
-            <span class="status-msg" id="statusSec"></span>
-        </div>
-
-        <!-- Métricas -->
-        <div class="metrics-grid" id="metricsSec">
-            <div class="metric-card" style="--metric-color:#0d9488">
-                <div class="metric-icon"><i class="fa-solid fa-users"></i></div>
-                <div class="metric-label">Total de Membros</div>
-                <div class="metric-value" id="mTotalMembros">--</div>
-                <div class="metric-sub">no período</div>
-            </div>
-            <div class="metric-card" style="--metric-color:#10b981">
-                <div class="metric-icon"><i class="fa-solid fa-user-check"></i></div>
-                <div class="metric-label">Membros Ativos</div>
-                <div class="metric-value" id="mAtivos">--</div>
-                <div class="metric-sub">situação ativa</div>
-            </div>
-            <div class="metric-card" style="--metric-color:#0ea5e9">
-                <div class="metric-icon"><i class="fa-solid fa-person-walking-arrow-right"></i></div>
-                <div class="metric-label">Visitantes</div>
-                <div class="metric-value" id="mVisitantes">--</div>
-                <div class="metric-sub">cadastrados</div>
-            </div>
-            <div class="metric-card" style="--metric-color:#8b5cf6">
-                <div class="metric-icon"><i class="fa-solid fa-droplet"></i></div>
-                <div class="metric-label">Batismos</div>
-                <div class="metric-value" id="mBatismos">--</div>
-                <div class="metric-sub">cerimônias</div>
-            </div>
-            <div class="metric-card" style="--metric-color:#f59e0b">
-                <div class="metric-icon"><i class="fa-solid fa-people-group"></i></div>
-                <div class="metric-label">Grupos</div>
-                <div class="metric-value" id="mGrupos">--</div>
-                <div class="metric-sub">ativos</div>
-            </div>
-        </div>
-
-        <!-- Detalhes Membros por Sexo -->
-        <div class="detail-card">
-            <div class="detail-header">
-                <div class="detail-title">
-                    <i class="fa-solid fa-chart-simple"></i>
-                    Membros por Sexo
-                </div>
-            </div>
-            <div class="bar-chart" id="barSexo">
-                <p style="color:var(--muted);font-size:13px;">Clique em Gerar para visualizar.</p>
-            </div>
-        </div>
-
-        <!-- Tabela de membros -->
-        <div class="detail-card">
-            <div class="detail-header">
-                <div class="detail-title">
-                    <i class="fa-solid fa-list"></i>
-                    Membros no Período
-                </div>
-                <span id="countMembros" style="font-size:12px;color:var(--muted);">0 registros</span>
-            </div>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Sexo</th>
-                            <th>Situação</th>
-                            <th>Grupo</th>
-                            <th>Cadastro</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tblMembros">
-                        <tr class="empty-row"><td colspan="5">Gere o relatório para ver os dados.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════
-         TESOURARIA
-    ══════════════════════════════════════════ -->
-    <div class="main-panel" id="tabTesouraria">
-
-        <div class="filter-card">
-            <div class="filter-group">
-                <label>De</label>
-                <input type="date" id="tesInicio">
-            </div>
-            <div class="filter-group">
-                <label>Até</label>
-                <input type="date" id="tesFim">
-            </div>
-            <div class="filter-group">
-                <label>Tipo</label>
-                <select id="tesTipo">
-                    <option value="">Todos</option>
-                    <option value="Oferta">Oferta</option>
-                    <option value="Dízimo">Dízimo</option>
-                    <option value="Doação">Doação</option>
-                    <option value="Despesa">Despesa</option>
-                </select>
-            </div>
-            <button class="btn btn-primary" id="btnGerarTes">
-                <i class="fa-solid fa-magnifying-glass"></i> Gerar
-            </button>
-            <span class="status-msg" id="statusTes"></span>
-        </div>
-
-        <div class="metrics-grid" id="metricsTes">
-            <div class="metric-card" style="--metric-color:#10b981">
-                <div class="metric-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
-                <div class="metric-label">Total Entradas</div>
-                <div class="metric-value" id="mEntradas">--</div>
-                <div class="metric-sub">no período</div>
-            </div>
-            <div class="metric-card" style="--metric-color:#dc2626">
-                <div class="metric-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
-                <div class="metric-label">Total Saídas</div>
-                <div class="metric-value" id="mSaidas">--</div>
-                <div class="metric-sub">no período</div>
-            </div>
-            <div class="metric-card" style="--metric-color:#0284c7">
-                <div class="metric-icon"><i class="fa-solid fa-scale-balanced"></i></div>
-                <div class="metric-label">Saldo</div>
-                <div class="metric-value" id="mSaldo">--</div>
-                <div class="metric-sub">entradas - saídas</div>
-            </div>
-            <div class="metric-card" style="--metric-color:#f59e0b">
-                <div class="metric-icon"><i class="fa-solid fa-hand-holding-heart"></i></div>
-                <div class="metric-label">Ofertas</div>
-                <div class="metric-value" id="mOfertas">--</div>
-                <div class="metric-sub">total de ofertas</div>
-            </div>
-            <div class="metric-card" style="--metric-color:#8b5cf6">
-                <div class="metric-icon"><i class="fa-solid fa-church"></i></div>
-                <div class="metric-label">Dízimos</div>
-                <div class="metric-value" id="mDizimos">--</div>
-                <div class="metric-sub">total de dízimos</div>
-            </div>
-        </div>
-
-        <!-- Gráfico por tipo -->
-        <div class="detail-card">
-            <div class="detail-header">
-                <div class="detail-title">
-                    <i class="fa-solid fa-chart-pie"></i>
-                    Entradas por Tipo
-                </div>
-            </div>
-            <div class="bar-chart" id="barTipoTes">
-                <p style="color:var(--muted);font-size:13px;">Clique em Gerar para visualizar.</p>
-            </div>
-        </div>
-
-        <!-- Tabela financeira -->
-        <div class="detail-card">
-            <div class="detail-header">
-                <div class="detail-title">
-                    <i class="fa-solid fa-list"></i>
-                    Lançamentos no Período
-                </div>
-                <span id="countTes" style="font-size:12px;color:var(--muted);">0 registros</span>
-            </div>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Descrição</th>
-                            <th>Tipo</th>
-                            <th>Valor</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tblTes">
-                        <tr class="empty-row"><td colspan="4">Gere o relatório para ver os dados.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════
-         EBD
-    ══════════════════════════════════════════ -->
-    <div class="main-panel" id="tabEbd">
-
-        <div class="filter-card">
-            <div class="filter-group">
-                <label>De</label>
-                <input type="date" id="ebdInicio">
-            </div>
-            <div class="filter-group">
-                <label>Até</label>
-                <input type="date" id="ebdFim">
-            </div>
-            <div class="filter-group">
-                <label>Turma</label>
-                <select id="ebdTurmaFiltro">
-                    <option value="">Todas</option>
-                </select>
-            </div>
-            <button class="btn btn-primary" id="btnGerarEbd">
-                <i class="fa-solid fa-magnifying-glass"></i> Gerar
-            </button>
-            <span class="status-msg" id="statusEbd"></span>
-        </div>
-
-        <div class="metrics-grid">
-            <div class="metric-card" style="--metric-color:#7c3aed">
-                <div class="metric-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
-                <div class="metric-label">Turmas Ativas</div>
-                <div class="metric-value" id="mTurmas">--</div>
-                <div class="metric-sub">cadastradas</div>
-            </div>
-            <div class="metric-card" style="--metric-color:#0ea5e9">
-                <div class="metric-icon"><i class="fa-solid fa-user-graduate"></i></div>
-                <div class="metric-label">Alunos</div>
-                <div class="metric-value" id="mAlunos">--</div>
-                <div class="metric-sub">matriculados</div>
-            </div>
-            <div class="metric-card" style="--metric-color:#10b981">
-                <div class="metric-icon"><i class="fa-solid fa-clipboard-check"></i></div>
-                <div class="metric-label">Apontamentos</div>
-                <div class="metric-value" id="mApontamentos">--</div>
-                <div class="metric-sub">no período</div>
-            </div>
-            <div class="metric-card" style="--metric-color:#f59e0b">
-                <div class="metric-icon"><i class="fa-solid fa-percent"></i></div>
-                <div class="metric-label">Freq. Média</div>
-                <div class="metric-value" id="mFreqMedia">--</div>
-                <div class="metric-sub">presença geral</div>
-            </div>
-        </div>
-
-        <!-- Frequência por turma -->
-        <div class="detail-card">
-            <div class="detail-header">
-                <div class="detail-title">
-                    <i class="fa-solid fa-chart-simple"></i>
-                    Frequência por Turma
-                </div>
-            </div>
-            <div class="bar-chart" id="barFreqTurma">
-                <p style="color:var(--muted);font-size:13px;">Clique em Gerar para visualizar.</p>
-            </div>
-        </div>
-
-        <!-- Tabela de apontamentos -->
-        <div class="detail-card">
-            <div class="detail-header">
-                <div class="detail-title">
-                    <i class="fa-solid fa-list"></i>
-                    Apontamentos no Período
-                </div>
-                <span id="countEbd" style="font-size:12px;color:var(--muted);">0 registros</span>
-            </div>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Turma</th>
-                            <th>Presentes</th>
-                            <th>Visitantes</th>
-                            <th>Oferta</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tblEbd">
-                        <tr class="empty-row"><td colspan="5">Gere o relatório para ver os dados.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-</div>
 </main>
 
 <script src="session.js?v=20260501"></script>
 <script src="enterprise-shell.js?v=20260501"></script>
+<script src="relatorios-core.js?v=20261111b"></script>
 <script>
-    requireAuthSession();
+requireAuthSession();
+(function () {
+    const $ = (id) => document.getElementById(id);
+    const v = (id) => $(id).value;
+    const esc = RL.esc;
+    const kpis = (lista) => { $('kpis').innerHTML = lista.map(([a, b, cls]) => `<div class="rl-kpi ${cls || ''}"><small>${a}</small><strong>${b}</strong></div>`).join(''); };
+    const aviso = (html, cls) => { $('aviso').innerHTML = html ? `<div class="rl-alerta ${cls || ''}">${html}</div>` : ''; };
 
-    /* ── Helpers ── */
-    const $ = id => document.getElementById(id);
-    const moeda = v => Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-    const pct   = v => `${Number(v||0).toFixed(1)}%`;
-
-    const readLS = key => { try { return JSON.parse(localStorage.getItem(key)||'[]'); } catch { return []; } };
-
-    const MEMBROS    = 'ldfpMembers';
-    const VISITANTES = 'ldfpVisitantes';
-    const BATISMOS   = 'ldfpBaptisms';
-    const GRUPOS     = 'ldfpGroups';
-    const FINANCEIRO = 'ldfpFinanceiro';
-    const EBD_GRADES = 'ldfpEbdGrades';
-    const EBD_CLASS  = 'ldfpEbdClasses';
-    const EBD_STUD   = 'ldfpEbdStudents';
-
-    const inRange = (dateStr, ini, fim) => {
-        if (!dateStr) return true;
-        const d = dateStr.slice(0,10);
-        if (ini && d < ini) return false;
-        if (fim && d > fim) return false;
-        return true;
+    // valor com indicação D (devedor) / C (credor)
+    const dc = (val) => { const n = Number(val) || 0; return n === 0 ? RL.moeda(0) : `${RL.moeda(Math.abs(n))} ${n > 0 ? 'D' : 'C'}`; };
+    const dcCsv = (val) => { const n = Number(val) || 0; return `${Math.abs(n).toFixed(2).replace('.', ',')}${n > 0 ? ' D' : n < 0 ? ' C' : ''}`; };
+    const contaCol = {
+        key: 'nome', label: 'Conta',
+        fmt: (r) => r.__rotulo !== undefined ? esc(r.__rotulo)
+            : `<span style="padding-left:${(r.nivel || 0) * 16}px;${r.sintetica ? 'font-weight:700' : ''}">${esc(r.codigo ? r.codigo + ' - ' : '')}${esc(r.nome)}${r.naoCadastrada ? ' <span class="rl-badge vencido" title="Conta digitada no lançamento que não existe no plano de contas">fora do plano</span>' : ''}</span>`,
+        csv: (r) => r.__rotulo !== undefined ? r.__rotulo : `${'  '.repeat(r.nivel || 0)}${r.codigo ? r.codigo + ' - ' : ''}${r.nome}`
     };
+    const valorCol = (label, idx) => ({ key: (r) => (r.valores ? r.valores[idx] : r.__valor), label, fmt: 'moeda' });
+    const sub = (rotulo, valor, classe) => ({ __rotulo: rotulo, __valor: valor, valores: null, __classe: classe || 'subtotal' });
 
-    const badgeSit = sit => {
-        const map = {
-            'Ativo':       'badge-green',
-            'Inativo':     'badge-gray',
-            'Transferido': 'badge-blue',
-            'Falecido':    'badge-red',
-        };
-        return `<span class="badge ${map[sit]||'badge-gray'}">${sit||'-'}</span>`;
-    };
-
-    const setStatus = (id, msg, tipo) => {
-        const el = $(id);
-        el.textContent = msg;
-        el.className = 'status-msg' + (tipo ? ' ' + tipo : '');
-    };
-
-    /* ── Abas ── */
-    document.querySelectorAll('.main-tab').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.main-panel').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            $(btn.dataset.tab)?.classList.add('active');
-        });
-    });
-
-    /* ══════════════════════════════════════
-       SECRETARIA
-    ══════════════════════════════════════ */
-    const gerarSecretaria = () => {
-        const ini = $('secInicio').value;
-        const fim = $('secFim').value;
-        const sitFiltro = $('secSituacao').value;
-
-        let membros = readLS(MEMBROS).filter(m => inRange(m.createdAt, ini, fim));
-        if (sitFiltro) membros = membros.filter(m => m.situacao === sitFiltro);
-
-        const visitantes = readLS(VISITANTES).filter(v => inRange(v.createdAt, ini, fim));
-        const batismos   = readLS(BATISMOS).filter(b  => inRange(b.dataBatismo, ini, fim));
-        const grupos     = readLS(GRUPOS).filter(g    => g.situacao !== 'Inativo');
-
-        $('mTotalMembros').textContent = membros.length;
-        $('mAtivos').textContent       = membros.filter(m => m.situacao === 'Ativo').length;
-        $('mVisitantes').textContent   = visitantes.length;
-        $('mBatismos').textContent     = batismos.length;
-        $('mGrupos').textContent       = grupos.length;
-
-        /* Gráfico sexo */
-        const masc = membros.filter(m => m.sexo === 'M' || m.sexo === 'Masculino').length;
-        const fem  = membros.filter(m => m.sexo === 'F' || m.sexo === 'Feminino').length;
-        const outroSexo = membros.length - masc - fem;
-        const maxS = Math.max(masc, fem, outroSexo, 1);
-
-        $('barSexo').innerHTML = [
-            { label: 'Masculino', val: masc,     cor: '#0284c7' },
-            { label: 'Feminino',  val: fem,      cor: '#ec4899' },
-            { label: 'Outro',     val: outroSexo, cor: '#94a3b8' },
-        ].map(r => `
-            <div class="bar-row">
-                <span class="bar-label">${r.label}</span>
-                <div class="bar-track">
-                    <div class="bar-fill" style="width:${(r.val/maxS*100).toFixed(1)}%;background:${r.cor}"></div>
-                </div>
-                <span class="bar-val">${r.val}</span>
-            </div>
-        `).join('');
-
-        /* Tabela */
-        $('countMembros').textContent = `${membros.length} registros`;
-        $('tblMembros').innerHTML = membros.length ? membros.map(m => `
-            <tr>
-                <td><strong>${m.nome||'-'}</strong></td>
-                <td>${m.sexo||'-'}</td>
-                <td>${badgeSit(m.situacao)}</td>
-                <td>${m.grupo||'-'}</td>
-                <td>${m.createdAt ? new Date(m.createdAt).toLocaleDateString('pt-BR') : '-'}</td>
-            </tr>
-        `).join('') : `<tr class="empty-row"><td colspan="5">Nenhum membro encontrado no período.</td></tr>`;
-
-        setStatus('statusSec', `${membros.length} membros encontrados.`, 'ok');
-    };
-
-    $('btnGerarSec').addEventListener('click', gerarSecretaria);
-
-    /* ══════════════════════════════════════
-       TESOURARIA
-    ══════════════════════════════════════ */
-    const gerarTesouraria = () => {
-        const ini    = $('tesInicio').value;
-        const fim    = $('tesFim').value;
-        const tipo   = $('tesTipo').value;
-
-        let lancamentos = readLS(FINANCEIRO).filter(l => inRange(l.data, ini, fim));
-        if (tipo) lancamentos = lancamentos.filter(l => l.tipo === tipo);
-
-        const entradas = lancamentos.filter(l => l.natureza !== 'Despesa' && l.tipo !== 'Despesa');
-        const saidas   = lancamentos.filter(l => l.natureza === 'Despesa' || l.tipo === 'Despesa');
-
-        const totalEnt  = entradas.reduce((s,l) => s + Number(l.valor||0), 0);
-        const totalSai  = saidas.reduce((s,l)   => s + Number(l.valor||0), 0);
-        const totalOfer = lancamentos.filter(l => l.tipo === 'Oferta').reduce((s,l) => s + Number(l.valor||0), 0);
-        const totalDiz  = lancamentos.filter(l => l.tipo === 'Dízimo').reduce((s,l) => s + Number(l.valor||0), 0);
-
-        $('mEntradas').textContent = moeda(totalEnt);
-        $('mSaidas').textContent   = moeda(totalSai);
-        $('mSaldo').textContent    = moeda(totalEnt - totalSai);
-        $('mOfertas').textContent  = moeda(totalOfer);
-        $('mDizimos').textContent  = moeda(totalDiz);
-
-        /* Gráfico tipos */
-        const tipos = {};
-        entradas.forEach(l => { tipos[l.tipo] = (tipos[l.tipo]||0) + Number(l.valor||0); });
-        const maxT = Math.max(...Object.values(tipos), 1);
-        const cores = ['#10b981','#8b5cf6','#f59e0b','#0ea5e9','#ec4899'];
-        $('barTipoTes').innerHTML = Object.entries(tipos).length
-            ? Object.entries(tipos).map(([t,v],i) => `
-                <div class="bar-row">
-                    <span class="bar-label">${t}</span>
-                    <div class="bar-track">
-                        <div class="bar-fill" style="width:${(v/maxT*100).toFixed(1)}%;background:${cores[i%cores.length]}"></div>
-                    </div>
-                    <span class="bar-val">${moeda(v)}</span>
-                </div>
-            `).join('')
-            : '<p style="color:var(--muted);font-size:13px;">Nenhuma entrada encontrada.</p>';
-
-        /* Tabela */
-        $('countTes').textContent = `${lancamentos.length} registros`;
-        $('tblTes').innerHTML = lancamentos.length ? lancamentos.map(l => `
-            <tr>
-                <td>${l.data ? new Date(l.data+'T12:00').toLocaleDateString('pt-BR') : '-'}</td>
-                <td>${l.descricao||'-'}</td>
-                <td><span class="badge badge-blue">${l.tipo||'-'}</span></td>
-                <td><strong>${moeda(l.valor)}</strong></td>
-            </tr>
-        `).join('') : `<tr class="empty-row"><td colspan="4">Nenhum lançamento encontrado no período.</td></tr>`;
-
-        setStatus('statusTes', `${lancamentos.length} lançamentos encontrados.`, 'ok');
-    };
-
-    $('btnGerarTes').addEventListener('click', gerarTesouraria);
-
-    /* ══════════════════════════════════════
-       EBD
-    ══════════════════════════════════════ */
-    const preencherTurmasFiltro = () => {
-        const turmas = readLS(EBD_CLASS);
-        const sel = $('ebdTurmaFiltro');
-        turmas.forEach(t => {
-            const opt = document.createElement('option');
-            opt.value = t.nomeTurma || t.nome || t.id;
-            opt.textContent = t.nomeTurma || t.nome || t.id;
-            sel.appendChild(opt);
-        });
-    };
-
-    const gerarEbd = () => {
-        const ini   = $('ebdInicio').value;
-        const fim   = $('ebdFim').value;
-        const turma = $('ebdTurmaFiltro').value;
-
-        const turmas  = readLS(EBD_CLASS);
-        const alunos  = readLS(EBD_STUD);
-        let grades    = readLS(EBD_GRADES).filter(g => inRange(g.data, ini, fim));
-        if (turma) grades = grades.filter(g => g.turma === turma);
-
-        /* Frequência média */
-        let totalPresentes = 0, totalAlunos = 0;
-        grades.forEach(g => {
-            const presentes = Array.isArray(g.alunos) ? g.alunos.filter(a => a.presente).length : 0;
-            const total     = Array.isArray(g.alunos) ? g.alunos.length : 0;
-            totalPresentes += presentes;
-            totalAlunos    += total;
-        });
-        const freqMedia = totalAlunos > 0 ? (totalPresentes / totalAlunos * 100) : 0;
-
-        $('mTurmas').textContent      = turmas.length;
-        $('mAlunos').textContent      = alunos.length;
-        $('mApontamentos').textContent = grades.length;
-        $('mFreqMedia').textContent   = pct(freqMedia);
-
-        /* Gráfico por turma */
-        const freqPorTurma = {};
-        grades.forEach(g => {
-            if (!freqPorTurma[g.turma]) freqPorTurma[g.turma] = { p: 0, t: 0 };
-            const presentes = Array.isArray(g.alunos) ? g.alunos.filter(a => a.presente).length : 0;
-            const total     = Array.isArray(g.alunos) ? g.alunos.length : 0;
-            freqPorTurma[g.turma].p += presentes;
-            freqPorTurma[g.turma].t += total;
-        });
-
-        $('barFreqTurma').innerHTML = Object.entries(freqPorTurma).length
-            ? Object.entries(freqPorTurma).map(([t,v]) => {
-                const f = v.t > 0 ? (v.p/v.t*100) : 0;
-                const cor = f >= 75 ? '#10b981' : f >= 50 ? '#f59e0b' : '#dc2626';
-                return `
-                    <div class="bar-row">
-                        <span class="bar-label">${t}</span>
-                        <div class="bar-track">
-                            <div class="bar-fill" style="width:${f.toFixed(1)}%;background:${cor}"></div>
-                        </div>
-                        <span class="bar-val">${f.toFixed(0)}%</span>
-                    </div>
-                `;
-            }).join('')
-            : '<p style="color:var(--muted);font-size:13px;">Nenhum apontamento encontrado.</p>';
-
-        /* Tabela */
-        $('countEbd').textContent = `${grades.length} registros`;
-        $('tblEbd').innerHTML = grades.length ? grades.map(g => {
-            const presentes = Array.isArray(g.alunos) ? g.alunos.filter(a => a.presente).length : 0;
-            return `
-                <tr>
-                    <td>${g.data ? new Date(g.data+'T12:00').toLocaleDateString('pt-BR') : '-'}</td>
-                    <td><strong>${g.turma||'-'}</strong></td>
-                    <td><span class="badge badge-green">${presentes}</span></td>
-                    <td>${g.visitantes||0}</td>
-                    <td>${moeda(g.oferta)}</td>
-                </tr>
-            `;
-        }).join('') : `<tr class="empty-row"><td colspan="5">Nenhum apontamento encontrado no período.</td></tr>`;
-
-        setStatus('statusEbd', `${grades.length} apontamentos encontrados.`, 'ok');
-    };
-
-    $('btnGerarEbd').addEventListener('click', gerarEbd);
-
-    /* ── Exportar CSV ── */
-    $('btnExportar').addEventListener('click', () => {
-        const activeTab = document.querySelector('.main-tab.active')?.dataset.tab;
-        let rows = [], filename = 'relatorio.csv';
-
-        if (activeTab === 'tabSecretaria') {
-            rows = [['Nome','Sexo','Situação','Grupo','Cadastro']];
-            readLS(MEMBROS).forEach(m => rows.push([m.nome,m.sexo,m.situacao,m.grupo,m.createdAt?.slice(0,10)]));
-            filename = 'relatorio_secretaria.csv';
-        } else if (activeTab === 'tabTesouraria') {
-            rows = [['Data','Descrição','Tipo','Valor']];
-            readLS(FINANCEIRO).forEach(l => rows.push([l.data,l.descricao,l.tipo,l.valor]));
-            filename = 'relatorio_tesouraria.csv';
-        } else {
-            rows = [['Data','Turma','Presentes','Visitantes','Oferta']];
-            readLS(EBD_GRADES).forEach(g => {
-                const p = Array.isArray(g.alunos) ? g.alunos.filter(a=>a.presente).length : 0;
-                rows.push([g.data,g.turma,p,g.visitantes,g.oferta]);
-            });
-            filename = 'relatorio_ebd.csv';
+    const RELATORIOS = {
+        diario: {
+            titulo: 'Livro Diário', grupo: 'Livros', filtros: ['periodo'],
+            run: async () => {
+                const r = await RL.get('/api/relatorios/contabil/diario', { inicio: v('inicio'), fim: v('fim') });
+                kpis([['Lançamentos', RL.numero(r.rows.length)], ['Total movimentado', RL.moeda(r.total)]]);
+                return {
+                    cols: [{ key: 'n', label: 'Nº', num: true }, { key: 'data', label: 'Data', fmt: 'data' }, { key: 'historico', label: 'Histórico' },
+                        { key: 'debito', label: 'Débito' }, { key: 'credito', label: 'Crédito' }, { key: 'valor', label: 'Valor', fmt: 'moeda' }],
+                    rows: r.rows, footer: { valor: r.total }, resumo: `${r.rows.length} lançamento(s)`
+                };
+            }
+        },
+        razao: {
+            titulo: 'Livro Razão', grupo: 'Livros', filtros: ['periodo', 'conta'],
+            run: async () => {
+                const r = await RL.get('/api/relatorios/contabil/razao', { inicio: v('inicio'), fim: v('fim'), conta: v('conta') });
+                const rows = [];
+                r.contas.forEach((c) => {
+                    rows.push({ __grupo: `${c.conta}${c.naoCadastrada ? '  (fora do plano)' : ''}` });
+                    rows.push({ data: '', historico: 'Saldo anterior', contrapartida: '', debito: null, credito: null, saldo: c.saldoAnterior, __classe: 'subtotal' });
+                    c.movimentos.forEach((m) => rows.push(m));
+                    rows.push({ data: '', historico: 'Totais / saldo final', contrapartida: '', debito: c.debitos, credito: c.creditos, saldo: c.saldoFinal, __classe: 'subtotal' });
+                });
+                kpis([['Contas', RL.numero(r.contas.length)], ['Movimentos', RL.numero(r.contas.reduce((s, c) => s + c.movimentos.length, 0))]]);
+                return {
+                    cols: [{ key: 'data', label: 'Data', fmt: 'data' }, { key: 'historico', label: 'Histórico' }, { key: 'contrapartida', label: 'Contrapartida' },
+                        { key: 'debito', label: 'Débito', num: true, fmt: (x) => (x.debito === null ? '' : RL.moeda(x.debito)), csv: (x) => (x.debito === null ? '' : x.debito.toFixed(2).replace('.', ',')) },
+                        { key: 'credito', label: 'Crédito', num: true, fmt: (x) => (x.credito === null ? '' : RL.moeda(x.credito)), csv: (x) => (x.credito === null ? '' : x.credito.toFixed(2).replace('.', ',')) },
+                        { key: 'saldo', label: 'Saldo', num: true, fmt: (x) => dc(x.saldo), csv: (x) => dcCsv(x.saldo) }],
+                    rows, resumo: `${r.contas.length} conta(s)`
+                };
+            },
+            nota: 'Saldo: D = devedor, C = credor. O saldo anterior inclui o balancete de abertura.'
+        },
+        balancete: {
+            titulo: 'Balancete de Verificação', grupo: 'Demonstrações', filtros: ['periodo', 'zeradas'],
+            run: async () => {
+                const r = await RL.get('/api/relatorios/contabil/balancete', { inicio: v('inicio'), fim: v('fim'), zeradas: $('zeradas').checked ? 'true' : '' });
+                const t = r.totais;
+                kpis([['Débitos no período', RL.moeda(t.debitos)], ['Créditos no período', RL.moeda(t.creditos)], ['Situação', r.fechado ? 'Fechado ✔' : 'Não fecha', r.fechado ? 'pos' : 'neg']]);
+                if (!r.fechado) aviso('<strong>O balancete não fecha.</strong> Normalmente isso acontece porque o balancete de abertura tem débitos diferentes dos créditos. Confira em <a href="balancete_abertura.html">Balancete de Abertura</a>.', 'erro');
+                return {
+                    cols: [contaCol,
+                        { key: (x) => x.valores[0], label: 'Saldo anterior', num: true, fmt: (x) => dc(x.valores[0]), csv: (x) => dcCsv(x.valores[0]) },
+                        { key: (x) => x.valores[1], label: 'Débitos', fmt: 'moeda' },
+                        { key: (x) => x.valores[2], label: 'Créditos', fmt: 'moeda' },
+                        { key: (x) => x.valores[3], label: 'Saldo atual', num: true, fmt: (x) => dc(x.valores[3]), csv: (x) => dcCsv(x.valores[3]) }],
+                    rows: r.linhas,
+                    footer: { nome: 'Total', __1: dc(t.saldoAnterior), __2: RL.moeda(t.debitos), __3: RL.moeda(t.creditos), __4: dc(t.saldoAtual) },
+                    resumo: `${r.linhas.length} conta(s)`
+                };
+            },
+            nota: 'Contas-mãe (em negrito) somam as contas filhas pelo código. Em um balancete correto, débitos = créditos e o saldo total é zero.'
+        },
+        balanco: {
+            titulo: 'Balanço Patrimonial', grupo: 'Demonstrações', filtros: ['data'],
+            run: async () => {
+                const r = await RL.get('/api/relatorios/contabil/balanco', { data: v('data') });
+                const val = valorCol('Valor', 0);
+                const rows = [
+                    { __grupo: 'ATIVO' }, ...r.ativo.linhas, sub('Total do Ativo', r.ativo.total, 'total'),
+                    { __grupo: 'PASSIVO' }, ...r.passivo.linhas, sub('Total do Passivo', r.passivo.total),
+                    { __grupo: 'PATRIMÔNIO SOCIAL' }, ...r.patrimonio.linhas,
+                    sub('Superávits/déficits de exercícios anteriores', r.patrimonio.resultadosAnteriores, ''),
+                    sub(`Superávit/déficit do exercício ${r.data.slice(0, 4)}`, r.patrimonio.resultadoExercicio, ''),
+                    sub('Total do Patrimônio Social', r.patrimonio.total),
+                    sub('Total do Passivo + Patrimônio Social', r.totalPassivoPL, 'total')
+                ];
+                kpis([['Ativo', RL.moeda(r.ativo.total)], ['Passivo', RL.moeda(r.passivo.total)], ['Patrimônio social', RL.moeda(r.patrimonio.total)],
+                    ['Diferença', RL.moeda(r.diferenca), Math.abs(r.diferenca) < 0.005 ? 'pos' : 'neg']]);
+                if (Math.abs(r.diferenca) >= 0.005) aviso(`<strong>Ativo ≠ Passivo + Patrimônio (diferença de ${RL.moeda(r.diferenca)}).</strong> Causas comuns: contas usadas nos lançamentos que não estão no plano de contas (sem natureza definida) ou balancete de abertura desequilibrado. Veja o aviso no topo da página.`, 'erro');
+                return { cols: [contaCol, val], rows, resumo: `Posição em ${RL.data(r.data)}` };
+            },
+            nota: 'Contas de natureza "passivo" cujo nome (ou da conta-mãe) contém "Patrimônio", "Superávit", "Déficit" ou "Reserva" são tratadas como Patrimônio Social.'
+        },
+        dre: {
+            titulo: 'DRE — Demonstração do Resultado', grupo: 'Demonstrações', filtros: ['periodo'],
+            run: async () => {
+                const r = await RL.get('/api/relatorios/contabil/dre', { inicio: v('inicio'), fim: v('fim') });
+                const rows = [
+                    { __grupo: 'RECEITAS' }, ...r.receitas.linhas, sub('Total das Receitas', r.receitas.total),
+                    { __grupo: 'DESPESAS' }, ...r.despesas.linhas, sub('Total das Despesas', r.despesas.total),
+                    sub(r.resultado >= 0 ? 'SUPERÁVIT DO PERÍODO' : 'DÉFICIT DO PERÍODO', r.resultado, 'total')
+                ];
+                kpis([['Receitas', RL.moeda(r.receitas.total), 'pos'], ['Despesas', RL.moeda(r.despesas.total), 'neg'], [r.resultado >= 0 ? 'Superávit' : 'Déficit', RL.moeda(r.resultado), r.resultado >= 0 ? 'pos' : 'neg']]);
+                return { cols: [contaCol, valorCol('Valor', 0)], rows, resumo: `Período ${RL.data(v('inicio'))} a ${RL.data(v('fim'))}` };
+            }
+        },
+        resumoAnual: {
+            titulo: 'Resumo financeiro anual (DRE mês a mês)', grupo: 'Demonstrações', filtros: ['ano'],
+            run: async () => {
+                const r = await RL.get('/api/relatorios/contabil/dre-mensal', { ano: v('ano') });
+                const linhaTot = (rotulo, vet, classe) => ({ __rotulo: rotulo, valores: vet, __classe: classe || 'subtotal' });
+                const rows = [
+                    { __grupo: 'RECEITAS' }, ...r.receitas.linhas, linhaTot('Total das Receitas', r.receitas.total),
+                    { __grupo: 'DESPESAS' }, ...r.despesas.linhas, linhaTot('Total das Despesas', r.despesas.total),
+                    linhaTot('Superávit / Déficit', r.resultado, 'total')
+                ];
+                const t = r.resultado[12];
+                kpis([['Receitas no ano', RL.moeda(r.receitas.total[12]), 'pos'], ['Despesas no ano', RL.moeda(r.despesas.total[12]), 'neg'], ['Resultado', RL.moeda(t), t >= 0 ? 'pos' : 'neg']]);
+                return {
+                    cols: [contaCol, ...RL.MESES.map((m, i) => ({ key: (x) => x.valores[i], label: m, num: true, fmt: (x) => (x.valores[i] ? RL.moeda(x.valores[i]) : '—'), csv: (x) => x.valores[i].toFixed(2).replace('.', ',') })),
+                        { key: (x) => x.valores[12], label: 'Total', fmt: 'moeda' }],
+                    rows, resumo: `Ano ${r.ano}`
+                };
+            }
+        },
+        fluxo: {
+            titulo: 'Fluxo de Caixa', grupo: 'Demonstrações', filtros: ['periodo', 'fonte'],
+            run: async () => {
+                const r = await RL.get('/api/relatorios/contabil/fluxo-caixa', { inicio: v('inicio'), fim: v('fim'), fonte: v('fonte') });
+                if (r.fonte === 'tesouraria') {
+                    kpis([['Saldo inicial', RL.moeda(r.saldoInicial)], ['Entradas', RL.moeda(r.entradas), 'pos'], ['Saídas', RL.moeda(r.saidas), 'neg'], ['Saldo final', RL.moeda(r.saldoFinal), r.saldoFinal >= 0 ? 'pos' : 'neg']]);
+                    return {
+                        cols: [{ key: (x) => `${RL.MESES_LONGOS[Number(x.mes.slice(5, 7)) - 1]}/${x.mes.slice(0, 4)}`, label: 'Mês', csv: (x) => x.mes },
+                            { key: 'saldoInicial', label: 'Saldo inicial', fmt: 'moeda' }, { key: 'entradas', label: 'Entradas', fmt: 'moeda' },
+                            { key: 'saidas', label: 'Saídas', fmt: 'moeda' }, { key: 'liquido', label: 'Variação', fmt: 'moeda' }, { key: 'saldoFinal', label: 'Saldo final', fmt: 'moeda' }],
+                        rows: r.linhas, footer: { entradas: r.entradas, saidas: r.saidas, liquido: r.entradas - r.saidas, saldoFinal: r.saldoFinal },
+                        resumo: 'Base: lançamentos do caixa e das contas bancárias'
+                    };
+                }
+                const nomes = { operacional: 'Atividades operacionais', investimento: 'Atividades de investimento', financiamento: 'Atividades de financiamento' };
+                const rows = [sub('Saldo inicial de caixa e equivalentes', r.saldoInicial)];
+                r.secoes.forEach((s) => {
+                    rows.push({ __grupo: nomes[s.nome] });
+                    s.linhas.forEach((l) => rows.push({ __rotulo: l.conta, __valor: l.liquido, entradas: l.entradas, saidas: l.saidas }));
+                    rows.push({ ...sub(`Caixa líquido — ${nomes[s.nome].toLowerCase()}`, s.liquido), entradas: s.entradas, saidas: s.saidas });
+                });
+                rows.push(sub('Variação líquida do caixa', r.variacao));
+                rows.push(sub('Saldo final de caixa e equivalentes', r.saldoFinal, 'total'));
+                kpis([['Saldo inicial', RL.moeda(r.saldoInicial)], ['Variação', RL.moeda(r.variacao), r.variacao >= 0 ? 'pos' : 'neg'], ['Saldo final', RL.moeda(r.saldoFinal)]]);
+                if (!r.contasCaixa.length) aviso('Nenhuma conta de caixa/banco foi identificada no plano de contas. O sistema reconhece como disponível as contas de ativo com código iniciando em 1.1.1 ou com "Caixa", "Banco", "Disponível" ou "Aplicação financeira" no nome. Você também pode usar a base <strong>Tesouraria</strong>.', '');
+                else aviso(`Contas de caixa consideradas: ${r.contasCaixa.map(esc).join(', ')}.`, 'ok');
+                const opt = (k) => (x) => (x[k] === undefined || x[k] === null ? '' : RL.moeda(x[k]));
+                return {
+                    cols: [contaCol, { key: 'entradas', label: 'Entradas', num: true, fmt: opt('entradas'), csv: (x) => (x.entradas === undefined ? '' : x.entradas.toFixed(2).replace('.', ',')) },
+                        { key: 'saidas', label: 'Saídas', num: true, fmt: opt('saidas'), csv: (x) => (x.saidas === undefined ? '' : x.saidas.toFixed(2).replace('.', ',')) },
+                        valorCol('Líquido', 0)],
+                    rows, resumo: 'Método direto'
+                };
+            },
+            nota: 'Método direto: cada lançamento que movimenta caixa/banco é classificado pela contrapartida (receita/despesa = operacional; ativo fora do circulante = investimento; passivo de longo prazo/patrimônio = financiamento). Transferências entre caixa e banco não entram.'
+        },
+        dmpl: {
+            titulo: 'DMPL — Mutações do Patrimônio Social', grupo: 'Demonstrações', filtros: ['ano'],
+            run: async () => {
+                const r = await RL.get('/api/relatorios/contabil/dmpl', { ano: v('ano') });
+                const t = r.totais;
+                kpis([['Patrimônio em 01/01', RL.moeda(t.saldoInicial)], ['Resultado do ano', RL.moeda(t.resultado), t.resultado >= 0 ? 'pos' : 'neg'], ['Patrimônio em 31/12', RL.moeda(t.saldoFinal)]]);
+                return {
+                    cols: [{ key: 'conta', label: 'Conta' }, { key: 'saldoInicial', label: `Saldo em 01/01/${r.ano}`, fmt: 'moeda' },
+                        { key: 'resultado', label: 'Superávit/déficit do exercício', fmt: 'moeda' }, { key: 'outras', label: 'Outras mutações', fmt: 'moeda' },
+                        { key: 'saldoFinal', label: `Saldo em 31/12/${r.ano}`, fmt: 'moeda' }],
+                    rows: r.linhas, footer: { conta: 'Total do Patrimônio Social', saldoInicial: t.saldoInicial, resultado: t.resultado, outras: t.outras, saldoFinal: t.saldoFinal },
+                    resumo: `Ano ${r.ano}`
+                };
+            }
         }
+    };
 
-        const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-        const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href = url; a.download = filename; a.click();
-        URL.revokeObjectURL(url);
+    function mostrarDiagnostico(d) {
+        if (!d) return;
+        const partes = [];
+        if (!d.lancamentos) {
+            partes.push(`<div class="rl-alerta">Ainda não há lançamentos contábeis nesta igreja. Cadastre o <a href="plano_contas.html">plano de contas</a> e registre os <a href="lancamentos_contabeis.html">lançamentos contábeis</a>. Para ver a movimentação financeira sem contabilidade, use os <a href="relatorios_tesouraria.html">Relatórios da Tesouraria</a>.</div>`);
+        }
+        if (d.naoCadastradas && d.naoCadastradas.length) {
+            const lista = d.naoCadastradas.slice(0, 12).map((x) => `<li>${esc(x.nome)} — usada ${x.usos}x${x.naturezaInferida ? ` (tratada como ${esc(x.naturezaInferida)} pelo código)` : ' <strong>(sem natureza: fica fora do Balanço e da DRE)</strong>'}</li>`).join('');
+            partes.push(`<div class="rl-alerta"><strong>${d.naoCadastradas.length} conta(s) usada(s) nos lançamentos não existe(m) no plano de contas.</strong> Cadastre-as em <a href="plano_contas.html">Plano de Contas</a> com o mesmo código ou o mesmo nome digitado no lançamento.<ul>${lista}</ul>${d.naoCadastradas.length > 12 ? '<p>…e outras.</p>' : ''}</div>`);
+        }
+        if (d.aberturaDiferenca) {
+            partes.push(`<div class="rl-alerta erro"><strong>Balancete de abertura desequilibrado:</strong> débitos ${RL.moeda(d.aberturaDebito)} × créditos ${RL.moeda(d.aberturaCredito)}. Ajuste em <a href="balancete_abertura.html">Balancete de Abertura</a>.</div>`);
+        }
+        $('diagnostico').innerHTML = partes.join('');
+    }
+
+    let atual = 'balancete';
+    let ultimo = null;
+    let grupoAnterior = '';
+    Object.entries(RELATORIOS).forEach(([k, r]) => {
+        if (r.grupo !== grupoAnterior) { $('tipos').insertAdjacentHTML('beforeend', `<div class="rl-grupo-titulo">${r.grupo}</div>`); grupoAnterior = r.grupo; }
+        $('tipos').insertAdjacentHTML('beforeend', `<button type="button" class="rl-tipo" data-k="${k}">${esc(r.titulo)}</button>`);
+    });
+    $('tipos').addEventListener('click', (e) => {
+        const b = e.target.closest('.rl-tipo');
+        if (!b) return;
+        selecionar(b.dataset.k);
+        gerar();
     });
 
-    /* ── Init ── */
-    const hoje = new Date().toISOString().slice(0,10);
-    const mesInicio = hoje.slice(0,8) + '01';
-    ['secInicio','tesInicio','ebdInicio'].forEach(id => $(id).value = mesInicio);
-    ['secFim','tesFim','ebdFim'].forEach(id => $(id).value = hoje);
-    preencherTurmasFiltro();
+    function selecionar(k) {
+        atual = k;
+        document.querySelectorAll('.rl-tipo').forEach((b) => b.classList.toggle('ativo', b.dataset.k === k));
+        const f = RELATORIOS[k].filtros;
+        document.querySelectorAll('[data-f]').forEach((el) => { el.style.display = f.includes(el.dataset.f) ? '' : 'none'; });
+        $('titulo').textContent = RELATORIOS[k].titulo;
+        $('nota').textContent = RELATORIOS[k].nota || '';
+        try { localStorage.setItem('ldfpRelCont', k); } catch (_) { /* ignore */ }
+    }
+
+    async function gerar() {
+        RL.status($('status'), 'Gerando…');
+        $('saida').innerHTML = '';
+        $('kpis').innerHTML = '';
+        aviso('');
+        try {
+            ultimo = await RELATORIOS[atual].run();
+            RL.tabela($('saida'), ultimo.cols, ultimo.rows, { footer: ultimo.footer });
+            RL.status($('status'), ultimo.resumo || '');
+        } catch (e) {
+            ultimo = null;
+            RL.status($('status'), e.message, true);
+        }
+    }
+
+    function subtitulo() {
+        const f = RELATORIOS[atual].filtros;
+        const p = [];
+        if (f.includes('periodo')) p.push(`Período ${RL.data(v('inicio'))} a ${RL.data(v('fim'))}`);
+        if (f.includes('data')) p.push(`Posição em ${RL.data(v('data'))}`);
+        if (f.includes('ano')) p.push(`Exercício ${v('ano')}`);
+        if (f.includes('conta') && v('conta')) p.push($('conta').selectedOptions[0].textContent);
+        return p.join(' · ');
+    }
+
+    const anoAtual = new Date().getFullYear();
+    for (let a = anoAtual + 1; a >= anoAtual - 6; a -= 1) $('ano').insertAdjacentHTML('beforeend', `<option ${a === anoAtual ? 'selected' : ''}>${a}</option>`);
+    $('inicio').value = RL.inicioAnoISO();
+    $('fim').value = RL.hojeISO();
+    $('data').value = RL.hojeISO();
+    $('btnGerar').addEventListener('click', gerar);
+    $('btnCSV').addEventListener('click', () => {
+        if (!ultimo || !ultimo.rows.length) { RL.status($('status'), 'Gere o relatório antes de exportar.', true); return; }
+        RL.exportarCSV(`${RELATORIOS[atual].titulo} ${RL.hojeISO()}`, ultimo.cols, ultimo.rows);
+    });
+    $('btnImprimir').addEventListener('click', () => RL.imprimir(RELATORIOS[atual].titulo, subtitulo()));
+
+    RL.get('/api/relatorios/contabil/contas').then((r) => {
+        r.contas.filter((c) => c.comMovimento).forEach((c) => $('conta').insertAdjacentHTML('beforeend', `<option value="${esc(c.key)}">${esc(c.rotulo)}</option>`));
+        mostrarDiagnostico(r.diagnostico);
+    }).catch(() => { /* sem acesso / sem dados */ });
+
+    let inicial = 'balancete';
+    try { const s = localStorage.getItem('ldfpRelCont'); if (s && RELATORIOS[s]) inicial = s; } catch (_) { /* ignore */ }
+    selecionar(inicial);
+    gerar();
+})();
 </script>
 </body>
 </html>

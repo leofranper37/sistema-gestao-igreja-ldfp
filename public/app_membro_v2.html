@@ -449,6 +449,26 @@
     .empty-state i { font-size: 44px; opacity: 0.3; margin-bottom: 14px; display: block; }
     .empty-state p { font-size: 14px; }
 
+    /* ── MEUS DADOS ── */
+    .md-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; padding-bottom: 24px; }
+    @media (max-width: 380px) { .md-grid { grid-template-columns: 1fr; } }
+    .md-grid select.modal-input option { color: #0f172a; }
+
+    /* ── MINHAS ESCALAS ── */
+    .esc-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 12px; }
+    .esc-card-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+    .esc-card-data { font-size: 12px; color: var(--muted2); font-weight: 600; }
+    .esc-card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 2px; }
+    .esc-card-func { font-size: 13px; color: var(--muted2); margin-top: 4px; }
+    .esc-tag { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+    .esc-tag.pendente { background: rgba(250,204,21,.15); color: #facc15; }
+    .esc-tag.confirmado { background: rgba(34,197,94,.15); color: #22c55e; }
+    .esc-tag.recusado { background: rgba(239,68,68,.15); color: #f87171; }
+    .esc-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .esc-actions button { flex: 1; border: none; border-radius: 10px; padding: 10px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .esc-btn-ok { background: #16a34a; color: #fff; }
+    .esc-btn-no { background: rgba(239,68,68,.15); color: #f87171; }
+
     /* ── EVENTOS ── */
     .month-nav {
       display: flex;
@@ -1165,6 +1185,53 @@
       </div>
     </section>
 
+    <!-- ── MEUS DADOS ── -->
+    <section id="panel-meusdados" class="panel">
+      <div class="panel-header">
+        <h1><i class="fa-solid fa-id-card" style="color:#0ea5e9;margin-right:8px;"></i>Meus Dados</h1>
+        <p>Mantenha seu cadastro na igreja atualizado</p>
+      </div>
+      <div class="panel-body">
+        <form id="formMeusDados" class="md-grid" novalidate>
+          <div class="modal-field" style="grid-column:1/-1"><label for="md_nome">Nome completo</label><input id="md_nome" type="text" class="modal-input"></div>
+          <div class="modal-field"><label for="md_cpf">CPF (não pode ser alterado aqui)</label><input id="md_cpf" class="modal-input" readonly style="opacity:.6"></div>
+          <div class="modal-field"><label for="md_nascimento">Nascimento</label><input id="md_nascimento" type="date" class="modal-input"></div>
+          <div class="modal-field"><label for="md_sexo">Sexo</label><select id="md_sexo" class="modal-input"><option value="">Selecione</option><option>Masculino</option><option>Feminino</option></select></div>
+          <div class="modal-field"><label for="md_estado_civil">Estado civil</label><select id="md_estado_civil" class="modal-input"><option value="">Selecione</option><option>Solteiro(a)</option><option>Casado(a)</option><option>Divorciado(a)</option><option>Viúvo(a)</option><option>União estável</option></select></div>
+          <div class="modal-field"><label for="md_profissao">Profissão</label><input id="md_profissao" type="text" class="modal-input"></div>
+          <div class="modal-field"><label for="md_rg">RG</label><input id="md_rg" type="text" class="modal-input"></div>
+          <div class="modal-field"><label for="md_nacionalidade">Nacionalidade</label><input id="md_nacionalidade" type="text" class="modal-input"></div>
+          <div class="modal-field"><label for="md_naturalidade">Naturalidade</label><input id="md_naturalidade" type="text" class="modal-input"></div>
+          <div class="modal-field"><label for="md_celular">Celular / WhatsApp</label><input id="md_celular" type="tel" class="modal-input"></div>
+          <div class="modal-field"><label for="md_telefone">Telefone fixo</label><input id="md_telefone" type="tel" class="modal-input"></div>
+          <div class="modal-field" style="grid-column:1/-1"><label for="md_email">E-mail</label><input id="md_email" type="email" class="modal-input"></div>
+          <div class="modal-field"><label for="md_cep">CEP</label><input id="md_cep" type="text" class="modal-input"></div>
+          <div class="modal-field"><label for="md_numero">Número</label><input id="md_numero" type="text" class="modal-input"></div>
+          <div class="modal-field" style="grid-column:1/-1"><label for="md_endereco">Rua / Logradouro</label><input id="md_endereco" type="text" class="modal-input"></div>
+          <div class="modal-field"><label for="md_bairro">Bairro</label><input id="md_bairro" type="text" class="modal-input"></div>
+          <div class="modal-field"><label for="md_cidade">Cidade</label><input id="md_cidade" type="text" class="modal-input"></div>
+          <div class="modal-field"><label for="md_estado">UF</label><input id="md_estado" type="text" class="modal-input"></div>
+          <div id="mdMsg" style="grid-column:1/-1;font-size:13px;min-height:18px;"></div>
+          <button type="submit" id="mdSalvar" style="grid-column:1/-1;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar meus dados
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ── MINHAS ESCALAS ── -->
+    <section id="panel-escalas" class="panel">
+      <div class="panel-header">
+        <h1><i class="fa-solid fa-calendar-check" style="color:#16a34a;margin-right:8px;"></i>Minhas Escalas</h1>
+        <p>Confirme se você estará disponível</p>
+      </div>
+      <div class="panel-body">
+        <div id="listaMinhasEscalas">
+          <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando...</p></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── MAIS ── -->
     <section id="panel-mais" class="panel">
       <div class="panel-header">
@@ -1196,6 +1263,15 @@
           </div>
         </div>
 
+        <div class="section-label">Serviço</div>
+        <div class="mais-list">
+          <div class="mais-item" data-nav="panel-escalas">
+            <div class="mais-icon" style="background:rgba(22,163,74,0.15);color:#16a34a;"><i class="fa-solid fa-calendar-check"></i></div>
+            <div class="mais-info"><div class="mais-title">Minhas Escalas</div><div class="mais-sub">Confirme sua disponibilidade</div></div>
+            <i class="fa-solid fa-chevron-right mais-arrow"></i>
+          </div>
+        </div>
+
         <div class="section-label">Contribuição</div>
         <div class="mais-list">
           <div class="mais-item" onclick="abrirModalPix('Dízimo')">
@@ -1207,6 +1283,11 @@
 
         <div class="section-label">Conta</div>
         <div class="mais-list">
+          <div class="mais-item" data-nav="panel-meusdados">
+            <div class="mais-icon" style="background:rgba(14,165,233,0.15);color:#0ea5e9;"><i class="fa-solid fa-id-card"></i></div>
+            <div class="mais-info"><div class="mais-title">Meus Dados</div><div class="mais-sub">Atualize seu cadastro</div></div>
+            <i class="fa-solid fa-chevron-right mais-arrow"></i>
+          </div>
           <div class="mais-item" data-nav="panel-local">
             <div class="mais-icon" style="background:rgba(9,132,227,0.15);color:#0984e3;"><i class="fa-solid fa-location-dot"></i></div>
             <div class="mais-info"><div class="mais-title">Encontre-nos</div><div class="mais-sub">Congregações e endereços</div></div>
@@ -1381,6 +1462,9 @@ function showPanel(id) {
     if (id === 'panel-local') { loadCongregacoes(); }
     if (id === 'panel-novidades') { loadNovidades(); initPushBanner(); }
   }
+  // Escalas recarrega sempre: o líder pode ter mudado algo
+  if (id === 'panel-escalas') loadMinhasEscalas();
+  if (id === 'panel-meusdados') loadMeusDados();
 }
 
 document.querySelectorAll('.nav-item[data-target]').forEach(btn => {
@@ -1765,6 +1849,120 @@ document.getElementById('btnBaixarCarteirinha').addEventListener('click', async 
 });
 
 // ── Novidades ──
+// ── Meus Dados (membro atualiza o próprio cadastro) ──
+const MD_CAMPOS = ['nome', 'cpf', 'nascimento', 'sexo', 'estado_civil', 'profissao', 'rg', 'nacionalidade', 'naturalidade', 'celular', 'telefone', 'email', 'cep', 'numero', 'endereco', 'bairro', 'cidade', 'estado'];
+function mdMsg(txt, erro) {
+  const el = document.getElementById('mdMsg');
+  el.textContent = txt || '';
+  el.style.color = erro ? '#f87171' : '#22c55e';
+}
+async function loadMeusDados() {
+  mdMsg('Carregando...', false);
+  try {
+    const r = await appFetch('/api/ficha/meus-dados');
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Erro ao carregar.');
+    MD_CAMPOS.forEach(k => {
+      const el = document.getElementById('md_' + k);
+      let v = d[k] == null ? '' : String(d[k]);
+      if (k === 'nascimento') {
+        const m = v.match(/^(\d{4}-\d{2}-\d{2})/) || v.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+        v = !m ? '' : (m.length === 2 ? m[1] : `${m[3]}-${m[2]}-${m[1]}`);
+      }
+      if (k === 'cpf' && v.replace(/\D/g, '').length === 11) v = v.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+      if (el.tagName === 'SELECT' && v && ![...el.options].some(o => o.value === v)) el.add(new Option(v, v));
+      el.value = v;
+    });
+    mdMsg('');
+  } catch (e) { mdMsg(e.message, true); }
+}
+document.getElementById('md_cep').addEventListener('input', async (e) => {
+  const n = e.target.value.replace(/\D/g, '').slice(0, 8);
+  if (n.length !== 8) return;
+  try {
+    const d = await (await fetch('https://viacep.com.br/ws/' + n + '/json/')).json();
+    if (d.erro) return;
+    document.getElementById('md_endereco').value = d.logradouro || document.getElementById('md_endereco').value;
+    document.getElementById('md_bairro').value = d.bairro || document.getElementById('md_bairro').value;
+    document.getElementById('md_cidade').value = d.localidade || document.getElementById('md_cidade').value;
+    document.getElementById('md_estado').value = d.uf || document.getElementById('md_estado').value;
+  } catch (_e) {}
+});
+document.getElementById('formMeusDados').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const body = {};
+  MD_CAMPOS.filter(k => k !== 'cpf').forEach(k => { body[k] = document.getElementById('md_' + k).value.trim(); });
+  body.estado = body.estado.toUpperCase();
+  if (body.nome.length < 3) { mdMsg('Informe seu nome completo.', true); return; }
+  const btn = document.getElementById('mdSalvar');
+  btn.disabled = true;
+  try {
+    const r = await appFetch('/api/ficha/meus-dados', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Erro ao salvar.');
+    mdMsg(d.message || 'Dados atualizados.');
+    const u = getCurrentMemberUser();
+    if (u) { u.nome = body.nome; u.email = body.email; localStorage.setItem('app_member_user', JSON.stringify(u)); renderHero(u); }
+  } catch (err) { mdMsg(err.message, true); }
+  finally { btn.disabled = false; }
+});
+
+// ── Minhas Escalas (confirmação de disponibilidade) ──
+const ESC_TAG = { pendente: 'Aguardando', confirmado: 'Confirmado', recusado: 'Indisponível' };
+function escTxt(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+async function loadMinhasEscalas() {
+  const box = document.getElementById('listaMinhasEscalas');
+  try {
+    const r = await appFetch('/api/escalas/minhas');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const lista = await r.json();
+    if (!lista.length) {
+      box.innerHTML = '<div class="empty-state"><i class="fa-solid fa-calendar-check"></i><p>Você não tem escalas futuras.</p></div>';
+      return;
+    }
+    box.innerHTML = lista.map(e => {
+      const st = ESC_TAG[e.status] ? e.status : 'pendente';
+      const data = e.instance_date ? new Date(e.instance_date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }) : '';
+      const motivo = st === 'recusado' && e.status_motivo ? `<div class="esc-card-func">Motivo: ${escTxt(e.status_motivo)}</div>` : '';
+      return `<div class="esc-card">
+        <div class="esc-card-top">
+          <div>
+            <div class="esc-card-data">${escTxt(data)}</div>
+            <div class="esc-card-title">${escTxt(e.title)}</div>
+            <div class="esc-card-func"><i class="fa-solid fa-user-gear"></i> ${escTxt(e.funcao)}${e.grupo ? ' · ' + escTxt(e.grupo) : ''}</div>
+            ${motivo}
+          </div>
+          <span class="esc-tag ${st}">${ESC_TAG[st]}</span>
+        </div>
+        <div class="esc-actions">
+          ${st !== 'confirmado' ? `<button type="button" class="esc-btn-ok" onclick="responderEscala(${Number(e.id)}, 'confirmado')"><i class="fa-solid fa-check"></i> Vou estar</button>` : ''}
+          ${st !== 'recusado' ? `<button type="button" class="esc-btn-no" onclick="responderEscala(${Number(e.id)}, 'recusado')"><i class="fa-solid fa-xmark"></i> Não posso</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch (_e) {
+    box.innerHTML = '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Não foi possível carregar suas escalas.</p></div>';
+  }
+}
+async function responderEscala(id, status) {
+  let motivo = null;
+  if (status === 'recusado') {
+    motivo = prompt('Quer informar o motivo? (opcional)', '');
+    if (motivo === null) return;
+  }
+  const r = await appFetch('/api/escalas/minhas/' + id, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status, motivo })
+  });
+  if (!r.ok) { alert('Não foi possível registrar sua resposta. Tente novamente.'); return; }
+  loadMinhasEscalas();
+}
+
 async function loadNovidades() {
   const el = document.getElementById('listaNovidades');
   try {

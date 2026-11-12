@@ -3,223 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autocadastro de Membro</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#0f766e">
+    <title>Ficha de Membro</title>
+    <link rel="icon" type="image/png" href="/icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            min-height: 100vh;
-            background: radial-gradient(circle at 20% 20%, #134e4a, #0f172a 60%);
-            color: #e2e8f0;
-            display: grid;
-            place-items: center;
-            padding: 20px;
-        }
-
-        .card {
-            width: min(720px, 96vw);
-            background: rgba(15, 23, 42, 0.92);
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            border-radius: 16px;
-            box-shadow: 0 20px 50px rgba(2, 6, 23, 0.45);
-            overflow: hidden;
-        }
-
-        .hero {
-            padding: 22px 24px;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
-            background: linear-gradient(90deg, rgba(20, 184, 166, 0.2), rgba(2, 132, 199, 0.15));
-        }
-
-        .hero h1 {
-            margin: 0;
-            font-size: 1.35rem;
-        }
-
-        .hero p {
-            margin: 8px 0 0;
-            color: #cbd5e1;
-            font-size: 0.92rem;
-        }
-
-        form {
-            padding: 22px 24px 24px;
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-        }
-
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .field.full {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: #93c5fd;
-            font-weight: 700;
-        }
-
-        input,
-        textarea {
-            border-radius: 10px;
-            border: 1px solid rgba(148, 163, 184, 0.35);
-            background: rgba(15, 23, 42, 0.6);
-            color: #f8fafc;
-            padding: 10px 12px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        textarea {
-            min-height: 90px;
-            resize: vertical;
-        }
-
-        .actions {
-            grid-column: 1 / -1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-top: 6px;
-        }
-
-        .status {
-            font-size: 13px;
-            color: #67e8f9;
-        }
-
-        .status.error {
-            color: #fda4af;
-        }
-
-        .btn {
-            border: 0;
-            border-radius: 10px;
-            padding: 10px 16px;
-            font-weight: 700;
-            cursor: pointer;
-            color: #082f49;
-            background: linear-gradient(90deg, #2dd4bf, #38bdf8);
-        }
-
-        .btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        @media (max-width: 700px) {
-            form {
-                grid-template-columns: 1fr;
-            }
-        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; background: radial-gradient(circle at 20% 20%, #134e4a, #0f172a 60%); color: #e2e8f0; padding: 20px 16px; }
+        .card { width: min(760px, 100%); margin: 0 auto; background: rgba(15, 23, 42, 0.94); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 16px; box-shadow: 0 20px 50px rgba(2, 6, 23, 0.45); overflow: hidden; }
+        .hero { padding: 22px 24px; border-bottom: 1px solid rgba(148, 163, 184, 0.18); background: linear-gradient(90deg, rgba(20, 184, 166, 0.2), rgba(2, 132, 199, 0.15)); }
+        .hero h1 { margin: 0; font-size: 1.35rem; display: flex; align-items: center; gap: 10px; }
+        .hero p { margin: 8px 0 0; color: #cbd5e1; font-size: 0.92rem; line-height: 1.5; }
+        .igreja-tag { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; background: rgba(45, 212, 191, 0.15); color: #5eead4; border: 1px solid rgba(45, 212, 191, 0.35); padding: 6px 12px; border-radius: 999px; font-weight: 700; font-size: 14px; }
+        .bloco { padding: 20px 24px 4px; }
+        .bloco h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: #5eead4; display: flex; align-items: center; gap: 8px; }
+        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .grid.g3 { grid-template-columns: 2fr 1fr 1fr; }
+        .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+        .field.full { grid-column: 1 / -1; }
+        label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: #93c5fd; font-weight: 700; }
+        label .req { color: #fda4af; }
+        input, select, textarea { width: 100%; border-radius: 10px; border: 1px solid rgba(148, 163, 184, 0.35); background: rgba(15, 23, 42, 0.6); color: #f8fafc; padding: 11px 12px; font-size: 15px; font-family: inherit; }
+        select option { color: #0f172a; }
+        textarea { min-height: 80px; resize: vertical; }
+        input:focus, select:focus, textarea:focus { outline: 2px solid #2dd4bf; outline-offset: 1px; }
+        .hint { font-size: 12px; color: #94a3b8; }
+        .actions { padding: 18px 24px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .status { font-size: 14px; color: #67e8f9; flex: 1; min-width: 200px; }
+        .status.error { color: #fda4af; }
+        .btn { border: 0; border-radius: 10px; padding: 12px 20px; font-weight: 700; font-size: 15px; cursor: pointer; color: #082f49; background: linear-gradient(90deg, #2dd4bf, #38bdf8); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .codigo-box { padding: 24px; }
+        .codigo-box input { text-transform: uppercase; letter-spacing: .3em; font-size: 22px; font-weight: 800; text-align: center; max-width: 260px; }
+        .sucesso { padding: 36px 24px; text-align: center; }
+        .sucesso i.big { font-size: 56px; color: #2dd4bf; }
+        .sucesso h2 { margin: 14px 0 8px; }
+        .sucesso p { color: #cbd5e1; line-height: 1.6; }
+        .sucesso a { color: #5eead4; font-weight: 700; }
+        .armadilha { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+        @media (max-width: 640px) { .grid, .grid.g3 { grid-template-columns: 1fr; } .hero, .bloco, .actions, .codigo-box { padding-left: 16px; padding-right: 16px; } }
     </style>
 </head>
 <body>
     <section class="card">
         <header class="hero">
-            <h1><i class="fa-solid fa-user-plus"></i> Autocadastro de Membro</h1>
-            <p>Preencha seus dados. A secretaria vai analisar e aprovar seu acesso.</p>
+            <h1><i class="fa-solid fa-id-card"></i> Ficha de Membro</h1>
+            <p>Preencha seus dados. A secretaria da igreja vai conferir e aprovar. Se você já é membro, use esta ficha para atualizar seu cadastro (informe o mesmo CPF).</p>
+            <div class="igreja-tag" id="igrejaTag" hidden><i class="fa-solid fa-church"></i> <span id="igrejaNome"></span></div>
         </header>
 
-        <form id="formAutocadastro">
+        <!-- Passo 1: código da igreja (quando não veio pelo QR/link) -->
+        <div class="codigo-box" id="passoCodigo" hidden>
             <div class="field">
-                <label for="igrejaNome">Nome da Igreja</label>
-                <input type="text" id="igrejaNome" name="igrejaNome" placeholder="Ex: Assembleia Sede" required>
+                <label for="codigoIgreja">Código da igreja</label>
+                <input id="codigoIgreja" maxlength="6" autocomplete="off" placeholder="000000">
+                <span class="hint">Peça o código de 6 caracteres à secretaria ou leia o QR Code da igreja.</span>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+                <button type="button" class="btn" id="btnCodigo">Continuar</button>
+                <span class="status" id="statusCodigo"></span>
+            </div>
+        </div>
+
+        <!-- Passo 2: ficha -->
+        <form id="formFicha" hidden novalidate>
+            <div class="bloco">
+                <h2><i class="fa-solid fa-user"></i> Dados pessoais</h2>
+                <div class="grid">
+                    <div class="field full"><label for="nome">Nome completo <span class="req">*</span></label><input id="nome" maxlength="255" autocomplete="name" required></div>
+                    <div class="field"><label for="cpf">CPF</label><input id="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"><span class="hint">Com o CPF você entra no App do Membro.</span></div>
+                    <div class="field"><label for="rg">RG</label><input id="rg" maxlength="30"></div>
+                    <div class="field"><label for="nascimento">Data de nascimento</label><input type="date" id="nascimento"></div>
+                    <div class="field"><label for="sexo">Sexo</label>
+                        <select id="sexo"><option value="">Selecione</option><option>Masculino</option><option>Feminino</option></select></div>
+                    <div class="field"><label for="estado_civil">Estado civil</label>
+                        <select id="estado_civil"><option value="">Selecione</option><option>Solteiro(a)</option><option>Casado(a)</option><option>Divorciado(a)</option><option>Viúvo(a)</option><option>União estável</option></select></div>
+                    <div class="field"><label for="profissao">Profissão</label><input id="profissao" maxlength="120"></div>
+                    <div class="field"><label for="nacionalidade">Nacionalidade</label><input id="nacionalidade" maxlength="120" value="Brasileira"></div>
+                    <div class="field"><label for="naturalidade">Naturalidade (cidade onde nasceu)</label><input id="naturalidade" maxlength="120"></div>
+                </div>
             </div>
 
-            <div class="field">
-                <label for="nome">Seu Nome</label>
-                <input type="text" id="nome" name="nome" placeholder="Ex: Joao Silva" required>
+            <div class="bloco">
+                <h2><i class="fa-solid fa-phone"></i> Contato</h2>
+                <div class="grid">
+                    <div class="field"><label for="celular">Celular / WhatsApp <span class="req">*</span></label><input id="celular" inputmode="tel" maxlength="20" autocomplete="tel" placeholder="(24) 99999-0000"></div>
+                    <div class="field"><label for="email">E-mail</label><input type="email" id="email" maxlength="255" autocomplete="email"></div>
+                </div>
             </div>
 
-            <div class="field">
-                <label for="email">E-mail</label>
-                <input type="email" id="email" name="email" placeholder="voce@email.com">
+            <div class="bloco">
+                <h2><i class="fa-solid fa-location-dot"></i> Endereço</h2>
+                <div class="grid g3">
+                    <div class="field"><label for="cep">CEP</label><input id="cep" inputmode="numeric" maxlength="9" placeholder="00000-000"><span class="hint">Preenche o endereço sozinho.</span></div>
+                    <div class="field"><label for="numero">Número</label><input id="numero" maxlength="30"></div>
+                    <div class="field"><label for="estado">UF</label><input id="estado" maxlength="2" style="text-transform:uppercase"></div>
+                </div>
+                <div class="grid" style="margin-top:14px">
+                    <div class="field full"><label for="endereco">Rua / Logradouro</label><input id="endereco" maxlength="255" autocomplete="address-line1"></div>
+                    <div class="field"><label for="bairro">Bairro</label><input id="bairro" maxlength="120"></div>
+                    <div class="field"><label for="cidade">Cidade</label><input id="cidade" maxlength="120"></div>
+                </div>
             </div>
 
-            <div class="field">
-                <label for="telefone">Telefone/WhatsApp</label>
-                <input type="text" id="telefone" name="telefone" placeholder="(11) 99999-0000">
-            </div>
-
-            <div class="field">
-                <label for="cidade">Cidade</label>
-                <input type="text" id="cidade" name="cidade" placeholder="Ex: Angra dos Reis">
-            </div>
-
-            <div class="field">
-                <label for="ministerioInteresse">Interesse ministerial</label>
-                <input type="text" id="ministerioInteresse" name="ministerioInteresse" placeholder="Ex: Midia, Louvor, Recepcao">
-            </div>
-
-            <div class="field full">
-                <label for="observacao">Observacao</label>
-                <textarea id="observacao" name="observacao" placeholder="Conte brevemente como deseja servir."></textarea>
+            <div class="bloco">
+                <h2><i class="fa-solid fa-comment"></i> Observação</h2>
+                <div class="field"><textarea id="observacao" maxlength="2000" placeholder="Ex.: fui batizado em 2015, vim transferido de outra igreja, quero servir no louvor..."></textarea></div>
+                <div class="armadilha" aria-hidden="true"><label for="site">Site</label><input id="site" tabindex="-1" autocomplete="off"></div>
             </div>
 
             <div class="actions">
                 <span class="status" id="statusMsg"></span>
-                <button type="submit" class="btn" id="btnEnviar">Enviar para aprovacao</button>
+                <button type="submit" class="btn" id="btnEnviar"><i class="fa-solid fa-paper-plane"></i> Enviar ficha</button>
             </div>
         </form>
+
+        <div class="sucesso" id="passoSucesso" hidden>
+            <i class="fa-solid fa-circle-check big"></i>
+            <h2>Ficha enviada!</h2>
+            <p>A secretaria da <strong id="sucessoIgreja"></strong> vai conferir e aprovar seu cadastro.</p>
+            <p id="sucessoApp" hidden>Depois de aprovado, entre no <a id="linkApp" href="app_login.html">App do Membro</a> com seu <strong>CPF</strong>. No primeiro acesso, a senha são os <strong>6 primeiros dígitos do CPF</strong>.</p>
+        </div>
     </section>
 
     <script>
-        const form = document.getElementById('formAutocadastro');
-        const statusMsg = document.getElementById('statusMsg');
-        const btnEnviar = document.getElementById('btnEnviar');
+        const $ = (id) => document.getElementById(id);
+        const CAMPOS = ['nome', 'cpf', 'rg', 'nascimento', 'sexo', 'estado_civil', 'profissao', 'nacionalidade',
+            'naturalidade', 'celular', 'email', 'cep', 'endereco', 'numero', 'bairro', 'cidade', 'estado'];
+        let codigo = new URLSearchParams(location.search).get('c') || '';
 
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            statusMsg.classList.remove('error');
-            statusMsg.textContent = '';
-            btnEnviar.disabled = true;
-            btnEnviar.textContent = 'Enviando...';
+        function status(el, msg, erro) { el.textContent = msg; el.classList.toggle('error', !!erro); }
 
-            const payload = {
-                igrejaNome: form.igrejaNome.value.trim(),
-                nome: form.nome.value.trim(),
-                email: form.email.value.trim(),
-                telefone: form.telefone.value.trim(),
-                cidade: form.cidade.value.trim(),
-                ministerioInteresse: form.ministerioInteresse.value.trim(),
-                observacao: form.observacao.value.trim()
-            };
+        async function abrirIgreja(c) {
+            const r = await fetch('/api/ficha/igreja?c=' + encodeURIComponent(c));
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d.error || 'Igreja não encontrada.');
+            codigo = c;
+            $('igrejaNome').textContent = d.nome;
+            $('igrejaTag').hidden = false;
+            $('passoCodigo').hidden = true;
+            $('formFicha').hidden = false;
+            $('nome').focus();
+        }
 
+        $('btnCodigo').onclick = async () => {
+            const c = $('codigoIgreja').value.trim();
+            if (c.length !== 6) { status($('statusCodigo'), 'O código tem 6 caracteres.', true); return; }
+            try { await abrirIgreja(c); } catch (e) { status($('statusCodigo'), e.message, true); }
+        };
+        $('codigoIgreja').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnCodigo').click(); });
+
+        // Máscaras simples
+        $('cpf').addEventListener('input', e => {
+            const n = e.target.value.replace(/\D/g, '').slice(0, 11);
+            e.target.value = n.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
+        });
+        $('celular').addEventListener('input', e => {
+            const n = e.target.value.replace(/\D/g, '').slice(0, 11);
+            e.target.value = n.length > 10 ? n.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3')
+                : n.replace(/(\d{2})(\d{0,4})(\d{0,4})/, (m, a, b, c) => `(${a}) ${b}${c ? '-' + c : ''}`).replace(/\(\) ?/, '');
+        });
+        $('cep').addEventListener('input', async e => {
+            const n = e.target.value.replace(/\D/g, '').slice(0, 8);
+            e.target.value = n.length > 5 ? n.slice(0, 5) + '-' + n.slice(5) : n;
+            if (n.length !== 8) return;
             try {
-                const response = await fetch('/autocadastro', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                const r = await fetch('https://viacep.com.br/ws/' + n + '/json/');
+                const d = await r.json();
+                if (d.erro) return;
+                if (!$('endereco').value) $('endereco').value = d.logradouro || '';
+                if (!$('bairro').value) $('bairro').value = d.bairro || '';
+                if (!$('cidade').value) $('cidade').value = d.localidade || '';
+                if (!$('estado').value) $('estado').value = d.uf || '';
+                $('numero').focus();
+            } catch (_) { /* sem internet para o ViaCEP: o membro digita à mão */ }
+        });
 
-                const data = await response.json().catch(() => ({}));
+        $('formFicha').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = $('statusMsg');
+            const payload = { c: codigo, observacao: $('observacao').value.trim(), site: $('site').value };
+            CAMPOS.forEach(k => { payload[k] = $(k).value.trim(); });
+            payload.estado = payload.estado.toUpperCase();
 
-                if (!response.ok) {
-                    throw new Error(data.error || data.message || 'Nao foi possivel enviar seu autocadastro.');
-                }
+            if (payload.nome.length < 3) { status(msg, 'Informe seu nome completo.', true); $('nome').focus(); return; }
+            if (!payload.celular && !payload.email) { status(msg, 'Informe celular ou e-mail.', true); $('celular').focus(); return; }
+            if (payload.cpf && payload.cpf.replace(/\D/g, '').length !== 11) { status(msg, 'CPF incompleto.', true); $('cpf').focus(); return; }
 
-                form.reset();
-                statusMsg.textContent = 'Cadastro enviado com sucesso. Aguarde a aprovacao da secretaria.';
-            } catch (error) {
-                statusMsg.classList.add('error');
-                statusMsg.textContent = error.message || 'Erro inesperado ao enviar cadastro.';
-            } finally {
-                btnEnviar.disabled = false;
-                btnEnviar.textContent = 'Enviar para aprovacao';
+            const btn = $('btnEnviar');
+            btn.disabled = true;
+            status(msg, 'Enviando...');
+            try {
+                const r = await fetch('/api/ficha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const d = await r.json().catch(() => ({}));
+                if (!r.ok) throw new Error(d.error || 'Não foi possível enviar.');
+                $('formFicha').hidden = true;
+                $('sucessoIgreja').textContent = $('igrejaNome').textContent;
+                $('sucessoApp').hidden = !d.podeUsarApp;
+                if (/^[0-9a-f]{40,64}$/i.test(codigo)) $('linkApp').href = 'app_login.html?igrejaTk=' + encodeURIComponent(codigo);
+                $('passoSucesso').hidden = false;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (err) {
+                status(msg, err.message, true);
+                btn.disabled = false;
             }
         });
+
+        if (codigo) {
+            abrirIgreja(codigo).catch(err => { $('passoCodigo').hidden = false; status($('statusCodigo'), err.message, true); });
+        } else {
+            $('passoCodigo').hidden = false;
+            $('codigoIgreja').focus();
+        }
     </script>
 </body>
 </html>

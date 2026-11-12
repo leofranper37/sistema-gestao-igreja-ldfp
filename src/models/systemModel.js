@@ -848,6 +848,21 @@ async function deleteCrianca({ id, igrejaId }) {
     return result.affectedRows;
 }
 
+// Colunas de testemunho exigem o SQL INOVACOES_LOTE1_2026-11.sql.
+// Enquanto o banco não tiver as colunas, as consultas caem para a versão antiga.
+function isMissingColumnError(err) {
+    return err && (err.code === 'ER_BAD_FIELD_ERROR' || err.code === '42703' || /no such column/i.test(err.message || ''));
+}
+
+async function queryOracoes(sqlComTestemunho, values) {
+    try {
+        return await pool.query(sqlComTestemunho, values);
+    } catch (err) {
+        if (!isMissingColumnError(err)) throw err;
+        return pool.query(sqlComTestemunho.replace(', testemunho, testemunho_at', ''), values);
+    }
+}
+
 async function listOracoesMy({ igrejaId, userId, status }) {
     await ensureSystemTables();
 
@@ -859,8 +874,8 @@ async function listOracoesMy({ igrejaId, userId, status }) {
         values.push(status);
     }
 
-    const [rows] = await pool.query(
-        `SELECT id, user_id, user_name, pedido, is_private, status, resposta, created_at, updated_at
+    const [rows] = await queryOracoes(
+        `SELECT id, user_id, user_name, pedido, is_private, status, resposta, testemunho, testemunho_at, created_at, updated_at
          FROM oracoes_pedidos
          WHERE ${where.join(' AND ')}
          ORDER BY id DESC`,
@@ -873,8 +888,8 @@ async function listOracoesMy({ igrejaId, userId, status }) {
 async function listOracoesMural({ igrejaId }) {
     await ensureSystemTables();
 
-    const [rows] = await pool.query(
-        `SELECT id, user_name, pedido, status, resposta, created_at, updated_at
+    const [rows] = await queryOracoes(
+        `SELECT id, user_id, user_name, pedido, status, resposta, testemunho, testemunho_at, created_at, updated_at
          FROM oracoes_pedidos
          WHERE igreja_id = ? AND is_private = 0
          ORDER BY id DESC`,
@@ -887,8 +902,8 @@ async function listOracoesMural({ igrejaId }) {
 async function getOracaoById({ igrejaId, id }) {
     await ensureSystemTables();
 
-    const [rows] = await pool.query(
-        `SELECT id, igreja_id, user_id, user_name, pedido, is_private, status, resposta, created_at, updated_at
+    const [rows] = await queryOracoes(
+        `SELECT id, igreja_id, user_id, user_name, pedido, is_private, status, resposta, testemunho, testemunho_at, created_at, updated_at
          FROM oracoes_pedidos
          WHERE igreja_id = ? AND id = ?
          LIMIT 1`,
@@ -929,6 +944,19 @@ async function updateOracaoResposta(payload) {
          SET resposta = ?, status = ?
          WHERE id = ? AND igreja_id = ?`,
         [payload.resposta, payload.status, payload.id, payload.igrejaId]
+    );
+
+    return result.affectedRows;
+}
+
+async function updateOracaoTestemunho({ id, igrejaId, testemunho }) {
+    await ensureSystemTables();
+
+    const [result] = await pool.query(
+        `UPDATE oracoes_pedidos
+         SET testemunho = ?, testemunho_at = ${testemunho ? 'CURRENT_TIMESTAMP' : 'NULL'}
+         WHERE id = ? AND igreja_id = ?`,
+        [testemunho, id, igrejaId]
     );
 
     return result.affectedRows;
@@ -976,6 +1004,7 @@ async function getDbHealth() {
 
 module.exports = {
     ensureSystemTables,
+    updateOracaoTestemunho,
     countMembros,
     countVisitantes,
     createCrianca,

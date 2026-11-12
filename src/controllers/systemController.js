@@ -521,8 +521,8 @@ async function updateOracaoResposta(req, res) {
         throw createHttpError(404, 'Pedido de oração não encontrado.');
     }
 
-    if (!['admin', 'secretaria'].includes(req.auth.role)) {
-        throw createHttpError(403, 'Somente administração/secretaria pode responder pedidos.');
+    if (!['admin', 'secretaria', 'pastor'].includes(req.auth.role)) {
+        throw createHttpError(403, 'Somente administração, secretaria ou pastor pode responder pedidos.');
     }
 
     const affected = await systemService.updateOracaoResposta({
@@ -538,6 +538,30 @@ async function updateOracaoResposta(req, res) {
 
     audit('oracao.reply', req, { id });
     res.json({ message: 'Resposta de oração atualizada com sucesso.' });
+}
+
+// Testemunho: quem fez o pedido (ou a liderança) conta como Deus respondeu
+async function updateOracaoTestemunho(req, res) {
+    const id = Number(req.params.id);
+    const igrejaId = getIgrejaId(req.auth);
+    const testemunho = String(req.validatedBody.testemunho || '').trim() || null;
+
+    const row = await systemService.getOracaoById({ igrejaId, id });
+    if (!row) {
+        throw createHttpError(404, 'Pedido de oração não encontrado.');
+    }
+
+    if (!canManageOracao(req, row) && req.auth.role !== 'pastor') {
+        throw createHttpError(403, 'Somente quem fez o pedido ou a liderança pode registrar o testemunho.');
+    }
+
+    const affected = await systemService.updateOracaoTestemunho({ id, igrejaId, testemunho });
+    if (!affected) {
+        throw createHttpError(404, 'Pedido de oração não encontrado.');
+    }
+
+    audit('oracao.testemunho', req, { id, removido: !testemunho });
+    res.json({ message: testemunho ? 'Testemunho registrado. Glória a Deus!' : 'Testemunho removido.' });
 }
 
 async function deleteOracao(req, res) {
@@ -609,5 +633,6 @@ module.exports = {
     updateCongregado,
     updateOracao,
     updateOracaoResposta,
+    updateOracaoTestemunho,
     updateVisitante
 };

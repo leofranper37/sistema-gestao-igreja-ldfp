@@ -3,41 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Graficos Tesouraria</title>
+    <title>LDFP - Gráficos Tesouraria</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="relatorios.css?v=20261111">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); margin-bottom:16px; }
-        .kpi { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-        .item { border:1px solid #e2e8f0; border-radius:10px; padding:14px; background:#f8fafc; }
-        .item small { color:#64748b; }
-        .item strong { display:block; margin-top:8px; font-size:22px; color:#0f172a; }
-        @media (max-width:900px) { .kpi { grid-template-columns:1fr; } }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-active="graficos_tesouraria.html" data-shell-title="Graficos Tesouraria" data-shell-breadcrumb="LDFP / Graficos / Tesouraria" data-shell-chip="Indicadores" data-shell-role="Tesouraria">
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="graficos_tesouraria.html" data-shell-title="Gráficos Tesouraria" data-shell-breadcrumb="LDFP / Gráficos / Tesouraria" data-shell-chip="Indicadores" data-shell-role="Financeiro">
 <main class="main-content enterprise-main">
     <div class="enterprise-page-shell">
         <div class="enterprise-page-hero">
             <div>
-                <h2>Graficos da Tesouraria</h2>
-                <p>Resumo de desempenho financeiro e movimentacoes da tesouraria.</p>
+                <h2>Gráficos da Tesouraria</h2>
+                <p>Receitas, despesas e dízimos do ano, mês a mês.</p>
             </div>
             <div class="enterprise-page-badge"><i class="fa-solid fa-chart-line"></i> Financeiro</div>
         </div>
 
-        <section class="card">
-            <div class="kpi">
-                <div class="item"><small>Entradas no mes</small><strong>R$ 42.380,00</strong></div>
-                <div class="item"><small>Saidas no mes</small><strong>R$ 17.940,00</strong></div>
-                <div class="item"><small>Saldo projetado</small><strong>R$ 24.440,00</strong></div>
+        <section class="rl-card rl-noprint">
+            <div class="rl-filtros">
+                <label>Ano <select id="ano"></select></label>
+                <button class="rl-btn" id="btnGerar" type="button"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+                <div class="rl-acoes">
+                    <button class="rl-btn ghost" id="btnImprimir" type="button"><i class="fa-solid fa-print"></i> Imprimir / PDF</button>
+                </div>
             </div>
+            <p class="rl-status" id="status"></p>
         </section>
+
+        <div class="rl-kpis" id="kpis"></div>
+
+        <div class="rl-grid">
+            <section class="rl-card full"><h3><i class="fa-solid fa-scale-balanced"></i> Receita x Despesa (mensal)</h3><div class="rl-chart alto"><canvas id="gRxD"></canvas></div></section>
+            <section class="rl-card"><h3><i class="fa-solid fa-circle-dollar-to-slot"></i> Origem das receitas (ano)</h3><div class="rl-chart"><canvas id="gReceitaFonte"></canvas></div></section>
+            <section class="rl-card"><h3><i class="fa-solid fa-file-invoice-dollar"></i> Origem das despesas (ano)</h3><div class="rl-chart"><canvas id="gDespesaFonte"></canvas></div></section>
+            <section class="rl-card"><h3><i class="fa-solid fa-hand-holding-heart"></i> Dízimos e ofertas por mês</h3><div class="rl-chart"><canvas id="gDizimos"></canvas></div></section>
+            <section class="rl-card"><h3><i class="fa-solid fa-users"></i> Dizimistas por mês</h3><div class="rl-chart"><canvas id="gDizimistas"></canvas></div></section>
+            <section class="rl-card full"><h3><i class="fa-solid fa-user"></i> Dízimo per capita</h3><div class="rl-chart"><canvas id="gPerCapita"></canvas></div>
+                <p class="rl-nota">Per capita = total de dízimos do mês ÷ membros ativos. Média por dizimista = total de dízimos do mês ÷ pessoas que dizimaram no mês.</p>
+            </section>
+            <section class="rl-card full"><h3><i class="fa-solid fa-table"></i> Resumo mensal</h3><div id="tabela"></div>
+                <p class="rl-nota">Receita = dízimos/ofertas + entradas do caixa + entradas bancárias. Despesa = saídas do caixa + saídas bancárias + contas a pagar pagas. Se a sua igreja lança o mesmo valor em dois lugares (ex.: dízimo também no caixa, ou transferência caixa→banco), ele aparece duas vezes.</p>
+            </section>
+        </div>
     </div>
 </main>
 
 <script src="session.js?v=20260501"></script>
 <script src="enterprise-shell.js?v=20260501"></script>
-<script>requireAuthSession();</script>
+<script src="relatorios-core.js?v=20261111"></script>
+<script>
+requireAuthSession();
+(function () {
+    const $ = (id) => document.getElementById(id);
+    const C = RL.CORES;
+    const moedaTick = { callback: (v) => RL.moeda(v).replace(',00', '') };
+    const tooltipMoeda = { callbacks: { label: (ctx) => `${ctx.dataset.label || ctx.label}: ${RL.moeda(ctx.parsed.y ?? ctx.parsed)}` } };
+
+    const anoAtual = new Date().getFullYear();
+    for (let a = anoAtual + 1; a >= anoAtual - 6; a -= 1) $('ano').insertAdjacentHTML('beforeend', `<option ${a === anoAtual ? 'selected' : ''}>${a}</option>`);
+
+    function rosca(id, pares) {
+        const lista = pares.filter(([, v]) => v > 0);
+        RL.grafico(id, {
+            type: 'doughnut',
+            data: { labels: lista.map((x) => x[0]), datasets: [{ data: lista.map((x) => x[1]), backgroundColor: lista.map((_, i) => C[i % C.length]), borderWidth: 2, borderColor: '#fff' }] },
+            options: { cutout: '55%', plugins: { legend: { position: 'right' }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${RL.moeda(ctx.parsed)}` } } } }
+        });
+    }
+
+    async function gerar() {
+        RL.status($('status'), 'Carregando…');
+        try {
+            const r = await RL.get('/api/relatorios/tesouraria/anual', { ano: $('ano').value });
+            const t = r.totais;
+            const m = r.meses;
+            $('kpis').innerHTML = [
+                ['Receitas no ano', RL.moeda(t.receita), '', ''],
+                ['Despesas no ano', RL.moeda(t.despesa), '', ''],
+                ['Saldo do ano', RL.moeda(t.saldo), '', t.saldo >= 0 ? 'pos' : 'neg'],
+                ['Dízimos no ano', RL.moeda(t.dizimos), `Ofertas ${RL.moeda(t.ofertas)}`, ''],
+                ['Dizimistas', RL.numero(t.dizimistasUnicos), `de ${RL.numero(t.membrosAtivos)} membros ativos`, ''],
+                ['Per capita (ano)', RL.moeda(t.perCapitaAnual), 'dízimos ÷ membros ativos', '']
+            ].map(([a, b, c, cls]) => `<div class="rl-kpi ${cls}"><small>${a}</small><strong>${b}</strong><div class="sub">${c}</div></div>`).join('');
+
+            const labels = RL.MESES;
+            RL.grafico('gRxD', {
+                type: 'bar',
+                data: { labels, datasets: [
+                    { label: 'Receita', data: m.map((x) => x.receita), backgroundColor: '#16a34a', borderRadius: 4 },
+                    { label: 'Despesa', data: m.map((x) => x.despesa), backgroundColor: '#dc2626', borderRadius: 4 },
+                    { label: 'Saldo', data: m.map((x) => x.saldo), type: 'line', borderColor: '#2563eb', backgroundColor: '#2563eb', tension: .3 }
+                ] },
+                options: { scales: { y: { ticks: moedaTick } }, plugins: { tooltip: tooltipMoeda } }
+            });
+            rosca('gReceitaFonte', [['Dízimos', t.dizimos], ['Ofertas', t.ofertas], ['Missões', t.missoes], ['Outras contribuições', t.outros], ['Entradas do caixa', t.caixaEntrada], ['Entradas bancárias', t.bancoEntrada]]);
+            rosca('gDespesaFonte', [['Saídas do caixa', t.caixaSaida], ['Saídas bancárias', t.bancoSaida], ['Contas pagas', t.contasPagas]]);
+            RL.grafico('gDizimos', {
+                type: 'bar',
+                data: { labels, datasets: [
+                    { label: 'Dízimos', data: m.map((x) => x.dizimos), backgroundColor: C[0], stack: 's' },
+                    { label: 'Ofertas', data: m.map((x) => x.ofertas), backgroundColor: C[2], stack: 's' },
+                    { label: 'Missões', data: m.map((x) => x.missoes), backgroundColor: C[1], stack: 's' },
+                    { label: 'Outros', data: m.map((x) => x.outros), backgroundColor: C[8], stack: 's' }
+                ] },
+                options: { scales: { x: { stacked: true }, y: { stacked: true, ticks: moedaTick } }, plugins: { tooltip: tooltipMoeda } }
+            });
+            RL.grafico('gDizimistas', {
+                type: 'line',
+                data: { labels, datasets: [{ label: 'Dizimistas', data: m.map((x) => x.dizimistas), borderColor: C[4], backgroundColor: 'rgba(124,58,237,.12)', fill: true, tension: .3 }] },
+                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+            });
+            RL.grafico('gPerCapita', {
+                type: 'line',
+                data: { labels, datasets: [
+                    { label: 'Per capita (membros ativos)', data: m.map((x) => x.perCapitaMembro), borderColor: C[0], backgroundColor: C[0], tension: .3 },
+                    { label: 'Média por dizimista', data: m.map((x) => x.mediaPorDizimista), borderColor: C[3], backgroundColor: C[3], tension: .3 }
+                ] },
+                options: { scales: { y: { beginAtZero: true, ticks: moedaTick } }, plugins: { tooltip: tooltipMoeda } }
+            });
+
+            const rows = m.map((x) => ({ ...x, nomeMes: RL.MESES_LONGOS[x.mes - 1] }));
+            RL.tabela($('tabela'), [
+                { key: 'nomeMes', label: 'Mês' },
+                { key: 'contribuicoes', label: 'Dízimos/Ofertas', fmt: 'moeda' },
+                { key: (x) => x.caixaEntrada + x.bancoEntrada, label: 'Outras entradas', fmt: 'moeda' },
+                { key: 'receita', label: 'Receita', fmt: 'moeda' },
+                { key: 'despesa', label: 'Despesa', fmt: 'moeda' },
+                { key: 'saldo', label: 'Saldo', fmt: (row) => `<span class="${row.saldo >= 0 ? 'rl-pos' : 'rl-neg'}">${RL.moeda(row.saldo)}</span>`, num: true },
+                { key: 'dizimistas', label: 'Dizimistas', fmt: 'numero' }
+            ], rows, { footer: { contribuicoes: t.contribuicoes, receita: t.receita, despesa: t.despesa, saldo: RL.moeda(t.saldo), dizimistas: '' } });
+            RL.status($('status'), t.receita || t.despesa ? '' : `Nenhum lançamento financeiro em ${r.ano}.`);
+        } catch (e) {
+            RL.status($('status'), e.message, true);
+        }
+    }
+
+    $('btnGerar').addEventListener('click', gerar);
+    $('ano').addEventListener('change', gerar);
+    $('btnImprimir').addEventListener('click', () => RL.imprimir('Gráficos da Tesouraria', `Ano ${$('ano').value}`));
+    gerar();
+})();
+</script>
 </body>
 </html>

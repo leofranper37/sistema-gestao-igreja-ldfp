@@ -76,9 +76,17 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Autenticando...';
 
       try {
-        const res  = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-        const data = await res.json();
+        let res  = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        let data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Credenciais inválidas');
+        // Lote 7: verificação em duas etapas
+        if (data.requer_2fa) {
+          const codigo = (prompt('Digite o código de 6 dígitos do seu aplicativo autenticador (ou um código de recuperação):') || '').trim();
+          if (!codigo) throw new Error('Login cancelado: código não informado.');
+          res  = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, codigo }) });
+          data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Código incorreto');
+        }
 
         if (window.saveAuthSession) window.saveAuthSession(data);
         window.location.href = 'super-admin.html';

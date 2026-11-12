@@ -6,6 +6,7 @@ const config = require('../config');
 const accountModel = require('../models/accountModel');
 const { sendMail } = require('../utils/mailer');
 const { createHttpError } = require('../utils/httpError');
+const doisFatores = require('./doisFatoresService');
 
 function normalizePlanoSlug(plano) {
     const normalized = String(plano || '').trim().toLowerCase();
@@ -100,7 +101,31 @@ async function login(payload) {
         return null;
     }
 
+    // Lote 7: com verificação em duas etapas ativa, a senha sozinha não abre a sessão
+    if (await doisFatores.estaAtivo(userRecord.id)) {
+        return { requer2fa: true, desafio: doisFatores.criarDesafio(userRecord.id), email: userRecord.email };
+    }
+
     return buildAuthResponse(userRecord);
+}
+
+/** Lote 7: segunda etapa do login — desafio (do /login) + código do app ou de recuperação. */
+async function concluirLogin2fa(desafio, codigo) {
+    const p = doisFatores.lerDesafio(desafio);
+    const u = await doisFatores.lerUsuario(p.sub);
+    if (!u || Number(u.totp_ativo) !== 1) throw createHttpError(401, 'Verificação inválida. Entre com e-mail e senha de novo.');
+    const tipo = await doisFatores.conferirCodigo(u, codigo);
+    if (!tipo) throw createHttpError(401, 'Código incorreto.');
+    doisFatores.encerrarDesafio(p);
+    const userRecord = await accountModel.findUserByEmail(u.email);
+    if (!userRecord) throw createHttpError(401, 'Usuário não encontrado.');
+    const auth = buildAuthResponse(userRecord);
+    auth.via = tipo;
+    if (tipo === 'recuperacao') {
+        const st = await doisFatores.status(u.id);
+        auth.codigosRestantes = st.codigos_restantes;
+    }
+    return auth;
 }
 
 function hashResetToken(rawToken) {
@@ -156,6 +181,7 @@ async function resetPassword(token, novaSenha) {
 
 module.exports = {
     login,
+    concluirLogin2fa,
     registerAccount,
     requestPasswordReset,
     resetPassword

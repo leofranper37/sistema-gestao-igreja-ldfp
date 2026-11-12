@@ -285,12 +285,27 @@ async function searchUsers() {
         <td>${u.igreja || '—'}</td>
         <td>${u.plano || '—'}</td>
         <td><span class="status ${u.status_assinatura || 'trial'}">${u.status_assinatura || '—'}</span></td>
-        <td><button class="btn primary sm" onclick="openResetPanel('${u.email}')"><i class="fa-solid fa-key"></i> Redefinir</button></td>
+        <td style="white-space:nowrap"><button class="btn primary sm" onclick="openResetPanel('${u.email}')"><i class="fa-solid fa-key"></i> Redefinir</button>
+          ${Number(u.totp_ativo) === 1 ? `<button class="btn sm" title="Usuário perdeu o celular e os códigos de recuperação" onclick="desligar2fa(${Number(u.id)}, '${u.email}')"><i class="fa-solid fa-shield-halved"></i> Desligar 2FA</button>` : ''}</td>
       </tr>
     `).join('');
   } catch(e) {
     toast('Erro ao buscar usuários: ' + e.message, true);
   }
+}
+
+// ── Lote 7: desligar verificação em duas etapas ────────────────────
+async function desligar2fa(id, email) {
+  if (!confirm(`Desligar a verificação em duas etapas de ${email}?
+
+Faça isso só depois de confirmar a identidade da pessoa (ela perdeu o celular e os códigos de recuperação).`)) return;
+  try {
+    const r = await fetch(`/api/saas/usuarios/${id}/2fa/desativar`, { method: 'POST', headers: headers(), body: '{}' });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) { toast(data.error || 'Erro ao desligar 2FA.', true); return; }
+    toast(data.message || '2FA desligado.');
+    searchUsers();
+  } catch (e) { toast('Erro: ' + e.message, true); }
 }
 
 // ── Reset de Senha ────────────────────────────────────────────────

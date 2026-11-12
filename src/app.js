@@ -51,6 +51,7 @@ const fichaMembroRoutes = require('./routes/fichaMembroRoutes');
 const muralRoutes = require('./routes/muralRoutes');
 const eventosInscricaoRoutes = require('./routes/eventosInscricaoRoutes');
 const carteirinhaRoutes = require('./routes/carteirinhaRoutes');
+const doisFatoresRoutes = require('./routes/doisFatoresRoutes');
 
 const app = express();
 
@@ -292,6 +293,7 @@ app.use(fichaMembroRoutes);
 app.use(muralRoutes);
 app.use(eventosInscricaoRoutes);
 app.use(carteirinhaRoutes);
+app.use(doisFatoresRoutes);
 
 app.get('/blog', (req, res) => res.sendFile(path.join(staticAssetsPath, 'blog.html')));
 app.get('/blog/:slug', (req, res) => res.sendFile(path.join(staticAssetsPath, 'blog-post.html')));

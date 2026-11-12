@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Segurança da Conta</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="relatorios.css?v=20261111b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        .sg-status { display:flex; gap:14px; align-items:center; }
+        .sg-status .ic { width:52px; height:52px; border-radius:14px; display:grid; place-items:center; font-size:24px; flex-shrink:0; }
+        .sg-status.on .ic { background:#dcfce7; color:#15803d; }
+        .sg-status.off .ic { background:#fef3c7; color:#b45309; }
+        .sg-status h3 { margin:0 0 4px; }
+        .sg-status p { margin:0; color:#475569; font-size:14px; }
+        .sg-passos { display:grid; grid-template-columns:260px 1fr; gap:24px; align-items:start; }
+        @media (max-width: 800px) { .sg-passos { grid-template-columns:1fr; } }
+        .sg-qr { border:1px solid #e2e8f0; border-radius:12px; padding:14px; background:#fff; display:grid; place-items:center; }
+        .sg-qr img, .sg-qr canvas { width:100% !important; max-width:230px; height:auto !important; }
+        .sg-segredo { font-family:ui-monospace, Consolas, monospace; font-size:15px; letter-spacing:1px; background:#f1f5f9; padding:8px 10px; border-radius:8px; word-break:break-all; }
+        .sg-campo { display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:#475569; margin:12px 0; max-width:320px; }
+        .sg-campo input { padding:10px 12px; border:1px solid #dbe3ef; border-radius:8px; font-size:15px; }
+        .sg-campo input.codigo { letter-spacing:6px; font-size:20px; text-align:center; font-family:ui-monospace, Consolas, monospace; }
+        .sg-codigos { display:grid; grid-template-columns:repeat(2, minmax(120px, 1fr)); gap:8px; max-width:360px; margin:12px 0; }
+        .sg-codigos span { font-family:ui-monospace, Consolas, monospace; font-size:16px; background:#f8fafc; border:1px dashed #94a3b8; border-radius:8px; padding:8px; text-align:center; }
+        .sg-msg { font-size:13px; margin-top:8px; } .sg-msg.ok { color:#047857; } .sg-msg.erro { color:#b91c1c; }
+        ol.sg-lista { margin:6px 0 0; padding-left:18px; line-height:1.8; color:#334155; font-size:14px; }
+        .sg-acoes { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page" data-shell-active="seguranca.html" data-shell-title="Segurança da Conta" data-shell-breadcrumb="LDFP / Minha Conta / Segurança" data-shell-chip="Ambiente autenticado">
+<main class="main-content enterprise-main">
+    <div class="enterprise-page-shell">
+        <div class="enterprise-page-hero">
+            <div>
+                <h2>Segurança da Conta</h2>
+                <p>Com a verificação em duas etapas, além da senha é pedido um código que muda a cada 30 segundos no seu celular. Mesmo que alguém descubra sua senha, não consegue entrar.</p>
+            </div>
+            <div class="enterprise-page-badge"><i class="fa-solid fa-shield-halved"></i> Minha Conta</div>
+        </div>
+
+        <section class="rl-card">
+            <div class="sg-status off" id="status">
+                <div class="ic"><i class="fa-solid fa-spinner fa-spin"></i></div>
+                <div><h3>Carregando...</h3><p></p></div>
+            </div>
+        </section>
+
+        <!-- Desligado: ativar -->
+        <section class="rl-card" id="secAtivar" hidden>
+            <h3>Ativar verificação em duas etapas</h3>
+            <div id="passo1">
+                <ol class="sg-lista">
+                    <li>Instale no celular um aplicativo autenticador gratuito: <strong>Google Authenticator</strong>, <strong>Microsoft Authenticator</strong> ou <strong>Authy</strong>.</li>
+                    <li>Confirme sua senha para gerar o QR Code.</li>
+                </ol>
+                <label class="sg-campo">Sua senha atual<input type="password" id="senhaAtivar" autocomplete="current-password"></label>
+                <button class="rl-btn" id="btnIniciar" type="button"><i class="fa-solid fa-qrcode"></i> Gerar QR Code</button>
+            </div>
+            <div id="passo2" hidden>
+                <div class="sg-passos">
+                    <div class="sg-qr" id="qr"></div>
+                    <div>
+                        <ol class="sg-lista">
+                            <li>No aplicativo, toque em <strong>+</strong> e escolha <strong>Ler QR Code</strong>.</li>
+                            <li>Não consegue ler? Escolha "inserir chave" e digite:</li>
+                        </ol>
+                        <div class="sg-segredo" id="segredo"></div>
+                        <label class="sg-campo">Digite o código de 6 dígitos que apareceu no app<input class="codigo" id="codigoAtivar" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+                        <button class="rl-btn" id="btnAtivar" type="button"><i class="fa-solid fa-check"></i> Confirmar e ativar</button>
+                    </div>
+                </div>
+            </div>
+            <p class="sg-msg" id="msgAtivar"></p>
+        </section>
+
+        <!-- Códigos de recuperação (mostrados uma única vez) -->
+        <section class="rl-card" id="secCodigos" hidden>
+            <h3><i class="fa-solid fa-key"></i> Seus códigos de recuperação</h3>
+            <div class="rl-alerta">Guarde estes códigos em lugar seguro (imprima ou salve). Cada um entra <strong>uma única vez</strong> se você perder o celular. <strong>Eles não serão mostrados de novo.</strong></div>
+            <div class="sg-codigos" id="codigos"></div>
+            <div class="sg-acoes">
+                <button class="rl-btn ghost" id="btnCopiar" type="button"><i class="fa-regular fa-copy"></i> Copiar</button>
+                <button class="rl-btn ghost" id="btnBaixar" type="button"><i class="fa-solid fa-download"></i> Baixar .txt</button>
+                <button class="rl-btn ghost" id="btnImprimirCod" type="button"><i class="fa-solid fa-print"></i> Imprimir</button>
+                <button class="rl-btn" id="btnGuardei" type="button"><i class="fa-solid fa-check"></i> Já guardei</button>
+            </div>
+        </section>
+
+        <!-- Ligado: gerenciar -->
+        <section class="rl-card" id="secGerenciar" hidden>
+            <h3>Gerenciar</h3>
+            <p style="color:#475569;font-size:14px;margin:0 0 6px;">Para gerar novos códigos de recuperação ou desligar, confirme com o código atual do aplicativo (ou um código de recuperação).</p>
+            <label class="sg-campo">Código do app ou de recuperação<input class="codigo" id="codigoGer" maxlength="12" autocomplete="one-time-code"></label>
+            <div class="sg-acoes">
+                <button class="rl-btn ghost" id="btnNovos" type="button"><i class="fa-solid fa-rotate"></i> Gerar novos códigos de recuperação</button>
+            </div>
+            <hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0;">
+            <label class="sg-campo">Senha (só para desligar)<input type="password" id="senhaDesligar" autocomplete="current-password"></label>
+            <button class="rl-btn ghost" id="btnDesligar" type="button" style="color:#b91c1c;border-color:#fecaca"><i class="fa-solid fa-power-off"></i> Desligar verificação em duas etapas</button>
+            <p class="sg-msg" id="msgGer"></p>
+        </section>
+    </div>
+</main>
+
+<script src="session.js?v=20260501"></script>
+<script src="enterprise-shell.js?v=20260501"></script>
+<script>
+requireAuthSession();
+(function () {
+    const $ = (id) => document.getElementById(id);
+    let codigosAtuais = [];
+
+    async function api(url, body) {
+        const opts = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+        const r = await fetch(url, opts);
+        let d = null; try { d = await r.json(); } catch (_) { /* vazio */ }
+        if (!r.ok) throw new Error((d && (d.error || d.message)) || `Erro ${r.status}`);
+        return d;
+    }
+    function msg(el, t, erro) { el.textContent = t || ''; el.className = 'sg-msg ' + (erro ? 'erro' : 'ok'); }
+
+    async function carregar() {
+        try {
+            const s = await api('/api/2fa/status');
+            const st = $('status');
+            st.className = 'sg-status ' + (s.ativo ? 'on' : 'off');
+            st.innerHTML = s.ativo
+                ? `<div class="ic"><i class="fa-solid fa-shield-halved"></i></div><div><h3>Verificação em duas etapas ATIVA</h3>
+                   <p>Seu login pede o código do aplicativo. Códigos de recuperação restantes: <strong>${Number(s.codigos_restantes)}</strong>${s.codigos_restantes <= 3 ? ' — gere novos abaixo.' : '.'}</p></div>`
+                : `<div class="ic"><i class="fa-solid fa-triangle-exclamation"></i></div><div><h3>Verificação em duas etapas desligada</h3>
+                   <p>Recomendado para administradores, tesouraria e secretaria — quem tem acesso a dados de membros e dinheiro da igreja.</p></div>`;
+            $('secAtivar').hidden = s.ativo;
+            $('secGerenciar').hidden = !s.ativo;
+        } catch (e) {
+            $('status').innerHTML = `<div class="ic"><i class="fa-solid fa-circle-xmark"></i></div><div><h3>Não foi possível carregar</h3><p>${e.message}</p></div>`;
+        }
+    }
+
+    function mostrarCodigos(lista) {
+        codigosAtuais = lista;
+        $('codigos').innerHTML = lista.map((c) => `<span>${c}</span>`).join('');
+        $('secCodigos').hidden = false;
+        $('secCodigos').scrollIntoView({ behavior: 'smooth' });
+    }
+    const textoCodigos = () => `LDFP — códigos de recuperação (verificação em duas etapas)\nGerados em ${new Date().toLocaleString('pt-BR')}\nCada código funciona uma única vez.\n\n${codigosAtuais.join('\n')}\n`;
+
+    $('btnIniciar').onclick = async () => {
+        try {
+            const d = await api('/api/2fa/iniciar', { senha: $('senhaAtivar').value });
+            $('senhaAtivar').value = '';
+            $('qr').innerHTML = '';
+            new QRCode($('qr'), { text: d.otpauth, width: 360, height: 360, correctLevel: QRCode.CorrectLevel.M });
+            $('segredo').textContent = d.segredo_formatado;
+            $('passo1').hidden = true; $('passo2').hidden = false;
+            msg($('msgAtivar'), '');
+            $('codigoAtivar').focus();
+        } catch (e) { msg($('msgAtivar'), e.message, true); }
+    };
+    $('btnAtivar').onclick = async () => {
+        try {
+            const d = await api('/api/2fa/ativar', { codigo: $('codigoAtivar').value });
+            msg($('msgAtivar'), 'Ativado! A partir do próximo login será pedido o código.');
+            mostrarCodigos(d.codigos_recuperacao);
+            $('passo2').hidden = true; $('passo1').hidden = false;
+            carregar();
+        } catch (e) { msg($('msgAtivar'), e.message, true); }
+    };
+    $('btnNovos').onclick = async () => {
+        try {
+            const d = await api('/api/2fa/recuperacao', { codigo: $('codigoGer').value });
+            $('codigoGer').value = '';
+            msg($('msgGer'), 'Novos códigos gerados. Os antigos deixaram de valer.');
+            mostrarCodigos(d.codigos_recuperacao);
+            carregar();
+        } catch (e) { msg($('msgGer'), e.message, true); }
+    };
+    $('btnDesligar').onclick = async () => {
+        if (!confirm('Desligar a verificação em duas etapas? Sua conta ficará protegida só pela senha.')) return;
+        try {
+            await api('/api/2fa/desativar', { senha: $('senhaDesligar').value, codigo: $('codigoGer').value });
+            $('senhaDesligar').value = ''; $('codigoGer').value = '';
+            msg($('msgGer'), 'Verificação em duas etapas desligada.');
+            carregar();
+        } catch (e) { msg($('msgGer'), e.message, true); }
+    };
+
+    $('btnCopiar').onclick = async () => {
+        try { await navigator.clipboard.writeText(textoCodigos()); $('btnCopiar').innerHTML = '<i class="fa-solid fa-check"></i> Copiado'; } catch (_) { alert(textoCodigos()); }
+    };
+    $('btnBaixar').onclick = () => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([textoCodigos()], { type: 'text/plain;charset=utf-8' }));
+        a.download = 'ldfp-codigos-recuperacao.txt';
+        document.body.appendChild(a); a.click(); a.remove();
+    };
+    $('btnImprimirCod').onclick = () => {
+        const w = window.open('', '_blank');
+        if (!w) { alert('Permita pop-ups para imprimir.'); return; }
+        w.document.write(`<!DOCTYPE html><html lang="pt-br"><head><meta charset="UTF-8"><title>Códigos de recuperação</title></head>
+            <body style="font-family:Arial,sans-serif"><pre style="font-size:16px;line-height:1.7">${textoCodigos().replace(/</g, '&lt;')}</pre></body></html>`);
+        w.document.close();
+        setTimeout(() => { w.focus(); w.print(); }, 300);
+    };
+    $('btnGuardei').onclick = () => { $('secCodigos').hidden = true; codigosAtuais = []; $('codigos').innerHTML = ''; };
+
+    carregar();
+})();
+</script>
+</body>
+</html>

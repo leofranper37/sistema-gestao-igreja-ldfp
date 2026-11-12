@@ -129,7 +129,18 @@ O super admin **não acessa dados de clientes diretamente**. Para suporte, usa o
 - Rede de segurança: `src/models/lote6Schema.js` (`ensureMural`, `ensureEventos`)
 - Testes: `tests/lote6-mural-eventos-carteirinha.test.js` (27 testes, inclui isolamento entre igrejas)
 - **SQL pendente em produção:** `INOVACOES_LOTE6_MURAL_EVENTOS_CARTEIRINHA.sql`
-- Adiado (lote próprio): login com Google e verificação em duas etapas (precisam de credenciais Google Cloud / e-mail)
+- Adiado (lote próprio): login com Google (precisa de credenciais Google Cloud)
+
+## Inovações — Lote 7: Verificação em duas etapas (11/11/2026)
+- TOTP (RFC 6238, 6 dígitos, 30 s, janela ±1) sem dependência externa: `src/services/doisFatoresService.js`. Funciona com Google/Microsoft Authenticator, Authy
+- Colunas em `usuarios`: `totp_secret` (CRIPTOGRAFADO AES-256-GCM; chave = env `TWO_FACTOR_KEY` ou derivada do `JWT_SECRET`), `totp_ativo`, `totp_recuperacao` (hashes SHA-256 de 10 códigos de uso único), `totp_ultimo_passo` (anti-reuso), `totp_ativado_em`
+- Login: `POST /login` com 2FA ativo devolve `{ requer_2fa, desafio }` SEM token → `POST /login/2fa { desafio, codigo }` devolve o token. Desafio = JWT de 5 min assinado com chave PRÓPRIA (não serve de sessão), máx. 5 tentativas
+- Telas: `login.html` e `super_admin_login.html` pedem o código; `seguranca.html` (menu LDFP → "Segurança da Conta"; super admin: admin-master → "Minha Segurança (2FA)") ativa/desliga e gera códigos de recuperação
+- Super admin desliga o 2FA de um usuário em `admin-usuarios.html` (`POST /api/saas/usuarios/:id/2fa/desativar`). `/api/2fa/` liberado no churchGuard
+- `adminLoginController` (/api/admin/login) estava quebrado (importava pool/audit errado) e logava a senha — corrigido, mas a rota continua NÃO montada (`admin-login.html` é órfã)
+- Trocar `JWT_SECRET`/`TWO_FACTOR_KEY` invalida os segredos 2FA → entrar com código de recuperação. Emergência: SQL no fim de `INOVACOES_LOTE7_VERIFICACAO_DUAS_ETAPAS.sql`
+- Testes: `tests/lote7-dois-fatores.test.js` (13, inclui vetor oficial da RFC)
+- **SQL pendente em produção:** `INOVACOES_LOTE7_VERIFICACAO_DUAS_ETAPAS.sql`
 
 ## Repositório local
 - Clone git real: `G:\sistema-gestao-igreja-main` (branch `main`). A cópia em `OneDrive\Imagens\sistema-gestao-igreja-ldfp-main` NÃO é repositório — não editar lá.

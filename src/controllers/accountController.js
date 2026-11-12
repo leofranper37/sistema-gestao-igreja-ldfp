@@ -30,6 +30,15 @@ async function login(req, res) {
         throw createHttpError(401, 'E-mail ou senha inválidos.');
     }
 
+    if (auth.requer2fa) {
+        audit('account.login.2fa_pendente', req, { email: payload.email });
+        return res.json({
+            requer_2fa: true,
+            desafio: auth.desafio,
+            message: 'Digite o código do seu aplicativo autenticador.'
+        });
+    }
+
     audit('account.login', req, { email: payload.email, userId: auth.user.id });
 
     res.json({
@@ -39,9 +48,22 @@ async function login(req, res) {
     });
 }
 
+async function login2fa(req, res) {
+    const { desafio, codigo } = req.body || {};
+    if (!desafio || !codigo) throw createHttpError(400, 'Informe o código.');
+    const auth = await accountService.concluirLogin2fa(desafio, codigo);
+    audit('account.login', req, { email: auth.user.email, userId: auth.user.id, segundaEtapa: auth.via });
+    const resp = { message: 'Login realizado com sucesso.', token: auth.token, user: auth.user };
+    if (auth.via === 'recuperacao') {
+        resp.aviso = `Você usou um código de recuperação. Restam ${auth.codigosRestantes}. Gere novos em Segurança da Conta se estiverem acabando.`;
+    }
+    res.json(resp);
+}
+
 module.exports = {
     createConta,
     login,
+    login2fa,
     esqueciSenha,
     redefinirSenha
 };

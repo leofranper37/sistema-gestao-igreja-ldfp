@@ -476,6 +476,15 @@
                         </div>
                     </div>
 
+                    <!-- Lote 7: verificação em duas etapas -->
+                    <div class="field" id="grupo2fa" style="display:none">
+                        <div class="field-label">Código do aplicativo autenticador</div>
+                        <div class="field-input">
+                            <input id="codigo2fa" type="text" inputmode="numeric" maxlength="12"
+                                   placeholder="000000 ou código de recuperação" autocomplete="one-time-code">
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn-execute" id="submitBtn">
                         AUTENTICAR
                     </button>
@@ -526,6 +535,7 @@
                     : 'AUTENTICAR';
             }
 
+            let desafio2fa = null;
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 clearError();
@@ -541,18 +551,42 @@
                 setLoading(true);
 
                 try {
-                    const resp = await fetch('/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, senha })
-                    });
+                    let resp;
+                    if (desafio2fa) {
+                        const codigo = document.getElementById('codigo2fa').value.trim();
+                        if (!codigo) { showError('Digite o código do aplicativo autenticador.'); return; }
+                        resp = await fetch('/login/2fa', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ desafio: desafio2fa, codigo })
+                        });
+                    } else {
+                        resp = await fetch('/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, senha })
+                        });
+                    }
 
                     const data = await resp.json().catch(() => ({}));
 
                     if (!resp.ok) {
-                        showError('ACESSO NEGADO — Credenciais inválidas.');
+                        if (desafio2fa) {
+                            showError('ACESSO NEGADO — ' + (data.error || 'Código incorreto.'));
+                            if (resp.status === 429 || /expirou/i.test(data.error || '')) { desafio2fa = null; document.getElementById('grupo2fa').style.display = 'none'; }
+                        } else {
+                            showError('ACESSO NEGADO — Credenciais inválidas.');
+                        }
                         return;
                     }
+
+                    if (data.requer_2fa) {
+                        desafio2fa = data.desafio;
+                        document.getElementById('grupo2fa').style.display = '';
+                        document.getElementById('codigo2fa').focus();
+                        return;
+                    }
+                    if (data.aviso) alert(data.aviso);
 
                     const role = String(data?.user?.role || data?.role || '').trim().toLowerCase();
 

@@ -8,6 +8,7 @@ const SUPER_ADMIN_PASS = [
     '/super-admin/',
     '/api/modulos/',
     '/api/minha-conta',
+    '/api/2fa/',
     '/api/novidades',
     '/api/push/',
     '/api/pix/',

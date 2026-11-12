@@ -822,6 +822,7 @@
                         ['dashboard_membro.html', 'fa-solid fa-user-group', 'Painel do Membro', 'app_membro'],
                         ['novidades.html', 'fa-solid fa-star', 'Novidades', 'novidades'],
                         ['configuracoes.html', 'fa-solid fa-gear', 'Configurações', 'configuracoes'],
+                        ['seguranca.html', 'fa-solid fa-shield-halved', 'Segurança da Conta'],
                         ['index.html', 'fa-solid fa-right-from-bracket', 'Sair']
                     ], activePath, true, user)}
 

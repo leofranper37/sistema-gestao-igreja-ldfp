@@ -1205,7 +1205,8 @@ async function deleteIgreja(req, res) {
 async function listUsuariosAdmin(req, res) {
     try {
         const q = String(req.query.q || '').trim();
-        let sql = `SELECT u.id, u.nome, u.email, u.role, u.igreja, u.igreja_id,
+        await require('../services/doisFatoresService').ensureColunas();
+        let sql = `SELECT u.id, u.nome, u.email, u.role, u.igreja, u.igreja_id, u.totp_ativo,
                           i.status_assinatura, i.plano
                    FROM usuarios u
                    LEFT JOIN igrejas i ON i.id = u.igreja_id`;

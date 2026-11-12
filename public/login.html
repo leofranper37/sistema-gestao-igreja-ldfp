@@ -56,6 +56,19 @@
 
             <button type="button" class="btn-login" id="btnLogin" onclick="fazerLogin()">Login</button>
         </form>
+        <!-- Lote 7: verificação em duas etapas -->
+        <form id="form2fa" onsubmit="return false;" style="display:none">
+            <p style="font-size:13px;color:#444;text-align:left;margin:0 0 10px;">
+                <strong>Verificação em duas etapas.</strong> Abra o aplicativo autenticador no celular e digite o código de 6 dígitos.
+                Sem o celular? Use um dos seus códigos de recuperação.
+            </p>
+            <div class="form-group">
+                <label>Código</label>
+                <input type="text" id="codigo2fa" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="000000" style="letter-spacing:4px;font-size:18px;text-align:center">
+            </div>
+            <button type="button" class="btn-login" id="btn2fa" onclick="confirmar2fa()">Confirmar</button>
+            <p style="margin-top:10px;font-size:12px;"><a href="login.html" style="color:#555">Voltar</a></p>
+        </form>
 
         <div id="status" style="margin-top:12px; font-size:13px; text-align:left;"></div>
 
@@ -121,6 +134,54 @@
                     throw new Error(extractErrorMessage(data, 'Nao foi possivel entrar agora.'));
                 }
 
+                if (data.requer_2fa) {
+                    window._desafio2fa = data.desafio;
+                    document.querySelector('form:not(#form2fa)').style.display = 'none';
+                    document.getElementById('form2fa').style.display = '';
+                    status.textContent = '';
+                    document.getElementById('codigo2fa').focus();
+                    return;
+                }
+
+                concluirLogin(data);
+            } catch (err) {
+                status.textContent = err.message || 'Erro inesperado ao tentar entrar.';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login';
+            }
+        }
+
+        async function confirmar2fa() {
+            const status = document.getElementById('status');
+            const btn = document.getElementById('btn2fa');
+            const codigo = document.getElementById('codigo2fa').value.trim();
+            status.style.color = '#b91c1c';
+            if (!codigo) { status.textContent = 'Digite o código.'; return; }
+            btn.disabled = true;
+            try {
+                const resp = await fetch('/login/2fa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ desafio: window._desafio2fa, codigo })
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) throw new Error(extractErrorMessage(data, 'Código incorreto.'));
+                if (data.aviso) alert(data.aviso);
+                concluirLogin(data);
+            } catch (err) {
+                status.textContent = err.message;
+                if (/expirou|novo|Muitas/i.test(err.message)) setTimeout(() => { window.location.href = 'login.html'; }, 2500);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        document.getElementById('codigo2fa').addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmar2fa(); });
+
+        function concluirLogin(data) {
+            const status = document.getElementById('status');
+            const btn = document.getElementById('btnLogin');
+            {
                 if (isMasterWorkspaceUser(data.user)) {
                     status.style.color = '#b91c1c';
                     status.textContent = 'Use a entrada exclusiva do administrador do sistema.';
@@ -142,16 +203,11 @@
                         window.location.href = 'dashboard.html';
                     }
                 }, 600);
-            } catch (err) {
-                status.textContent = err.message || 'Erro inesperado ao tentar entrar.';
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Login';
             }
         }
 
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && document.getElementById('form2fa').style.display === 'none') {
                 fazerLogin();
             }
         });

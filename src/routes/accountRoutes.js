@@ -1,7 +1,7 @@
 const express = require('express');
 const { listPlanosPublico } = require('../controllers/superAdminController');
 
-const { createConta, login, esqueciSenha, redefinirSenha } = require('../controllers/accountController');
+const { createConta, login, login2fa, esqueciSenha, redefinirSenha } = require('../controllers/accountController');
 const { createContaSchema, loginSchema, validateBody } = require('../utils/validation');
 const { pool } = require('../config/db');
 
@@ -12,6 +12,7 @@ router.get('/api/planos', listPlanosPublico);
 router.post('/criar-conta', validateBody(createContaSchema), createConta);
 router.post('/api/cadastro-igreja', validateBody(createContaSchema), createConta);
 router.post('/login', validateBody(loginSchema), login);
+router.post('/login/2fa', login2fa); // Lote 7 — segunda etapa (protegida pelo loginRateLimiter de /login)
 router.post('/esqueci-senha', esqueciSenha);
 router.post('/redefinir-senha', redefinirSenha);
 

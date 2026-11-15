@@ -470,8 +470,16 @@ async function createMembro(payload) {
     );
 }
 
+async function membroPertenceIgreja(id, igrejaId) {
+    const [rows] = await pool.query('SELECT id FROM membros WHERE id = ? AND igreja_id = ? LIMIT 1', [id, igrejaId]);
+    return Array.isArray(rows) && rows.length > 0;
+}
+
 async function updateMembro(id, payload) {
     await ensureSystemTables();
+    if (!(await membroPertenceIgreja(id, payload.igrejaId))) {
+        return false;
+    }
     await pool.query(
         `UPDATE membros SET
             nome = ?, email = ?, telefone = ?, cargo = ?, apelido = ?, nascimento = ?, sexo = ?, estado_civil = ?, profissao = ?,
@@ -485,11 +493,16 @@ async function updateMembro(id, payload) {
             id, payload.igrejaId
         ]
     );
+    return true;
 }
 
 async function deleteMembro(id, igrejaId) {
     await ensureSystemTables();
+    if (!(await membroPertenceIgreja(id, igrejaId))) {
+        return false;
+    }
     await pool.query('DELETE FROM membros WHERE id = ? AND igreja_id = ?', [id, igrejaId]);
+    return true;
 }
 
 async function listVisitantes({ igrejaId, search }) {

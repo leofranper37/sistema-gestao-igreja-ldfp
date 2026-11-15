@@ -171,9 +171,13 @@
 .empty-row td { text-align: center; color: #9ca3af; padding: 24px; }
 </style>
 </head>
-<body class="enterprise-shell-page">
+<body class="enterprise-shell-page"
+      data-shell-active="tesouraria_resumo.html"
+      data-shell-title="Resumo Financeiro"
+      data-shell-breadcrumb="LDFP / Tesouraria / Resumo"
+      data-shell-chip="Módulo financeiro">
 
-<div class="main-content" id="mainContent" style="padding:28px;overflow-y:auto">
+<main class="main-content" id="mainContent" style="padding:28px;overflow-y:auto">
   <div class="page-header-bar">
     <h1><i class="fa-solid fa-chart-pie" style="color:#2563eb;margin-right:10px"></i>Resumo Financeiro</h1>
     <div class="month-selector">
@@ -252,7 +256,7 @@
       </tbody>
     </table>
   </div>
-</div>
+</main>
 
 <script src="session.js?v=20260501"></script>
 <script src="enterprise-shell.js?v=20260101"></script>

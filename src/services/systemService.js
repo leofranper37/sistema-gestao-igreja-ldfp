@@ -13,11 +13,11 @@ async function createMembro(payload) {
 }
 
 async function updateMembro(id, payload) {
-    await systemModel.updateMembro(id, payload);
+    return systemModel.updateMembro(id, payload);
 }
 
 async function deleteMembro(id, igrejaId) {
-    await systemModel.deleteMembro(id, igrejaId);
+    return systemModel.deleteMembro(id, igrejaId);
 }
 
 async function listVisitantes({ igrejaId, search }) {

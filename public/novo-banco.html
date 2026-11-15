@@ -7,8 +7,12 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="theme-azul-verde">
-  <main class="main-content">
+<body class="theme-azul-verde enterprise-shell-page"
+      data-shell-active="tesouraria_bancos.html"
+      data-shell-title="Novo Banco"
+      data-shell-breadcrumb="LDFP / Tesouraria / Bancos"
+      data-shell-chip="Módulo financeiro">
+  <main class="main-content enterprise-main">
     <div class="caixa-card" style="max-width:800px;margin:40px auto;">
       <div style="background:#ffc107;padding:20px;margin:-25px -25px 25px -25px;border-radius:8px 8px 0 0;display:flex;align-items:center;gap:15px;">
         <span style="font-size:1.5rem;">🏦</span>
@@ -51,6 +55,7 @@
   </main>
 
   <script src="session.js?v=20260501"></script>
+  <script src="enterprise-shell.js?v=20261115"></script>
   <script>
     requireAuthSession();
 

@@ -2,7 +2,7 @@
  * Service Worker para LDFP Igreja PWA - Versão Corrigida
  */
 
-const CACHE_NAME = 'ldfp-v13';
+const CACHE_NAME = 'ldfp-v14';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -102,7 +102,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 5. OUTROS ESTÁTICOS (imagens, fontes): Cache-first
+  // 5. Só imagens e fontes usam cache. Qualquer outro GET (ex.: rotas de dados
+  //    na raiz como /membros, /dizimos, /auth/me) vai direto para a rede —
+  //    antes caía aqui e ficava preso no cache, mostrando dados antigos.
+  if (!/\.(png|jpe?g|gif|svg|webp|ico|woff2?|ttf|otf|eot)$/i.test(url.pathname)) {
+    return;
+  }
+
+  // 6. IMAGENS E FONTES: Cache-first
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       return (

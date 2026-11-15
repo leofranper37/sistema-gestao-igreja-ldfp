@@ -49,8 +49,9 @@ O super admin **não acessa dados de clientes diretamente**. Para suporte, usa o
 - Sidebar colapsada → remove `margin-left` do header; mobile (< 1080px) → margin-left: 0
 
 ## Service Worker
-- Arquivo: `public/sw.js`, versão atual `ldfp-v13`
-- CSS/JS: network-first | Imagens/fontes: cache-first
+- Arquivo: `public/sw.js`, versão atual `ldfp-v14` (registrado com `updateViaCache: 'none'`)
+- SW só usa cache para imagens/fontes (cache-first) e CSS/JS/HTML (network-first). Rotas de dados na raiz (`/membros`, `/dizimos`, `/auth/me`…) NUNCA passam pelo cache — antes ficavam presas no cache-first
+
 
 ## Regra de deploy (SEMPRE seguir)
 1. Mudança só de código → `~/deploy.sh` no terminal do cPanel

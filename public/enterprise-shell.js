@@ -1139,11 +1139,46 @@ async function initShell() {
     main.insertAdjacentHTML('beforebegin', headerHtml);
 
     applyUserLabels();
+    syncUserFromServer();
     bindMenuToggle();
     ensureLockStyles();
     ensureUpgradeModal();
     cleanupShellDuplicates();
 }
+
+    // Atualiza o usuario salvo no localStorage com os dados reais do banco.
+    // Evita mostrar nome/role de sessoes antigas (ex.: usuario de teste).
+    async function syncUserFromServer() {
+        if (typeof window.getStoredAuth !== 'function' || typeof window.saveAuthSession !== 'function') {
+            return;
+        }
+
+        const auth = window.getStoredAuth();
+        if (!auth?.token) {
+            return;
+        }
+
+        try {
+            // 401 e tratado pelo fetch do session.js (limpa sessao e vai para o login).
+            const response = await fetch('/auth/me', { cache: 'no-store' });
+            if (!response.ok) {
+                return;
+            }
+
+            const me = await response.json();
+            if (!me || !me.id) {
+                return;
+            }
+
+            window.saveAuthSession({
+                token: auth.token,
+                user: { ...(auth.user || {}), ...me, name: me.nome || auth.user?.name }
+            });
+            applyUserLabels();
+        } catch (error) {
+            console.warn('[shell] Nao foi possivel sincronizar usuario:', error);
+        }
+    }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initShell);

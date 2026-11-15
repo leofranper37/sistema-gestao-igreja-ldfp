@@ -349,3 +349,80 @@ describe('Acesso sem autenticação', () => {
         assert.equal(res.status, 401);
     });
 });
+
+describe('Membros — cadastro completo e isolamento por tenant', () => {
+    let membroB_id;
+
+    const listar = async (auth) => {
+        const res = await request(app).get('/membros').set(auth);
+        assert.equal(res.status, 200, `listMembros falhou: ${JSON.stringify(res.body)}`);
+        assert.ok(Array.isArray(res.body), 'GET /membros deve retornar array');
+        return res.body;
+    };
+
+    test('Cadastro sem nome é rejeitado (400)', async () => {
+        const res = await request(app).post('/membros').set(authB()).send({ nome: '' });
+        assert.equal(res.status, 400);
+    });
+
+    test('Cadastro com e-mail inválido é rejeitado (400)', async () => {
+        const res = await request(app).post('/membros').set(authB())
+            .send({ nome: 'Fulano', email: 'nao-e-email' });
+        assert.equal(res.status, 400);
+    });
+
+    test('Cadastro com data de nascimento inválida é rejeitado (400)', async () => {
+        const res = await request(app).post('/membros').set(authB())
+            .send({ nome: 'Fulano', nascimento: '31/12/1990' });
+        assert.equal(res.status, 400);
+    });
+
+    test('Igreja B cadastra membro com payload completo do formulário', async () => {
+        const res = await request(app).post('/membros').set(authB()).send({
+            churchId: 1, // enviado pelo front; deve ser ignorado pelo backend
+            nome: 'Membro Secreto B', email: 'membro-b@tenant-test.com',
+            telefone: '1133334444', celular: '11999998888', apelido: 'Secreto',
+            nascimento: '1990-05-20', sexo: 'Masculino', estado_civil: 'Casado',
+            profissao: 'Professor', cep: '01001000', endereco: 'Rua A', numero: '10',
+            bairro: 'Centro', cidade: 'São Paulo', estado: 'SP', cpf: '12345678900',
+            rg: '123456', nacionalidade: 'Brasileira', naturalidade: 'São Paulo',
+            situacao: 'Ativo', cargo: '', observacoes: 'teste',
+            acesso_app_midia: false, gerenciar_midias: false
+        });
+        assert.ok(res.status < 300, `createMembro falhou: ${res.status} ${JSON.stringify(res.body)}`);
+
+        const membros = await listar(authB());
+        const criado = membros.find((m) => (m.nome || m.full_name) === 'Membro Secreto B');
+        assert.ok(criado, 'Membro criado deve aparecer na lista da Igreja B');
+        membroB_id = Number(criado.id);
+        assert.equal(Number(criado.igreja_id ?? igrejaIdB), Number(igrejaIdB));
+    });
+
+    test('Igreja A NÃO vê membro da Igreja B na listagem', async () => {
+        const membros = await listar(authA());
+        assert.ok(!membros.some((m) => Number(m.id) === membroB_id), 'Vazamento de membro entre igrejas');
+    });
+
+    test('Igreja A NÃO consegue editar nem excluir membro da Igreja B', async () => {
+        const put = await request(app).put(`/membros/${membroB_id}`).set(authA()).send({ nome: 'Hackeado' });
+        assert.equal(put.status, 404, `PUT cross-tenant deveria ser 404, veio ${put.status}`);
+        const del = await request(app).delete(`/membros/${membroB_id}`).set(authA());
+        assert.equal(del.status, 404, `DELETE cross-tenant deveria ser 404, veio ${del.status}`);
+
+        const membro = (await listar(authB())).find((m) => Number(m.id) === membroB_id);
+        assert.ok(membro, 'Membro da Igreja B foi excluído por outra igreja');
+        assert.equal(membro.nome || membro.full_name, 'Membro Secreto B', 'Membro da Igreja B foi alterado por outra igreja');
+    });
+
+    test('Igreja B edita e exclui o próprio membro', async () => {
+        const upd = await request(app).put(`/membros/${membroB_id}`).set(authB())
+            .send({ nome: 'Membro B Editado', cidade: 'Campinas' });
+        assert.ok(upd.status < 300, `updateMembro falhou: ${JSON.stringify(upd.body)}`);
+        const editado = (await listar(authB())).find((m) => Number(m.id) === membroB_id);
+        assert.equal(editado.nome || editado.full_name, 'Membro B Editado');
+
+        const del = await request(app).delete(`/membros/${membroB_id}`).set(authB());
+        assert.ok(del.status < 300, `deleteMembro falhou: ${JSON.stringify(del.body)}`);
+        assert.ok(!(await listar(authB())).some((m) => Number(m.id) === membroB_id));
+    });
+});

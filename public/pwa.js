@@ -47,7 +47,7 @@ class PWAManager {
         }
 
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
+            navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
                 .then((registration) => {
                     this.swRegistration = registration;
                     console.log('[PWA] Service Worker registrado:', registration);

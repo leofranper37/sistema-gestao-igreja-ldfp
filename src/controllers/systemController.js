@@ -144,7 +144,10 @@ async function updateMembro(req, res) {
         gerenciar_midias: parseFlag(payload.gerenciar_midias)
     };
 
-    await systemService.updateMembro(id, member);
+    const atualizado = await systemService.updateMembro(id, member);
+    if (!atualizado) {
+        throw createHttpError(404, 'Membro não encontrado.');
+    }
     audit('membro.update', req, { id, nome: member.nome, email: member.email });
 
     res.json({ message: 'Membro atualizado com sucesso.' });
@@ -158,7 +161,10 @@ async function deleteMembro(req, res) {
         throw createHttpError(400, 'ID de membro inválido.');
     }
 
-    await systemService.deleteMembro(id, igrejaId);
+    const excluido = await systemService.deleteMembro(id, igrejaId);
+    if (!excluido) {
+        throw createHttpError(404, 'Membro não encontrado.');
+    }
     audit('membro.delete', req, { id });
 
     res.json({ message: 'Membro excluído com sucesso.' });

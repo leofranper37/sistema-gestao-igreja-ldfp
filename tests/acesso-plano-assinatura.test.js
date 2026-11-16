@@ -225,3 +225,28 @@ describe('3) Módulos do plano barrados no servidor', () => {
         assert.notEqual(r.status, 403);
     });
 });
+
+describe('4) Excluir igreja pelo painel do super-admin', () => {
+    test('apaga usuários e dados da igreja excluída sem tocar nas outras', async () => {
+        // Em produção a coluna is_system foi criada via SQL manual; no SQLite de teste cria aqui
+        try { await pool.query('ALTER TABLE igrejas ADD COLUMN is_system INTEGER NOT NULL DEFAULT 0'); } catch (_) {}
+        await pool.query('INSERT INTO membros (igreja_id, nome) VALUES (?, ?)', [B.igrejaId, 'Membro B']);
+        await pool.query('INSERT INTO membros (igreja_id, nome) VALUES (?, ?)', [A.igrejaId, 'Membro A']);
+
+        const r = await request(app).delete(`/api/saas/igrejas/${B.igrejaId}`).set(auth(superToken));
+        assert.equal(r.status, 200, JSON.stringify(r.body));
+
+        const [[ig]] = await pool.query('SELECT COUNT(*) AS n FROM igrejas WHERE id = ?', [B.igrejaId]);
+        const [[us]] = await pool.query('SELECT COUNT(*) AS n FROM usuarios WHERE igreja_id = ?', [B.igrejaId]);
+        const [[mb]] = await pool.query('SELECT COUNT(*) AS n FROM membros WHERE igreja_id = ?', [B.igrejaId]);
+        assert.equal(Number(ig.n), 0);
+        assert.equal(Number(us.n), 0);
+        assert.equal(Number(mb.n), 0);
+
+        const [[mA]] = await pool.query('SELECT COUNT(*) AS n FROM membros WHERE igreja_id = ?', [A.igrejaId]);
+        const [[cA]] = await pool.query('SELECT COUNT(*) AS n FROM contas_pagar WHERE igreja_id = ?', [A.igrejaId]);
+        assert.ok(Number(mA.n) >= 1, 'membros da Igreja A preservados');
+        assert.ok(Number(cA.n) >= 1, 'contas a pagar da Igreja A preservadas');
+        assert.equal((await request(app).get('/membros').set(auth(B.token))).status, 401);
+    });
+});

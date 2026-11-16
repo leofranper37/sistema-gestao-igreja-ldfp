@@ -1188,6 +1188,7 @@ async function deleteIgreja(req, res) {
     if (ig[0].is_system) {
         return res.status(403).json({ error: 'Igrejas do sistema não podem ser excluídas.' });
     }
+    const igNome = ig[0].nome;
 
     // Conta membros antes da exclusão (para o audit)
     const [[{ totalMembros }]] = await pool.query(
@@ -1224,11 +1225,29 @@ async function deleteIgreja(req, res) {
     try {
         await conn.beginTransaction();
 
-        for (const tabela of tabelasIgrejaId) {
-            try { await conn.query(`DELETE FROM ${tabela} WHERE igreja_id = ?`, [id]); } catch (_) {}
-        }
-        for (const tabela of tabelasChurchId) {
-            try { await conn.query(`DELETE FROM ${tabela} WHERE church_id = ?`, [id]); } catch (_) {}
+        // Descobre no banco TODAS as tabelas com igreja_id/church_id (a lista fixa acima ficava
+        // desatualizada a cada módulo novo e deixava dados órfãos). No SQLite fica só a lista fixa.
+        const alvos = new Map();
+        tabelasIgrejaId.forEach((t) => alvos.set(`${t}.igreja_id`, [t, 'igreja_id']));
+        tabelasChurchId.forEach((t) => alvos.set(`${t}.church_id`, [t, 'church_id']));
+        try {
+            const [cols] = await conn.query(
+                `SELECT TABLE_NAME AS t, COLUMN_NAME AS c FROM information_schema.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE() AND COLUMN_NAME IN ('igreja_id', 'church_id')
+                   AND TABLE_NAME NOT IN ('igrejas', 'usuarios')`
+            );
+            (cols || []).forEach((r) => alvos.set(`${r.t}.${r.c}`, [r.t, r.c]));
+        } catch (_) { /* SQLite: sem information_schema */ }
+
+        // Duas passadas: se uma tabela depender de outra (chave estrangeira), a 2ª passada resolve
+        let pendentes = [...alvos.values()].filter(([t]) => /^\w+$/.test(t));
+        for (let passada = 0; passada < 2 && pendentes.length; passada++) {
+            const falhas = [];
+            for (const [tabela, coluna] of pendentes) {
+                try { await conn.query(`DELETE FROM ${tabela} WHERE ${coluna} = ?`, [id]); }
+                catch (_) { falhas.push([tabela, coluna]); }
+            }
+            pendentes = falhas;
         }
         await conn.query(`DELETE FROM usuarios WHERE igreja_id = ?`, [id]);
         await conn.query(`DELETE FROM igrejas WHERE id = ?`, [id]);

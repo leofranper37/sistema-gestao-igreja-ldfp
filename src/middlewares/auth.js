@@ -3,6 +3,7 @@ const config = require('../config');
 const { pool } = require('../config/db');
 const moduleAccessService = require('../services/moduleAccessService');
 const { createHttpError } = require('../utils/httpError');
+const { verificarAssinatura, verificarModulo } = require('./acessoIgreja');
 
 async function resolveToken(req, allowQueryParam = false) {
     const authorization = req.headers.authorization || '';
@@ -33,7 +34,16 @@ async function requireAuth(req, res, next) {
                 userId: payload.membro_id || payload.id,
                 moduleFeatures: []
             };
-            return next();
+            // Membro também perde o app quando a assinatura da igreja está vencida
+            const [igRows] = await pool.query(
+                'SELECT status_assinatura, trial_ends_at FROM igrejas WHERE id = ? LIMIT 1',
+                [payload.igrejaId]
+            );
+            if (igRows[0]) {
+                req.auth.statusAssinatura = igRows[0].status_assinatura || 'ativa';
+                req.auth.trialEndsAt = igRows[0].trial_ends_at || null;
+            }
+            return next(verificarAssinatura(req) || undefined);
         }
 
         // Token restrito do App do Membro (senha padrão): só serve para trocar a senha
@@ -85,7 +95,8 @@ async function requireAuth(req, res, next) {
             req.auth.moduleFeatures = [];
         }
 
-        next();
+        // Assinatura vencida (402) e módulo fora do plano (403) — barrados no servidor
+        return next(verificarAssinatura(req) || verificarModulo(req) || undefined);
     } catch (error) {
         next(createHttpError(401, 'Token inválido ou expirado.'));
     }

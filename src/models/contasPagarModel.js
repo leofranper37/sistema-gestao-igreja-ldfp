@@ -153,7 +153,8 @@ async function patchContaPagar(id, igrejaId, fields) {
 
 async function deleteContaPagar(id, igrejaId) {
     await ensureContasPagarTable();
-    await pool.query(`DELETE FROM contas_pagar WHERE id=? AND igreja_id=?`, [id, igrejaId]);
+    const [info] = await pool.query(`DELETE FROM contas_pagar WHERE id=? AND igreja_id=?`, [id, igrejaId]);
+    return info.affectedRows;
 }
 
 async function markVencidas(igrejaId) {

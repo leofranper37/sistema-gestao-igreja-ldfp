@@ -41,7 +41,7 @@ async function patchContaPagar(id, igrejaId, fields) {
 }
 
 async function deleteContaPagar(id, igrejaId) {
-    await contasPagarModel.deleteContaPagar(id, igrejaId);
+    return contasPagarModel.deleteContaPagar(id, igrejaId);
 }
 
 module.exports = {

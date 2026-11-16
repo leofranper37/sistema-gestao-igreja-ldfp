@@ -66,7 +66,9 @@ async function patchContaPagar(req, res) {
 async function deleteContaPagar(req, res) {
     const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
-    await contasPagarService.deleteContaPagar(id, igrejaId);
+    const removidas = await contasPagarService.deleteContaPagar(id, igrejaId);
+    // Conta de outra igreja ou inexistente: nada foi apagado → 404 (antes respondia "removida")
+    if (!removidas) throw createHttpError(404, 'Conta não encontrada.');
     audit('financeiro.contas_pagar.delete', req, { id });
     res.json({ message: 'Conta removida.' });
 }

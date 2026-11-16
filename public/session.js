@@ -258,6 +258,16 @@
             }
         }
 
+        // 402 = assinatura da igreja vencida/inativa → leva o admin para a página de planos.
+        // Páginas de pagamento, login e do App do Membro não redirecionam (evita loop).
+        if (response.status === 402 && isSameOriginRequest(requestUrl)) {
+            const pagina = window.location.pathname;
+            const paginaLivre = /\/(assinar|planos|login|app_login|app_membro(?:_v2)?|app|dashboard_membro|super-admin|admin-[\w-]+)\.html$/i.test(pagina);
+            if (!paginaLivre) {
+                window.location.href = 'assinar.html?expirado=1';
+            }
+        }
+
         return response;
     };
 

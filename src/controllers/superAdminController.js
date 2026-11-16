@@ -1034,7 +1034,9 @@ async function impersonateChurch(req, res) {
                 role: userRole,
                 nome: userNome,
                 plano: church.plano || 'hebrom',
-                statusAssinatura: church.status_assinatura || 'trial'
+                statusAssinatura: church.status_assinatura || 'trial',
+                // Acesso de suporte do super-admin: não é barrado por assinatura nem plano
+                impersonatedBy: req.auth.id
             },
             config.security.jwtSecret,
             { expiresIn: '12h' }

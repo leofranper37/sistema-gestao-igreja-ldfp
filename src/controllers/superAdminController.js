@@ -36,6 +36,23 @@ function normDate(v) {
     return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s + 'T00:00:00.000Z' : s;
 }
 
+// Limite do período de teste: nenhuma extensão/criação pode deixar o trial terminando
+// mais de MAX_TRIAL_DAYS dias à frente de HOJE (evita "26710 dias restantes").
+const MAX_TRIAL_DAYS = 365;
+
+/** Inteiro entre 1 e MAX_TRIAL_DAYS, ou null se inválido. Aceita número ou texto numérico. */
+function parseTrialDays(v) {
+    const s = String(v).trim();
+    if (!/^\d+$/.test(s)) return null;
+    const n = Number(s);
+    return n >= 1 && n <= MAX_TRIAL_DAYS ? n : null;
+}
+
+/** Data máxima permitida para o fim do trial (agora + MAX_TRIAL_DAYS, com 1 dia de folga p/ fuso). */
+function maxTrialEnd() {
+    return new Date(Date.now() + (MAX_TRIAL_DAYS + 1) * 86400000);
+}
+
 function addDays(baseDate, days) {
     const amount = Number(days) || 0;
     if (!amount) return baseDate;
@@ -275,6 +292,15 @@ async function updateSaasIgrejaContrato(req, res) {
     set('mensalidade_valor', mensalidade_valor !== undefined ? fmt(mensalidade_valor) : undefined);
     set('proximo_vencimento', normDate(proximo_vencimento));
     set('trial_starts_at', normDate(trial_starts_at));
+    if (trial_ends_at) {
+        const fim = new Date(normDate(trial_ends_at));
+        if (Number.isNaN(fim.getTime())) {
+            return res.status(400).json({ error: 'Data de fim do trial inválida.' });
+        }
+        if (fim > maxTrialEnd()) {
+            return res.status(400).json({ error: `O fim do trial não pode passar de ${MAX_TRIAL_DAYS} dias a partir de hoje. Corrija a data "Fim do Trial".` });
+        }
+    }
     set('trial_ends_at', normDate(trial_ends_at));
     set('max_cadastros', max_cadastros !== undefined ? Number(max_cadastros) : undefined);
     set('max_congregacoes', max_congregacoes !== undefined ? Number(max_congregacoes) : undefined);
@@ -286,7 +312,13 @@ async function updateSaasIgrejaContrato(req, res) {
     set('modulo_pedidos_oracao', modulo_pedidos_oracao !== undefined ? (modulo_pedidos_oracao ? 1 : 0) : undefined);
     set('modulo_mural_oracao', modulo_mural_oracao !== undefined ? (modulo_mural_oracao ? 1 : 0) : undefined);
 
-    const extensionDays = Number(trial_extension_days) || 0;
+    let extensionDays = 0;
+    if (trial_extension_days !== undefined && trial_extension_days !== null && trial_extension_days !== '') {
+        extensionDays = parseTrialDays(trial_extension_days);
+        if (!extensionDays) {
+            return res.status(400).json({ error: `Extensão do trial inválida: informe um número inteiro de dias entre 1 e ${MAX_TRIAL_DAYS}.` });
+        }
+    }
 
     if (!fields.length && !extensionDays) return res.status(400).json({ error: 'Nenhum campo para atualizar.' });
 
@@ -306,8 +338,15 @@ async function updateSaasIgrejaContrato(req, res) {
                 ? currentTrialEndsAt
                 : new Date();
 
+            const novoFim = addDays(baseDate, extensionDays);
+            if (novoFim > maxTrialEnd()) {
+                return res.status(400).json({ error: `Com essa extensão o trial passaria de ${MAX_TRIAL_DAYS} dias a partir de hoje. Use um número menor de dias.` });
+            }
+            // Se o body também trouxe trial_ends_at, a extensão prevalece (evita coluna duplicada no SET)
+            const idx = fields.indexOf('trial_ends_at = ?');
+            if (idx >= 0) { fields.splice(idx, 1); vals.splice(idx, 1); }
             fields.push('trial_ends_at = ?');
-            vals.push(addDays(baseDate, extensionDays).toISOString());
+            vals.push(novoFim.toISOString());
         }
 
         vals.push(id);
@@ -1033,6 +1072,14 @@ async function createIgreja(req, res) {
         return res.status(400).json({ error: 'nome, plano, email_admin e senha são obrigatórios.' });
     }
 
+    let days = 7;
+    if (status_assinatura === 'trial' && trial_days !== undefined && trial_days !== null && trial_days !== '') {
+        days = parseTrialDays(trial_days);
+        if (!days) {
+            return res.status(400).json({ error: `Dias de trial inválidos: informe um número inteiro entre 1 e ${MAX_TRIAL_DAYS}.` });
+        }
+    }
+
     try {
         const [existing] = await pool.query(
             'SELECT id FROM usuarios WHERE email = ? LIMIT 1',
@@ -1051,7 +1098,6 @@ async function createIgreja(req, res) {
 
         const now = new Date();
         const trialStartsAt = status_assinatura === 'trial' ? now.toISOString().slice(0, 19).replace('T', ' ') : null;
-        const days = Number(trial_days) || 7;
         const trialEndsAt = status_assinatura === 'trial'
             ? new Date(now.getTime() + days * 86400000).toISOString().slice(0, 19).replace('T', ' ')
             : null;

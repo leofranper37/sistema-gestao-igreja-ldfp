@@ -1338,7 +1338,7 @@
             const resp = await fetch(`/membros/${selectedId}/resetar-senha-app`, { method: 'POST' });
             const data = await resp.json();
             if (resp.ok) {
-                alert('Senha resetada com sucesso. O membro deverá usar os 6 primeiros dígitos do CPF no próximo acesso.');
+                alert('Senha resetada com sucesso. No próximo acesso o membro entra com os 6 primeiros dígitos do CPF e será obrigado a criar uma senha nova.');
             } else {
                 alert('Erro: ' + (data?.error || 'Não foi possível resetar a senha.'));
             }

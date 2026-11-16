@@ -36,6 +36,10 @@ async function requireAuth(req, res, next) {
             return next();
         }
 
+        // Token restrito do App do Membro (senha padrão): só serve para trocar a senha
+        if (payload.app_troca_senha) {
+            return next(createHttpError(401, 'Crie sua nova senha para entrar no app.'));
+        }
 
         const [rows] = await pool.query(
             `SELECT u.id, u.nome, u.email, u.igreja, u.igreja_id, u.role,

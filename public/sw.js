@@ -2,7 +2,7 @@
  * Service Worker para LDFP Igreja PWA - Versão Corrigida
  */
 
-const CACHE_NAME = 'ldfp-v14';
+const CACHE_NAME = 'ldfp-v15';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

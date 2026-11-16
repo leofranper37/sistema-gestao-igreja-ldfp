@@ -136,7 +136,7 @@ body{display:flex;background:var(--bg);color:var(--text);height:100vh;overflow:h
           <div class="form-row"><label>Mensalidade (R$)</label><input type="number" min="0" step="0.01" id="f-mensalidade_valor"></div>
           <div class="form-row"><label>Próximo Vencimento</label><input type="date" id="f-proximo_vencimento"></div>
           <div class="form-row"><label>Início do Trial</label><input type="date" id="f-trial_starts_at"></div>
-          <div class="form-row"><label>Fim do Trial</label><input type="date" id="f-trial_ends_at"></div>
+          <div class="form-row"><label>Fim do Trial</label><input type="date" id="f-trial_ends_at"><small style="display:block;font-size:11px;color:#64748b;margin-top:3px">Máximo: 365 dias a partir de hoje.</small></div>
         </div>
         <div class="trial-panel" id="trialPanel">
           <strong>Controle do período de teste</strong>
@@ -281,13 +281,34 @@ function fillForm(d) {
   refreshTrialPanel();
 }
 
+const MAX_TRIAL_DAYS = 365;
+function maxTrialDateStr() {
+  const d = new Date();
+  d.setDate(d.getDate() + MAX_TRIAL_DAYS);
+  return d.toISOString().slice(0,10);
+}
+/** Devolve mensagem de erro se o fim do trial passar do limite; senão null. */
+function trialEndError() {
+  const val = document.getElementById('f-trial_ends_at').value;
+  if (!val) return null;
+  if (val > maxTrialDateStr()) {
+    return 'O fim do trial não pode passar de ' + MAX_TRIAL_DAYS + ' dias a partir de hoje (' + formatDateTimeLabel(maxTrialDateStr() + 'T12:00:00') + ').';
+  }
+  return null;
+}
+
 function extendTrial(days) {
   const endField = document.getElementById('f-trial_ends_at');
   const startField = document.getElementById('f-trial_starts_at');
   const base = endField.value ? new Date(endField.value + 'T00:00:00') : new Date();
   if (Number.isNaN(base.getTime())) return;
   base.setDate(base.getDate() + Number(days || 0));
-  endField.value = base.toISOString().slice(0,10);
+  const novo = base.toISOString().slice(0,10);
+  if (novo > maxTrialDateStr()) {
+    toast('Não é possível estender: o trial passaria de ' + MAX_TRIAL_DAYS + ' dias a partir de hoje.', 'error');
+    return;
+  }
+  endField.value = novo;
   if (!startField.value) {
     startField.value = new Date().toISOString().slice(0,10);
   }
@@ -297,6 +318,8 @@ function extendTrial(days) {
 
 async function saveContrato() {
   const v = id => document.getElementById(id)?.value ?? '';
+  const errTrial = trialEndError();
+  if (errTrial) { toast(errTrial, 'error'); return; }
   const body = {
     nome: v('f-nome'),
     cnpj: v('f-cnpj'),
@@ -317,7 +340,12 @@ async function saveContrato() {
     const r = await fetch('/api/saas/igrejas/' + igrejaId + '/contrato', {
       method: 'PATCH', headers: hdrs(), body: JSON.stringify(body)
     });
-    if (!r.ok) throw new Error(await r.text());
+    if (!r.ok) {
+      const txt = await r.text();
+      let msg = txt;
+      try { msg = JSON.parse(txt).error || txt; } catch (_) {}
+      throw new Error(msg);
+    }
     const updated = await r.json();
     fillForm(updated);
     toast('Contrato salvo com sucesso!', 'success');
@@ -339,6 +367,7 @@ function toast(msg, type='success') {
 document.getElementById('f-status_assinatura').addEventListener('change', refreshTrialPanel);
 document.getElementById('f-trial_starts_at').addEventListener('change', refreshTrialPanel);
 document.getElementById('f-trial_ends_at').addEventListener('change', refreshTrialPanel);
+document.getElementById('f-trial_ends_at').max = maxTrialDateStr();
 
 loadContrato();
 </script>

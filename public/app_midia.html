@@ -703,6 +703,12 @@
                         throw new Error(payload.error || 'CPF ou senha incorretos.');
                     }
 
+                    if (payload.precisa_trocar && !payload.token) {
+                        // Senha provisória: precisa criar a senha nova no App do Membro primeiro
+                        window.location.href = 'app_login.html';
+                        return;
+                    }
+
                     token = payload.token;
                     const membroData = payload.membro || null;
                     const igrejaTk = payload.membro?.igrejaTk || null;

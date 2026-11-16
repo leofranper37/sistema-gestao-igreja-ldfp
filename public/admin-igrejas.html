@@ -520,6 +520,14 @@ async function submitNovaIgreja() {
     errEl.style.display = '';
     return;
   }
+  if (status === 'trial') {
+    const nDias = Number(trialDays);
+    if (!Number.isInteger(nDias) || nDias < 1 || nDias > 90) {
+      errEl.textContent = 'Dias de trial: informe um número inteiro entre 1 e 90.';
+      errEl.style.display = '';
+      return;
+    }
+  }
   if (senha.length < 6) {
     errEl.textContent = 'A senha precisa ter pelo menos 6 caracteres.';
     errEl.style.display = '';

@@ -8,6 +8,91 @@ const { pool } = require('../config/db');
 const config = require('../config');
 
 // ── APP DE MEMBROS: Auth por CPF ───────────────────────────────────
+//
+// Senha padrão do primeiro acesso = 6 primeiros dígitos do CPF (fraca e fácil de
+// adivinhar). Enquanto o membro estiver com ela (ou após reset pelo admin), o login
+// NÃO devolve o token do app: devolve só um "token de troca" (15 min) que serve
+// exclusivamente para PUT /app-membro/trocar-senha. requireAuth recusa esse token.
+// Detecção sem depender de coluna nova: app_senha nulo, flag precisa_trocar_senha
+// (se a coluna existir) ou a senha digitada ser a padrão / o próprio CPF.
+
+const APP_SENHA_MIN = 8;
+const TROCA_TOKEN_TTL = '15m';
+
+function limparCpf(cpf) {
+    return String(cpf || '').replace(/\D/g, '');
+}
+
+function senhaPadraoDoCpf(cpfLimpo) {
+    return String(cpfLimpo || '').substring(0, 6);
+}
+
+/** Senha é a padrão (6 primeiros dígitos) ou o CPF inteiro (com ou sem pontuação). */
+function ehSenhaFraca(senha, cpfLimpo) {
+    const cpf = String(cpfLimpo || '');
+    if (!cpf) return false;
+    const digitos = String(senha || '').replace(/[.\-\s/]/g, '');
+    return digitos === senhaPadraoDoCpf(cpf) || digitos === cpf;
+}
+
+function validarNovaSenhaApp(novaSenha, cpfLimpo) {
+    const s = String(novaSenha || '');
+    if (s.length < APP_SENHA_MIN) {
+        throw createHttpError(400, `A nova senha deve ter pelo menos ${APP_SENHA_MIN} caracteres.`);
+    }
+    if (ehSenhaFraca(s, cpfLimpo)) {
+        throw createHttpError(400, 'A nova senha não pode ser a senha padrão nem o seu CPF.');
+    }
+}
+
+/**
+ * UPDATE que também mexe em precisa_trocar_senha; se a coluna não existir no banco
+ * (instalação antiga), repete sem ela — a detecção da senha padrão continua valendo
+ * por app_senha nulo / comparação com a senha derivada do CPF.
+ */
+async function updateComFlagTroca(sqlComFlag, paramsComFlag, sqlSemFlag, paramsSemFlag) {
+    try {
+        await pool.query(sqlComFlag, paramsComFlag);
+    } catch (err) {
+        const msg = String(err && (err.code || '') + ' ' + (err.message || ''));
+        if (!/precisa_trocar_senha|ER_BAD_FIELD_ERROR|no such column/i.test(msg)) throw err;
+        await pool.query(sqlSemFlag, paramsSemFlag);
+    }
+}
+
+async function buscarIgrejaTk(igrejaId) {
+    try {
+        const [rows] = await pool.query('SELECT public_token FROM igrejas WHERE id = ? LIMIT 1', [igrejaId]);
+        return rows[0]?.public_token || null;
+    } catch (_) {
+        return null;
+    }
+}
+
+function montarPayloadApp(membro, cpfLimpo) {
+    return {
+        id: membro.id,
+        nome: membro.nome,
+        email: membro.email || '',
+        cargo: membro.cargo || '',
+        foto_url: membro.foto_url || null,
+        igrejaId: membro.igreja_id,
+        nome_igreja: membro.nome_igreja,
+        role: 'membro',
+        membro_id: membro.id,
+        cpf: cpfLimpo,
+        app_mode: true,
+        acesso_app_midia: membro.acesso_app_midia ? true : false,
+        gerenciar_midias: membro.gerenciar_midias ? true : false
+    };
+}
+
+async function emitirSessaoApp(membro, cpfLimpo) {
+    const payload = montarPayloadApp(membro, cpfLimpo);
+    const igrejaTk = await buscarIgrejaTk(membro.igreja_id);
+    const token = jwt.sign(payload, config.security.jwtSecret, { expiresIn: '30d' });
+    return { token, membro: { ...payload, igrejaTk } };
+}
 
 async function loginMembroApp(req, res) {
     const { cpf, senha, igreja_nome } = req.body || {};
@@ -15,7 +100,7 @@ async function loginMembroApp(req, res) {
         throw createHttpError(400, 'CPF e senha são obrigatórios.');
     }
 
-    const cpfLimpo = String(cpf).replace(/\D/g, '');
+    const cpfLimpo = limparCpf(cpf);
 
     let sql = `SELECT m.*, i.nome AS nome_igreja, i.id AS igreja_id_num
                FROM membros m
@@ -40,8 +125,7 @@ async function loginMembroApp(req, res) {
 
     if (!membro.app_senha) {
         // Sem senha cadastrada — senha padrão são os 6 primeiros dígitos do CPF
-        const senhaDefault = cpfLimpo.substring(0, 6);
-        if (String(senha) !== senhaDefault) {
+        if (String(senha) !== senhaPadraoDoCpf(cpfLimpo)) {
             throw createHttpError(401, 'Senha incorreta. No primeiro acesso, use os 6 primeiros dígitos do seu CPF.');
         }
         precisaTrocar = true;
@@ -50,60 +134,104 @@ async function loginMembroApp(req, res) {
         if (!ok) {
             throw createHttpError(401, 'Senha incorreta.');
         }
-        if (membro.precisa_trocar_senha) {
+        if (membro.precisa_trocar_senha || ehSenhaFraca(senha, cpfLimpo)) {
             precisaTrocar = true;
         }
     }
 
-    // Busca o igrejaTk (public_token) da igreja para o app usar nas rotas públicas
-    let igrejaTk = null;
-    try {
-        const [igrejaTkRows] = await pool.query(
-            'SELECT public_token FROM igrejas WHERE id = ? LIMIT 1',
-            [membro.igreja_id]
+    if (precisaTrocar) {
+        // Nada de token do app aqui: só o token restrito de troca de senha.
+        const trocaToken = jwt.sign(
+            { app_troca_senha: true, membro_id: membro.id, troca_igreja_id: membro.igreja_id },
+            config.security.jwtSecret,
+            { expiresIn: TROCA_TOKEN_TTL }
         );
-        igrejaTk = igrejaTkRows[0]?.public_token || null;
-    } catch (_) {}
+        return res.json({
+            precisa_trocar: true,
+            troca_token: trocaToken,
+            membro: { nome: membro.nome, nome_igreja: membro.nome_igreja },
+            message: `Crie uma senha pessoal (mínimo ${APP_SENHA_MIN} caracteres) para continuar.`
+        });
+    }
 
-    const payload = {
-        id: membro.id,
-        nome: membro.nome,
-        email: membro.email || '',
-        cargo: membro.cargo || '',
-        foto_url: membro.foto_url || null,
-        igrejaId: membro.igreja_id,
-        nome_igreja: membro.nome_igreja,
-        role: 'membro',
-        membro_id: membro.id,
-        cpf: cpfLimpo,
-        app_mode: true,
-        acesso_app_midia: membro.acesso_app_midia ? true : false,
-        gerenciar_midias: membro.gerenciar_midias ? true : false
-    };
+    const sessao = await emitirSessaoApp(membro, cpfLimpo);
+    res.json({ ...sessao, precisa_trocar: false, message: 'Login realizado com sucesso.' });
+}
 
-    const token = jwt.sign(payload, config.security.jwtSecret, { expiresIn: '30d' });
-    res.json({ token, membro: { ...payload, igrejaTk }, precisa_trocar: precisaTrocar, message: 'Login realizado com sucesso.' });
+/**
+ * Autenticação da troca de senha do app: aceita o token restrito de troca
+ * (emitido no login com senha padrão) OU o token normal do app (troca voluntária).
+ * Membro e igreja vêm SEMPRE do token assinado pelo servidor, nunca do body.
+ */
+function authTrocaSenhaApp(req, res, next) {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    if (!token) return next(createHttpError(401, 'Token de acesso não informado.'));
+
+    let payload;
+    try {
+        payload = jwt.verify(token, config.security.jwtSecret);
+    } catch (_) {
+        return next(createHttpError(401, 'Sessão expirada. Entre novamente com CPF e senha.'));
+    }
+
+    if (payload && payload.app_troca_senha) {
+        req.trocaSenha = { membroId: Number(payload.membro_id), igrejaId: Number(payload.troca_igreja_id), restrito: true };
+        return next();
+    }
+    if (payload && payload.app_mode) {
+        req.trocaSenha = { membroId: Number(payload.membro_id || payload.id), igrejaId: Number(payload.igrejaId), restrito: false };
+        return next();
+    }
+    return next(createHttpError(403, 'Rota exclusiva do App de Membros.'));
 }
 
 async function trocarSenhaMembroApp(req, res) {
     const { novaSenha } = req.body || {};
-    if (!novaSenha || String(novaSenha).length < 6) {
-        throw createHttpError(400, 'A nova senha deve ter pelo menos 6 caracteres.');
-    }
-
-    if (!req.auth.app_mode) {
+    const ctx = req.trocaSenha;
+    if (!ctx || !ctx.membroId || !ctx.igrejaId) {
         throw createHttpError(403, 'Rota exclusiva do App de Membros.');
     }
 
-    const membroId = req.auth.membro_id || req.auth.id;
-    const igrejaId = req.auth.igrejaId;
+    const [rows] = await pool.query(
+        `SELECT m.*, i.nome AS nome_igreja
+         FROM membros m
+         INNER JOIN igrejas i ON i.id = m.igreja_id
+         WHERE m.id = ? AND m.igreja_id = ?
+         LIMIT 1`,
+        [ctx.membroId, ctx.igrejaId]
+    );
+    const membro = rows[0];
+    if (!membro) throw createHttpError(404, 'Membro não encontrado.');
+
+    const cpfLimpo = limparCpf(membro.cpf);
+    validarNovaSenhaApp(novaSenha, cpfLimpo);
+
+    if (ctx.restrito) {
+        // O token de troca só vale enquanto o membro ainda está com a senha padrão
+        let aindaPrecisa = !membro.app_senha || !!membro.precisa_trocar_senha;
+        if (!aindaPrecisa) {
+            aindaPrecisa = await bcrypt.compare(senhaPadraoDoCpf(cpfLimpo), String(membro.app_senha))
+                || await bcrypt.compare(cpfLimpo, String(membro.app_senha));
+        }
+        if (!aindaPrecisa) {
+            throw createHttpError(409, 'Sua senha já foi trocada. Entre com o CPF e a nova senha.');
+        }
+    }
 
     const hash = await bcrypt.hash(String(novaSenha), config.security.passwordSaltRounds);
-    await pool.query(
+    await updateComFlagTroca(
         `UPDATE membros SET app_senha = ?, precisa_trocar_senha = 0 WHERE id = ? AND igreja_id = ?`,
-        [hash, membroId, igrejaId]
+        [hash, membro.id, ctx.igrejaId],
+        `UPDATE membros SET app_senha = ? WHERE id = ? AND igreja_id = ?`,
+        [hash, membro.id, ctx.igrejaId]
     );
 
+    if (ctx.restrito) {
+        // Troca concluída: agora sim libera o app
+        const sessao = await emitirSessaoApp(membro, cpfLimpo);
+        return res.json({ ...sessao, message: 'Senha criada com sucesso.' });
+    }
     res.json({ message: 'Senha atualizada com sucesso.' });
 }
 
@@ -119,13 +247,15 @@ async function resetarSenhaMembroApp(req, res) {
         throw createHttpError(404, 'Membro não encontrado.');
     }
 
-    // Limpa a senha — próximo login usa os 6 primeiros dígitos do CPF
-    await pool.query(
+    // Limpa a senha — próximo login usa os 6 primeiros dígitos do CPF e exige troca
+    await updateComFlagTroca(
         `UPDATE membros SET app_senha = NULL, precisa_trocar_senha = 1 WHERE id = ? AND igreja_id = ?`,
+        [membroId, igrejaId],
+        `UPDATE membros SET app_senha = NULL WHERE id = ? AND igreja_id = ?`,
         [membroId, igrejaId]
     );
 
-    res.json({ message: 'Senha resetada. O membro deve fazer login com os 6 primeiros dígitos do CPF.' });
+    res.json({ message: 'Senha resetada. No próximo acesso o membro entra com os 6 primeiros dígitos do CPF e será obrigado a criar uma senha nova.' });
 }
 
 async function getMeuPerfilApp(req, res) {
@@ -462,6 +592,7 @@ module.exports = {
     updateMidiaVisitorStatus,
     updateWhatsAppTemplate,
     loginMembroApp,
+    authTrocaSenhaApp,
     trocarSenhaMembroApp,
     resetarSenhaMembroApp,
     getMeuPerfilApp

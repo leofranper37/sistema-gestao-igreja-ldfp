@@ -35,6 +35,7 @@ const {
     getMemberAppContext,
     getPaymentLinkPublic,
     loginMembroApp,
+    authTrocaSenhaApp,
     trocarSenhaMembroApp,
     resetarSenhaMembroApp,
     getMeuPerfilApp,
@@ -61,7 +62,8 @@ const router = express.Router();
 
 // Rotas do App de Membros
 router.post('/app-membro/login', loginMembroApp);
-router.put('/app-membro/trocar-senha', requireAuth, trocarSenhaMembroApp);
+// Aceita o token restrito de troca (1º acesso / senha padrão) ou o token do app
+router.put('/app-membro/trocar-senha', authTrocaSenhaApp, trocarSenhaMembroApp);
 router.get('/app-membro/meu-perfil', getMeuPerfilApp);
 router.post('/membros/:id/resetar-senha-app', requireAuth, authorize(['admin', 'secretaria', 'pastor']), resetarSenhaMembroApp);
 

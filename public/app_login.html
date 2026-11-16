@@ -266,7 +266,7 @@
           <input type="password" id="senha" class="field-input" placeholder="••••••••" autocomplete="current-password" required>
         </div>
         <button type="submit" class="btn-main" id="loginBtn">Entrar</button>
-        <span class="hint-text"><i class="fa-solid fa-circle-info"></i>Primeiro acesso? Use os 6 primeiros dígitos do CPF como senha.</span>
+        <span class="hint-text"><i class="fa-solid fa-circle-info"></i>Primeiro acesso? Use os 6 primeiros dígitos do CPF como senha provisória. Em seguida você vai criar a sua senha.</span>
         <a id="linkFicha" href="autocadastro.html" class="hint-text" style="display:block;margin-top:10px;color:inherit;font-weight:700;text-decoration:underline;"><i class="fa-solid fa-id-card"></i> Ainda não tem cadastro? Preencha sua ficha</a>
         <div id="loginMsg" class="alert"></div>
       </form>
@@ -275,12 +275,12 @@
     <!-- TELA 2: Criar senha -->
     <div id="screenTrocar" class="screen">
       <h2>Crie sua senha</h2>
-      <p class="sub">Por segurança, defina uma senha pessoal antes de continuar</p>
+      <p class="sub">Por segurança, crie uma senha pessoal antes de continuar (mínimo 8 caracteres, diferente do seu CPF)</p>
 
       <form id="trocarForm">
         <div class="field-group">
           <label>Nova senha</label>
-          <input type="password" id="novaSenha" class="field-input" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password">
+          <input type="password" id="novaSenha" class="field-input" placeholder="Mínimo 8 caracteres" required minlength="8" autocomplete="new-password">
         </div>
         <div class="field-group">
           <label>Confirmar senha</label>
@@ -338,6 +338,7 @@
     });
 
     let tempToken = null;
+    let cpfDigitado = '';
 
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -391,15 +392,19 @@
           return;
         }
 
-        tempToken = data.token;
+        if (data.precisa_trocar) {
+          // Senha provisória: o app só é liberado depois de criar a senha nova
+          tempToken = data.troca_token;
+          cpfDigitado = cpf;
+          localStorage.removeItem('app_member_token');
+          localStorage.removeItem('app_member_user');
+          showScreen('screenTrocar');
+          return;
+        }
+
         localStorage.setItem('app_member_token', data.token);
         localStorage.setItem('app_member_user', JSON.stringify(data.membro));
-
-        if (data.precisa_trocar) {
-          showScreen('screenTrocar');
-        } else {
-          window.location.href = 'app_membro_v2.html';
-        }
+        window.location.href = 'app_membro_v2.html';
 
       } catch (err) {
         showMsg('loginMsg', 'Erro de conexão. Tente novamente.', 'error');
@@ -417,8 +422,13 @@
       const novaSenha = document.getElementById('novaSenha').value;
       const confirmarSenha = document.getElementById('confirmarSenha').value;
 
-      if (novaSenha.length < 6) {
-        showMsg('trocarMsg', 'A senha deve ter pelo menos 6 caracteres.', 'error');
+      if (novaSenha.length < 8) {
+        showMsg('trocarMsg', 'A senha deve ter pelo menos 8 caracteres.', 'error');
+        return;
+      }
+      const soDigitos = novaSenha.replace(/[.\-\s/]/g, '');
+      if (cpfDigitado && (soDigitos === cpfDigitado || soDigitos === cpfDigitado.slice(0, 6))) {
+        showMsg('trocarMsg', 'A nova senha não pode ser a senha provisória nem o seu CPF.', 'error');
         return;
       }
       if (novaSenha !== confirmarSenha) {
@@ -442,11 +452,23 @@
 
         const data = await resp.json();
 
+        if (resp.status === 401 || resp.status === 409) {
+          // token de troca expirado ou já usado: volta para o login
+          tempToken = null;
+          showScreen('screenLogin');
+          showMsg('loginMsg', data?.error || 'Entre novamente com CPF e senha.', 'error');
+          return;
+        }
+
         if (!resp.ok) {
           showMsg('trocarMsg', data?.error || 'Erro ao salvar senha.', 'error');
           return;
         }
 
+        if (data.token) {
+          localStorage.setItem('app_member_token', data.token);
+          localStorage.setItem('app_member_user', JSON.stringify(data.membro));
+        }
         showMsg('trocarMsg', '✓ Senha salva! Entrando...', 'success');
         setTimeout(() => { window.location.href = 'app_membro_v2.html'; }, 900);
 

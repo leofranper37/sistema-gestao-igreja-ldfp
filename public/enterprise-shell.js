@@ -222,6 +222,39 @@
         return ROLE_ALIASES[rawRole] || rawRole || 'visitante';
     }
 
+    // Rótulo amigável do papel REAL do usuário logado (vem do /auth/me / localStorage).
+    // O atributo data-shell-role das páginas é ignorado de propósito: ele era fixo
+    // por página e fazia o mesmo usuário aparecer como "Administrador" numa tela e
+    // "Secretaria" em outra.
+    const ROLE_LABELS = {
+        super_admin: 'Super Admin',
+        'super-admin': 'Super Admin',
+        admin: 'Administrador',
+        secretaria: 'Secretaria',
+        pastor: 'Pastor',
+        financeiro: 'Tesouraria',
+        tesoureiro: 'Tesouraria',
+        oficial: 'Oficial',
+        ministerio: 'Ministério',
+        midia: 'Mídia',
+        diacono: 'Diácono',
+        presbitero: 'Presbítero',
+        membro: 'Membro',
+        visitante: 'Visitante'
+    };
+
+    function escapeShellHtml(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function getRoleLabel(user) {
+        const role = getUserRole(user);
+        if (ROLE_LABELS[role]) return ROLE_LABELS[role];
+        return role.charAt(0).toUpperCase() + role.slice(1);
+    }
+
     function getRoleVisibleFeatures(user) {
         const role = getUserRole(user);
         const roleFeatures = ROLE_FEATURES[role];
@@ -884,7 +917,7 @@
                     </div>
                     <div class="enterprise-header-user">
                         <strong id="headerUserName">Leonardo</strong>
-                        <span>${config.roleLabel}</span>
+                        <span id="headerUserRole">${escapeShellHtml(config.roleLabel)}</span>
                     </div>
                 </div>
             </header>
@@ -894,9 +927,10 @@
     function applyUserLabels() {
         const user = getAuthUser();
         const label = getUserLabel(user);
-        const role = getUserRole(user);
+        const roleLabel = getRoleLabel(user);
         const sidebarUserName = document.getElementById('sidebarUserName');
         const headerUserName = document.getElementById('headerUserName');
+        const headerUserRole = document.getElementById('headerUserRole');
         const roleTargets = document.querySelectorAll('[data-user-role]');
 
         if (sidebarUserName) {
@@ -907,8 +941,12 @@
             headerUserName.textContent = label;
         }
 
+        if (headerUserRole) {
+            headerUserRole.textContent = roleLabel;
+        }
+
         roleTargets.forEach((target) => {
-            target.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+            target.textContent = roleLabel;
         });
     }
 
@@ -1131,7 +1169,7 @@ async function initShell() {
         title: body.dataset.shellTitle || 'LDFP',
         breadcrumb: body.dataset.shellBreadcrumb || 'LDFP',
         chipText: body.dataset.shellChip || 'Ambiente',
-        roleLabel: body.dataset.shellRole || getUserRole(user)
+        roleLabel: getRoleLabel(user)
     };
     const headerHtml = renderHeader(headerConfig);
 

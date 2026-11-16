@@ -157,6 +157,12 @@ O super admin **não acessa dados de clientes diretamente**. Para suporte, usa o
 ## Repositório local
 - Clone git real: `G:\sistema-gestao-igreja-main` (branch `main`). A cópia em `OneDrive\Imagens\sistema-gestao-igreja-ldfp-main` NÃO é repositório — não editar lá.
 
+## Correções: trial, papel no cabeçalho, senha do App do Membro (15/11/2026)
+- **Trial:** `superAdminController` limita `trial_extension_days` e `trial_days` (criação) a inteiro 1..365 e recusa (400) qualquer `trial_ends_at` (direto ou resultante de extensão) a mais de 365 dias de hoje (`MAX_TRIAL_DAYS`). Front: `admin-edicao-cliente.html` (max no input + toast) e `admin-igrejas.html` (1..90 no modal). Dados antigos: `FIX_TRIAL_ABSURDO.sql` (SELECT de diagnóstico + UPDATE comentado por id) — opcional, só limpeza
+- **Papel no cabeçalho:** `enterprise-shell.js` ignora `data-shell-role` (era fixo em 70 páginas) e mostra `getRoleLabel(user)` (mapa `ROLE_LABELS`), atualizado após `/auth/me` em `#headerUserRole`. SW `ldfp-v15`
+- **App do Membro:** login com senha padrão (6 primeiros dígitos do CPF), com `precisa_trocar_senha = 1` ou com senha igual ao CPF NÃO devolve `token`; devolve `precisa_trocar: true` + `troca_token` (15 min, claim `app_troca_senha`, sem `app_mode`/`igrejaId`), recusado pelo `requireAuth`. `PUT /app-membro/trocar-senha` (middleware `authTrocaSenhaApp`) aceita esse token ou o do app; nova senha ≥ 8, ≠ padrão, ≠ CPF; com o token de troca devolve o token do app. Sem SQL novo (usa `app_senha`/`precisa_trocar_senha`, criados pelo `db.js`; se a flag faltar, cai para UPDATE sem ela)
+- Testes: `tests/correcoes-trial-papel-senha.test.js`
+
 ## Fluxo para criar novo cliente
 1. Super admin → admin-igrejas.html → botão "Nova Igreja"
 2. Preenche: nome, plano, email admin, senha, responsável, telefone

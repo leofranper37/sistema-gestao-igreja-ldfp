@@ -109,6 +109,11 @@ async function requireAuthSSE(req, res, next) {
     });
 }
 
+const PAPEIS_EQUIVALENTES = {
+    tesoureiro: ['tesoureiro', 'financeiro'],
+    financeiro: ['financeiro', 'tesoureiro']
+};
+
 function authorize(allowedRoles = []) {
     const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
 
@@ -121,7 +126,11 @@ function authorize(allowedRoles = []) {
             return next();
         }
 
-        if (!roles.includes(req.auth.role)) {
+        // "tesoureiro" e "financeiro" sao o mesmo perfil (Tesouraria): quem tem um
+        // deles recebe as permissoes dos dois.
+        const papel = req.auth.role;
+        const equivalentes = PAPEIS_EQUIVALENTES[papel] || [papel];
+        if (!equivalentes.some((p) => roles.includes(p))) {
             return next(createHttpError(403, 'Acesso negado para este perfil.'));
         }
 

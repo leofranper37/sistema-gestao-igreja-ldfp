@@ -241,3 +241,34 @@ describe('3. App do Membro — troca obrigatória da senha padrão', () => {
         assert.equal(ok.status, 200);
     });
 });
+
+describe('Papel tesoureiro = financeiro (menu e permissões)', () => {
+    let tokenTesoureiro;
+
+    before(async () => {
+        const t = await register('Tesoureiro T', 'tesoureiro@correcoes.test', 'SenhaSegura3!', 'Igreja Correcoes T');
+        // Nenhuma tela atribui "tesoureiro"; simula um usuário gravado direto no banco.
+        await pool.query("UPDATE usuarios SET role = 'tesoureiro' WHERE email = ?", ['tesoureiro@correcoes.test']);
+        tokenTesoureiro = t.token; // requireAuth lê o papel do banco a cada requisição
+    });
+
+    test('tesoureiro acessa rotas da tesouraria liberadas para financeiro', async () => {
+        for (const rota of ['/dizimos', '/caixa/lancamentos', '/caixa/resumo']) {
+            const res = await request(app).get(rota).set(auth(tokenTesoureiro));
+            assert.notEqual(res.status, 403, `${rota} negou o tesoureiro: ${JSON.stringify(res.body)}`);
+            assert.ok(res.status < 500, `${rota} deu ${res.status}`);
+        }
+    });
+
+    test('tesoureiro continua SEM acesso a rotas de secretaria/admin', async () => {
+        const res = await request(app).post('/membros').set(auth(tokenTesoureiro)).send({ nome: 'Nao Pode' });
+        assert.equal(res.status, 403);
+    });
+
+    test('menu: tesoureiro usa o menu de financeiro e papel desconhecido não ganha menu de admin', () => {
+        const src = fs.readFileSync(path.join(__dirname, '..', 'public', 'enterprise-shell.js'), 'utf8');
+        assert.match(src, /tesoureiro:\s*'financeiro'/);
+        const fallback = src.slice(src.indexOf('function getRoleVisibleFeatures'), src.indexOf('const CORE_FEATURES'));
+        assert.ok(!/ROLE_FEATURES\.admin/.test(fallback), 'papel desconhecido ainda recebe o menu de admin');
+    });
+});

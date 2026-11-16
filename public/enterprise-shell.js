@@ -33,14 +33,18 @@
         visitante: ['oracoes', 'agenda', 'estudo']
     };
 
+    const ROLE_FEATURES_PAPEL_DESCONHECIDO = ['dashboard', 'oracoes', 'agenda', 'estudo'];
+
     const ROLE_ALIASES = {
         'super_admin': 'super_admin',
         superadmin: 'super_admin',
         'super-administrador': 'super_admin',
         'super administrador': 'super_admin',
+        'super-admin': 'super_admin',
         administrador: 'admin',
         adm: 'admin',
         tesouraria: 'financeiro',
+        tesoureiro: 'financeiro',
         financeiro: 'financeiro',
         secretaria: 'secretaria',
         pastor: 'pastor',
@@ -263,9 +267,11 @@
             return roleFeatures;
         }
 
-        // Keep authenticated users productive even if backend sends a custom role label.
+        // Papel desconhecido recebe o menu MINIMO (antes recebia o menu de admin,
+        // mostrando telas que o servidor nega com 403). Quem precisa de mais acesso
+        // deve ter um papel conhecido (admin, secretaria, financeiro...).
         if (user) {
-            return ROLE_FEATURES.admin;
+            return ROLE_FEATURES_PAPEL_DESCONHECIDO;
         }
 
         return ROLE_FEATURES.visitante;

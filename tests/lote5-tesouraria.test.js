@@ -129,7 +129,12 @@ describe('Lote 5 — cadastros da tesouraria', () => {
     });
 
     test('Caixa grava centro de custo e o relatório agrupa por centro e por fornecedor', async () => {
-        let r = await request(app).post('/caixa/lancamentos').set(authA())
+        // o caixa só aceita lançamentos depois do saldo inicial (competência do mês atual)
+        let r = await request(app).put('/caixa/competencia/saldo-inicial').set(authA())
+            .send({ competencia: `${hoje.slice(5, 7)}/${hoje.slice(0, 4)}`, saldoInicial: '0' });
+        assert.equal(r.status, 200, JSON.stringify(r.body));
+
+        r = await request(app).post('/caixa/lancamentos').set(authA())
             .send({ data: hoje, historico: 'Passagem missionário', valor: 50, tipo: 'SAIDA', centroCustoId: centroA });
         assert.equal(r.status, 201, JSON.stringify(r.body));
 

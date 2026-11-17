@@ -130,6 +130,7 @@
         'caixa_lancamentos.html': 'caixa',
         'caixa_ativar_mes.html': 'caixa',
         'caixa_saldo_inicial.html': 'caixa',
+        'caixa_lancamento.html': 'caixa',
         // Tesouraria — Bancos
         'bancos_lancamentos.html': 'bancos',
         'banco.html': 'bancos',
@@ -739,8 +740,9 @@
         ];
 
         const caixaLinks = [
-            ['tesouraria_caixa.html', 'fa-solid fa-cash-register', 'Caixa', 'caixa'],
-            ['caixa_ativar_mes.html', 'fa-solid fa-circle-dollar-to-slot', 'Ativar Mês / Saldo Inicial', 'caixa']
+            ['tesouraria_caixa.html', 'fa-solid fa-cash-register', 'Lançamentos do Caixa', 'caixa'],
+            ['caixa_ativar_mes.html', 'fa-solid fa-calendar-check', 'Ativar Competência', 'caixa'],
+            ['caixa_saldo_inicial.html', 'fa-solid fa-money-bill-wave', 'Saldo Inicial', 'caixa']
         ];
 
         const bancosLinks = [

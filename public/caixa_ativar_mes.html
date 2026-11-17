@@ -3,225 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Ativar Mês do Caixa</title>
+    <title>LDFP - Ativar Competência</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .caixa-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 14px;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-            padding: 20px;
-            max-width: 860px;
-        }
-
-        .caixa-card h3 {
-            margin: 0 0 8px;
-            font-size: 26px;
-            color: #0f172a;
-        }
-
-        .caixa-card p {
-            color: #64748b;
-            margin: 0 0 16px;
-        }
-
-        .competencia-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-top: 14px;
-        }
-
-        .competencia-box {
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 14px;
-            background: #f8fafc;
-        }
-
-        .competencia-box strong {
-            display: block;
-            font-size: 13px;
-            color: #334155;
-            margin-bottom: 8px;
-        }
-
-        .competencia-value {
-            font-size: 24px;
-            font-weight: 800;
-            color: #0f172a;
-        }
-
-        .status-msg {
-            margin-top: 12px;
-            font-size: 13px;
-            color: #0f766e;
-        }
-
-        .status-msg.error {
-            color: #b91c1c;
-        }
-
-        .status-msg:empty {
-            display: none;
-        }
-
-        .btn-primary {
-            padding: 10px 18px;
-            background-color: #0f172a;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-            margin-top: 14px;
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        @media (max-width: 900px) {
-            .competencia-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="tesouraria-ui.css">
     <script src="tema.js"></script>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-active="caixa_ativar_mes.html" data-shell-title="Ativar Mês do Caixa" data-shell-breadcrumb="LDFP / Tesouraria / Caixa / Ativar Mês" data-shell-chip="Módulo financeiro" data-shell-role="Admin financeiro">
-    <main class="main-content enterprise-main">
-        <div class="enterprise-page-shell">
-            <div class="enterprise-page-hero">
-                <div>
-                    <h2>Ativar Mês do Caixa</h2>
-                    <p>Crie rapidamente a próxima competência com base no saldo inicial atual.</p>
-                </div>
-                <div class="enterprise-page-badge"><i class="fa-solid fa-calendar-check"></i> Competência</div>
-            </div>
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Ativar Competência"
+      data-shell-breadcrumb="LDFP / Tesouraria / Caixa"
+      data-shell-active="caixa_ativar_mes.html"
+      data-shell-chip="Tesouraria">
 
-            <section class="caixa-card">
-                <h3>Ativar Competência</h3>
-                <p>Ao ativar, o sistema cria/atualiza a próxima competência em <strong id="competenciaDestinoLabel">--/----</strong>.</p>
-
-                <div class="competencia-grid">
-                    <div class="competencia-box">
-                        <strong>Competência atual</strong>
-                        <div class="competencia-value" id="competenciaAtual">--/----</div>
-                    </div>
-                    <div class="competencia-box">
-                        <strong>Competência a ativar</strong>
-                        <div class="competencia-value" id="competenciaDestino">--/----</div>
-                    </div>
-                </div>
-
-                <button id="btnAtivar" class="btn-primary" type="button">Ativar Competência</button>
-                <div id="statusMsg" class="status-msg"></div>
-            </section>
+<main class="main-content enterprise-main">
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>Ativar Competência</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <a href="tesouraria_dizimos.html">Tesouraria</a><span class="sep">›</span>
+                <a href="tesouraria_caixa.html">Caixa</a><span class="sep">›</span>
+                <span class="atual">Ativar Competência</span>
+            </nav>
         </div>
-    </main>
 
-    <script src="session.js?v=20260501"></script>
-    <script src="enterprise-shell.js?v=20260501"></script>
-    <script>
-        requireAuthSession();
+        <section class="tx-card tx-narrow" id="cartao" aria-labelledby="cTitulo">
+            <div class="tx-card-head"><h3 id="cTitulo"><span class="ico"><i class="fa-solid fa-calendar-check"></i></span> Ativar Competência</h3></div>
+            <div class="tx-card-body" id="corpo">
+                <div class="tx-skel" style="height:60px;"></div>
+            </div>
+            <div class="tx-card-foot" id="rodape" style="display:none;">
+                <button class="tx-btn tx-btn-primary" type="button" id="btnAtivar"><i class="fa-solid fa-circle-check"></i> Ativar Competência</button>
+            </div>
+        </section>
+    </div>
+</main>
 
-        const competenciaAtualEl = document.getElementById('competenciaAtual');
-        const competenciaDestinoEl = document.getElementById('competenciaDestino');
-        const competenciaDestinoLabelEl = document.getElementById('competenciaDestinoLabel');
-        const statusMsgEl = document.getElementById('statusMsg');
-        const btnAtivarEl = document.getElementById('btnAtivar');
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
+<script>
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    let caixa = null;
 
-        let competenciaAtual = '';
-        let competenciaDestino = '';
-        let saldoReferencia = '0,00';
-
-        function setStatus(text, isError) {
-            statusMsgEl.textContent = text || '';
-            statusMsgEl.classList.toggle('error', Boolean(isError));
+    function render() {
+        const c = caixa;
+        if (!c.configurado) {
+            $('corpo').innerHTML = `<div class="tx-alert warn" style="margin:0;"><i class="fa-solid fa-triangle-exclamation"></i>
+                <span>O caixa ainda não foi iniciado. Antes de ativar competências, <a href="caixa_saldo_inicial.html">informe o saldo inicial</a>.</span></div>`;
+            $('rodape').style.display = 'none';
+            return;
         }
+        $('corpo').innerHTML = `
+            <div class="tx-alert info"><i class="fa-solid fa-circle-info"></i><span>
+                <b>Primeira competência (Saldo Inicial):</b> ${TX.esc(c.primeiraCompetencia)}<br>
+                <b>Última competência cadastrada:</b> ${TX.esc(c.competenciaAtiva)}
+            </span></div>
+            <div class="tx-comp-grid">
+                <div class="tx-comp-box"><label><i class="fa-solid fa-calendar"></i> Competência Atual</label><div class="valor">${TX.esc(c.competenciaAtiva)}</div></div>
+                <div class="tx-comp-box"><label><i class="fa-solid fa-calendar-plus"></i> Competência a Ativar</label><div class="valor alvo">${TX.esc(c.proximaCompetencia)}</div></div>
+            </div>
+            <p style="margin:14px 0 0;font-size:12.5px;color:var(--tx-muted);text-align:center;">
+                Saldo que passa para ${TX.esc(c.proximaCompetencia)}: <b style="color:var(--tx-text);">${TX.money(c.saldoAtual)}</b>.
+                Depois de ativar, os lançamentos de ${TX.esc(c.competenciaAtiva)} ficam fechados.
+            </p>
+            ${c.podeAtivar ? '' : `<div class="tx-alert warn" style="margin:14px 0 0;"><i class="fa-solid fa-hourglass-half"></i><span>${TX.esc(c.proximaCompetencia)} ainda é uma competência futura. Ela poderá ser ativada a partir do mês anterior a ela.</span></div>`}`;
+        $('rodape').style.display = '';
+        $('btnAtivar').disabled = !c.podeAtivar;
+    }
 
-        function getMesSeguinte(competencia) {
-            const match = String(competencia || '').match(/
-^
-(\d{2})\/(\d{4})
-$
-/);
-            if (!match) {
-                const now = new Date();
-                const mm = String(now.getMonth() + 1).padStart(2, '0');
-                const yyyy = String(now.getFullYear());
-                return `${mm}/${yyyy}`;
-            }
-
-            const month = Number(match[1]);
-            const year = Number(match[2]);
-            const date = new Date(year, month, 1);
-            const nextMonth = String(date.getMonth() + 1).padStart(2, '0');
-            const nextYear = String(date.getFullYear());
-            return `${nextMonth}/${nextYear}`;
+    async function carregar() {
+        try {
+            caixa = await TX.api('/caixa/competencia');
+            render();
+        } catch (e) {
+            $('corpo').innerHTML = `<div class="tx-alert erro" style="margin:0;"><i class="fa-solid fa-circle-exclamation"></i><span>${TX.esc(e.message)}</span></div>`;
         }
+    }
 
-        async function fetchJson(url, options, fallbackMessage) {
-            const response = await fetch(url, options);
-            const data = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                throw new Error(data.error || data.message || fallbackMessage || 'Falha na requisição.');
-            }
-
-            return data;
+    $('btnAtivar').addEventListener('click', async () => {
+        const ok = await TX.confirmar({
+            titulo: 'Ativar competência',
+            texto: `Ativar ${caixa.proximaCompetencia}? Os lançamentos de ${caixa.competenciaAtiva} ficarão fechados e o saldo de ${TX.money(caixa.saldoAtual)} passa para o novo mês.`,
+            botao: 'Ativar',
+            perigo: false
+        });
+        if (!ok) return;
+        $('btnAtivar').disabled = true;
+        try {
+            const r = await TX.api('/caixa/competencia/ativar', { method: 'POST', body: {} });
+            TX.toast(r.message);
+            caixa = r.estado;
+            render();
+        } catch (e) {
+            TX.toast(e.message, 'erro');
+            $('btnAtivar').disabled = false;
         }
+    });
 
-        async function carregarDados() {
-            setStatus('', false);
-            try {
-                const data = await fetchJson('/caixa/saldo-inicial', {}, 'Não foi possível carregar o saldo inicial.');
-                competenciaAtual = data.competencia || '';
-                saldoReferencia = data.saldoInicial || '0,00';
-                competenciaDestino = getMesSeguinte(competenciaAtual);
-
-                competenciaAtualEl.textContent = competenciaAtual || 'Sem competência';
-                competenciaDestinoEl.textContent = competenciaDestino;
-                competenciaDestinoLabelEl.textContent = competenciaDestino;
-            } catch (error) {
-                setStatus(error.message || 'Falha ao carregar dados.', true);
-            }
-        }
-
-        async function ativarCompetencia() {
-            if (!competenciaDestino) {
-                setStatus('Competência de destino inválida.', true);
-                return;
-            }
-
-            btnAtivarEl.disabled = true;
-            setStatus('Ativando competência...', false);
-
-            try {
-                await fetchJson('/caixa/saldo-inicial', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        competencia: competenciaDestino,
-                        saldoInicial: saldoReferencia || '0,00'
-                    })
-                }, 'Não foi possível ativar a competência.');
-
-                setStatus('Competência ativada com sucesso.', false);
-                await carregarDados();
-            } catch (error) {
-                setStatus(error.message || 'Falha ao ativar competência.', true);
-            } finally {
-                btnAtivarEl.disabled = false;
-            }
-        }
-
-        btnAtivarEl.addEventListener('click', ativarCompetencia);
-        carregarDados();
-    </script>
+    carregar();
+})();
+</script>
 </body>
 </html>

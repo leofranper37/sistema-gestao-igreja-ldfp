@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Novo Lançamento de Caixa</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="tesouraria-ui.css">
+    <script src="tema.js"></script>
+</head>
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Lançamentos de Caixa"
+      data-shell-breadcrumb="LDFP / Tesouraria / Caixa"
+      data-shell-active="tesouraria_caixa.html"
+      data-shell-chip="Tesouraria">
+
+<main class="main-content enterprise-main">
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2 id="titulo">Lançamentos de Caixa</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <a href="tesouraria_dizimos.html">Tesouraria</a><span class="sep">›</span>
+                <a href="tesouraria_caixa.html">Lançamentos de Caixa</a><span class="sep">›</span>
+                <span class="atual" id="crumbAtual">Novo</span>
+            </nav>
+        </div>
+
+        <div id="alerta"></div>
+
+        <form id="form" class="tx-form-layout" novalidate style="display:none;">
+            <div>
+                <section class="tx-section">
+                    <h3><i class="fa-solid fa-file-lines"></i> <span id="secTitulo">Dados do Lançamento</span></h3>
+                    <div class="tx-grid c3">
+                        <div class="tx-field" id="campoData">
+                            <label for="data">Data <span class="req">*</span></label>
+                            <input id="data" class="tx-input" type="date" required>
+                            <span class="erro" id="dataErro">Informe uma data da competência ativa.</span>
+                        </div>
+                        <div class="tx-field">
+                            <label for="doc">Documento</label>
+                            <input id="doc" class="tx-input" maxlength="50" placeholder="Ex: NF 1234" autocomplete="off">
+                        </div>
+                        <div class="tx-field" id="campoHist">
+                            <label for="historico">Histórico <span class="req">*</span></label>
+                            <input id="historico" class="tx-input" maxlength="500" placeholder="Ex: Conta de energia de outubro" autocomplete="off">
+                            <span class="erro">Descreva o lançamento.</span>
+                        </div>
+                    </div>
+                    <div class="tx-grid c3" style="margin-top:14px;">
+                        <div class="tx-field" id="campoValor">
+                            <label for="valor">Valor <span class="req">*</span></label>
+                            <div class="tx-input-group">
+                                <span class="pre">R$</span>
+                                <input id="valor" class="tx-input valor" type="text" inputmode="numeric" autocomplete="off" aria-label="Valor em reais">
+                            </div>
+                            <span class="erro">Informe um valor maior que zero.</span>
+                        </div>
+                        <div class="tx-field" id="campoTipo">
+                            <label id="rotTipo">Tipo <span class="req">*</span></label>
+                            <div class="tx-seg cd" role="radiogroup" aria-labelledby="rotTipo" id="tipos">
+                                <button type="button" role="radio" data-tipo="ENTRADA" aria-checked="false"><i class="fa-solid fa-arrow-up"></i> Crédito</button>
+                                <button type="button" role="radio" data-tipo="SAIDA" aria-checked="false"><i class="fa-solid fa-arrow-down"></i> Débito</button>
+                            </div>
+                            <span class="erro">Escolha Crédito (entrada) ou Débito (saída).</span>
+                        </div>
+                        <div class="tx-field" id="campoConta">
+                            <label for="conta">Conta Contábil <span class="req">*</span></label>
+                            <div class="tx-ac">
+                                <div class="tx-input-group">
+                                    <input id="conta" class="tx-input" type="text" placeholder="Digite para buscar..." autocomplete="off" maxlength="255"
+                                           role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="acLista">
+                                    <button class="pos" type="button" id="btnConta" title="Buscar conta (F2)" aria-label="Mostrar contas"><i class="fa-solid fa-list"></i></button>
+                                </div>
+                                <div class="tx-ac-list" id="acLista" role="listbox"></div>
+                            </div>
+                            <span class="erro">Informe a conta contábil.</span>
+                        </div>
+                    </div>
+                    <div class="tx-field" style="margin-top:14px;">
+                        <label for="obs">Observação</label>
+                        <textarea id="obs" maxlength="2000" placeholder="Opcional"></textarea>
+                    </div>
+                </section>
+
+                <div class="tx-actions">
+                    <button class="tx-btn tx-btn-primary" type="submit" id="btnSalvar"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                    <button class="tx-btn tx-btn-ghost" type="button" id="btnSalvarNovo"><i class="fa-solid fa-plus"></i> Salvar e lançar outro</button>
+                    <a class="tx-btn tx-btn-ghost" href="tesouraria_caixa.html">Cancelar</a>
+                </div>
+            </div>
+
+            <aside class="tx-aside" aria-label="Resumo do lançamento">
+                <h4><i class="fa-solid fa-eye"></i> Resumo do Lançamento</h4>
+                <div class="tx-resumo">
+                    <div><span>Valor:</span><b id="rValor">R$ 0,00</b></div>
+                    <div><span>Tipo:</span><b id="rTipo">—</b></div>
+                    <div><span>Plano:</span><b id="rConta">—</b></div>
+                    <div><span>Saldo após:</span><b id="rSaldo">—</b></div>
+                </div>
+                <h4><i class="fa-solid fa-keyboard"></i> Atalhos de Teclado</h4>
+                <ul class="tx-atalhos">
+                    <li><kbd>F2</kbd> Buscar conta</li>
+                    <li><kbd>F3</kbd> Ir para o valor</li>
+                    <li><kbd>C / D</kbd> Crédito / Débito</li>
+                    <li><kbd>Ctrl+S</kbd> Salvar</li>
+                </ul>
+                <div class="tx-dica">
+                    <strong><i class="fa-regular fa-lightbulb"></i> Dica rápida</strong>
+                    Com o cursor no valor, tecle C ou D para alternar entre Crédito e Débito. Enter avança entre os campos.
+                </div>
+            </aside>
+        </form>
+    </div>
+</main>
+
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
+<script>
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const editId = new URLSearchParams(location.search).get('id');
+    const st = { caixa: null, tipo: '', valor: 0, contas: [], ac: [], acAtivo: -1, valorOriginal: 0, tipoOriginal: '' };
+
+    const valor = TX.maskMoney($('valor'), (v) => { st.valor = v; resumo(); });
+
+    function ultimoDia(mesIso) {
+        const [a, m] = mesIso.split('-').map(Number);
+        return `${mesIso}-${String(new Date(a, m, 0).getDate()).padStart(2, '0')}`;
+    }
+
+    function resumo() {
+        $('rValor').textContent = TX.money(st.valor);
+        $('rTipo').textContent = st.tipo === 'ENTRADA' ? 'Crédito' : st.tipo === 'SAIDA' ? 'Débito' : '—';
+        $('rConta').textContent = $('conta').value.trim() || '—';
+        if (st.caixa && st.caixa.configurado) {
+            // tira o efeito do próprio lançamento (na edição) e aplica o novo
+            let saldo = st.caixa.saldoAtual;
+            if (editId) saldo -= st.tipoOriginal === 'ENTRADA' ? st.valorOriginal : -st.valorOriginal;
+            if (st.tipo) saldo += st.tipo === 'ENTRADA' ? st.valor : -st.valor;
+            $('rSaldo').textContent = TX.money(saldo);
+        }
+    }
+
+    function setTipo(tipo) {
+        st.tipo = tipo;
+        document.querySelectorAll('#tipos [data-tipo]').forEach((b) => {
+            const on = b.dataset.tipo === tipo;
+            b.classList.toggle('on', on);
+            b.setAttribute('aria-checked', String(on));
+        });
+        $('campoTipo').classList.remove('invalido');
+        resumo();
+    }
+    $('tipos').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-tipo]');
+        if (b) setTipo(b.dataset.tipo);
+    });
+
+    // ── Conta contábil (sugestões + texto livre) ─────────────────────────
+    function filtrarContas(termo) {
+        const q = termo.toLowerCase();
+        const natureza = st.tipo === 'ENTRADA' ? 'receita' : st.tipo === 'SAIDA' ? 'despesa' : null;
+        return st.contas
+            .filter((c) => !q || c.rotulo.toLowerCase().includes(q))
+            .sort((a, b) => (natureza ? (a.natureza === natureza ? 0 : 1) - (b.natureza === natureza ? 0 : 1) : 0)
+                || a.rotulo.localeCompare(b.rotulo, 'pt-BR', { numeric: true }))
+            .slice(0, 40);
+    }
+
+    function renderAc() {
+        const lista = $('acLista');
+        lista.innerHTML = st.ac.length
+            ? st.ac.map((c, i) => `<div class="tx-ac-item ${i === st.acAtivo ? 'ativo' : ''}" role="option" data-i="${i}" aria-selected="${i === st.acAtivo}">
+                    <span>${TX.esc(c.rotulo)}</span><small>${c.natureza === 'receita' ? 'Receita' : 'Despesa'}</small></div>`).join('')
+            : '<div class="tx-ac-vazio">Nenhuma conta sugerida com esse texto. O que você digitou será usado como conta.</div>';
+        lista.classList.add('aberta');
+        $('conta').setAttribute('aria-expanded', 'true');
+    }
+    function fecharAc() {
+        $('acLista').classList.remove('aberta');
+        $('conta').setAttribute('aria-expanded', 'false');
+        st.acAtivo = -1;
+    }
+    function abrirAc() {
+        st.ac = filtrarContas($('conta').value.trim());
+        st.acAtivo = st.ac.length ? 0 : -1;
+        renderAc();
+    }
+    function escolherConta(c) {
+        $('conta').value = c.rotulo;
+        fecharAc();
+        $('campoConta').classList.remove('invalido');
+        resumo();
+    }
+
+    $('conta').addEventListener('input', () => { resumo(); abrirAc(); });
+    $('conta').addEventListener('focus', abrirAc);
+    $('conta').addEventListener('blur', () => setTimeout(fecharAc, 150));
+    $('conta').addEventListener('keydown', (e) => {
+        if (!$('acLista').classList.contains('aberta') || !st.ac.length) return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); st.acAtivo = (st.acAtivo + 1) % st.ac.length; renderAc(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); st.acAtivo = (st.acAtivo - 1 + st.ac.length) % st.ac.length; renderAc(); }
+        else if (e.key === 'Enter' && st.acAtivo >= 0) { e.preventDefault(); e.stopPropagation(); escolherConta(st.ac[st.acAtivo]); }
+        else if (e.key === 'Escape') fecharAc();
+    });
+    $('acLista').addEventListener('mousedown', (e) => {
+        const it = e.target.closest('[data-i]');
+        if (it) { e.preventDefault(); escolherConta(st.ac[Number(it.dataset.i)]); }
+    });
+    $('btnConta').addEventListener('click', () => { $('conta').focus(); abrirAc(); });
+    $('historico').addEventListener('input', () => $('campoHist').classList.remove('invalido'));
+
+    // ── Validar e salvar ─────────────────────────────────────────────────
+    function validar() {
+        const c = st.caixa;
+        const data = $('data').value;
+        const dataOk = /^\d{4}-\d{2}-\d{2}$/.test(data) && data >= c.inicio && data < c.fim;
+        const regras = [
+            ['campoData', dataOk],
+            ['campoHist', $('historico').value.trim().length >= 1],
+            ['campoValor', st.valor > 0],
+            ['campoTipo', !!st.tipo],
+            ['campoConta', $('conta').value.trim().length >= 2]
+        ];
+        let primeiro = null;
+        regras.forEach(([id, ok]) => {
+            $(id).classList.toggle('invalido', !ok);
+            if (!ok && !primeiro) primeiro = $(id).querySelector('input,button');
+        });
+        if (primeiro) primeiro.focus();
+        return !primeiro;
+    }
+
+    let salvando = false;
+    async function salvar(depois) {
+        if (salvando || !st.caixa || !validar()) return;
+        salvando = true;
+        $('btnSalvar').disabled = $('btnSalvarNovo').disabled = true;
+        const corpo = {
+            data: $('data').value,
+            doc: $('doc').value.trim() || null,
+            historico: $('historico').value.trim(),
+            valor: st.valor.toFixed(2),
+            tipo: st.tipo,
+            contaContabil: $('conta').value.trim(),
+            observacao: $('obs').value.trim() || null
+        };
+        try {
+            if (editId) await TX.api(`/caixa/lancamentos/${encodeURIComponent(editId)}`, { method: 'PUT', body: corpo });
+            else await TX.api('/caixa/lancamentos', { method: 'POST', body: corpo });
+            if (depois === 'novo') {
+                TX.toast(`Lançamento salvo (${st.tipo === 'ENTRADA' ? 'crédito' : 'débito'} de ${TX.money(st.valor)}).`);
+                st.caixa = await TX.api('/caixa/competencia');
+                $('doc').value = ''; $('historico').value = ''; $('obs').value = '';
+                valor.set(0);
+                resumo();
+                $('historico').focus();
+            } else {
+                TX.toastDepois(editId ? 'Lançamento atualizado.' : 'Lançamento salvo.');
+                location.href = 'tesouraria_caixa.html';
+            }
+        } catch (e) {
+            TX.toast(e.message, 'erro');
+        } finally {
+            salvando = false;
+            $('btnSalvar').disabled = $('btnSalvarNovo').disabled = false;
+        }
+    }
+
+    $('form').addEventListener('submit', (e) => { e.preventDefault(); salvar(); });
+    $('btnSalvarNovo').addEventListener('click', () => salvar('novo'));
+
+    $('form').addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
+        if (e.target.id === 'conta' && $('acLista').classList.contains('aberta') && st.acAtivo >= 0) return;
+        e.preventDefault();
+        const campos = ['data', 'doc', 'historico', 'valor', 'conta'].map($);
+        const i = campos.indexOf(e.target);
+        if (i >= 0 && i < campos.length - 1) campos[i + 1].focus();
+        else salvar();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'F2') { e.preventDefault(); $('conta').focus(); abrirAc(); return; }
+        if (e.key === 'F3') { e.preventDefault(); $('valor').focus(); return; }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); salvar(); return; }
+        // C / D: no campo de valor (que só aceita números) ou fora de campos de texto
+        const k = e.key.toLowerCase();
+        if ((k === 'c' || k === 'd') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            const alvo = e.target;
+            const emTexto = /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName) && alvo.id !== 'valor';
+            if (!emTexto) { e.preventDefault(); setTipo(k === 'c' ? 'ENTRADA' : 'SAIDA'); }
+        }
+    });
+
+    // ── Início ───────────────────────────────────────────────────────────
+    function erroFatal(html) {
+        $('alerta').innerHTML = html;
+        $('form').style.display = 'none';
+    }
+
+    async function iniciar() {
+        try {
+            st.caixa = await TX.api('/caixa/competencia');
+        } catch (e) {
+            erroFatal(`<div class="tx-alert erro"><i class="fa-solid fa-circle-exclamation"></i><span>${TX.esc(e.message)}</span></div>`);
+            return;
+        }
+        const c = st.caixa;
+        if (!c.configurado) {
+            erroFatal('<div class="tx-alert warn"><i class="fa-solid fa-triangle-exclamation"></i><span>O caixa ainda não foi iniciado. <a href="caixa_saldo_inicial.html">Informe o saldo inicial</a> para começar a lançar.</span></div>');
+            return;
+        }
+        $('titulo').textContent = `Lançamentos de Caixa - Competência Ativa: ${c.competenciaAtiva}`;
+        $('data').min = c.inicio;
+        $('data').max = ultimoDia(c.ativa);
+        $('dataErro').textContent = `A data precisa estar em ${c.competenciaAtiva} (competência ativa).`;
+        const hoje = TX.hojeISO();
+        $('data').value = hoje < c.inicio ? c.inicio : hoje >= c.fim ? ultimoDia(c.ativa) : hoje;
+        $('form').style.display = '';
+
+        TX.api('/caixa/contas-sugeridas').then((r) => { st.contas = r.items || []; }).catch(() => {});
+
+        if (editId) {
+            $('crumbAtual').textContent = 'Editar';
+            $('secTitulo').textContent = 'Editar Lançamento';
+            document.title = 'LDFP - Editar Lançamento de Caixa';
+            $('btnSalvarNovo').style.display = 'none';
+            try {
+                const l = await TX.api(`/caixa/lancamentos/${encodeURIComponent(editId)}`);
+                if (l.origem) {
+                    erroFatal(`<div class="tx-alert info"><i class="fa-solid fa-circle-info"></i><span>Este lançamento foi gerado por um dízimo. <a href="dizimo_lancamento.html?id=${encodeURIComponent(l.origem_id)}">Abra o dízimo</a> para alterar.</span></div>`);
+                    return;
+                }
+                $('data').value = l.data;
+                $('doc').value = l.doc || '';
+                $('historico').value = l.historico || '';
+                $('conta').value = l.conta_contabil || '';
+                $('obs').value = l.observacao || '';
+                st.valorOriginal = Number(l.valor);
+                st.tipoOriginal = String(l.tipo).toUpperCase();
+                valor.set(st.valorOriginal);
+                setTipo(st.tipoOriginal);
+                if (l.data < c.inicio) {
+                    erroFatal(`<div class="tx-alert warn"><i class="fa-solid fa-lock"></i><span>Este lançamento é de uma competência encerrada e não pode mais ser alterado. A competência ativa é ${TX.esc(c.competenciaAtiva)}.</span></div>`);
+                    return;
+                }
+            } catch (e) {
+                erroFatal(`<div class="tx-alert erro"><i class="fa-solid fa-circle-exclamation"></i><span>${TX.esc(e.message)}</span></div>`);
+                return;
+            }
+        } else {
+            $('historico').focus();
+        }
+        resumo();
+    }
+    iniciar();
+})();
+</script>
+</body>
+</html>

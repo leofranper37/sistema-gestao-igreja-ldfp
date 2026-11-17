@@ -2,6 +2,17 @@ const financeModel = require('../models/financeModel');
 const bancoModel = require('../models/bancoModel');
 const { pool } = require('../config/db');
 const { createHttpError } = require('../utils/httpError');
+const logger = require('../config/logger');
+
+// Dízimo com destino "Caixa" gera/atualiza/remove a entrada correspondente no caixa.
+// Falha aqui não pode desfazer o dízimo já salvo: registra e segue.
+async function sincronizarCaixa(igrejaId, dizimoId, userId) {
+    try {
+        await require('./caixaService').sincronizarDizimo(igrejaId, dizimoId, userId);
+    } catch (e) {
+        logger.error('caixa_sync_dizimo_falhou', { igrejaId, dizimoId, erro: e && e.message });
+    }
+}
 
 async function getSaldo(igrejaId) {
     const saldoInicialRow = await financeModel.getLatestSaldoInicial(igrejaId);
@@ -100,12 +111,16 @@ async function prepararDizimo(igrejaId, payload) {
 
 async function createDizimo(igrejaId, payload, userId) {
     const dados = await prepararDizimo(igrejaId, payload);
-    return financeModel.createDizimo({ ...dados, createdBy: userId });
+    const id = await financeModel.createDizimo({ ...dados, createdBy: userId });
+    if (id) await sincronizarCaixa(igrejaId, id, userId);
+    return id;
 }
 
 async function updateDizimo(id, igrejaId, payload) {
     const dados = await prepararDizimo(igrejaId, payload);
-    return financeModel.updateDizimo(id, igrejaId, dados);
+    const rows = await financeModel.updateDizimo(id, igrejaId, dados);
+    if (rows) await sincronizarCaixa(igrejaId, id, null);
+    return rows;
 }
 
 async function getDizimo(id, igrejaId) {
@@ -143,7 +158,9 @@ async function listDestinosDizimo(igrejaId) {
 }
 
 async function deleteDizimo(id, igrejaId) {
-    return financeModel.deleteDizimo(id, igrejaId);
+    const rows = await financeModel.deleteDizimo(id, igrejaId);
+    if (rows) await sincronizarCaixa(igrejaId, id, null);
+    return rows;
 }
 
 async function listTiposReceita(igrejaId, filters) {

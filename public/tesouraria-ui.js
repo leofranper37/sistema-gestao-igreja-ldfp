@@ -26,7 +26,7 @@
             if (aoMudar) aoMudar(centavos / 100);
         };
         input.addEventListener('input', aplicar);
-        input.addEventListener('focus', () => setTimeout(() => input.select(), 0));
+        input.addEventListener('focus', () => setTimeout(() => { if (document.activeElement === input) input.select(); }, 0));
         if (!input.value) input.value = '0,00';
         return {
             set(valor) {

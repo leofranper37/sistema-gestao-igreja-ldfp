@@ -727,6 +727,7 @@ async function deleteCaixaLancamento(id, igrejaId) {
 
 module.exports = {
     ensureFinanceTables,
+    ensureCaixaTables,
     upsertSaldoInicial,
     createTransacao,
     getLatestSaldoInicial,

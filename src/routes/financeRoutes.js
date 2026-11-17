@@ -4,6 +4,7 @@ const { authorize, requireAuth } = require('../middlewares/auth');
 const {
     caixaLancamentoSchema,
     caixaMesSchema,
+    caixaSaldoInicialSchema,
     dizimoFiltroSchema,
     dizimoSchema,
     saldoInicialSchema,
@@ -65,10 +66,21 @@ router.post('/tipos-receita', requireAuth, authorize(['admin', 'financeiro', 'se
 router.put('/tipos-receita/:id', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), validateBody(tipoReceitaUpdateSchema), updateTipoReceita);
 router.delete('/tipos-receita/:id', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), deleteTipoReceita);
 
+// Caixa por competência (telas novas)
+const caixa = require('../controllers/caixaController');
+const CX_LER = ['admin', 'financeiro', 'secretaria', 'pastor'];
+const CX_ESCREVER = ['admin', 'financeiro', 'secretaria'];
+router.get('/caixa/competencia', requireAuth, authorize(CX_LER), caixa.getEstado);
+router.put('/caixa/competencia/saldo-inicial', requireAuth, authorize(['admin', 'financeiro']), validateBody(caixaSaldoInicialSchema), caixa.definirSaldoInicial);
+router.post('/caixa/competencia/ativar', requireAuth, authorize(['admin', 'financeiro']), caixa.ativarProxima);
+router.get('/caixa/contas-sugeridas', requireAuth, authorize(CX_LER), caixa.contasSugeridas);
+router.get('/caixa/lancamentos/:id', requireAuth, authorize(CX_LER), caixa.getLancamento);
+router.put('/caixa/lancamentos/:id', requireAuth, authorize(CX_ESCREVER), validateBody(caixaLancamentoSchema), caixa.updateLancamento);
+
 router.get('/caixa/resumo', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), getCaixaResumo);
-router.get('/caixa/lancamentos', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), listCaixaLancamentos);
-router.post('/caixa/lancamentos', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), validateBody(caixaLancamentoSchema), createCaixaLancamento);
-router.delete('/caixa/lancamentos/:id', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), deleteCaixaLancamento);
+router.get('/caixa/lancamentos', requireAuth, authorize(CX_LER), caixa.listLancamentos);
+router.post('/caixa/lancamentos', requireAuth, authorize(CX_ESCREVER), validateBody(caixaLancamentoSchema), caixa.createLancamento);
+router.delete('/caixa/lancamentos/:id', requireAuth, authorize(CX_ESCREVER), caixa.deleteLancamento);
 router.post('/caixa/mes', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), validateBody(caixaMesSchema), upsertCaixaMes);
 
 module.exports = router;

@@ -2,181 +2,125 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>LDFP - Saldo Inicial do Caixa</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Seu CSS principal -->
+    <title>LDFP - Saldo Inicial do Caixa</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="tesouraria-ui.css">
     <script src="tema.js"></script>
 </head>
-<body class="theme-azul-verde enterprise-shell-page"
-      data-shell-active="caixa_saldo_inicial.html"
-      data-shell-title="Saldo Inicial do Caixa"
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Saldo Inicial"
       data-shell-breadcrumb="LDFP / Tesouraria / Caixa"
-      data-shell-chip="Módulo financeiro">
+      data-shell-active="caixa_saldo_inicial.html"
+      data-shell-chip="Tesouraria">
 
+<main class="main-content enterprise-main">
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>Saldo Inicial</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <a href="tesouraria_dizimos.html">Tesouraria</a><span class="sep">›</span>
+                <a href="tesouraria_caixa.html">Caixa</a><span class="sep">›</span>
+                <span class="atual">Saldo Inicial</span>
+            </nav>
+        </div>
 
-    <main class="main-content enterprise-main">
-
-        <!-- Conteúdo da página -->
-        <div class="pagina-conteudo">
-
-            <!-- Breadcrumb + título -->
-            <div class="pagina-topo">
-                <div>
-                    <div class="breadcrumb">
-                        Tesouraria <span>/</span> Caixa <span>/</span> Saldo Inicial
+        <form class="tx-card tx-narrow" id="form" novalidate aria-labelledby="cTitulo">
+            <div class="tx-card-head"><h3 id="cTitulo"><span class="ico"><i class="fa-solid fa-money-bill-wave"></i></span> Saldo Inicial</h3></div>
+            <div class="tx-card-body">
+                <div class="tx-alert info"><i class="fa-solid fa-circle-info"></i>
+                    <span>O saldo inicial é o ponto de partida do controle do caixa. Informe a competência (mês/ano) e quanto havia em dinheiro no caixa no início dela.</span>
+                </div>
+                <div class="tx-alert warn" id="avisoTrava"><i class="fa-solid fa-triangle-exclamation"></i>
+                    <span><b>A competência não poderá ser alterada depois de informada.</b> O valor do saldo inicial pode ser ajustado depois, mas a competência fica bloqueada.</span>
+                </div>
+                <div class="tx-comp-grid">
+                    <div class="tx-comp-box tx-field" id="campoComp">
+                        <label for="comp"><i class="fa-solid fa-calendar"></i> Competência</label>
+                        <input id="comp" class="tx-input" type="month" required>
+                        <span class="erro">Informe o mês/ano.</span>
                     </div>
-                    <h1>Saldo Inicial <span>do Caixa</span></h1>
+                    <div class="tx-comp-box tx-field" id="campoValor">
+                        <label for="valor"><i class="fa-solid fa-sack-dollar"></i> Saldo Inicial</label>
+                        <div class="tx-input-group">
+                            <span class="pre">R$</span>
+                            <input id="valor" class="tx-input" type="text" inputmode="numeric" autocomplete="off" aria-label="Saldo inicial em reais">
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div class="tx-card-foot">
+                <button class="tx-btn tx-btn-primary" type="submit" id="btnSalvar"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+            </div>
+        </form>
+    </div>
+</main>
 
-            <!-- Card de Informações e Formulário -->
-            <section class="info-form-card">
-                <div class="info-header">
-                    <h2>Configure o saldo inicial para começar</h2>
-                </div>
-                <div class="info-body">
-                    <div class="info-box info">
-                        <i class="fa-solid fa-circle-info"></i>
-                        <p>
-                            O saldo inicial é o ponto de partida para o controle financeiro do caixa.
-                            Informe a competência (mês/ano) e o valor inicial em caixa.
-                        </p>
-                    </div>
-                    <div class="info-box warning">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <p>
-                            A competência não poderá ser alterada após informada.
-                            O valor do saldo inicial pode ser ajustado posteriormente, mas a competência ficará bloqueada.
-                        </p>
-                    </div>
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
+<script>
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    let caixa = null;
+    let saldo = 0;
+    const valor = TX.maskMoney($('valor'), (v) => { saldo = v; });
 
-                    <form class="form-grid" id="saldoInicialForm">
-                        <div class="campo">
-                            <label for="competencia">Competência</label>
-                            <div class="campo-icone">
-                                <i class="fa-solid fa-calendar-days"></i>
-                                <input type="text" id="competencia" placeholder="MM/AAAA" maxlength="7" required>
-                            </div>
-                        </div>
-                        <div class="campo">
-                            <label for="saldoInicial">Saldo Inicial</label>
-                            <div class="campo-icone">
-                                <i class="fa-solid fa-dollar-sign"></i>
-                                <input type="text" id="saldoInicial" placeholder="R$ 0,00" required>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="info-footer">
-                    <button class="btn-secundario" id="btnCancelar">
-                        Cancelar
-                    </button>
-                    <button class="btn-primario" id="btnSalvar" type="submit" form="saldoInicialForm">
-                        <i class="fa-solid fa-save"></i>
-                        Salvar
-                    </button>
-                </div>
-                <div class="status-msg" id="statusMsg"></div>
-            </section>
-
-        </div><!-- /pagina-conteudo -->
-    </main>
-
-    <script src="session.js?v=20260501"></script>
-    <script src="enterprise-shell.js?v=20261115"></script>
-    <script>
-        requireAuthSession();
-
-
-        // --- Lógica de formulário com backend ---
-        const competenciaInput = document.getElementById('competencia');
-        const saldoInput = document.getElementById('saldoInicial');
-        const statusMsg = document.getElementById('statusMsg');
-        const form = document.getElementById('saldoInicialForm');
-        const btnSalvar = document.getElementById('btnSalvar');
-        const btnCancelar = document.getElementById('btnCancelar');
-
-        // Máscara para Competência (MM/AAAA)
-        function formatCompetencia(value) {
-            const digits = value.replace(/\D/g, '').slice(0, 6);
-            if (digits.length <= 2) return digits;
-            return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    function aplicar(c) {
+        caixa = c;
+        if (c.configurado) {
+            $('comp').value = c.primeira;
+            $('comp').disabled = true;
+            $('comp').title = 'A competência do saldo inicial não pode ser alterada.';
+            valor.set(c.saldoInicial);
+            $('avisoTrava').querySelector('span').innerHTML = `<b>Competência bloqueada em ${TX.esc(c.primeiraCompetencia)}.</b> Você pode ajustar o valor do saldo inicial; os saldos dos meses seguintes são recalculados automaticamente.`;
+        } else {
+            $('comp').value = c.mesAtual;
+            $('comp').disabled = false;
         }
+    }
 
-        // Máscara para Saldo Inicial (R$ 0,00)
-        function toCurrency(value) {
-            const digits = value.replace(/\D/g, '');
-            const number = (parseInt(digits || 0) / 100).toFixed(2);
-            return number.toString().replace('.', ',');
+    async function carregar() {
+        try {
+            aplicar(await TX.api('/caixa/competencia'));
+        } catch (e) {
+            TX.toast(e.message, 'erro');
         }
+    }
 
-        competenciaInput.addEventListener('input', (e) => {
-            e.target.value = formatCompetencia(e.target.value);
-        });
-
-        saldoInput.addEventListener('input', (e) => {
-            const formatted = toCurrency(e.target.value);
-            e.target.value = formatted;
-        });
-
-        btnCancelar.addEventListener('click', () => {
-            form.reset();
-            statusMsg.textContent = '';
-        });
-
-        btnSalvar.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const competencia = competenciaInput.value.trim();
-            const saldoInicial = saldoInput.value.trim();
-
-            const validoCompetencia = /^\d{2}\/\d{4}$/.test(competencia);
-            if (!validoCompetencia) {
-                statusMsg.textContent = 'Competência inválida. Use o formato MM/AAAA.';
-                statusMsg.classList.add('error');
-                return;
-            }
-
-            try {
-                const resp = await fetch('/caixa/saldo-inicial', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ competencia, saldoInicial })
-                });
-
-                if (!resp.ok) {
-                    const data = await resp.json().catch(() => ({}));
-                    throw new Error(data.error || 'Não foi possível salvar.');
-                }
-
-                statusMsg.textContent = 'Saldo inicial salvo com sucesso.';
-                statusMsg.classList.remove('error');
-                form.reset();
-                await carregarSaldoInicial();
-            } catch (err) {
-                statusMsg.textContent = err.message;
-                statusMsg.classList.add('error');
-            }
-        });
-
-        async function carregarSaldoInicial() {
-            try {
-                const resp = await fetch('/caixa/saldo-inicial');
-                if (!resp.ok) return;
-                const dados = await resp.json();
-                if (dados.competencia) competenciaInput.value = dados.competencia;
-                if (dados.saldoInicial) saldoInput.value = dados.saldoInicial;
-            } catch {
-                // Mantém a tela funcional mesmo sem conexão.
-            }
+    $('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const comp = TX.mesParaCompetencia($('comp').value);
+        $('campoComp').classList.toggle('invalido', !comp);
+        if (!comp) return;
+        if (!caixa.configurado) {
+            const ok = await TX.confirmar({
+                titulo: 'Confirmar saldo inicial',
+                texto: `O caixa começa em ${comp} com ${TX.money(saldo)}. A competência ${comp} não poderá ser alterada depois. Confirmar?`,
+                botao: 'Confirmar',
+                perigo: false
+            });
+            if (!ok) return;
         }
+        $('btnSalvar').disabled = true;
+        try {
+            const r = await TX.api('/caixa/competencia/saldo-inicial', {
+                method: 'PUT',
+                body: { competencia: comp, saldoInicial: saldo.toFixed(2) }
+            });
+            aplicar(r.estado);
+            TX.toast(r.message);
+        } catch (err) {
+            TX.toast(err.message, 'erro');
+        } finally {
+            $('btnSalvar').disabled = false;
+        }
+    });
 
-        carregarSaldoInicial();
-    </script>
+    carregar();
+})();
+</script>
 </body>
 </html>

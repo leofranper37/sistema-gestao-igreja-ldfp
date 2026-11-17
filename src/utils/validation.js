@@ -50,8 +50,14 @@ const caixaLancamentoSchema = Joi.object({
     valor: decimalInput.label('Valor'),
     tipo: Joi.string().valid('ENTRADA', 'SAIDA').required().label('Tipo'),
     observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação'),
+    contaContabil: Joi.string().trim().max(255).allow('', null).optional().label('Conta contábil'),
     centroCustoId: idVinculo.label('Centro de custo'),
     fornecedorId: idVinculo.label('Fornecedor')
+});
+
+const caixaSaldoInicialSchema = Joi.object({
+    competencia: Joi.string().trim().pattern(/^(0[1-9]|1[0-2])\/\d{4}$/).required().label('Competência'),
+    saldoInicial: decimalInput.label('Saldo inicial')
 });
 
 const caixaMesSchema = Joi.object({
@@ -568,6 +574,7 @@ module.exports = {
     saldoInicialSchema,
     caixaLancamentoSchema,
     caixaMesSchema,
+    caixaSaldoInicialSchema,
     transacaoSchema,
     bancoContaSchema,
     bancoLancamentoSchema,

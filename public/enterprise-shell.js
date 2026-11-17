@@ -123,6 +123,8 @@
         'tesouraria_dizimos.html': 'dizimos',
         'dizimos_lancamentos.html': 'dizimos',
         'dizimos_tipos_receita.html': 'dizimos',
+        'dizimo_lancamento.html': 'dizimos',
+        'tipos_receitas.html': 'dizimos',
         // Tesouraria — Caixa
         'tesouraria_caixa.html': 'caixa',
         'caixa_lancamentos.html': 'caixa',
@@ -732,7 +734,8 @@
 
     function renderTesourariaGroup(activePath, user) {
         const dizimosLinks = [
-            ['tesouraria_dizimos.html', 'fa-solid fa-coins', 'Dízimos', 'dizimos']
+            ['tesouraria_dizimos.html', 'fa-solid fa-coins', 'Lançamentos de Dízimos', 'dizimos'],
+            ['tipos_receitas.html', 'fa-solid fa-list-ul', 'Tipos de Receita', 'dizimos']
         ];
 
         const caixaLinks = [

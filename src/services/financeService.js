@@ -1,4 +1,7 @@
 const financeModel = require('../models/financeModel');
+const bancoModel = require('../models/bancoModel');
+const { pool } = require('../config/db');
+const { createHttpError } = require('../utils/httpError');
 
 async function getSaldo(igrejaId) {
     const saldoInicialRow = await financeModel.getLatestSaldoInicial(igrejaId);
@@ -48,19 +51,95 @@ async function getTotaisDizimos(igrejaId, competencia) {
     };
 }
 
-async function createDizimo(igrejaId, payload, userId) {
-    const id = await financeModel.createDizimo({
+// Confere que membro, conta bancária e tipo de receita são DESTA igreja e
+// escolhe o tipo de receita automaticamente quando não vier (natureza + público).
+async function prepararDizimo(igrejaId, payload) {
+    const membroId = payload.membroId ? Number(payload.membroId) : null;
+    if (membroId) {
+        const [m] = await pool.query('SELECT id FROM membros WHERE id = ? AND igreja_id = ? LIMIT 1', [membroId, igrejaId]);
+        if (!m.length) throw createHttpError(400, 'Membro não encontrado nesta igreja.');
+    }
+
+    let destino = null;
+    let destinoBancoId = null;
+    if (payload.destino === 'caixa') {
+        destino = 'caixa';
+    } else if (payload.destino && payload.destino.startsWith('banco:')) {
+        destinoBancoId = Number(payload.destino.slice(6));
+        const conta = await bancoModel.getConta(destinoBancoId, igrejaId);
+        if (!conta) throw createHttpError(400, 'Conta bancária de destino não encontrada.');
+        destino = 'banco';
+    }
+
+    const tipo = payload.tipo || 'dizimo';
+    let tipoReceitaId = payload.tipoReceitaId || null;
+    if (tipoReceitaId) {
+        const t = await financeModel.findTipoReceitaById(tipoReceitaId, igrejaId);
+        if (!t) throw createHttpError(400, 'Tipo de receita não encontrado.');
+    } else if (tipo !== 'outros') {
+        const tipos = await financeModel.listTiposReceita({ igrejaId });
+        const publico = membroId ? 'membro' : 'visitante';
+        const achado = tipos.find((t) => t.natureza === tipo && t.publico === publico);
+        tipoReceitaId = achado ? achado.id : null;
+    }
+
+    return {
         igrejaId,
-        membroId: payload.membroId || null,
+        membroId,
         membroNome: payload.membroNome,
         valor: Number(payload.valor),
         competencia: payload.competencia,
-        tipo: payload.tipo || 'dizimo',
+        tipo,
         observacao: payload.observacao || null,
-        createdBy: userId
-    });
+        dataLancamento: payload.dataLancamento || null,
+        tipoReceitaId,
+        destino,
+        destinoBancoId
+    };
+}
 
-    return id;
+async function createDizimo(igrejaId, payload, userId) {
+    const dados = await prepararDizimo(igrejaId, payload);
+    return financeModel.createDizimo({ ...dados, createdBy: userId });
+}
+
+async function updateDizimo(id, igrejaId, payload) {
+    const dados = await prepararDizimo(igrejaId, payload);
+    return financeModel.updateDizimo(id, igrejaId, dados);
+}
+
+async function getDizimo(id, igrejaId) {
+    return financeModel.getDizimoById(id, igrejaId);
+}
+
+async function getResumoDizimos(igrejaId, competencia) {
+    return financeModel.getResumoDizimos(igrejaId, competencia);
+}
+
+// Busca de membro para o lançamento: por nome ou pelo nº da ficha
+// (o nº da ficha é o número do cadastro — o mesmo da carteirinha, ex.: #000123)
+async function buscarMembrosDizimo(igrejaId, termo) {
+    const q = String(termo || '').trim().replace(/^#/, '');
+    if (!q) return [];
+    const numerico = /^\d+$/.test(q);
+    const [rows] = await pool.query(
+        numerico
+            ? 'SELECT id, nome, situacao FROM membros WHERE igreja_id = ? AND id = ? LIMIT 1'
+            : 'SELECT id, nome, situacao FROM membros WHERE igreja_id = ? AND nome LIKE ? ORDER BY nome LIMIT 15',
+        numerico ? [igrejaId, Number(q)] : [igrejaId, '%' + q + '%']
+    );
+    return rows.map((m) => ({ ...m, ficha: '#' + String(m.id).padStart(6, '0') }));
+}
+
+// Destinos possíveis do dinheiro: o caixa + as contas bancárias ativas da igreja
+async function listDestinosDizimo(igrejaId) {
+    const contas = await bancoModel.listContas(igrejaId).catch(() => []);
+    return [
+        { valor: 'caixa', rotulo: 'Caixa (dinheiro em espécie)' },
+        ...(contas || [])
+            .filter((c) => Number(c.ativo) !== 0)
+            .map((c) => ({ valor: `banco:${c.id}`, rotulo: [c.nome, c.banco].filter(Boolean).join(' · ') }))
+    ];
 }
 
 async function deleteDizimo(id, igrejaId) {
@@ -74,6 +153,8 @@ async function listTiposReceita(igrejaId, filters) {
         igrejaId: row.igreja_id,
         descricao: row.descricao,
         planoConta: row.plano_conta,
+        natureza: row.natureza || null,
+        publico: row.publico || null,
         origem: row.origem,
         ativo: Number(row.ativo) === 1,
         createdBy: row.created_by,
@@ -86,6 +167,8 @@ async function createTipoReceita(igrejaId, payload, userId) {
         igrejaId,
         descricao: payload.descricao,
         planoConta: payload.planoConta,
+        natureza: payload.natureza || null,
+        publico: payload.publico || null,
         createdBy: userId
     });
 }
@@ -139,6 +222,11 @@ async function upsertCaixaMes(igrejaId, payload) {
 }
 
 module.exports = {
+    updateDizimo,
+    getDizimo,
+    getResumoDizimos,
+    buscarMembrosDizimo,
+    listDestinosDizimo,
     createTransacao,
     getSaldo,
     getSaldoInicial,

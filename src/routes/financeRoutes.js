@@ -18,6 +18,11 @@ const {
 
 const {
     createDizimo,
+    getResumoDizimos,
+    getDizimo,
+    updateDizimo,
+    buscarMembrosDizimo,
+    listDestinosDizimo,
     createTipoReceita,
     createTransacao,
     deleteDizimo,
@@ -48,6 +53,11 @@ router.post('/caixa/saldo-inicial', requireAuth, authorize(['admin', 'financeiro
 router.get('/dizimos', requireAuth, authorize(['admin', 'financeiro', 'secretaria', 'pastor']), validateQuery(dizimoFiltroSchema), listDizimos);
 router.get('/dizimos/totais', requireAuth, authorize(['admin', 'financeiro', 'secretaria', 'pastor']), getTotaisDizimos);
 router.post('/dizimos', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), validateBody(dizimoSchema), createDizimo);
+router.get('/dizimos/resumo', requireAuth, authorize(['admin', 'financeiro', 'secretaria', 'pastor']), getResumoDizimos);
+router.get('/dizimos/membros', requireAuth, authorize(['admin', 'financeiro', 'secretaria', 'pastor']), buscarMembrosDizimo);
+router.get('/dizimos/destinos', requireAuth, authorize(['admin', 'financeiro', 'secretaria', 'pastor']), listDestinosDizimo);
+router.get('/dizimos/:id', requireAuth, authorize(['admin', 'financeiro', 'secretaria', 'pastor']), getDizimo);
+router.put('/dizimos/:id', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), validateBody(dizimoSchema), updateDizimo);
 router.delete('/dizimos/:id', requireAuth, authorize(['admin', 'financeiro', 'secretaria']), deleteDizimo);
 
 router.get('/tipos-receita', requireAuth, authorize(['admin', 'financeiro', 'secretaria', 'pastor']), validateQuery(tipoReceitaFiltroSchema), listTiposReceita);

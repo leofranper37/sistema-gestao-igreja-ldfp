@@ -3,314 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LDFP - Tipos de Receitas</title>
+    <title>LDFP - Tipos de Receita</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --azul-700: #1d4ed8;
-            --azul-600: #2563eb;
-            --azul-100: #dbeafe;
-            --verde-700: #15803d;
-            --verde-600: #16a34a;
-            --verde-100: #dcfce7;
-            --texto: #334155;
-            --borda: #dbe3ef;
-        }
-
-        .wrap { max-width: 1120px; margin: 0 auto; padding: 20px 14px 30px; }
-
-        .top-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
-        .kpi { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; box-shadow: 0 6px 18px rgba(15, 23, 42, .08); }
-        .kpi small { display: block; color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
-        .kpi strong { font-size: 1.5rem; color: #0f172a; }
-        .kpi.total strong { color: var(--azul-700); }
-        .kpi.ativo strong { color: var(--verde-700); }
-        .kpi.plano strong { color: var(--azul-600); }
-
-        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 6px 18px rgba(15, 23, 42, .08); padding: 18px; }
-        .card-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-        .card h2 { margin: 0; color: var(--azul-700); font-size: 18px; }
-        .card p { margin: 0; color: #475569; }
-
-        .btn { border: 0; border-radius: 8px; padding: 9px 13px; font-size: 12px; font-weight: 700; color: #fff; cursor: pointer; }
-        .btn-primary { background: var(--azul-600); }
-        .btn-success { background: var(--verde-700); }
-        .btn-light { background: #e2e8f0; color: #0f172a; }
-        .btn-danger { background: #dc2626; }
-
-        .toolbar { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 12px; }
-        .toolbar input {
-            width: 100%;
-            border: 1px solid var(--borda);
-            border-radius: 8px;
-            padding: 9px 12px;
-            font-size: 13px;
-            box-sizing: border-box;
-        }
-
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { border-bottom: 1px solid #eef2f7; padding: 10px 8px; text-align: left; }
-        th { background: #f8fafc; color: #64748b; font-size: 11px; text-transform: uppercase; }
-        tbody tr { cursor: pointer; }
-        tbody tr:hover { background: #f0f9ff; }
-        tbody tr.active { background: #ecfeff; }
-
-        .badge {
-            display: inline-block;
-            border-radius: 99px;
-            padding: 3px 9px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-        .badge-base { background: var(--azul-100); color: var(--azul-700); }
-        .badge-custom { background: var(--verde-100); color: var(--verde-700); }
-
-        .detail {
-            margin-top: 14px;
-            border: 1px solid var(--borda);
-            border-radius: 10px;
-            padding: 12px;
-            background: #f8fafc;
-        }
-        .detail h3 { margin: 0 0 8px; color: var(--texto); font-size: 14px; }
-        .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 12px; }
-        .detail-grid .row { background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 8px; }
-        .detail-grid strong { color: #0f172a; }
-
-        .actions { display: flex; gap: 8px; margin-top: 10px; }
-
-        .msg { min-height: 18px; margin-top: 10px; font-size: 12px; }
-        .msg.ok { color: var(--verde-700); }
-        .msg.error { color: #b91c1c; }
-
-        @media (max-width: 900px) {
-            .top-cards { grid-template-columns: 1fr; }
-            .toolbar { grid-template-columns: 1fr; }
-            .detail-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+    <link rel="stylesheet" href="tesouraria-ui.css">
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-title="Tipos de Receita" data-shell-breadcrumb="LDFP / Tesouraria / Dízimos / Tipos de Receita" data-shell-active="tipos_receitas.html" data-shell-chip="Tesouraria ativa">
+<body class="theme-petroleo enterprise-shell-page tes-dark"
+      data-shell-title="Tipos de Receita"
+      data-shell-breadcrumb="LDFP / Tesouraria / Dízimos"
+      data-shell-active="tipos_receitas.html"
+      data-shell-chip="Tesouraria">
+
 <main class="main-content enterprise-main">
-    <div class="wrap">
-        <div class="top-cards">
-            <div class="kpi total"><small>Tipos Cadastrados</small><strong id="kpiTotal">0</strong></div>
-            <div class="kpi ativo"><small>Tipos Base</small><strong id="kpiBase">0</strong></div>
-            <div class="kpi plano"><small>Tipos Personalizados</small><strong id="kpiCustom">0</strong></div>
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>Tipos de Receita</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <a href="tesouraria_dizimos.html">Tesouraria</a><span class="sep">›</span>
+                <a href="tesouraria_dizimos.html">Dízimos</a><span class="sep">›</span>
+                <span class="atual">Tipos de Receita</span>
+            </nav>
         </div>
 
-        <section class="card">
-            <div class="card-header">
-                <h2><i class="fa-solid fa-tags"></i> Tipos de Receita</h2>
-                <button id="btnNovo" class="btn btn-primary" type="button"><i class="fa-solid fa-plus"></i> Novo Tipo</button>
-            </div>
-            <p>Gerencie os tipos usados nos lançamentos de dízimos e ofertas.</p>
+        <div class="tx-alert info">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Cada lançamento de dízimo é ligado automaticamente a um tipo de receita (pelo tipo e por quem contribuiu) e à conta contábil dele. Nos tipos padrão, só a conta contábil pode ser alterada.</span>
+        </div>
 
-            <div class="toolbar">
-                <input type="text" id="filtro" placeholder="Buscar por descrição ou plano de conta...">
-                <button id="btnLimpar" class="btn btn-light" type="button">Limpar Filtro</button>
+        <section class="tx-card">
+            <div class="tx-toolbar">
+                <div class="tx-search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="busca" class="tx-input" type="search" placeholder="Buscar..." autocomplete="off" aria-label="Buscar tipo de receita">
+                </div>
+                <button id="btnNovo" class="tx-btn tx-btn-primary" type="button"><i class="fa-solid fa-plus"></i> Novo</button>
             </div>
-
-            <div style="overflow-x:auto;">
-                <table>
+            <div class="tx-table-wrap">
+                <table class="tx-table">
                     <thead>
-                    <tr>
-                        <th>Descrição</th>
-                        <th>Plano de Conta</th>
-                        <th>Origem</th>
-                    </tr>
+                        <tr>
+                            <th class="sortable" data-ord="descricao">Tipo <i class="fa-solid fa-sort"></i></th>
+                            <th>Categoria</th>
+                            <th class="sortable" data-ord="planoConta">Conta contábil <i class="fa-solid fa-sort-up"></i></th>
+                            <th class="acoes">Ações</th>
+                        </tr>
                     </thead>
-                    <tbody id="tbTipos"></tbody>
+                    <tbody id="linhas"></tbody>
                 </table>
             </div>
-
-            <div class="detail" id="detailBox" style="display:none;">
-                <h3><i class="fa-solid fa-circle-info"></i> Detalhes do Tipo</h3>
-                <div class="detail-grid" id="detailGrid"></div>
-                <div class="actions">
-                    <button id="btnEditar" type="button" class="btn btn-success">Editar</button>
-                    <button id="btnExcluir" type="button" class="btn btn-danger">Excluir</button>
-                </div>
+            <div class="tx-foot">
+                <span id="contagem"></span>
+                <div class="tx-pages" id="paginas"></div>
             </div>
-
-            <p class="msg" id="msg"></p>
         </section>
     </div>
 </main>
 
-<script src="session.js?v=20260501"></script>
-<script src="enterprise-shell.js?v=20260501"></script>
+<div class="tx-modal-bg" id="modal">
+    <form class="tx-modal" id="formTipo" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" novalidate>
+        <header><span id="modalTitulo">Novo tipo de receita</span><button type="button" data-fechar aria-label="Fechar">&times;</button></header>
+        <div class="corpo tx-page" style="padding:16px;">
+            <div class="tx-field" id="cDescricao">
+                <label for="mDescricao">Nome <span class="req">*</span></label>
+                <input id="mDescricao" class="tx-input" maxlength="255" required>
+                <span class="erro">Informe o nome (mín. 2 letras).</span>
+            </div>
+            <div class="tx-grid c2">
+                <div class="tx-field">
+                    <label for="mNatureza">Natureza</label>
+                    <select id="mNatureza">
+                        <option value="dizimo">Dízimo</option>
+                        <option value="oferta">Oferta</option>
+                        <option value="missoes">Oferta Missionária</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div class="tx-field">
+                    <label for="mPublico">Quem contribui</label>
+                    <select id="mPublico">
+                        <option value="membro">Membro</option>
+                        <option value="visitante">Visitante</option>
+                        <option value="congregado">Congregado</option>
+                        <option value="crianca">Criança</option>
+                    </select>
+                </div>
+            </div>
+            <div class="tx-field" id="cConta">
+                <label for="mConta">Conta contábil <span class="req">*</span></label>
+                <input id="mConta" class="tx-input" maxlength="255" placeholder="Ex.: 4.01.01.01 - Dízimo de Membros" required>
+                <span class="erro">Informe a conta contábil.</span>
+            </div>
+            <p class="hint" id="mAvisoBase" style="margin:0;color:var(--tx-faint);font-size:12px;display:none;">
+                Tipo padrão do sistema: só a conta contábil pode ser alterada.
+            </p>
+        </div>
+        <footer>
+            <button type="button" class="tx-btn tx-btn-ghost" data-fechar>Cancelar</button>
+            <button type="submit" class="tx-btn tx-btn-primary" id="mSalvar"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+        </footer>
+    </form>
+</div>
+
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
 <script>
-    requireAuthSession();
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const POR_PAGINA = 10;
+    const NATUREZA = { dizimo: 'Dízimo', oferta: 'Oferta', missoes: 'Oferta Missionária', outros: 'Outros' };
+    const st = { itens: [], busca: '', pagina: 1, ordem: { campo: 'planoConta', desc: false }, editando: null };
 
-    const tbTipos = document.getElementById('tbTipos');
-    const filtro = document.getElementById('filtro');
-    const msg = document.getElementById('msg');
-    const detailBox = document.getElementById('detailBox');
-    const detailGrid = document.getElementById('detailGrid');
-    let allItems = [];
-    let selectedId = null;
-
-    function setMsg(text, isError) {
-        msg.className = isError ? 'msg error' : 'msg ok';
-        msg.textContent = text || '';
-    }
-
-    function renderKpis(items) {
-        const baseCount = items.filter(i => i.origem === 'base').length;
-        const customCount = items.filter(i => i.origem === 'custom').length;
-        document.getElementById('kpiTotal').textContent = String(items.length);
-        document.getElementById('kpiBase').textContent = String(baseCount);
-        document.getElementById('kpiCustom').textContent = String(customCount);
-    }
-
-    function renderDetalhe(item) {
-        if (!item) {
-            detailBox.style.display = 'none';
-            return;
+    async function carregar() {
+        $('linhas').innerHTML = Array.from({ length: 4 }, () => `<tr>${'<td><div class="tx-skel"></div></td>'.repeat(4)}</tr>`).join('');
+        try {
+            const r = await TX.api('/tipos-receita');
+            st.itens = r.items || [];
+            render();
+        } catch (e) {
+            $('linhas').innerHTML = `<tr><td colspan="4"><div class="tx-empty"><div class="ico"><i class="fa-solid fa-triangle-exclamation"></i></div><strong>Não foi possível carregar</strong><span>${TX.esc(e.message)}</span></div></td></tr>`;
         }
+    }
 
-        detailGrid.innerHTML = `
-            <div class="row"><div>Descrição</div><strong>${item.descricao}</strong></div>
-            <div class="row"><div>Plano de Conta</div><strong>${item.planoConta}</strong></div>
-            <div class="row"><div>Origem</div><strong>${item.origem === 'base' ? 'Padrão do Sistema' : 'Personalizado'}</strong></div>
-            <div class="row"><div>Chave</div><strong>${item.id}</strong></div>
-        `;
+    function filtrados() {
+        const q = st.busca.toLowerCase();
+        return st.itens
+            .filter((t) => !q || `${t.descricao} ${t.planoConta}`.toLowerCase().includes(q))
+            .sort((a, b) => {
+                const x = String(a[st.ordem.campo] || ''), y = String(b[st.ordem.campo] || '');
+                const c = x.localeCompare(y, 'pt-BR', { numeric: true });
+                return st.ordem.desc ? -c : c;
+            });
+    }
 
-        detailBox.style.display = 'block';
-        document.getElementById('btnExcluir').disabled = item.origem === 'base';
-        document.getElementById('btnEditar').disabled = item.origem === 'base';
+    function categoria(t) {
+        if (!t.natureza) return '<span class="tx-badge">—</span>';
+        const nat = NATUREZA[t.natureza] || t.natureza;
+        const pub = t.publico ? ` · ${TX.PUBLICOS[t.publico] || t.publico}` : '';
+        return `<span class="tx-badge ${TX.esc(t.natureza)}">${TX.esc(nat + pub)}</span>`;
     }
 
     function render() {
-        const termo = filtro.value.trim().toLowerCase();
-        const items = allItems.filter(item => {
-            if (!termo) return true;
-            return item.descricao.toLowerCase().includes(termo) || item.planoConta.toLowerCase().includes(termo);
-        });
+        const lista = filtrados();
+        const tp = Math.max(1, Math.ceil(lista.length / POR_PAGINA));
+        st.pagina = Math.min(st.pagina, tp);
+        const ini = (st.pagina - 1) * POR_PAGINA;
+        const pagina = lista.slice(ini, ini + POR_PAGINA);
 
-        renderKpis(allItems);
+        $('linhas').innerHTML = pagina.length ? pagina.map((t) => `<tr>
+                <td>${TX.esc(t.descricao)}${t.origem === 'base' ? '<span class="sub">Padrão do sistema</span>' : ''}</td>
+                <td>${categoria(t)}</td>
+                <td>${TX.esc(t.planoConta)}</td>
+                <td class="acoes">
+                    <button class="tx-btn-icon" type="button" data-editar="${TX.esc(t.id)}" title="Editar" aria-label="Editar ${TX.esc(t.descricao)}"><i class="fa-solid fa-pen"></i></button>
+                    ${t.origem === 'base' ? '' : `<button class="tx-btn-icon danger" type="button" data-excluir="${TX.esc(t.id)}" title="Excluir" aria-label="Excluir ${TX.esc(t.descricao)}"><i class="fa-solid fa-trash"></i></button>`}
+                </td>
+            </tr>`).join('')
+            : `<tr><td colspan="4"><div class="tx-empty"><div class="ico"><i class="fa-solid fa-magnifying-glass"></i></div><strong>Nenhum tipo encontrado</strong><span>Tente buscar com outros termos.</span></div></td></tr>`;
 
-        if (!items.length) {
-            tbTipos.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#64748b;padding:20px;">Nenhum tipo encontrado.</td></tr>';
-            renderDetalhe(null);
-            return;
-        }
-
-        tbTipos.innerHTML = items.map(item => `
-            <tr data-id="${item.id}" class="${selectedId === item.id ? 'active' : ''}">
-                <td>${item.descricao}</td>
-                <td>${item.planoConta}</td>
-                <td><span class="badge ${item.origem === 'base' ? 'badge-base' : 'badge-custom'}">${item.origem === 'base' ? 'Sistema' : 'Personalizado'}</span></td>
-            </tr>
-        `).join('');
-
-        const selected = allItems.find(i => i.id === selectedId) || items[0];
-        selectedId = selected ? selected.id : null;
-        renderDetalhe(selected || null);
-
-        tbTipos.querySelectorAll('tr[data-id]').forEach(tr => {
-            tr.addEventListener('click', () => {
-                selectedId = tr.getAttribute('data-id');
-                render();
-            });
-        });
+        $('contagem').textContent = lista.length
+            ? `Exibindo ${ini + 1} até ${Math.min(ini + POR_PAGINA, lista.length)} de ${lista.length} resultado(s)`
+            : '0 registro(s)';
+        if (tp <= 1) { $('paginas').innerHTML = ''; return; }
+        let html = `<button type="button" data-pag="${st.pagina - 1}" ${st.pagina === 1 ? 'disabled' : ''} aria-label="Anterior">‹</button>`;
+        for (let i = 1; i <= tp; i++) html += `<button type="button" data-pag="${i}" class="${i === st.pagina ? 'atual' : ''}">${i}</button>`;
+        html += `<button type="button" data-pag="${st.pagina + 1}" ${st.pagina === tp ? 'disabled' : ''} aria-label="Próxima">›</button>`;
+        $('paginas').innerHTML = html;
     }
 
-    async function loadTipos() {
-        const response = await fetch('/tipos-receita');
-        const data = await response.json().catch(() => ({ items: [] }));
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Não foi possível carregar tipos de receita.');
-        }
-
-        allItems = data.items || [];
-        render();
+    // ── Modal ────────────────────────────────────────────────────────────
+    function abrirModal(tipo) {
+        st.editando = tipo || null;
+        const base = tipo && tipo.origem === 'base';
+        $('modalTitulo').textContent = tipo ? 'Editar tipo de receita' : 'Novo tipo de receita';
+        $('mDescricao').value = tipo ? tipo.descricao : '';
+        $('mNatureza').value = (tipo && tipo.natureza) || 'oferta';
+        $('mPublico').value = (tipo && tipo.publico) || 'membro';
+        $('mConta').value = tipo ? tipo.planoConta : '';
+        ['mDescricao', 'mNatureza', 'mPublico'].forEach((id) => { $(id).disabled = base; });
+        $('mAvisoBase').style.display = base ? '' : 'none';
+        ['cDescricao', 'cConta'].forEach((id) => $(id).classList.remove('invalido'));
+        $('modal').classList.add('aberto');
+        (base ? $('mConta') : $('mDescricao')).focus();
     }
+    function fecharModal() { $('modal').classList.remove('aberto'); }
 
-    document.getElementById('btnNovo').addEventListener('click', async () => {
-        const descricao = prompt('Descrição do novo tipo de receita:');
-        if (!descricao) return;
-        const planoConta = prompt('Plano de conta (ex: 4.01.01.03 - Exemplo):');
-        if (!planoConta) return;
+    $('modal').addEventListener('click', (e) => {
+        if (e.target === $('modal') || e.target.closest('[data-fechar]')) fecharModal();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharModal(); });
 
-        const response = await fetch('/tipos-receita', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ descricao: descricao.trim(), planoConta: planoConta.trim() })
-        });
+    $('formTipo').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const descricao = $('mDescricao').value.trim();
+        const planoConta = $('mConta').value.trim();
+        $('cDescricao').classList.toggle('invalido', descricao.length < 2);
+        $('cConta').classList.toggle('invalido', planoConta.length < 2);
+        if (descricao.length < 2 || planoConta.length < 2) return;
 
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            setMsg(data.error || 'Erro ao criar tipo de receita.', true);
-            return;
+        const corpo = { descricao, planoConta, natureza: $('mNatureza').value, publico: $('mPublico').value };
+        $('mSalvar').disabled = true;
+        try {
+            if (st.editando) {
+                await TX.api(`/tipos-receita/${encodeURIComponent(st.editando.id)}`, { method: 'PUT', body: corpo });
+                TX.toast('Tipo de receita atualizado.');
+            } else {
+                await TX.api('/tipos-receita', { method: 'POST', body: corpo });
+                TX.toast('Tipo de receita criado.');
+            }
+            fecharModal();
+            carregar();
+        } catch (err) {
+            TX.toast(err.message, 'erro');
+        } finally {
+            $('mSalvar').disabled = false;
         }
-
-        selectedId = data.id || null;
-        setMsg('Tipo de receita criado com sucesso.', false);
-        await loadTipos();
     });
 
-    document.getElementById('btnEditar').addEventListener('click', async () => {
-        const current = allItems.find(i => i.id === selectedId);
-        if (!current || current.origem === 'base') {
-            setMsg('Tipos padrão não podem ser editados nesta tela.', true);
-            return;
-        }
-
-        const descricao = prompt('Nova descrição:', current.descricao);
-        if (!descricao) return;
-        const planoConta = prompt('Novo plano de conta:', current.planoConta);
-        if (!planoConta) return;
-
-        const response = await fetch(`/tipos-receita/${encodeURIComponent(current.id)}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ descricao: descricao.trim(), planoConta: planoConta.trim() })
-        });
-
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            setMsg(data.error || 'Erro ao atualizar tipo de receita.', true);
-            return;
-        }
-
-        setMsg('Tipo de receita atualizado.', false);
-        await loadTipos();
+    $('btnNovo').addEventListener('click', () => abrirModal(null));
+    $('busca').addEventListener('input', TX.debounce(() => { st.busca = $('busca').value.trim(); st.pagina = 1; render(); }, 200));
+    $('paginas').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-pag]');
+        if (b && !b.disabled) { st.pagina = Number(b.dataset.pag); render(); }
     });
-
-    document.getElementById('btnExcluir').addEventListener('click', async () => {
-        const current = allItems.find(i => i.id === selectedId);
-        if (!current || current.origem === 'base') {
-            setMsg('Tipos padrão não podem ser removidos.', true);
-            return;
-        }
-
-        if (!confirm(`Excluir o tipo "${current.descricao}"?`)) return;
-
-        const response = await fetch(`/tipos-receita/${encodeURIComponent(current.id)}`, { method: 'DELETE' });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            setMsg(data.error || 'Erro ao remover tipo de receita.', true);
-            return;
-        }
-
-        selectedId = null;
-        setMsg('Tipo de receita removido.', false);
-        await loadTipos();
-    });
-
-    filtro.addEventListener('input', render);
-    document.getElementById('btnLimpar').addEventListener('click', () => {
-        filtro.value = '';
+    document.querySelectorAll('th.sortable').forEach((th) => th.addEventListener('click', () => {
+        const campo = th.dataset.ord;
+        st.ordem = { campo, desc: st.ordem.campo === campo ? !st.ordem.desc : false };
+        document.querySelectorAll('th.sortable i').forEach((i) => { i.className = 'fa-solid fa-sort'; });
+        th.querySelector('i').className = `fa-solid ${st.ordem.desc ? 'fa-sort-down' : 'fa-sort-up'}`;
         render();
+    }));
+    $('linhas').addEventListener('click', async (e) => {
+        const ed = e.target.closest('[data-editar]');
+        if (ed) { abrirModal(st.itens.find((t) => t.id === ed.dataset.editar)); return; }
+        const ex = e.target.closest('[data-excluir]');
+        if (!ex) return;
+        const t = st.itens.find((x) => x.id === ex.dataset.excluir);
+        const ok = await TX.confirmar({ titulo: 'Excluir tipo de receita', texto: `Excluir "${t ? t.descricao : ''}"? Lançamentos antigos continuam guardados.` });
+        if (!ok) return;
+        try {
+            await TX.api(`/tipos-receita/${encodeURIComponent(ex.dataset.excluir)}`, { method: 'DELETE' });
+            TX.toast('Tipo de receita excluído.');
+            carregar();
+        } catch (err) { TX.toast(err.message, 'erro'); }
     });
 
-    loadTipos().catch(error => {
-        setMsg(error.message || 'Erro ao carregar tipos de receita.', true);
-    });
+    carregar();
+})();
 </script>
 </body>
 </html>

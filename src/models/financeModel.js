@@ -2,11 +2,48 @@ const { pool } = require('../config/db');
 const { ensureTable } = require('./tableEnsure');
 const cadastrosTesouraria = require('./cadastrosTesourariaModel');
 
+// natureza: dizimo | oferta | missoes  ·  publico: membro | visitante | congregado | crianca
 const BASE_TIPOS_RECEITA = [
-    { slug: 'dizimos', descricao: 'Dízimos', planoConta: '4.01.01.01 - Dízimo de Membros' },
-    { slug: 'oferta-missionaria', descricao: 'Oferta Missionária', planoConta: '4.01.03.01 - Oferta Missionária de Membros' },
-    { slug: 'ofertas', descricao: 'Ofertas', planoConta: '4.01.01.02 - Oferta de Membros' }
+    { slug: 'dizimos', descricao: 'Dízimos', planoConta: '4.01.01.01 - Dízimo de Membros', natureza: 'dizimo', publico: 'membro' },
+    { slug: 'ofertas', descricao: 'Ofertas', planoConta: '4.01.01.02 - Oferta de Membros', natureza: 'oferta', publico: 'membro' },
+    { slug: 'oferta-missionaria', descricao: 'Oferta Missionária', planoConta: '4.01.03.01 - Oferta Missionária de Membros', natureza: 'missoes', publico: 'membro' },
+    { slug: 'dizimo-visitantes', descricao: 'Dízimo de Visitantes', planoConta: '4.01.02.01 - Dízimo de Visitantes', natureza: 'dizimo', publico: 'visitante' },
+    { slug: 'oferta-visitantes', descricao: 'Oferta de Visitantes', planoConta: '4.01.02.02 - Oferta de Visitantes', natureza: 'oferta', publico: 'visitante' },
+    { slug: 'oferta-missionaria-visitantes', descricao: 'Oferta Missionária de Visitantes', planoConta: '4.01.03.02 - Oferta Missionária de Visitantes', natureza: 'missoes', publico: 'visitante' },
+    { slug: 'dizimo-congregados', descricao: 'Dízimo de Congregados', planoConta: '4.01.04.01 - Dízimo de Congregados', natureza: 'dizimo', publico: 'congregado' },
+    { slug: 'oferta-congregados', descricao: 'Oferta de Congregados', planoConta: '4.01.04.02 - Oferta de Congregados', natureza: 'oferta', publico: 'congregado' },
+    { slug: 'dizimo-criancas', descricao: 'Dízimo de Crianças', planoConta: '4.01.05.01 - Dízimo de Crianças', natureza: 'dizimo', publico: 'crianca' },
+    { slug: 'oferta-criancas', descricao: 'Oferta de Crianças', planoConta: '4.01.05.02 - Oferta de Crianças', natureza: 'oferta', publico: 'crianca' }
 ];
+
+// Colunas novas criadas em tempo de execução (mesmo padrão do cadastrosTesourariaModel)
+const COLUNAS_EXTRAS = {
+    dizimos: [
+        ['data_lancamento', 'DATE NULL'],
+        ['tipo_receita_id', 'VARCHAR(80) NULL'],
+        ['destino', 'VARCHAR(20) NULL'],
+        ['destino_banco_id', 'INT NULL'],
+        ['atualizado_em', 'DATETIME NULL']
+    ],
+    tipos_receita: [
+        ['natureza', 'VARCHAR(20) NULL'],
+        ['publico', 'VARCHAR(20) NULL']
+    ]
+};
+const colunasExtrasProntas = new Set();
+
+async function ensureColunasExtras(tabela) {
+    for (const [col, tipo] of COLUNAS_EXTRAS[tabela] || []) {
+        const k = `${tabela}.${col}`;
+        if (colunasExtrasProntas.has(k)) continue;
+        try {
+            await pool.query(`ALTER TABLE ${tabela} ADD COLUMN ${col} ${tipo}`);
+            colunasExtrasProntas.add(k);
+        } catch (e) {
+            if (/duplicate column|already exists/i.test(String(e && e.message))) colunasExtrasProntas.add(k);
+        }
+    }
+}
 
 let financeTablesReadyPromise = null;
 
@@ -275,8 +312,10 @@ async function listDizimos(filters) {
         values
     );
 
+    await ensureColunasExtras('dizimos');
     const [rows] = await pool.query(
-        `SELECT * FROM dizimos WHERE ${where.join(' AND ')} ORDER BY id DESC LIMIT ? OFFSET ?`,
+        `SELECT * FROM dizimos WHERE ${where.join(' AND ')}
+         ORDER BY COALESCE(data_lancamento, created_at) DESC, id DESC LIMIT ? OFFSET ?`,
         [...values, limit, offset]
     );
 
@@ -315,10 +354,12 @@ async function getTotaisDizimos(igrejaId, competencia) {
 
 async function createDizimo(payload) {
     await ensureFinanceTables();
+    await ensureColunasExtras('dizimos');
 
     const [result] = await pool.query(
-        `INSERT INTO dizimos (igreja_id, membro_id, membro_nome, valor, competencia, tipo, observacao, created_by)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO dizimos (igreja_id, membro_id, membro_nome, valor, competencia, tipo, observacao, created_by,
+                              data_lancamento, tipo_receita_id, destino, destino_banco_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
             payload.igrejaId,
             payload.membroId || null,
@@ -327,11 +368,54 @@ async function createDizimo(payload) {
             payload.competencia,
             payload.tipo || 'dizimo',
             payload.observacao || null,
-            payload.createdBy || null
+            payload.createdBy || null,
+            payload.dataLancamento || null,
+            payload.tipoReceitaId || null,
+            payload.destino || null,
+            payload.destinoBancoId || null
         ]
     );
 
     return result.insertId;
+}
+
+async function getDizimoById(id, igrejaId) {
+    await ensureFinanceTables();
+    await ensureColunasExtras('dizimos');
+    const [rows] = await pool.query('SELECT * FROM dizimos WHERE id = ? AND igreja_id = ? LIMIT 1', [id, igrejaId]);
+    return rows[0] || null;
+}
+
+async function updateDizimo(id, igrejaId, payload) {
+    await ensureFinanceTables();
+    await ensureColunasExtras('dizimos');
+    const [info] = await pool.query(
+        `UPDATE dizimos SET membro_id = ?, membro_nome = ?, valor = ?, competencia = ?, tipo = ?, observacao = ?,
+                data_lancamento = ?, tipo_receita_id = ?, destino = ?, destino_banco_id = ?, atualizado_em = CURRENT_TIMESTAMP
+         WHERE id = ? AND igreja_id = ?`,
+        [
+            payload.membroId || null, payload.membroNome, payload.valor, payload.competencia,
+            payload.tipo || 'dizimo', payload.observacao || null, payload.dataLancamento || null,
+            payload.tipoReceitaId || null, payload.destino || null, payload.destinoBancoId || null,
+            id, igrejaId
+        ]
+    );
+    return info.affectedRows;
+}
+
+// Cartões do topo: total e quantidade da competência + total do ano dela
+async function getResumoDizimos(igrejaId, competencia) {
+    await ensureFinanceTables();
+    const ano = String(competencia).slice(3);
+    const [[mes]] = await pool.query(
+        'SELECT COALESCE(SUM(valor), 0) AS total, COUNT(*) AS qtd FROM dizimos WHERE igreja_id = ? AND competencia = ?',
+        [igrejaId, competencia]
+    );
+    const [[doAno]] = await pool.query(
+        'SELECT COALESCE(SUM(valor), 0) AS total FROM dizimos WHERE igreja_id = ? AND competencia LIKE ?',
+        [igrejaId, `%/${ano}`]
+    );
+    return { totalMes: Number(mes.total), lancamentosMes: Number(mes.qtd), totalAno: Number(doAno.total), ano: Number(ano) };
 }
 
 async function deleteDizimo(id, igrejaId) {
@@ -356,12 +440,22 @@ async function ensureTiposReceitaTable() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`
     );
+    await ensureColunasExtras('tipos_receita');
 }
+
+const igrejasComBase = new Set();
 
 async function ensureBaseTiposReceita(igrejaId) {
     await ensureTiposReceitaTable();
+    if (igrejasComBase.has(Number(igrejaId))) return;
 
     for (const item of BASE_TIPOS_RECEITA) {
+        // linhas criadas antes desta versão não tinham natureza/público
+        await pool.query(
+            `UPDATE tipos_receita SET natureza = ?, publico = ?
+             WHERE igreja_id = ? AND origem = 'base' AND descricao = ? AND natureza IS NULL`,
+            [item.natureza, item.publico, igrejaId, item.descricao]
+        );
         const [rows] = await pool.query(
             `SELECT id
              FROM tipos_receita
@@ -375,11 +469,12 @@ async function ensureBaseTiposReceita(igrejaId) {
         }
 
         await pool.query(
-            `INSERT INTO tipos_receita (id, igreja_id, descricao, plano_conta, origem, ativo)
-             VALUES (?, ?, ?, ?, 'base', 1)`,
-            [`base-${igrejaId}-${item.slug}`, igrejaId, item.descricao, item.planoConta]
+            `INSERT INTO tipos_receita (id, igreja_id, descricao, plano_conta, origem, ativo, natureza, publico)
+             VALUES (?, ?, ?, ?, 'base', 1, ?, ?)`,
+            [`base-${igrejaId}-${item.slug}`, igrejaId, item.descricao, item.planoConta, item.natureza, item.publico]
         );
     }
+    igrejasComBase.add(Number(igrejaId));
 }
 
 async function listTiposReceita(filters) {
@@ -394,7 +489,7 @@ async function listTiposReceita(filters) {
     }
 
     const [rows] = await pool.query(
-        `SELECT id, igreja_id, descricao, plano_conta, origem, ativo, created_by, created_at
+        `SELECT id, igreja_id, descricao, plano_conta, origem, ativo, natureza, publico, created_by, created_at
          FROM tipos_receita
          WHERE ${where.join(' AND ')}
          ORDER BY CASE WHEN origem = 'base' THEN 0 ELSE 1 END, descricao ASC`,
@@ -407,7 +502,7 @@ async function listTiposReceita(filters) {
 async function findTipoReceitaById(id, igrejaId) {
     await ensureTiposReceitaTable();
     const [rows] = await pool.query(
-        `SELECT id, igreja_id, descricao, plano_conta, origem, ativo, created_by, created_at
+        `SELECT id, igreja_id, descricao, plano_conta, origem, ativo, natureza, publico, created_by, created_at
          FROM tipos_receita
          WHERE id = ? AND igreja_id = ?
          LIMIT 1`,
@@ -422,9 +517,10 @@ async function createTipoReceita(payload) {
     const id = `custom-${payload.igrejaId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     await pool.query(
-        `INSERT INTO tipos_receita (id, igreja_id, descricao, plano_conta, origem, ativo, created_by)
-         VALUES (?, ?, ?, ?, 'custom', 1, ?)`,
-        [id, payload.igrejaId, payload.descricao, payload.planoConta, payload.createdBy || null]
+        `INSERT INTO tipos_receita (id, igreja_id, descricao, plano_conta, origem, ativo, created_by, natureza, publico)
+         VALUES (?, ?, ?, ?, 'custom', 1, ?, ?, ?)`,
+        [id, payload.igrejaId, payload.descricao, payload.planoConta, payload.createdBy || null,
+            payload.natureza || null, payload.publico || null]
     );
 
     return id;
@@ -433,10 +529,14 @@ async function createTipoReceita(payload) {
 async function updateTipoReceita(id, igrejaId, payload) {
     await ensureTiposReceitaTable();
     await pool.query(
+        // Tipos padrão: só a conta contábil muda (nome, natureza e público ficam fixos)
         `UPDATE tipos_receita
-         SET descricao = ?, plano_conta = ?
-         WHERE id = ? AND igreja_id = ? AND origem = 'custom'`,
-        [payload.descricao, payload.planoConta, id, igrejaId]
+         SET descricao = CASE WHEN origem = 'base' THEN descricao ELSE ? END,
+             natureza  = CASE WHEN origem = 'base' THEN natureza ELSE ? END,
+             publico   = CASE WHEN origem = 'base' THEN publico ELSE ? END,
+             plano_conta = ?
+         WHERE id = ? AND igreja_id = ?`,
+        [payload.descricao, payload.natureza || null, payload.publico || null, payload.planoConta, id, igrejaId]
     );
 }
 
@@ -635,6 +735,9 @@ module.exports = {
     listTransacoes,
     createDizimo,
     deleteDizimo,
+    getDizimoById,
+    updateDizimo,
+    getResumoDizimos,
     getTotaisDizimos,
     listDizimos,
     createTipoReceita,

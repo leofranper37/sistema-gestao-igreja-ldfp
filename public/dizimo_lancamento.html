@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Novo Dízimo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="tesouraria-ui.css">
+</head>
+<body class="theme-petroleo enterprise-shell-page tes-dark"
+      data-shell-title="Dízimos"
+      data-shell-breadcrumb="LDFP / Tesouraria / Dízimos"
+      data-shell-active="tesouraria_dizimos.html"
+      data-shell-chip="Tesouraria">
+
+<main class="main-content enterprise-main">
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2 id="titulo">Novo Dízimo</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <a href="tesouraria_dizimos.html">Tesouraria</a><span class="sep">›</span>
+                <a href="tesouraria_dizimos.html">Dízimos</a><span class="sep">›</span>
+                <span class="atual" id="crumbAtual">Novo</span>
+            </nav>
+        </div>
+
+        <div id="alerta"></div>
+
+        <form id="form" class="tx-form-layout" novalidate>
+            <div>
+                <section class="tx-section">
+                    <h3><i class="fa-solid fa-user"></i> Identificação do Dizimista</h3>
+                    <div class="tx-grid ficha">
+                        <div class="tx-field">
+                            <label for="ficha">Número da Ficha</label>
+                            <input id="ficha" class="tx-input" type="text" inputmode="numeric" placeholder="Ex: 123" autocomplete="off">
+                            <span class="hint">Digite e tecle Tab para buscar.</span>
+                        </div>
+                        <div class="tx-field" id="campoMembro">
+                            <label for="membro">Membro <span class="req">*</span></label>
+                            <div class="tx-ac">
+                                <div class="tx-input-group">
+                                    <input id="membro" class="tx-input" type="text" placeholder="Digite o nome ou o nº da ficha..." autocomplete="off"
+                                           role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="acLista">
+                                    <button class="pos" type="button" id="btnBuscarMembro" title="Buscar membro (F2)" aria-label="Buscar membro"><i class="fa-solid fa-magnifying-glass"></i></button>
+                                </div>
+                                <div class="tx-ac-list" id="acLista" role="listbox"></div>
+                            </div>
+                            <span class="hint" id="membroHint">Não é membro cadastrado? Digite o nome — será lançado como visitante.</span>
+                            <span class="erro">Informe o nome do dizimista.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="tx-section">
+                    <h3><i class="fa-solid fa-calendar-days"></i> Valores e Período</h3>
+                    <div class="tx-grid c3">
+                        <div class="tx-field" id="campoData">
+                            <label for="data">Data do Lançamento <span class="req">*</span></label>
+                            <input id="data" class="tx-input" type="date" required>
+                            <span class="erro">Informe a data.</span>
+                        </div>
+                        <div class="tx-field" id="campoMes">
+                            <label for="mes">Mês/Ano do Dízimo <span class="req">*</span></label>
+                            <input id="mes" class="tx-input" type="month" required>
+                            <span class="erro">Informe o mês/ano.</span>
+                        </div>
+                        <div class="tx-field" id="campoValor">
+                            <label for="valor">Valor <span class="req">*</span></label>
+                            <div class="tx-input-group">
+                                <span class="pre">R$</span>
+                                <input id="valor" class="tx-input valor" type="text" inputmode="numeric" autocomplete="off" aria-label="Valor em reais">
+                            </div>
+                            <span class="erro">Informe um valor maior que zero.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="tx-section">
+                    <h3><i class="fa-solid fa-tags"></i> Classificação Financeira</h3>
+                    <div class="tx-grid c2">
+                        <div class="tx-field">
+                            <label id="rotTipo">Tipo <span class="req">*</span></label>
+                            <div class="tx-seg" role="radiogroup" aria-labelledby="rotTipo" id="tipos">
+                                <button type="button" role="radio" data-tipo="dizimo" class="on" aria-checked="true">Dízimo</button>
+                                <button type="button" role="radio" data-tipo="oferta" aria-checked="false">Oferta</button>
+                                <button type="button" role="radio" data-tipo="missoes" aria-checked="false">Missões</button>
+                                <button type="button" role="radio" data-tipo="outros" aria-checked="false">Outros</button>
+                            </div>
+                        </div>
+                        <div class="tx-field" id="campoDestino">
+                            <label for="destino">Destino Financeiro <span class="req">*</span></label>
+                            <select id="destino" required>
+                                <option value="">Carregando...</option>
+                            </select>
+                            <span class="hint">Onde o dinheiro entrou: caixa (espécie) ou conta bancária.</span>
+                            <span class="erro">Escolha o destino.</span>
+                        </div>
+                        <div class="tx-field" style="grid-column: 1 / -1;">
+                            <label for="obs">Observação</label>
+                            <textarea id="obs" maxlength="2000" placeholder="Opcional"></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="tx-actions">
+                    <button class="tx-btn tx-btn-primary" type="submit" id="btnSalvar"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                    <button class="tx-btn tx-btn-ghost" type="button" id="btnSalvarNovo"><i class="fa-solid fa-plus"></i> Salvar e lançar outro</button>
+                    <a class="tx-btn tx-btn-ghost" href="tesouraria_dizimos.html">Cancelar</a>
+                </div>
+            </div>
+
+            <aside class="tx-aside" aria-label="Resumo do lançamento">
+                <h4><i class="fa-solid fa-eye"></i> Resumo do Lançamento</h4>
+                <div class="tx-resumo">
+                    <div><span>Membro:</span><b id="rMembro">—</b></div>
+                    <div><span>Valor:</span><b id="rValor">R$ 0,00</b></div>
+                    <div><span>Competência:</span><b id="rComp">—</b></div>
+                    <div><span>Tipo:</span><b id="rTipo">Dízimo</b></div>
+                    <div><span>Destino:</span><b id="rDestino">—</b></div>
+                </div>
+                <h4><i class="fa-solid fa-keyboard"></i> Atalhos de Teclado</h4>
+                <ul class="tx-atalhos">
+                    <li><kbd>F2</kbd> Buscar membro</li>
+                    <li><kbd>F3</kbd> Ir para o valor</li>
+                    <li><kbd>Ctrl+S</kbd> Salvar</li>
+                </ul>
+                <div class="tx-dica">
+                    <strong><i class="fa-regular fa-lightbulb"></i> Dica rápida</strong>
+                    Digite o número da ficha e tecle Tab para achar o membro automaticamente. Enter avança entre os campos.
+                </div>
+            </aside>
+        </form>
+    </div>
+</main>
+
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
+<script>
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const editId = new URLSearchParams(location.search).get('id');
+
+    const st = {
+        membroId: null,
+        tipo: 'dizimo',
+        valor: 0,
+        acItens: [],
+        acAtivo: -1
+    };
+
+    const valor = TX.maskMoney($('valor'), (v) => { st.valor = v; resumo(); });
+
+    // ── Resumo lateral ───────────────────────────────────────────────────
+    function resumo() {
+        const nome = $('membro').value.trim();
+        $('rMembro').textContent = nome ? `${nome}${st.membroId ? '' : ' (visitante)'}` : '—';
+        $('rValor').textContent = TX.money(st.valor);
+        $('rComp').textContent = TX.mesParaCompetencia($('mes').value) || '—';
+        $('rTipo').textContent = TX.TIPOS[st.tipo];
+        const op = $('destino').selectedOptions[0];
+        $('rDestino').textContent = op && op.value ? op.textContent : '—';
+    }
+
+    function setTipo(tipo) {
+        st.tipo = tipo;
+        document.querySelectorAll('#tipos [data-tipo]').forEach((b) => {
+            const on = b.dataset.tipo === tipo;
+            b.classList.toggle('on', on);
+            b.setAttribute('aria-checked', String(on));
+        });
+        resumo();
+    }
+    $('tipos').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-tipo]');
+        if (b) setTipo(b.dataset.tipo);
+    });
+
+    // ── Membro: ficha + autocomplete ─────────────────────────────────────
+    function escolherMembro(m) {
+        st.membroId = m ? Number(m.id) : null;
+        if (m) {
+            $('membro').value = m.nome;
+            $('ficha').value = m.id;
+            $('membroHint').textContent = `Ficha ${m.ficha || '#' + String(m.id).padStart(6, '0')}${m.situacao ? ' · ' + m.situacao : ''}`;
+        }
+        fecharAc();
+        $('campoMembro').classList.remove('invalido');
+        resumo();
+    }
+
+    function fecharAc() {
+        $('acLista').classList.remove('aberta');
+        $('membro').setAttribute('aria-expanded', 'false');
+        st.acAtivo = -1;
+    }
+
+    function renderAc() {
+        const lista = $('acLista');
+        if (!st.acItens.length) {
+            lista.innerHTML = '<div class="tx-ac-vazio">Nenhum membro encontrado. O nome digitado será lançado como visitante.</div>';
+        } else {
+            lista.innerHTML = st.acItens.map((m, i) =>
+                `<div class="tx-ac-item ${i === st.acAtivo ? 'ativo' : ''}" role="option" data-i="${i}" aria-selected="${i === st.acAtivo}">
+                    <span>${TX.esc(m.nome)}</span><small>${TX.esc(m.ficha)}</small>
+                </div>`).join('');
+        }
+        lista.classList.add('aberta');
+        $('membro').setAttribute('aria-expanded', 'true');
+    }
+
+    async function buscarMembros(termo) {
+        if (!termo) { st.acItens = []; fecharAc(); return; }
+        try {
+            const r = await TX.api(`/dizimos/membros?q=${encodeURIComponent(termo)}`);
+            st.acItens = r.items || [];
+            st.acAtivo = st.acItens.length ? 0 : -1;
+            renderAc();
+        } catch (e) {
+            TX.toast(e.message, 'erro');
+        }
+    }
+    const buscarDebounce = TX.debounce(buscarMembros, 250);
+
+    $('membro').addEventListener('input', () => {
+        st.membroId = null;
+        $('membroHint').textContent = 'Não é membro cadastrado? Digite o nome — será lançado como visitante.';
+        resumo();
+        buscarDebounce($('membro').value.trim());
+    });
+    $('membro').addEventListener('keydown', (e) => {
+        const aberta = $('acLista').classList.contains('aberta');
+        if (!aberta || !st.acItens.length) return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); st.acAtivo = (st.acAtivo + 1) % st.acItens.length; renderAc(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); st.acAtivo = (st.acAtivo - 1 + st.acItens.length) % st.acItens.length; renderAc(); }
+        else if (e.key === 'Enter' && st.acAtivo >= 0) { e.preventDefault(); e.stopPropagation(); escolherMembro(st.acItens[st.acAtivo]); $('valor').focus(); }
+        else if (e.key === 'Escape') fecharAc();
+    });
+    $('acLista').addEventListener('mousedown', (e) => {
+        const it = e.target.closest('[data-i]');
+        if (it) { e.preventDefault(); escolherMembro(st.acItens[Number(it.dataset.i)]); }
+    });
+    $('membro').addEventListener('blur', () => setTimeout(fecharAc, 150));
+    $('btnBuscarMembro').addEventListener('click', () => {
+        $('membro').focus();
+        const termo = $('membro').value.trim();
+        if (termo) buscarMembros(termo);
+        else TX.toast('Digite parte do nome ou o número da ficha.');
+    });
+
+    async function buscarFicha() {
+        const n = $('ficha').value.trim().replace(/^#/, '');
+        if (!/^\d+$/.test(n) || Number(n) === st.membroId) return;
+        try {
+            const r = await TX.api(`/dizimos/membros?q=${encodeURIComponent(n)}`);
+            if (r.items && r.items[0]) escolherMembro(r.items[0]);
+            else TX.toast(`Nenhum membro com a ficha ${n}.`, 'erro');
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    }
+    $('ficha').addEventListener('change', buscarFicha);
+
+    // ── Destinos ─────────────────────────────────────────────────────────
+    async function carregarDestinos(selecionado) {
+        try {
+            const r = await TX.api('/dizimos/destinos');
+            const ops = (r.items || []).map((d) => `<option value="${TX.esc(d.valor)}">${TX.esc(d.rotulo)}</option>`).join('');
+            $('destino').innerHTML = '<option value="">Selecione...</option>' + ops;
+            $('destino').value = selecionado || 'caixa';
+        } catch (e) {
+            $('destino').innerHTML = '<option value="">Não foi possível carregar</option>';
+            if (e.status !== 403 && e.status !== 402) TX.toast(e.message, 'erro');
+        }
+        resumo();
+    }
+    $('destino').addEventListener('change', () => { $('campoDestino').classList.remove('invalido'); resumo(); });
+    $('mes').addEventListener('change', resumo);
+
+    // ── Edição ───────────────────────────────────────────────────────────
+    async function carregarLancamento() {
+        try {
+            const d = await TX.api(`/dizimos/${encodeURIComponent(editId)}`);
+            $('membro').value = d.membro_nome || '';
+            st.membroId = d.membro_id ? Number(d.membro_id) : null;
+            $('ficha').value = d.membro_id || '';
+            if (st.membroId) $('membroHint').textContent = `Ficha #${String(d.membro_id).padStart(6, '0')}`;
+            $('data').value = d.data_lancamento ? String(d.data_lancamento).slice(0, 10) : String(d.created_at || '').slice(0, 10);
+            $('mes').value = TX.competenciaParaMes(d.competencia);
+            valor.set(Number(d.valor));
+            $('obs').value = d.observacao || '';
+            setTipo(d.tipo || 'dizimo');
+            const destino = d.destino === 'banco' && d.destino_banco_id ? `banco:${d.destino_banco_id}` : (d.destino || 'caixa');
+            await carregarDestinos(destino);
+        } catch (e) {
+            $('alerta').innerHTML = `<div class="tx-alert erro"><i class="fa-solid fa-circle-exclamation"></i><span>${TX.esc(e.message)}</span></div>`;
+            $('form').style.display = 'none';
+        }
+    }
+
+    // ── Validar e salvar ─────────────────────────────────────────────────
+    function validar() {
+        const regras = [
+            ['campoMembro', $('membro').value.trim().length >= 2],
+            ['campoData', /^\d{4}-\d{2}-\d{2}$/.test($('data').value)],
+            ['campoMes', /^\d{4}-\d{2}$/.test($('mes').value)],
+            ['campoValor', st.valor > 0],
+            ['campoDestino', !!$('destino').value]
+        ];
+        let primeiro = null;
+        regras.forEach(([id, ok]) => {
+            $(id).classList.toggle('invalido', !ok);
+            if (!ok && !primeiro) primeiro = $(id).querySelector('input,select');
+        });
+        if (primeiro) primeiro.focus();
+        return !primeiro;
+    }
+
+    let salvando = false;
+    async function salvar(depois) {
+        if (salvando || !validar()) return;
+        salvando = true;
+        $('btnSalvar').disabled = $('btnSalvarNovo').disabled = true;
+        const corpo = {
+            membroId: st.membroId,
+            membroNome: $('membro').value.trim(),
+            valor: st.valor.toFixed(2),
+            competencia: TX.mesParaCompetencia($('mes').value),
+            tipo: st.tipo,
+            dataLancamento: $('data').value,
+            destino: $('destino').value,
+            observacao: $('obs').value.trim() || null
+        };
+        try {
+            if (editId) {
+                await TX.api(`/dizimos/${encodeURIComponent(editId)}`, { method: 'PUT', body: corpo });
+            } else {
+                await TX.api('/dizimos', { method: 'POST', body: corpo });
+            }
+            if (depois === 'novo') {
+                TX.toast(`Lançamento de ${corpo.membroNome} salvo (${TX.money(st.valor)}).`);
+                limparParaNovo();
+            } else {
+                TX.toastDepois(editId ? 'Lançamento atualizado.' : 'Lançamento salvo.');
+                location.href = 'tesouraria_dizimos.html';
+            }
+        } catch (e) {
+            TX.toast(e.message, 'erro');
+        } finally {
+            salvando = false;
+            $('btnSalvar').disabled = $('btnSalvarNovo').disabled = false;
+        }
+    }
+
+    // Mantém data, mês, tipo e destino (lançamento em lote no culto)
+    function limparParaNovo() {
+        if (editId) { location.href = 'dizimo_lancamento.html'; return; }
+        st.membroId = null;
+        $('ficha').value = '';
+        $('membro').value = '';
+        $('obs').value = '';
+        valor.set(0);
+        $('membroHint').textContent = 'Não é membro cadastrado? Digite o nome — será lançado como visitante.';
+        resumo();
+        $('ficha').focus();
+    }
+
+    $('form').addEventListener('submit', (e) => { e.preventDefault(); salvar(); });
+    $('btnSalvarNovo').addEventListener('click', () => salvar('novo'));
+
+    // Enter avança para o próximo campo (exceto na lista do autocomplete e na observação)
+    $('form').addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
+        if (e.target.id === 'membro' && $('acLista').classList.contains('aberta')) return;
+        e.preventDefault();
+        const campos = ['ficha', 'membro', 'data', 'mes', 'valor', 'destino'].map($);
+        const i = campos.indexOf(e.target);
+        if (i >= 0 && i < campos.length - 1) campos[i + 1].focus();
+        else salvar();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'F2') { e.preventDefault(); $('membro').focus(); $('membro').select(); }
+        else if (e.key === 'F3') { e.preventDefault(); $('valor').focus(); }
+        else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); salvar(); }
+    });
+
+    // ── Início ───────────────────────────────────────────────────────────
+    $('data').value = TX.hojeISO();
+    $('mes').value = TX.competenciaParaMes(TX.competenciaAtual());
+    if (editId) {
+        $('titulo').textContent = 'Editar Dízimo';
+        $('crumbAtual').textContent = 'Editar';
+        document.title = 'LDFP - Editar Dízimo';
+        $('btnSalvarNovo').style.display = 'none';
+        carregarLancamento();
+    } else {
+        carregarDestinos();
+        $('ficha').focus();
+    }
+    resumo();
+})();
+</script>
+</body>
+</html>

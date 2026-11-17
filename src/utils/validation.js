@@ -382,7 +382,10 @@ const dizimoSchema = Joi.object({
     valor: decimalInput.label('Valor'),
     competencia: Joi.string().trim().pattern(/^(0[1-9]|1[0-2])\/\d{4}$/).required().label('Competência'),
     tipo: Joi.string().valid('dizimo', 'oferta', 'missoes', 'outros').optional().default('dizimo').label('Tipo'),
-    observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação')
+    observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação'),
+    dataLancamento: Joi.string().trim().pattern(/^\d{4}-\d{2}-\d{2}$/).allow('', null).optional().label('Data do lançamento'),
+    destino: Joi.string().trim().pattern(/^(caixa|banco:\d+)$/).allow('', null).optional().label('Destino financeiro'),
+    tipoReceitaId: Joi.string().trim().max(80).allow('', null).optional().label('Tipo de receita')
 });
 
 const dizimoFiltroSchema = Joi.object({
@@ -394,13 +397,12 @@ const dizimoFiltroSchema = Joi.object({
 
 const tipoReceitaSchema = Joi.object({
     descricao: Joi.string().trim().min(2).max(255).required().label('Descrição'),
-    planoConta: Joi.string().trim().min(2).max(255).required().label('Plano de Conta')
+    planoConta: Joi.string().trim().min(2).max(255).required().label('Plano de Conta'),
+    natureza: Joi.string().valid('dizimo', 'oferta', 'missoes', 'outros').allow('', null).optional().label('Natureza'),
+    publico: Joi.string().valid('membro', 'visitante', 'congregado', 'crianca').allow('', null).optional().label('Público')
 });
 
-const tipoReceitaUpdateSchema = Joi.object({
-    descricao: Joi.string().trim().min(2).max(255).required().label('Descrição'),
-    planoConta: Joi.string().trim().min(2).max(255).required().label('Plano de Conta')
-});
+const tipoReceitaUpdateSchema = tipoReceitaSchema;
 
 const tipoReceitaFiltroSchema = Joi.object({
     search: Joi.string().trim().max(255).allow('', null).optional().label('Busca')

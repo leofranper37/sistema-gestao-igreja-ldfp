@@ -123,6 +123,51 @@ async function createDizimo(req, res) {
     res.status(201).json({ message: 'Lançamento registrado com sucesso.', id });
 }
 
+function competenciaValida(valor) {
+    const v = String(valor || '').trim();
+    if (/^(0[1-9]|1[0-2])\/\d{4}$/.test(v)) return v;
+    const hoje = new Date();
+    return `${String(hoje.getMonth() + 1).padStart(2, '0')}/${hoje.getFullYear()}`;
+}
+
+async function getResumoDizimos(req, res) {
+    const igrejaId = getIgrejaId(req.auth);
+    const competencia = competenciaValida(req.query.competencia);
+    const resumo = await financeService.getResumoDizimos(igrejaId, competencia);
+    res.json({ competencia, ...resumo });
+}
+
+async function getDizimo(req, res) {
+    const igrejaId = getIgrejaId(req.auth);
+    const item = await financeService.getDizimo(Number(req.params.id), igrejaId);
+    if (!item) throw createHttpError(404, 'Lançamento não encontrado.');
+    res.json(item);
+}
+
+async function updateDizimo(req, res) {
+    const igrejaId = getIgrejaId(req.auth);
+    const id = Number(req.params.id);
+    const amount = parseDecimal(req.validatedBody.valor);
+    if (Number.isNaN(amount) || amount <= 0) throw createHttpError(400, 'Valor inválido.');
+
+    const rows = await financeService.updateDizimo(id, igrejaId, { ...req.validatedBody, valor: amount });
+    if (!rows) throw createHttpError(404, 'Lançamento não encontrado.');
+    audit('finance.dizimo.update', req, { id, tipo: req.validatedBody.tipo, amount });
+    res.json({ message: 'Lançamento atualizado com sucesso.', id });
+}
+
+async function buscarMembrosDizimo(req, res) {
+    const igrejaId = getIgrejaId(req.auth);
+    const items = await financeService.buscarMembrosDizimo(igrejaId, req.query.q);
+    res.json({ items });
+}
+
+async function listDestinosDizimo(req, res) {
+    const igrejaId = getIgrejaId(req.auth);
+    const items = await financeService.listDestinosDizimo(igrejaId);
+    res.json({ items });
+}
+
 async function deleteDizimo(req, res) {
     const igrejaId = getIgrejaId(req.auth);
     const id = Number(req.params.id);
@@ -154,9 +199,7 @@ async function updateTipoReceita(req, res) {
     if (!current) {
         throw createHttpError(404, 'Tipo de receita não encontrado.');
     }
-    if (current.origem === 'base') {
-        throw createHttpError(400, 'Tipos padrão do sistema não podem ser editados.');
-    }
+    // Tipos padrão: o model só deixa trocar a conta contábil
 
     await financeService.updateTipoReceita(id, igrejaId, req.validatedBody);
     audit('finance.tipo-receita.update', req, { id, descricao: req.validatedBody.descricao });
@@ -237,6 +280,11 @@ module.exports = {
     upsertSaldoInicial,
     createDizimo,
     deleteDizimo,
+    getResumoDizimos,
+    getDizimo,
+    updateDizimo,
+    buscarMembrosDizimo,
+    listDestinosDizimo,
     getTotaisDizimos,
     listDizimos,
     createTipoReceita,

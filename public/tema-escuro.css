@@ -1,0 +1,92 @@
+/* ==========================================================================
+   LDFP — Tema escuro: acabamento do menu lateral, cabeçalho e base.
+   Só vale quando tema.js marca <html data-tema-ativo="escuro">.
+   As cores fixas das páginas são convertidas pelo tema.js.
+   ========================================================================== */
+
+html[data-tema-ativo="escuro"] { color-scheme: dark; background: #0e1413; }
+
+html[data-tema-ativo="escuro"] body {
+    background: #0e1413 !important;
+    color: #e4eeec;
+    --sidebar-bg: #111918;
+    --sidebar-border: #1f2b29;
+    --sidebar-text: #cfdcda;
+    --sidebar-text-muted: #7f9692;
+    --sidebar-active-bg: rgba(20, 184, 166, 0.16);
+    --sidebar-active-text: #5eead4;
+    --sidebar-hover-bg: #1a2423;
+}
+
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar {
+    background: #111918 !important;
+    border-right: 1px solid #1f2b29 !important;
+    box-shadow: none !important;
+}
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .profile-info h4,
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .dropdown-btn,
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .sub-dropdown-btn { color: var(--sidebar-text); }
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .sidebar-profile { border-color: #1f2b29; }
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .dropdown-container,
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .tesouraria-menu,
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .secretaria-menu {
+    background: transparent !important;
+    border-left-color: #1f2b29 !important;
+}
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .dropdown-container a,
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .tesouraria-menu a,
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .secretaria-menu a { color: #a9bbb8 !important; }
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .dropdown-container a:hover { background: #1a2423 !important; color: #e4eeec !important; }
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar a.active-link,
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar a.current-page {
+    color: #5eead4 !important;
+    background: rgba(20, 184, 166, 0.14) !important;
+}
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .dropdown-btn.active {
+    background: rgba(20, 184, 166, 0.16) !important;
+    color: #ccfbf1 !important;
+    border-left: 3px solid #14b8a6 !important;
+    box-shadow: none !important;
+}
+html[data-tema-ativo="escuro"] body .sidebar.enterprise-sidebar .sidebar-footer { color: #5f7571; border-color: #1f2b29; }
+
+html[data-tema-ativo="escuro"] body .enterprise-top-header {
+    background: rgba(14, 20, 19, 0.92) !important;
+    border-bottom: 1px solid #263533 !important;
+    color: #e4eeec;
+}
+html[data-tema-ativo="escuro"] body .enterprise-top-header h1 { color: #e4eeec; }
+html[data-tema-ativo="escuro"] body .enterprise-breadcrumb,
+html[data-tema-ativo="escuro"] body .enterprise-header-user span { color: #8ea4a0; }
+html[data-tema-ativo="escuro"] body .enterprise-header-user strong { color: #e4eeec; }
+html[data-tema-ativo="escuro"] body .enterprise-header-chip {
+    background: rgba(20, 184, 166, 0.14);
+    color: #5eead4;
+    border-color: transparent;
+}
+html[data-tema-ativo="escuro"] body .enterprise-menu-toggle {
+    background: #1b2524;
+    border-color: #263533;
+    color: #e4eeec;
+}
+html[data-tema-ativo="escuro"] body .main-content.enterprise-main { background: transparent !important; }
+
+/* Barras de rolagem discretas */
+html[data-tema-ativo="escuro"] ::-webkit-scrollbar { width: 10px; height: 10px; }
+html[data-tema-ativo="escuro"] ::-webkit-scrollbar-track { background: #0e1413; }
+html[data-tema-ativo="escuro"] ::-webkit-scrollbar-thumb { background: #2a3936; border-radius: 6px; border: 2px solid #0e1413; }
+html[data-tema-ativo="escuro"] ::-webkit-scrollbar-thumb:hover { background: #36504a; }
+
+/* Campos de formulário sem cor definida pela página */
+html[data-tema-ativo="escuro"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+html[data-tema-ativo="escuro"] select,
+html[data-tema-ativo="escuro"] textarea {
+    border-color: #2b3b38;
+}
+html[data-tema-ativo="escuro"] ::placeholder { color: #66807b; }
+
+/* Imagens com fundo transparente (logos escuros) ganham respiro */
+html[data-tema-ativo="escuro"] img.logo-escura { filter: invert(1) hue-rotate(180deg); }
+
+/* Troca suave quando o usuário muda o tema */
+html.tema-transicao, html.tema-transicao * { transition: background-color .25s ease, color .25s ease, border-color .25s ease !important; }

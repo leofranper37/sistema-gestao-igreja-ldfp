@@ -281,6 +281,7 @@
             }
         }
     </style>
+    <script src="tema.js"></script>
 </head>
 <body class="theme-petroleo enterprise-shell-page" data-shell-title="Configurações" data-shell-breadcrumb="LDFP / Meu LDFP / Configurações" data-shell-active="configuracoes.html" data-shell-chip="Ambiente autenticado" data-shell-role="Administrador">
     <main class="main-content enterprise-main">
@@ -413,6 +414,14 @@
 
                     <div id="usuario" class="tab-content">
                         <div style="max-width: 620px;">
+                            <label class="form-label" for="temaSistema"><i class="fa-solid fa-palette"></i> Tema</label>
+                            <select class="form-select" id="temaSistema" style="margin-bottom: 6px;">
+                                <option value="auto">Automático (segue o computador/celular)</option>
+                                <option value="claro">Claro</option>
+                                <option value="escuro">Escuro</option>
+                            </select>
+                            <p style="margin: 0 0 18px; font-size: 12px; opacity: .75;">Aplica na hora em todas as telas do sistema, neste aparelho.</p>
+
                             <label class="form-label">Membro Associado</label>
                             <select class="form-select" style="margin-bottom: 16px;">
                                 <option value="">Selecione um membro...</option>
@@ -729,5 +738,17 @@ Foi batizado em nome do Pai, do Filho e do Espírito Santo.</div>
         document.getElementById('cfg_logo_url')?.addEventListener('input', atualizarLogo);
     </script>
     <script src="speed-insights.js" defer></script>
+<script>
+(function () {
+    var sel = document.getElementById('temaSistema');
+    if (!sel || !window.LDFPTema) return;
+    sel.value = window.LDFPTema.obter();
+    sel.addEventListener('change', function () {
+        document.documentElement.classList.add('tema-transicao');
+        window.LDFPTema.definir(sel.value);
+        setTimeout(function () { document.documentElement.classList.remove('tema-transicao'); }, 400);
+    });
+})();
+</script>
 </body>
 </html>

@@ -6,147 +6,329 @@
     <title>LDFP - Lançamentos Contábeis</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); margin-bottom:16px; }
-        .grid { display:grid; grid-template-columns: 1fr 1fr 140px 140px auto; gap:10px; align-items:end; }
-        .field { width:100%; padding:10px; border:1px solid #dbe3ef; border-radius:8px; }
-        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
-        .table { width:100%; border-collapse:collapse; }
-        .table th, .table td { border-bottom:1px solid #e5e7eb; text-align:left; padding:10px; font-size:13px; }
-        @media (max-width:1200px) { .grid { grid-template-columns: 1fr 1fr; } }
-    </style>
+    <link rel="stylesheet" href="tesouraria-ui.css">
     <script src="tema.js"></script>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-active="lancamentos_contabeis.html" data-shell-title="Lançamentos Contábeis" data-shell-breadcrumb="LDFP / Contabilidade / Lançamentos Contábeis" data-shell-chip="Contabilidade" data-shell-role="Financeiro">
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Lançamentos Contábeis"
+      data-shell-breadcrumb="LDFP / Contabilidade / Lançamentos Contábeis"
+      data-shell-active="lancamentos_contabeis.html"
+      data-shell-chip="Contabilidade">
+
 <main class="main-content enterprise-main">
-    <div class="enterprise-page-shell">
-        <div class="enterprise-page-hero">
-            <div>
-                <h2>Lançamentos Contábeis</h2>
-                <p>Registre partidas com conta de débito e crédito para o controle contábil.</p>
-            </div>
-            <div class="enterprise-page-badge"><i class="fa-solid fa-clipboard-list"></i> Diário contábil</div>
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>Lançamentos Contábeis</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <span>Contabilidade</span><span class="sep">›</span>
+                <span class="atual">Lançamentos Contábeis</span>
+            </nav>
         </div>
 
-        <section class="card">
-            <h3>Novo lançamento</h3>
-            <div class="grid">
-                <input id="historico" class="field" placeholder="Histórico (descrição do lançamento)" style="grid-column:1 / -1;">
-                <input id="debito" class="field" placeholder="Conta débito (digite código ou nome)" list="planoContasLista" autocomplete="off">
-                <input id="credito" class="field" placeholder="Conta crédito (digite código ou nome)" list="planoContasLista" autocomplete="off">
-                <datalist id="planoContasLista"></datalist>
-                <input id="valor" class="field" type="number" step="0.01" placeholder="Valor">
-                <input id="data" class="field" type="date">
-                <button id="btnAdd" class="btn" type="button">Registrar</button>
+        <section class="tx-card">
+            <div class="tx-card-head">
+                <h3><span class="ico"><i class="fa-solid fa-book"></i></span> Livro diário</h3>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <div class="tx-mes-nav" role="group" aria-label="Competência">
+                        <button class="tx-btn-icon" type="button" id="mesAnt" title="Mês anterior" aria-label="Mês anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                        <strong id="mesRotulo"></strong>
+                        <button class="tx-btn-icon" type="button" id="mesProx" title="Próximo mês" aria-label="Próximo mês"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                    <button class="tx-btn tx-btn-primary" type="button" id="btnNovo"><i class="fa-solid fa-plus"></i> Novo lançamento</button>
+                </div>
             </div>
-            <p id="msg" style="margin-top:10px;font-size:13px;"></p>
+            <div class="tx-stats">
+                <div><span>Lançamentos no mês</span><strong id="sQtd">0</strong></div>
+                <div><span>Valor movimentado</span><strong class="destaque" id="sTotal">R$ 0,00</strong></div>
+                <div><span>Vindos da Tesouraria</span><strong id="sTes">0</strong></div>
+                <div><span>Lançamentos manuais</span><strong id="sMan">0</strong></div>
+            </div>
         </section>
 
-        <section class="card">
-            <h3>Livro diário</h3>
-            <table class="table">
-                <thead><tr><th>Data</th><th>Histórico</th><th>Débito</th><th>Crédito</th><th>Valor</th></tr></thead>
-                <tbody id="tbody"><tr><td colspan="5">Carregando...</td></tr></tbody>
-            </table>
+        <div id="aviso" style="margin-top:16px;"></div>
+
+        <section class="tx-card" style="margin-top:16px;">
+            <div class="tx-toolbar">
+                <div class="tx-search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="busca" class="tx-input" type="search" placeholder="Buscar histórico, conta ou documento..." autocomplete="off" aria-label="Buscar lançamento">
+                </div>
+                <div class="tx-seg" role="radiogroup" aria-label="Origem" id="filtroFonte">
+                    <button type="button" role="radio" data-f="" aria-checked="true">Todos</button>
+                    <button type="button" role="radio" data-f="manual" aria-checked="false">Manuais</button>
+                    <button type="button" role="radio" data-f="tesouraria" aria-checked="false">Tesouraria</button>
+                </div>
+            </div>
+            <div class="tx-table-wrap">
+                <table class="tx-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Débito</th>
+                            <th>Crédito</th>
+                            <th>Histórico</th>
+                            <th class="num">Valor</th>
+                            <th class="acoes">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="linhas"></tbody>
+                </table>
+            </div>
+            <div class="tx-foot">
+                <span class="tx-hint" style="margin:0;"><i class="fa-solid fa-circle-info"></i> Os lançamentos do Caixa e dos Bancos entram aqui automaticamente. Lance aqui apenas o que não passa pela Tesouraria (compras a prazo, depreciação, provisões...).</span>
+                <span class="tx-count" id="contagem"></span>
+            </div>
         </section>
     </div>
 </main>
 
-<script src="session.js?v=20260501"></script>
-<script src="enterprise-shell.js?v=20260501"></script>
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
 <script>
-requireAuthSession();
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const FONTE = {
+        manual: ['manual', 'fa-pen', 'Manual'],
+        caixa: ['', 'fa-cash-register', 'Caixa'],
+        banco: ['', 'fa-building-columns', 'Banco'],
+        encerramento: ['encerramento', 'fa-lock', 'Encerramento']
+    };
+    let mes = TX.hojeISO().slice(0, 7);
+    let fonte = '';
+    let itens = [];
+    let plano = [];
+    let centros = [];
+    let fechado = null;
 
-function moeda(v) {
-    return Number(v || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
-}
-
-function escHtml(v) {
-    return String(v === null || v === undefined ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-// Sugere as contas do plano para que os relatórios contábeis reconheçam a conta
-async function carregarPlanoContas() {
-    try {
-        const resp = await fetch('/contabilidade/plano-contas');
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) return;
-        document.getElementById('planoContasLista').innerHTML = (data.items || [])
-            .map((c) => '<option value="' + escHtml(c.codigo + ' - ' + c.nome) + '"></option>').join('');
-    } catch (_) { /* sem plano */ }
-}
-
-function setMsg(text, isError) {
-    const el = document.getElementById('msg');
-    el.textContent = text;
-    el.style.color = isError ? '#b91c1c' : '#0f766e';
-}
-
-function render(items) {
-    const tbody = document.getElementById('tbody');
-    const sorted = [...items].sort((a, b) => String(b.data_lancamento).localeCompare(String(a.data_lancamento)));
-    if (!sorted.length) {
-        tbody.innerHTML = '<tr><td colspan="5">Nenhum lançamento contábil registrado.</td></tr>';
-        return;
+    async function carregarCadastros() {
+        const [p, c] = await Promise.all([
+            TX.api('/contabilidade/plano-contas').then((r) => r.items || []).catch(() => []),
+            TX.api('/api/tesouraria/centros-custo').then((r) => r.items || []).catch(() => [])
+        ]);
+        plano = p;
+        centros = c;
     }
 
-    tbody.innerHTML = sorted.map((i) => {
-        return '<tr><td>' + escHtml(String(i.data_lancamento || '').slice(0, 10).split('-').reverse().join('/')) + '</td><td>' + escHtml(i.historico) + '</td><td>' + escHtml(i.conta_debito) + '</td><td>' + escHtml(i.conta_credito) + '</td><td>' + moeda(i.valor) + '</td></tr>';
-    }).join('');
-}
-
-async function carregar() {
-    try {
-        const resp = await fetch('/contabilidade/lancamentos');
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) throw new Error(data.error || 'Erro ao carregar lançamentos.');
-        render(data.items || []);
-    } catch (err) {
-        document.getElementById('tbody').innerHTML = '<tr><td colspan="5">Não foi possível carregar os lançamentos.</td></tr>';
-        setMsg(err.message, true);
-    }
-}
-
-document.getElementById('btnAdd').addEventListener('click', async () => {
-    const historico = document.getElementById('historico').value.trim();
-    const debito = document.getElementById('debito').value.trim();
-    const credito = document.getElementById('credito').value.trim();
-    const valor = document.getElementById('valor').value;
-    const data = document.getElementById('data').value;
-    if (!historico || !debito || !credito || !valor || !data) {
-        setMsg('Preencha histórico, contas, valor e data.', true);
-        return;
+    function mudarMes(d) {
+        const [a, m] = mes.split('-').map(Number);
+        const dt = new Date(a, m - 1 + d, 1);
+        mes = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+        listar();
     }
 
-    try {
-        const resp = await fetch('/contabilidade/lancamentos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                dataLancamento: data,
-                historico,
-                contaDebito: debito,
-                contaCredito: credito,
-                valor: Number(valor)
-            })
+    async function listar() {
+        const [a, m] = mes.split('-').map(Number);
+        $('mesRotulo').textContent = `${MESES[m - 1]} de ${a}`;
+        $('linhas').innerHTML = '<tr><td colspan="6"><div class="tx-skel" style="height:120px;"></div></td></tr>';
+        let r;
+        try {
+            r = await TX.api(`/contabilidade/lancamentos?mes=${mes}&busca=${encodeURIComponent($('busca').value.trim())}`);
+        } catch (e) {
+            $('linhas').innerHTML = `<tr><td colspan="6"><div class="tx-empty"><strong>Não foi possível carregar</strong><span>${TX.esc(e.message)}</span></div></td></tr>`;
+            return;
+        }
+        itens = r.items || [];
+        fechado = r.ultimoExercicioFechado;
+        $('aviso').innerHTML = fechado && a <= fechado
+            ? `<div class="tx-alert warn"><i class="fa-solid fa-lock"></i><span>O exercício de ${fechado} está encerrado. Os lançamentos deste período não podem ser incluídos, alterados ou excluídos.</span></div>`
+            : '';
+        $('btnNovo').disabled = !!(fechado && a <= fechado);
+        const tes = itens.filter((x) => x.fonte === 'caixa' || x.fonte === 'banco').length;
+        $('sQtd').textContent = itens.length;
+        $('sTotal').textContent = TX.money(r.total);
+        $('sTes').textContent = tes;
+        $('sMan').textContent = itens.filter((x) => x.fonte === 'manual').length;
+        const sc = itens.filter((x) => x.semClassificacao).length;
+        if (sc && !$('aviso').innerHTML) $('aviso').innerHTML = `<div class="tx-alert warn"><i class="fa-solid fa-triangle-exclamation"></i><span>${sc} movimento(s) da Tesouraria estão sem conta contábil e foram classificados como "Outras receitas/despesas". Abra cada um e escolha a conta correta.</span></div>`;
+        render();
+    }
+
+    function render() {
+        const lista = itens.filter((x) => !fonte || (fonte === 'manual' ? x.fonte === 'manual' || x.fonte === 'encerramento' : x.fonte === 'caixa' || x.fonte === 'banco'));
+        $('contagem').textContent = `${lista.length} registro(s)`;
+        if (!lista.length) {
+            $('linhas').innerHTML = `<tr><td colspan="6"><div class="tx-empty">
+                <span class="ico"><i class="fa-solid fa-book-open"></i></span>
+                <strong>Nenhum lançamento neste mês</strong>
+                <span>Os movimentos do Caixa e dos Bancos aparecem aqui automaticamente.</span></div></td></tr>`;
+            return;
+        }
+        $('linhas').innerHTML = lista.map(linha).join('');
+    }
+
+    function conta(rotulo) {
+        const m = String(rotulo || '').match(/^\s*([\d.]+)\s*-\s*(.*)$/);
+        if (!m) return `<span class="tx-valor-neg">${TX.esc(rotulo || 'Sem classificação')}</span>`;
+        return `<span class="tx-cod">${TX.esc(m[1])}</span> ${TX.esc(m[2])}`;
+    }
+
+    function linha(l) {
+        const [cls, ico, nome] = FONTE[l.fonte] || FONTE.manual;
+        const origem = l.fonte === 'banco' && l.contaNome ? `${nome}: ${l.contaNome}` : nome;
+        let acoes = '';
+        if (l.fonte === 'manual' && !l.bloqueado) {
+            acoes = `<button type="button" class="tx-btn-icon" data-edit="${TX.esc(l.fonteId)}" title="Editar" aria-label="Editar"><i class="fa-solid fa-pen"></i></button>
+                <button type="button" class="tx-btn-icon" data-del="${TX.esc(l.fonteId)}" title="Excluir" aria-label="Excluir"><i class="fa-solid fa-trash"></i></button>`;
+        } else if ((l.fonte === 'caixa' || l.fonte === 'banco') && !l.bloqueado) {
+            const href = l.fonte === 'caixa' ? `caixa_lancamento.html?id=${l.fonteId}` : `banco_lancamento.html?conta=${l.contaId}&id=${l.fonteId}`;
+            acoes = `<a class="tx-btn-icon" href="${href}" title="Abrir na Tesouraria" aria-label="Abrir na Tesouraria"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>`;
+        } else if (l.bloqueado) {
+            acoes = '<span class="tx-btn-icon" title="Exercício encerrado" aria-label="Exercício encerrado" style="cursor:default;opacity:.6;"><i class="fa-solid fa-lock"></i></span>';
+        }
+        return `<tr>
+            <td style="white-space:nowrap;">${TX.dataBR(l.data)}</td>
+            <td>${conta(l.debito)}</td>
+            <td>${conta(l.credito)}</td>
+            <td>${TX.esc(l.historico || '')}<small style="display:block;margin-top:3px;"><span class="tx-fonte ${cls}"><i class="fa-solid ${ico}"></i> ${TX.esc(origem)}</span>${l.documento ? ` <span style="color:var(--tx-muted);">Doc. ${TX.esc(l.documento)}</span>` : ''}${l.semClassificacao ? ' <span class="tx-fonte" style="background:rgba(251,191,36,.16);color:var(--tx-warn);" title="Sem conta contábil na Tesouraria: classificado como outras receitas/despesas. Abra o lançamento e escolha a conta."><i class="fa-solid fa-triangle-exclamation"></i> Reclassificar</span>' : ''}</small></td>
+            <td class="num" style="white-space:nowrap;font-weight:700;">${TX.money(l.valor)}</td>
+            <td class="acoes"><div class="tx-acoes-linha">${acoes}</div></td>
+        </tr>`;
+    }
+
+    // Autocomplete de contas analíticas (exceto Caixa e Bancos, que são da Tesouraria)
+    function autocomplete(input, lista) {
+        const caixa = input.parentElement.querySelector('.tx-ac-list');
+        let ativo = 0;
+        let ac = [];
+        const analiticas = () => plano.filter((c) => c.tipo === 'A' && c.ativo && !c.tesouraria);
+        const montar = () => {
+            const t = input.value.trim().toLowerCase();
+            ac = analiticas().filter((c) => !t || c.codigo.startsWith(t) || `${c.codigo} - ${c.nome}`.toLowerCase().includes(t)).slice(0, 40);
+            ativo = 0;
+            caixa.innerHTML = ac.length
+                ? ac.map((c, i) => `<div class="tx-ac-item ${i === ativo ? 'ativo' : ''}" role="option" data-i="${i}"><span><span class="tx-cod">${TX.esc(c.codigo)}</span> ${TX.esc(c.nome)}</span><small>${{ ativo: 'Ativo', passivo: 'Passivo', despesa: 'Despesa', receita: 'Receita' }[c.natureza] || ''}</small></div>`).join('')
+                : '<div class="tx-ac-vazio">Nenhuma conta analítica com esse texto.</div>';
+            caixa.classList.add('aberta');
+        };
+        const escolher = (i) => {
+            const c = ac[i];
+            if (!c) return;
+            input.value = `${c.codigo} - ${c.nome}`;
+            caixa.classList.remove('aberta');
+        };
+        input.addEventListener('focus', montar);
+        input.addEventListener('input', montar);
+        input.addEventListener('blur', () => setTimeout(() => caixa.classList.remove('aberta'), 150));
+        input.addEventListener('keydown', (e) => {
+            if (!caixa.classList.contains('aberta')) return;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                ativo = Math.max(0, Math.min(ac.length - 1, ativo + (e.key === 'ArrowDown' ? 1 : -1)));
+                caixa.querySelectorAll('.tx-ac-item').forEach((x, i) => x.classList.toggle('ativo', i === ativo));
+            } else if (e.key === 'Enter' && ac.length) {
+                e.preventDefault();
+                escolher(ativo);
+            }
         });
-        const respData = await resp.json().catch(() => ({}));
-        if (!resp.ok) throw new Error(respData.error || 'Erro ao registrar lançamento.');
-
-        document.getElementById('historico').value = '';
-        document.getElementById('debito').value = '';
-        document.getElementById('credito').value = '';
-        document.getElementById('valor').value = '';
-        document.getElementById('data').value = '';
-        setMsg('Lançamento registrado com sucesso.', false);
-        await carregar();
-    } catch (err) {
-        setMsg(err.message, true);
+        caixa.addEventListener('mousedown', (e) => {
+            const it = e.target.closest('[data-i]');
+            if (it) { e.preventDefault(); escolher(Number(it.dataset.i)); }
+        });
+        void lista;
     }
-});
 
-carregar();
-carregarPlanoContas();
+    async function formulario(id) {
+        let v = { data_lancamento: TX.hojeISO().slice(0, 7) === mes ? TX.hojeISO() : `${mes}-01`, valor: 0 };
+        if (id) {
+            try { v = await TX.api(`/contabilidade/lancamentos/${encodeURIComponent(id)}`); } catch (e) { TX.toast(e.message, 'erro'); return; }
+        }
+        const optCentros = '<option value="">Nenhum</option>' + centros.map((x) =>
+            `<option value="${x.id}" ${Number(v.centro_custo_id) === Number(x.id) ? 'selected' : ''}>${TX.esc([x.codigo, x.nome].filter(Boolean).join(' - '))}</option>`).join('');
+        let msg = '';
+        let valor;
+        const campoConta = (idc, rot, val) => `<div class="tx-field"><label for="${idc}">${rot} <span class="req">*</span></label>
+            <div class="tx-ac"><input id="${idc}" class="tx-input" autocomplete="off" placeholder="Digite o código ou o nome da conta" value="${TX.esc(val || '')}">
+            <div class="tx-ac-list" role="listbox"></div></div></div>`;
+        await TX.dialogo({
+            titulo: id ? 'Editar lançamento contábil' : 'Novo lançamento contábil',
+            botao: id ? 'Salvar alterações' : 'Salvar lançamento',
+            corpo: `
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="fData">Data <span class="req">*</span></label><input id="fData" type="date" class="tx-input" value="${TX.esc(v.data_lancamento)}"></div>
+                    <div class="tx-field"><label for="fValor">Valor <span class="req">*</span></label><input id="fValor" class="tx-input" inputmode="numeric"></div>
+                </div>
+                ${campoConta('fDeb', 'Conta débito', v.conta_debito)}
+                ${campoConta('fCred', 'Conta crédito', v.conta_credito)}
+                <div class="tx-field"><label for="fHist">Histórico <span class="req">*</span></label><input id="fHist" class="tx-input" maxlength="500" placeholder="Ex.: Compra de cadeiras a prazo - NF 991" value="${TX.esc(v.historico || '')}"></div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="fDoc">Documento</label><input id="fDoc" class="tx-input" maxlength="50" placeholder="Opcional" value="${TX.esc(v.documento || '')}"></div>
+                    <div class="tx-field"><label for="fCentro">Centro de custo</label><select id="fCentro" class="tx-input">${optCentros}</select></div>
+                </div>
+                <div class="tx-field"><label id="rotMov">Movimento no centro de custo</label>
+                    <div class="tx-seg" role="radiogroup" aria-labelledby="rotMov" id="fMov">
+                        <button type="button" role="radio" data-m="" aria-checked="${!v.movimento_cc}">Nenhum</button>
+                        <button type="button" role="radio" data-m="R" aria-checked="${v.movimento_cc === 'R'}">R - Receita</button>
+                        <button type="button" role="radio" data-m="D" aria-checked="${v.movimento_cc === 'D'}">D - Despesa</button>
+                    </div></div>
+                <p class="tx-hint" style="margin:0;"><i class="fa-solid fa-circle-info"></i> Caixa e contas bancárias não aparecem aqui: lance esses movimentos na Tesouraria para que saldos e contabilidade fiquem sempre iguais.</p>`,
+            aoAbrir(f) {
+                valor = TX.maskMoney(f.querySelector('#fValor'));
+                valor.set(v.valor || 0);
+                autocomplete(f.querySelector('#fDeb'));
+                autocomplete(f.querySelector('#fCred'));
+                f.querySelector('#fMov').addEventListener('click', (e) => {
+                    const b = e.target.closest('[data-m]');
+                    if (!b) return;
+                    f.querySelectorAll('#fMov [data-m]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+                });
+            },
+            async aoConfirmar(f) {
+                const body = {
+                    dataLancamento: f.querySelector('#fData').value,
+                    contaDebito: f.querySelector('#fDeb').value.trim(),
+                    contaCredito: f.querySelector('#fCred').value.trim(),
+                    historico: f.querySelector('#fHist').value.trim(),
+                    valor: String(valor.get()),
+                    documento: f.querySelector('#fDoc').value.trim() || null,
+                    centroCustoId: Number(f.querySelector('#fCentro').value) || null,
+                    movimentoCC: f.querySelector('#fMov [aria-checked="true"]').dataset.m || null
+                };
+                if (!body.dataLancamento) throw new Error('Informe a data.');
+                if (!body.contaDebito || !body.contaCredito) throw new Error('Escolha a conta de débito e a de crédito.');
+                if (body.historico.length < 2) throw new Error('Informe o histórico.');
+                if (!(valor.get() > 0)) throw new Error('Informe um valor maior que zero.');
+                const r = await TX.api(id ? `/contabilidade/lancamentos/${encodeURIComponent(id)}` : '/contabilidade/lancamentos', { method: id ? 'PUT' : 'POST', body });
+                msg = r.message;
+                mes = body.dataLancamento.slice(0, 7);
+            }
+        }).then((ok) => { if (ok) { TX.toast(msg); listar(); } });
+    }
+
+    async function excluir(id) {
+        const l = itens.find((x) => String(x.fonteId) === String(id) && x.fonte === 'manual');
+        if (!l) return;
+        const ok = await TX.confirmar({ titulo: 'Excluir lançamento', texto: `Excluir o lançamento "${l.historico}" de ${TX.money(l.valor)}?` });
+        if (!ok) return;
+        try {
+            const r = await TX.api(`/contabilidade/lancamentos/${encodeURIComponent(id)}`, { method: 'DELETE' });
+            TX.toast(r.message);
+            listar();
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    }
+
+    $('mesAnt').addEventListener('click', () => mudarMes(-1));
+    $('mesProx').addEventListener('click', () => mudarMes(1));
+    $('btnNovo').addEventListener('click', () => formulario());
+    $('busca').addEventListener('input', TX.debounce(listar, 300));
+    $('filtroFonte').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-f]');
+        if (!b) return;
+        fonte = b.dataset.f;
+        document.querySelectorAll('#filtroFonte [data-f]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+        render();
+    });
+    $('linhas').addEventListener('click', (e) => {
+        const ed = e.target.closest('[data-edit]');
+        if (ed) return formulario(ed.dataset.edit);
+        const d = e.target.closest('[data-del]');
+        if (d) excluir(d.dataset.del);
+    });
+
+    carregarCadastros().then(listar);
+})();
 </script>
 </body>
 </html>

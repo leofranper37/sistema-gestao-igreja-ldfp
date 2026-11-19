@@ -6,144 +6,160 @@
     <title>LDFP - Balancete de Abertura</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); margin-bottom:16px; }
-        .grid { display:grid; grid-template-columns: 160px 1fr 170px auto; gap:10px; align-items:end; }
-        .field { width:100%; padding:10px; border:1px solid #dbe3ef; border-radius:8px; }
-        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
-        .table { width:100%; border-collapse:collapse; }
-        .table th, .table td { border-bottom:1px solid #e5e7eb; text-align:left; padding:10px; font-size:13px; }
-        .total { font-weight:800; color:#0f172a; margin-top:10px; }
-        @media (max-width:1100px) { .grid { grid-template-columns: 1fr 1fr; } }
-        .grid5 { display:grid; grid-template-columns: 160px 1fr 150px 170px auto; gap:10px; align-items:end; }
-        @media (max-width:1200px) { .grid5 { grid-template-columns: 1fr 1fr; } }
-    </style>
+    <link rel="stylesheet" href="tesouraria-ui.css">
     <script src="tema.js"></script>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-active="balancete_abertura.html" data-shell-title="Balancete de Abertura" data-shell-breadcrumb="LDFP / Contabilidade / Balancete de Abertura" data-shell-chip="Contabilidade" data-shell-role="Financeiro">
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Balancete de Abertura"
+      data-shell-breadcrumb="LDFP / Contabilidade / Balancete de Abertura"
+      data-shell-active="balancete_abertura.html"
+      data-shell-chip="Contabilidade">
+
 <main class="main-content enterprise-main">
-    <div class="enterprise-page-shell">
-        <div class="enterprise-page-hero">
-            <div>
-                <h2>Balancete de Abertura</h2>
-                <p>Registre os saldos iniciais das contas para iniciar um novo período contábil.</p>
-            </div>
-            <div class="enterprise-page-badge"><i class="fa-solid fa-book-open"></i> Saldo inicial</div>
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>Balancete de Abertura</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <span>Contabilidade</span><span class="sep">›</span>
+                <span class="atual">Balancete de Abertura</span>
+            </nav>
         </div>
 
-        <section class="card">
-            <h3>Adicionar saldo inicial</h3>
-            <div class="grid5">
-                <input id="conta" class="field" placeholder="Conta">
-                <input id="descricao" class="field" placeholder="Descrição">
-                <select id="tipo" class="field" title="Tipo de saldo" aria-label="Tipo de saldo">
-                    <option value="debito">Débito</option>
-                    <option value="credito">Crédito</option>
-                </select>
-                <input id="saldo" class="field" type="number" step="0.01" placeholder="Saldo inicial">
-                <button id="btnAdd" class="btn" type="button">Adicionar</button>
-            </div>
-            <p id="msg" style="margin-top:10px;font-size:13px;"></p>
-        </section>
+        <div id="aviso"></div>
+        <div class="tx-alert info" style="margin-bottom:16px;">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Informe o saldo de cada conta na data em que a igreja começou a usar a contabilidade no sistema
+                (<strong id="dataAbertura">—</strong>). Os saldos do <strong>caixa</strong> e das <strong>contas bancárias</strong> vêm da Tesouraria.
+                No fim, o total do Ativo precisa ser igual ao do Passivo — use <em>Ajustar resultado acumulado</em> para fechar a diferença.</span>
+        </div>
 
-        <section class="card">
-            <h3>Itens do balancete</h3>
-            <table class="table">
-                <thead><tr><th>Conta</th><th>Tipo</th><th>Valor</th></tr></thead>
-                <tbody id="tbody"><tr><td colspan="3">Carregando...</td></tr></tbody>
-            </table>
-            <div id="total" class="total"></div>
-        </section>
+        <div class="tx-abertura">
+            <section class="tx-card" aria-label="Ativo">
+                <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-arrow-trend-up"></i></span> Ativo</h3></div>
+                <div class="tx-table-wrap">
+                    <table class="tx-table">
+                        <thead><tr><th>Conta</th><th>Descrição</th><th class="num">Saldo anterior</th></tr></thead>
+                        <tbody id="lAtivo"><tr><td colspan="3"><div class="tx-skel" style="height:160px;"></div></td></tr></tbody>
+                    </table>
+                </div>
+                <div class="tx-total-linha"><span>Total do Ativo</span><strong id="tAtivo">R$ 0,00</strong></div>
+            </section>
+            <section class="tx-card" aria-label="Passivo">
+                <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-scale-balanced"></i></span> Passivo e Patrimônio Social</h3></div>
+                <div class="tx-table-wrap">
+                    <table class="tx-table">
+                        <thead><tr><th>Conta</th><th>Descrição</th><th class="num">Saldo anterior</th></tr></thead>
+                        <tbody id="lPassivo"><tr><td colspan="3"><div class="tx-skel" style="height:160px;"></div></td></tr></tbody>
+                    </table>
+                </div>
+                <div class="tx-total-linha"><span>Total do Passivo</span><strong id="tPassivo">R$ 0,00</strong></div>
+            </section>
+        </div>
+
+        <div class="tx-balanco-status">
+            <span class="tx-status" id="status">—</span>
+            <button class="tx-btn tx-btn-primary" type="button" id="btnAjustar"><i class="fa-solid fa-wand-magic-sparkles"></i> Ajustar resultado acumulado</button>
+        </div>
     </div>
 </main>
 
-<script src="session.js?v=20260501"></script>
-<script src="enterprise-shell.js?v=20260501"></script>
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
 <script>
-requireAuthSession();
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    let dados = null;
+    const num = (n) => Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-function moeda(v) {
-    return Number(v || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
-}
-
-function setMsg(text, isError) {
-    const el = document.getElementById('msg');
-    el.textContent = text;
-    el.style.color = isError ? '#b91c1c' : '#0f766e';
-}
-
-function render(items) {
-    const tbody = document.getElementById('tbody');
-    const totalEl = document.getElementById('total');
-
-    if (!items.length) {
-        tbody.innerHTML = '<tr><td colspan="3">Nenhum saldo inicial informado.</td></tr>';
-        totalEl.textContent = 'Total: R$ 0,00';
-        return;
+    async function carregar() {
+        try {
+            dados = await TX.api('/contabilidade/balancete-abertura');
+        } catch (e) {
+            $('aviso').innerHTML = `<div class="tx-alert erro" style="margin-bottom:16px;"><i class="fa-solid fa-circle-exclamation"></i><span>${TX.esc(e.message)}</span></div>`;
+            return;
+        }
+        $('dataAbertura').textContent = TX.dataBR(dados.dataAbertura);
+        if (dados.bloqueado) {
+            $('aviso').innerHTML = `<div class="tx-alert warn" style="margin-bottom:16px;"><i class="fa-solid fa-lock"></i><span>O exercício de ${dados.ultimoExercicioFechado} já foi encerrado. Os saldos de abertura ficam travados para não alterar balanços já fechados.</span></div>`;
+        }
+        $('lAtivo').innerHTML = dados.ativo.map(linha).join('');
+        $('lPassivo').innerHTML = dados.passivo.map(linha).join('');
+        ligar('lAtivo');
+        ligar('lPassivo');
+        totais();
     }
 
-    let total = 0;
-    tbody.innerHTML = items.map((i) => {
-        const debito = Number(i.debito || 0);
-        const credito = Number(i.credito || 0);
-        const valor = debito || credito;
-        total += debito - credito;
-        return '<tr><td>' + i.conta + '</td><td>' + (debito ? 'Débito' : 'Crédito') + '</td><td>' + moeda(valor) + '</td></tr>';
-    }).join('');
-
-    totalEl.textContent = 'Total (débito - crédito): ' + moeda(total);
-}
-
-async function carregar() {
-    try {
-        const resp = await fetch('/contabilidade/balancete-abertura');
-        const data = await resp.json().catch(() => ([]));
-        if (!resp.ok) throw new Error(data.error || 'Erro ao carregar balancete.');
-        render(Array.isArray(data) ? data : []);
-    } catch (err) {
-        document.getElementById('tbody').innerHTML = '<tr><td colspan="3">Não foi possível carregar o balancete.</td></tr>';
-        setMsg(err.message, true);
-    }
-}
-
-document.getElementById('btnAdd').addEventListener('click', async () => {
-    const contaBase = document.getElementById('conta').value.trim();
-    const descricao = document.getElementById('descricao').value.trim();
-    const tipo = document.getElementById('tipo').value;
-    const saldo = document.getElementById('saldo').value;
-    if (!contaBase || !descricao || !saldo) {
-        setMsg('Preencha conta, descrição e saldo inicial.', true);
-        return;
+    function linha(l) {
+        const ro = dados.bloqueado || l.tesouraria;
+        const dica = l.tesouraria ? `title="Vem da Tesouraria: ${TX.esc(l.tesouraria)}"` : '';
+        return `<tr>
+            <td><span class="tx-cod">${TX.esc(l.codigo)}</span></td>
+            <td>${TX.esc(l.nome)}${l.tesouraria ? ` <small style="display:block;color:var(--tx-muted);"><i class="fa-solid fa-link"></i> ${TX.esc(l.tesouraria)}</small>` : ''}</td>
+            <td class="num"><input class="tx-saldo-input" data-conta="${TX.esc(l.codigo)}" value="${num(l.saldo)}"
+                inputmode="decimal" aria-label="Saldo de ${TX.esc(l.nome)}" ${ro ? 'readonly' : ''} ${dica}></td>
+        </tr>`;
     }
 
-    const conta = contaBase + ' — ' + descricao;
-    const valor = Number(saldo);
-    const body = {
-        conta,
-        debito: tipo === 'debito' ? valor : 0,
-        credito: tipo === 'credito' ? valor : 0
-    };
-
-    try {
-        const resp = await fetch('/contabilidade/balancete-abertura', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
+    function ligar(tbody) {
+        $(tbody).querySelectorAll('.tx-saldo-input:not([readonly])').forEach((inp) => {
+            let original = inp.value;
+            inp.addEventListener('focus', () => { original = inp.value; inp.select(); });
+            inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') inp.blur(); });
+            inp.addEventListener('blur', async () => {
+                if (inp.value === original) return;
+                const v = TX.parseMoney(inp.value || '0');
+                if (!Number.isFinite(v)) { inp.classList.add('erro'); TX.toast('Valor inválido.', 'erro'); return; }
+                inp.classList.remove('erro', 'salvo');
+                try {
+                    await TX.api('/contabilidade/balancete-abertura', { method: 'PUT', body: { conta: inp.dataset.conta, saldo: String(v) } });
+                    inp.value = num(v);
+                    original = inp.value;
+                    inp.classList.add('salvo');
+                    const l = [...dados.ativo, ...dados.passivo].find((x) => x.codigo === inp.dataset.conta);
+                    if (l) l.saldo = v;
+                    totais();
+                } catch (e) {
+                    inp.classList.add('erro');
+                    TX.toast(e.message, 'erro');
+                }
+            });
         });
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) throw new Error(data.error || 'Erro ao adicionar saldo inicial.');
-
-        document.getElementById('conta').value = '';
-        document.getElementById('descricao').value = '';
-        document.getElementById('saldo').value = '';
-        setMsg('Saldo inicial adicionado com sucesso.', false);
-        await carregar();
-    } catch (err) {
-        setMsg(err.message, true);
     }
-});
 
-carregar();
+    function totais() {
+        const tA = dados.ativo.reduce((s, l) => s + Number(l.saldo || 0), 0);
+        const tP = dados.passivo.reduce((s, l) => s + Number(l.saldo || 0), 0);
+        const dif = Math.round((tA - tP) * 100) / 100;
+        $('tAtivo').textContent = TX.money(tA);
+        $('tPassivo').textContent = TX.money(tP);
+        const st = $('status');
+        st.className = `tx-status ${dif ? 'vencido' : 'pago'}`;
+        st.innerHTML = dif
+            ? `<i class="fa-solid fa-triangle-exclamation"></i> Diferença de ${TX.money(Math.abs(dif))} (${dif > 0 ? 'Ativo maior' : 'Passivo maior'})`
+            : '<i class="fa-solid fa-circle-check"></i> Ativo e Passivo fechados';
+        $('btnAjustar').disabled = !dif || dados.bloqueado;
+        dados.diferenca = dif;
+    }
+
+    $('btnAjustar').addEventListener('click', async () => {
+        const dif = dados.diferenca;
+        const ok = await TX.confirmar({
+            titulo: 'Ajustar resultado acumulado',
+            texto: `A diferença de ${TX.money(Math.abs(dif))} entre Ativo e Passivo será lançada em "2.03.02 - Superávit ou déficit acumulado". Deseja continuar?`,
+            botao: 'Ajustar', perigo: false
+        });
+        if (!ok) return;
+        try {
+            const r = await TX.api('/contabilidade/balancete-abertura/ajustar-resultado', { method: 'POST' });
+            TX.toast(r.message);
+            carregar();
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    });
+
+    carregar();
+})();
 </script>
 </body>
 </html>

@@ -219,6 +219,17 @@ describe('3) Módulos do plano barrados no servidor', () => {
         assert.equal(r.status, 200);
     });
 
+    test('Contabilidade é um módulo à parte: "financeiro" não libera; "contabilidade" libera', async () => {
+        for (const rota of ['/contabilidade/plano-contas', '/contabilidade/lancamentos', '/api/relatorios/contabil/balanco']) {
+            const r = await request(app).get(rota).set(auth(C.token));
+            assert.equal(r.status, 403, `${rota} → ${r.status}`);
+        }
+        await pool.query(`INSERT OR IGNORE INTO saas_modulos (slug, nome, feature_key, ativo) VALUES ('contabilidade', 'contabilidade', 'contabilidade', 1)`);
+        await pool.query('INSERT INTO saas_plano_modulos (plano_slug, modulo_slug, ativo) VALUES (?, ?, 1)', ['basico_teste', 'contabilidade']);
+        const r = await request(app).get('/contabilidade/plano-contas').set(auth(C.token));
+        assert.equal(r.status, 200, JSON.stringify(r.body));
+    });
+
     test('[positivo] durante o trial válido todos os módulos ficam liberados', async () => {
         await setIgreja(C.igrejaId, { status_assinatura: 'trial', trial_ends_at: DAQUI_30 });
         const r = await request(app).get('/api/escalas/eventos').set(auth(C.token));

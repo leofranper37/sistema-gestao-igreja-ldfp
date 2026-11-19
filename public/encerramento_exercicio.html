@@ -6,91 +6,173 @@
     <title>LDFP - Encerramento do Exercício</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; box-shadow:0 8px 24px rgba(15,23,42,.08); margin-bottom:16px; }
-        .checklist { display:grid; gap:10px; margin:12px 0; }
-        .item { display:flex; gap:10px; align-items:center; padding:10px; border:1px solid #e5e7eb; border-radius:8px; }
-        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
-        .btn-danger { background:#b91c1c; }
-        .status { margin-top:12px; color:#0f172a; font-weight:700; }
-    </style>
+    <link rel="stylesheet" href="tesouraria-ui.css">
     <script src="tema.js"></script>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-active="encerramento_exercicio.html" data-shell-title="Encerramento do Exercício" data-shell-breadcrumb="LDFP / Contabilidade / Encerramento do Exercício" data-shell-chip="Contabilidade" data-shell-role="Financeiro">
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Encerramento do Exercício"
+      data-shell-breadcrumb="LDFP / Contabilidade / Encerramento do Exercício"
+      data-shell-active="encerramento_exercicio.html"
+      data-shell-chip="Contabilidade">
+
 <main class="main-content enterprise-main">
-    <div class="enterprise-page-shell">
-        <div class="enterprise-page-hero">
-            <div>
-                <h2>Encerramento do Exercício</h2>
-                <p>Valide os itens de fechamento para concluir o período contábil com segurança.</p>
-            </div>
-            <div class="enterprise-page-badge"><i class="fa-solid fa-flag-checkered"></i> Fechamento</div>
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>Encerramento do Exercício</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <span>Contabilidade</span><span class="sep">›</span>
+                <span class="atual">Encerramento do Exercício</span>
+            </nav>
         </div>
 
-        <section class="card">
-            <h3>Checklist de fechamento</h3>
-            <div class="checklist">
-                <label class="item"><input type="checkbox" class="chk"> Conciliação bancária concluída</label>
-                <label class="item"><input type="checkbox" class="chk"> Livro diário validado</label>
-                <label class="item"><input type="checkbox" class="chk"> Balancete de abertura revisado</label>
-                <label class="item"><input type="checkbox" class="chk"> Relatórios emitidos para diretoria</label>
+        <div class="tx-enc-layout">
+            <div>
+                <section class="tx-card">
+                    <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-calendar-check"></i></span> Exercício contábil</h3></div>
+                    <div class="tx-card-body">
+                        <div class="tx-enc-cards">
+                            <div class="tx-enc-card"><span>Último exercício fechado</span><strong id="cFechado">—</strong></div>
+                            <div class="tx-enc-card"><span>Ano do encerramento</span><strong id="cAno">—</strong></div>
+                        </div>
+
+                        <div class="tx-previa" aria-label="Prévia do resultado">
+                            <div><span>Receitas do ano</span><strong class="tx-valor-pos" id="pRec">R$ 0,00</strong></div>
+                            <div><span>Despesas do ano</span><strong class="tx-valor-neg" id="pDesp">R$ 0,00</strong></div>
+                            <div><span id="pResRot">Resultado</span><strong id="pRes">R$ 0,00</strong></div>
+                        </div>
+
+                        <div style="margin-top:16px;">
+                            <label class="tx-switch"><input type="checkbox" id="semMov"> Ano sem movimento</label>
+                        </div>
+
+                        <div id="status" style="margin-top:16px;"></div>
+
+                        <div class="tx-actions" style="margin-top:16px;justify-content:flex-end;">
+                            <button class="tx-btn tx-btn-ghost" type="button" id="btnReabrir" hidden><i class="fa-solid fa-lock-open"></i> Reabrir último exercício</button>
+                            <button class="tx-btn tx-btn-primary" type="button" id="btnEncerrar"><i class="fa-solid fa-lock"></i> Encerrar ano</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="tx-card" style="margin-top:16px;">
+                    <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-clock-rotate-left"></i></span> Exercícios encerrados</h3></div>
+                    <div class="tx-table-wrap">
+                        <table class="tx-table">
+                            <thead><tr><th>Exercício</th><th class="num">Resultado</th><th>Encerrado por</th><th>Em</th></tr></thead>
+                            <tbody id="historico"></tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
-            <button id="btnEncerrar" class="btn btn-danger" type="button">Encerrar exercício</button>
-            <p id="status" class="status"></p>
-        </section>
+
+            <aside class="tx-card" aria-label="Como funciona">
+                <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-list-check"></i></span> O que o encerramento faz</h3></div>
+                <div class="tx-card-body" style="font-size:13px;line-height:1.55;">
+                    <strong>1. Apuração do resultado anual</strong>
+                    <ul class="tx-check-list">
+                        <li><i class="fa-solid fa-check"></i>Zera as contas de Receitas (4) e Despesas (3)</li>
+                        <li><i class="fa-solid fa-check"></i>Transfere os saldos para 2.03.03 - Superávit ou déficit do exercício</li>
+                    </ul>
+                    <strong>2. Balanço patrimonial</strong>
+                    <ul class="tx-check-list">
+                        <li><i class="fa-solid fa-check"></i>Ativo e Passivo passam para o ano seguinte</li>
+                        <li><i class="fa-solid fa-check"></i>O balanço de 31/12 fica disponível nos relatórios</li>
+                    </ul>
+                    <strong>3. Apropriação do resultado</strong>
+                    <ul class="tx-check-list">
+                        <li><i class="fa-solid fa-check"></i>O superávit/déficit vai para 2.03.02 - Superávit ou déficit acumulado</li>
+                    </ul>
+                    <div class="tx-alert warn" style="margin-top:6px;"><i class="fa-solid fa-lock"></i>
+                        <span>Depois de encerrado, nada com data do ano fechado pode ser lançado, alterado ou excluído — nem no Caixa, nem nos Bancos, nem na Contabilidade. Os anos são encerrados em ordem.</span></div>
+                </div>
+            </aside>
+        </div>
     </div>
 </main>
 
-<script src="session.js?v=20260501"></script>
-<script src="enterprise-shell.js?v=20260501"></script>
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
 <script>
-requireAuthSession();
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    let st = null;
+    let role = '';
+    try { role = ((JSON.parse(localStorage.getItem('ldfpAuth') || '{}').user) || {}).role || ''; } catch (_) { /* sem storage */ }
 
-async function loadStatus() {
-    const status = document.getElementById('status');
-    try {
-        const resp = await fetch('/contabilidade/encerramentos');
-        const data = await resp.json().catch(() => ([]));
-        if (!resp.ok) throw new Error(data.error || 'Erro ao carregar encerramentos.');
-        const items = Array.isArray(data) ? data : [];
-        if (items.length) {
-            const ultimo = items[0];
-            status.textContent = 'Último encerramento: ' + new Date(ultimo.created_at).toLocaleString('pt-BR') + ' por ' + ultimo.usuario_nome + '.';
+    async function carregar() {
+        try {
+            st = await TX.api('/contabilidade/encerramento');
+        } catch (e) {
+            $('status').innerHTML = `<div class="tx-alert erro"><i class="fa-solid fa-circle-exclamation"></i><span>${TX.esc(e.message)}</span></div>`;
+            return;
         }
-    } catch (err) {
-        status.textContent = 'Não foi possível carregar o histórico de encerramentos.';
+        $('cFechado').textContent = st.ultimoExercicioFechado || 'Nenhum';
+        $('cAno').textContent = st.anoEncerramento;
+        $('pRec').textContent = TX.money(st.previa.receitas);
+        $('pDesp').textContent = TX.money(st.previa.despesas);
+        const res = st.previa.resultado;
+        $('pResRot').textContent = res >= 0 ? 'Superávit' : 'Déficit';
+        $('pRes').textContent = TX.money(Math.abs(res));
+        $('pRes').className = res >= 0 ? 'tx-valor-pos' : 'tx-valor-neg';
+        $('semMov').checked = !st.movimentos;
+        $('semMov').disabled = !!st.movimentos;
+
+        let html;
+        if (!st.podeEncerrar) {
+            html = `<div class="tx-alert info"><i class="fa-solid fa-circle-info"></i><span>O exercício de ${st.anoEncerramento} ainda não começou.</span></div>`;
+        } else if (st.anoAindaEmAndamento) {
+            html = `<div class="tx-alert warn"><i class="fa-solid fa-triangle-exclamation"></i><span><strong>Status do processo:</strong> o ano de ${st.anoEncerramento} ainda está em andamento (${st.movimentos} lançamento(s)). Encerre somente depois de conferir todos os lançamentos de dezembro.</span></div>`;
+        } else {
+            html = `<div class="tx-alert info"><i class="fa-solid fa-circle-info"></i><span><strong>Status do processo:</strong> pronto para encerrar ${st.anoEncerramento} — ${st.movimentos ? `${st.movimentos} lançamento(s) no ano` : 'nenhum movimento no ano'}.</span></div>`;
+        }
+        $('status').innerHTML = html;
+        $('btnEncerrar').disabled = !st.podeEncerrar || !['admin', 'financeiro'].includes(role);
+        $('btnEncerrar').innerHTML = `<i class="fa-solid fa-lock"></i> Encerrar ${st.anoEncerramento}`;
+        $('btnReabrir').hidden = !st.ultimoExercicioFechado || role !== 'admin';
+
+        $('historico').innerHTML = st.historico.length
+            ? st.historico.map((h) => `<tr>
+                <td><strong>${h.ano}</strong>${h.semMovimento ? ' <span class="tx-tag">Sem movimento</span>' : ''}</td>
+                <td class="num ${h.resultado >= 0 ? 'tx-valor-pos' : 'tx-valor-neg'}" style="font-weight:700;">${h.resultado >= 0 ? '' : '- '}${TX.money(Math.abs(h.resultado))}</td>
+                <td>${TX.esc(h.usuario || '—')}</td>
+                <td>${h.data ? TX.dataBR(String(h.data).slice(0, 10)) : '—'}</td></tr>`).join('')
+            : '<tr><td colspan="4"><div class="tx-empty"><span class="ico"><i class="fa-regular fa-calendar"></i></span><strong>Nenhum exercício encerrado</strong><span>O primeiro encerramento aparecerá aqui.</span></div></td></tr>';
     }
-}
 
-document.getElementById('btnEncerrar').addEventListener('click', async () => {
-    const checks = Array.from(document.querySelectorAll('.chk'));
-    const status = document.getElementById('status');
-    const ok = checks.every((c) => c.checked);
-    if (!ok) {
-        status.textContent = 'Marque todos os itens do checklist antes de encerrar.';
-        return;
-    }
-
-    const itensChecados = checks.map((c) => c.closest('label').textContent.trim()).join('; ');
-    const observacao = 'Checklist concluído: ' + itensChecados;
-
-    try {
-        const resp = await fetch('/contabilidade/encerramentos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ observacao })
+    $('btnEncerrar').addEventListener('click', async () => {
+        const res = st.previa.resultado;
+        const ok = await TX.confirmar({
+            titulo: `Encerrar o exercício de ${st.anoEncerramento}`,
+            texto: `Será apurado um ${res >= 0 ? 'superávit' : 'déficit'} de ${TX.money(Math.abs(res))} e o ano de ${st.anoEncerramento} ficará travado para lançamentos no Caixa, Bancos e Contabilidade. Deseja continuar?`,
+            botao: 'Encerrar ano', perigo: true
         });
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) throw new Error(data.error || 'Erro ao registrar encerramento.');
+        if (!ok) return;
+        try {
+            const r = await TX.api('/contabilidade/encerramento', { method: 'POST', body: { ano: st.anoEncerramento, semMovimento: $('semMov').checked } });
+            TX.toast(r.message);
+            carregar();
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    });
 
-        status.textContent = 'Exercício encerrado com sucesso em ' + new Date().toLocaleString('pt-BR') + '.';
-        checks.forEach((c) => { c.checked = false; });
-    } catch (err) {
-        status.textContent = err.message;
-    }
-});
+    $('btnReabrir').addEventListener('click', async () => {
+        const ano = st.ultimoExercicioFechado;
+        const ok = await TX.confirmar({
+            titulo: `Reabrir o exercício de ${ano}`,
+            texto: `Os lançamentos de encerramento de ${ano} serão removidos e o período volta a aceitar alterações. Use só para corrigir algo; depois encerre novamente.`,
+            botao: 'Reabrir', perigo: true
+        });
+        if (!ok) return;
+        try {
+            const r = await TX.api('/contabilidade/encerramento/reabrir', { method: 'POST', body: { ano } });
+            TX.toast(r.message);
+            carregar();
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    });
 
-loadStatus();
+    carregar();
+})();
 </script>
 </body>
 </html>

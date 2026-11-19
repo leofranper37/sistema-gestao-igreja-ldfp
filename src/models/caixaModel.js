@@ -6,6 +6,12 @@
 //   ativa. É sempre calculado, nunca copiado: corrigir um lançamento antigo não
 //   deixa saldo errado em lugar nenhum.
 const { pool } = require('../config/db');
+const exercicio = require('./exercicioContabilModel');
+
+async function dataDoLancamento(id, igrejaId) {
+    const [r] = await pool.query('SELECT data FROM caixa_lancamentos WHERE id = ? AND igreja_id = ? LIMIT 1', [id, igrejaId]);
+    return r[0] ? r[0].data : null;
+}
 const financeModel = require('./financeModel');
 
 const COLUNAS = [
@@ -178,6 +184,7 @@ async function getLancamento(id, igrejaId) {
 
 async function createLancamento(igrejaId, userId, d) {
     await ensure();
+    await exercicio.exigirAberto(igrejaId, d.data);
     const [r] = await pool.query(
         `INSERT INTO caixa_lancamentos
             (igreja_id, data, doc, historico, valor, tipo, conta_contabil, observacao, origem, origem_id, centro_custo_id, fornecedor_id, created_by)
@@ -190,6 +197,7 @@ async function createLancamento(igrejaId, userId, d) {
 
 async function updateLancamento(id, igrejaId, d) {
     await ensure();
+    await exercicio.exigirAberto(igrejaId, d.data, await dataDoLancamento(id, igrejaId));
     const [r] = await pool.query(
         `UPDATE caixa_lancamentos
             SET data = ?, doc = ?, historico = ?, valor = ?, tipo = ?, conta_contabil = ?, observacao = ?, atualizado_em = CURRENT_TIMESTAMP
@@ -201,6 +209,7 @@ async function updateLancamento(id, igrejaId, d) {
 
 async function deleteLancamento(id, igrejaId) {
     await ensure();
+    await exercicio.exigirAberto(igrejaId, await dataDoLancamento(id, igrejaId));
     const [r] = await pool.query('DELETE FROM caixa_lancamentos WHERE id = ? AND igreja_id = ?', [id, igrejaId]);
     return r.affectedRows;
 }
@@ -227,6 +236,7 @@ async function sincronizarOrigem(igrejaId, origem, origemId, dados) {
 
 module.exports = {
     ensure,
+    listMeses,
     mesSeguinte,
     paraCompetencia,
     getEstado,

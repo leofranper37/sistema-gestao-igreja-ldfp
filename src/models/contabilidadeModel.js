@@ -169,6 +169,7 @@ async function createEncerramento({ igrejaId, usuarioNome, observacao, createdBy
 }
 
 module.exports = {
+    ensureTables,
     createBalanceteAbertura,
     createEncerramento,
     createLancamentoContabil,

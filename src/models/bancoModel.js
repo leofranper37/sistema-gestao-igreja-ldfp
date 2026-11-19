@@ -1,4 +1,10 @@
 const { pool } = require('../config/db');
+const exercicio = require('./exercicioContabilModel');
+
+async function dataDoLancamento(id, igrejaId) {
+    const [r] = await pool.query('SELECT data_lancamento FROM banco_lancamentos WHERE id = ? AND igreja_id = ? LIMIT 1', [id, igrejaId]);
+    return r[0] ? r[0].data_lancamento : null;
+}
 const { ensureTable } = require('./tableEnsure');
 const cadastrosTesouraria = require('./cadastrosTesourariaModel');
 
@@ -226,6 +232,7 @@ async function listLancamentos(contaId, igrejaId) {
 
 async function createLancamento(payload) {
     await ensureBancoTables();
+    await exercicio.exigirAberto(payload.igrejaId, payload.dataLancamento);
 
     const { contaId, igrejaId, descricao, tipo, valor, dataLancamento, observacao, createdBy, centroCustoId, fornecedorId } = payload;
     const [result] = await pool.query(
@@ -238,6 +245,7 @@ async function createLancamento(payload) {
 
 async function deleteLancamento(id, igrejaId) {
     await ensureBancoTables();
+    await exercicio.exigirAberto(igrejaId, await dataDoLancamento(id, igrejaId));
 
     const [info] = await pool.query(`DELETE FROM banco_lancamentos WHERE id = ? AND igreja_id = ?`, [id, igrejaId]);
     return info.affectedRows;
@@ -340,6 +348,7 @@ async function getLancamento(id, igrejaId) {
 
 async function inserirLancamento(igrejaId, userId, d) {
     await ensureBancoTables();
+    await exercicio.exigirAberto(igrejaId, d.dataLancamento);
     const [r] = await pool.query(
         `INSERT INTO banco_lancamentos
             (conta_id, igreja_id, descricao, tipo, valor, data_lancamento, observacao, created_by,
@@ -353,6 +362,7 @@ async function inserirLancamento(igrejaId, userId, d) {
 
 async function atualizarLancamento(id, igrejaId, d) {
     await ensureBancoTables();
+    await exercicio.exigirAberto(igrejaId, d.dataLancamento, await dataDoLancamento(id, igrejaId));
     const [r] = await pool.query(
         `UPDATE banco_lancamentos
             SET conta_id = ?, descricao = ?, tipo = ?, valor = ?, data_lancamento = ?, observacao = ?, doc = ?,

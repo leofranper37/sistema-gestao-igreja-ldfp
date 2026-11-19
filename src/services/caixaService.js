@@ -59,6 +59,8 @@ async function getEstado(igrejaId) {
 
 async function definirSaldoInicial(igrejaId, competencia, valor) {
     const [mm, aaaa] = competencia.split('/');
+    const fechado = await require('../models/exercicioContabilModel').ultimoFechado(igrejaId);
+    if (fechado) throw createHttpError(409, `O exercício de ${fechado} já foi encerrado na Contabilidade: o saldo inicial do caixa não pode mais ser alterado.`);
     const r = await caixaModel.definirSaldoInicial(igrejaId, `${aaaa}-${mm}`, valor);
     if (r.conflito) {
         throw createHttpError(409, `A competência do saldo inicial já foi definida (${caixaModel.paraCompetencia(r.conflito)}) e não pode ser alterada. Só o valor pode mudar.`);
@@ -221,24 +223,36 @@ async function contasSugeridas(igrejaId, { incluirBancos = true } = {}) {
             });
         });
     }
-    const add = (codigo, nome, natureza) => {
+    const add = (codigo, nome, natureza, detalhe) => {
         const rotulo = codigo ? `${codigo} - ${nome}` : nome;
         const k = rotulo.toLowerCase();
         if (vistos.has(k)) return;
         vistos.add(k);
-        out.push({ rotulo, natureza });
+        out.push(detalhe ? { rotulo, natureza, detalhe } : { rotulo, natureza });
     };
 
+    // Plano de contas: só contas analíticas (as sintéticas são grupos) e nunca o próprio Caixa
+    let plano = [];
     try {
-        const [plano] = await pool.query(
-            'SELECT codigo, nome, natureza FROM contabilidade_plano_contas WHERE igreja_id = ? AND ativo = 1 ORDER BY codigo',
+        [plano] = await pool.query(
+            "SELECT codigo, nome, natureza, tipo FROM contabilidade_plano_contas WHERE igreja_id = ? AND ativo = 1 AND (tipo IS NULL OR tipo <> 'S') ORDER BY codigo",
             [igrejaId]
         );
-        plano.forEach((p) => {
-            const n = String(p.natureza || '').toLowerCase();
-            add(p.codigo, p.nome, /receita|credor/.test(n) || String(p.codigo).startsWith('4') ? 'receita' : 'despesa');
-        });
-    } catch (_) { /* módulo de contabilidade ainda não usado */ }
+    } catch (_) {
+        try {
+            [plano] = await pool.query('SELECT codigo, nome, natureza FROM contabilidade_plano_contas WHERE igreja_id = ? AND ativo = 1 ORDER BY codigo', [igrejaId]);
+        } catch (__) { /* módulo de contabilidade ainda não usado */ }
+    }
+    plano.filter((p) => String(p.codigo).trim() !== '1.01.01').forEach((p) => {
+        const cod = String(p.codigo).trim();
+        const grupo = cod.charAt(0);
+        if (grupo === '1' || grupo === '2') {
+            add(cod, p.nome, 'patrimonial', grupo === '1' ? 'Ativo (bens e direitos)' : 'Passivo / patrimônio');
+            return;
+        }
+        const n = String(p.natureza || '').toLowerCase();
+        add(cod, p.nome, /receita|credor/.test(n) || grupo === '4' ? 'receita' : 'despesa');
+    });
 
     const tipos = await financeModel.listTiposReceita({ igrejaId }).catch(() => []);
     tipos.forEach((t) => {

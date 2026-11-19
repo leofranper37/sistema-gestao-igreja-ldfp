@@ -86,6 +86,15 @@ async function updateConta(id, igrejaId, payload) {
     const atual = await bancoModel.getConta(id, igrejaId);
     if (!atual) return 0;
     const dados = { ...payload, saldoInicial: saldoComSinal(payload) };
+    // Saldo de abertura faz parte de exercícios já encerrados na Contabilidade: não pode mudar
+    const mudouSaldo = payload.saldoInicial !== undefined && Math.abs(Number(atual.saldo_inicial || 0) - Number(dados.saldoInicial || 0)) > 0.004;
+    const mudouData = payload.saldoData !== undefined && bancoModel.isoData(atual.saldo_data) !== (payload.saldoData || null);
+    if (mudouSaldo || mudouData) {
+        const fechado = await require('../models/exercicioContabilModel').ultimoFechado(igrejaId);
+        if (fechado) {
+            throw createHttpError(409, `O exercício de ${fechado} já foi encerrado na Contabilidade: o saldo de abertura desta conta não pode mais ser alterado.`);
+        }
+    }
     if (dados.contaContabil !== undefined) {
         if (!dados.contaContabil) dados.contaContabil = atual.conta_contabil || await gerarContaContabil(igrejaId, dados.tipo || atual.tipo, dados.nome, null);
         else await validarContaContabilLivre(igrejaId, dados.contaContabil, id);

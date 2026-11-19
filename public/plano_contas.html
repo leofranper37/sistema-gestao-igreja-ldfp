@@ -6,117 +6,270 @@
     <title>LDFP - Plano de Contas</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(15,23,42,.08); margin-bottom:16px; }
-        .grid { display:grid; grid-template-columns: 180px 1fr 180px auto; gap:10px; align-items:end; }
-        .field { width:100%; padding:10px; border:1px solid #dbe3ef; border-radius:8px; }
-        .btn { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
-        .table { width:100%; border-collapse:collapse; }
-        .table th, .table td { border-bottom:1px solid #e5e7eb; text-align:left; padding:10px; font-size:13px; }
-        @media (max-width:1100px) { .grid { grid-template-columns: 1fr 1fr; } }
-    </style>
+    <link rel="stylesheet" href="tesouraria-ui.css">
     <script src="tema.js"></script>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-active="plano_contas.html" data-shell-title="Plano de Contas" data-shell-breadcrumb="LDFP / Contabilidade / Plano de Contas" data-shell-chip="Contabilidade" data-shell-role="Financeiro">
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Plano de Contas"
+      data-shell-breadcrumb="LDFP / Contabilidade / Plano de Contas"
+      data-shell-active="plano_contas.html"
+      data-shell-chip="Contabilidade">
+
 <main class="main-content enterprise-main">
-    <div class="enterprise-page-shell">
-        <div class="enterprise-page-hero">
-            <div>
-                <h2>Plano de Contas</h2>
-                <p>Cadastre e organize contas contábeis para classificação das movimentações.</p>
-            </div>
-            <div class="enterprise-page-badge"><i class="fa-solid fa-list-ol"></i> Estrutura contábil</div>
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>Plano de Contas</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <span>Contabilidade</span><span class="sep">›</span>
+                <span class="atual">Plano de Contas</span>
+            </nav>
         </div>
 
-        <section class="card">
-            <h3>Nova conta</h3>
-            <div class="grid">
-                <input id="codigo" class="field" placeholder="Código (ex: 1.1.01)">
-                <input id="descricao" class="field" placeholder="Descrição da conta">
-                <select id="natureza" class="field" title="Natureza da conta" aria-label="Natureza da conta">
-                    <option value="ativo">Ativo</option>
-                    <option value="passivo">Passivo</option>
-                    <option value="receita">Receita</option>
-                    <option value="despesa">Despesa</option>
-                </select>
-                <button id="btnAdd" class="btn" type="button">Adicionar</button>
+        <section class="tx-card">
+            <div class="tx-card-head">
+                <h3><span class="ico"><i class="fa-solid fa-sitemap"></i></span> Estrutura de contas</h3>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="tx-btn tx-btn-ghost" type="button" id="btnExpandir"><i class="fa-solid fa-angles-down"></i> Expandir</button>
+                    <button class="tx-btn tx-btn-ghost" type="button" id="btnColapsar"><i class="fa-solid fa-angles-up"></i> Colapsar</button>
+                    <button class="tx-btn tx-btn-primary" type="button" id="btnNova"><i class="fa-solid fa-plus"></i> Nova conta</button>
+                </div>
             </div>
-            <p id="msg" style="margin-top:10px;font-size:13px;"></p>
-        </section>
-
-        <section class="card">
-            <h3>Contas cadastradas</h3>
-            <table class="table">
-                <thead><tr><th>Código</th><th>Descrição</th><th>Natureza</th></tr></thead>
-                <tbody id="tbody"><tr><td colspan="3">Carregando...</td></tr></tbody>
-            </table>
+            <div class="tx-toolbar">
+                <div class="tx-search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="busca" class="tx-input" type="search" placeholder="Buscar por código ou nome..." autocomplete="off" aria-label="Buscar conta">
+                </div>
+                <div class="tx-seg" role="radiogroup" aria-label="Grupo" id="filtroGrupo">
+                    <button type="button" role="radio" data-g="" aria-checked="true">Todas</button>
+                    <button type="button" role="radio" data-g="1" aria-checked="false">Ativo</button>
+                    <button type="button" role="radio" data-g="2" aria-checked="false">Passivo</button>
+                    <button type="button" role="radio" data-g="3" aria-checked="false">Despesas</button>
+                    <button type="button" role="radio" data-g="4" aria-checked="false">Receitas</button>
+                </div>
+            </div>
+            <ul class="tx-tree" id="arvore" role="tree" aria-label="Plano de contas">
+                <li><div class="tx-skel" style="height:220px;margin:16px;"></div></li>
+            </ul>
+            <div class="tx-foot">
+                <span class="tx-hint" style="margin:0;"><span class="tx-tipo-sa">S</span> sintética (grupo, soma as subcontas) · <span class="tx-tipo-sa a">A</span> analítica (recebe lançamentos)</span>
+                <span class="tx-count" id="contagem"></span>
+            </div>
         </section>
     </div>
 </main>
 
-<script src="session.js?v=20260501"></script>
-<script src="enterprise-shell.js?v=20260501"></script>
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
 <script>
-requireAuthSession();
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    let contas = [];
+    let grupo = '';
+    let expandidas = new Set(['1', '2', '3', '4']);
+    let podeEditar = true;
 
-const NATUREZA_LABEL = { ativo: 'Ativo', passivo: 'Passivo', receita: 'Receita', despesa: 'Despesa' };
+    const NATUREZA = { ativo: 'Ativo', passivo: 'Passivo / PL', despesa: 'Despesa', receita: 'Receita' };
 
-function setMsg(text, isError) {
-    const el = document.getElementById('msg');
-    el.textContent = text;
-    el.style.color = isError ? '#b91c1c' : '#0f766e';
-}
-
-function render(items) {
-    const tbody = document.getElementById('tbody');
-    if (!items.length) {
-        tbody.innerHTML = '<tr><td colspan="3">Nenhuma conta cadastrada.</td></tr>';
-        return;
+    async function carregar() {
+        try {
+            contas = (await TX.api('/contabilidade/plano-contas')).items || [];
+        } catch (e) {
+            $('arvore').innerHTML = `<li><div class="tx-empty"><strong>Não foi possível carregar</strong><span>${TX.esc(e.message)}</span></div></li>`;
+            return;
+        }
+        render();
     }
 
-    tbody.innerHTML = items.map((i) => '<tr><td>' + i.codigo + '</td><td>' + i.nome + '</td><td>' + (NATUREZA_LABEL[i.natureza] || i.natureza) + '</td></tr>').join('');
-}
+    function visivel(c, termo) {
+        if (grupo && c.codigo.charAt(0) !== grupo) return false;
+        if (termo) return true;
+        // sem busca: mostra se todos os ancestrais estão expandidos
+        let p = c.pai;
+        while (p) {
+            if (!expandidas.has(p)) return false;
+            const pai = contas.find((x) => x.codigo === p);
+            p = pai ? pai.pai : null;
+        }
+        return true;
+    }
 
-async function carregar() {
+    function render() {
+        const termo = $('busca').value.trim().toLowerCase();
+        let lista = contas;
+        if (termo) {
+            const bate = new Set();
+            contas.forEach((c) => {
+                if (c.codigo.startsWith(termo) || c.nome.toLowerCase().includes(termo)) {
+                    bate.add(c.codigo);
+                    let p = c.pai;
+                    while (p) { bate.add(p); const x = contas.find((y) => y.codigo === p); p = x ? x.pai : null; }
+                }
+            });
+            lista = contas.filter((c) => bate.has(c.codigo));
+        }
+        lista = lista.filter((c) => visivel(c, termo));
+        const qtd = contas.filter((c) => !grupo || c.codigo.charAt(0) === grupo).length;
+        $('contagem').textContent = `${qtd} registro(s)`;
+        if (!lista.length) {
+            $('arvore').innerHTML = '<li><div class="tx-empty"><span class="ico"><i class="fa-solid fa-magnifying-glass"></i></span><strong>Nenhuma conta encontrada</strong><span>Tente outro código ou nome.</span></div></li>';
+            return;
+        }
+        $('arvore').innerHTML = lista.map(linha).join('');
+    }
+
+    function linha(c) {
+        const aberta = expandidas.has(c.codigo) || $('busca').value.trim();
+        const tog = c.temFilhos
+            ? `<button type="button" class="tx-tree-tog" data-tog="${c.codigo}" aria-label="${aberta ? 'Recolher' : 'Expandir'} ${TX.esc(c.nome)}"><i class="fa-solid fa-${aberta ? 'minus' : 'plus'}"></i></button>`
+            : '<span class="tx-tree-tog vazio"></span>';
+        const tes = c.tesouraria
+            ? `<span class="tx-tag" title="Movimentada pela Tesouraria"><i class="fa-solid fa-${c.tesouraria === 'caixa' ? 'cash-register' : 'building-columns'}"></i> ${c.tesouraria === 'caixa' ? 'Caixa' : 'Banco'}</span>` : '';
+        const inativa = c.ativo ? '' : '<span class="tx-tag">Inativa</span>';
+        const acoes = podeEditar ? `<span class="acoes">
+            ${c.tipo === 'S' ? `<button type="button" class="tx-btn-icon" data-add="${c.codigo}" title="Nova subconta" aria-label="Nova subconta em ${TX.esc(c.nome)}"><i class="fa-solid fa-plus"></i></button>` : ''}
+            <button type="button" class="tx-btn-icon" data-edit="${TX.esc(c.id)}" title="Editar" aria-label="Editar ${TX.esc(c.nome)}"><i class="fa-solid fa-pen"></i></button>
+            ${!c.sistema && !c.tesouraria ? `<button type="button" class="tx-btn-icon" data-del="${TX.esc(c.id)}" title="Excluir" aria-label="Excluir ${TX.esc(c.nome)}"><i class="fa-solid fa-trash"></i></button>` : ''}
+        </span>` : '';
+        const cls = ['tx-tree-row', c.tipo === 'S' ? 'sintetica' : '', c.nivel === 1 ? 'raiz' : '', c.ativo ? '' : 'inativa'].join(' ');
+        return `<li role="treeitem" aria-level="${c.nivel}" ${c.temFilhos ? `aria-expanded="${!!aberta}"` : ''}>
+            <div class="${cls}" style="--nivel:${c.nivel - 1}">
+                <div class="nome">${tog}<span class="tx-cod">${TX.esc(c.codigo)}</span><span class="txt">${TX.esc(c.nome)}</span>${tes}${inativa}</div>
+                <div style="display:flex;align-items:center;gap:10px;">${acoes}<span class="tx-tipo-sa ${c.tipo === 'A' ? 'a' : ''}" title="${c.tipo === 'A' ? 'Analítica' : 'Sintética'}">${c.tipo}</span></div>
+            </div></li>`;
+    }
+
+    function opcoesPai(sel) {
+        return contas.filter((c) => c.tipo === 'S' && c.ativo)
+            .map((c) => `<option value="${c.codigo}" ${c.codigo === sel ? 'selected' : ''}>${'  '.repeat(c.nivel - 1)}${TX.esc(c.codigo)} - ${TX.esc(c.nome)}</option>`).join('');
+    }
+
+    function sugerirCodigo(pai) {
+        const usados = new Set(contas.filter((c) => c.pai === pai).map((c) => Number(c.codigo.split('.').pop())));
+        let n = 1;
+        while (usados.has(n)) n += 1;
+        return `${pai}.${String(n).padStart(2, '0')}`;
+    }
+
+    async function nova(pai) {
+        let msg = '';
+        await TX.dialogo({
+            titulo: 'Nova conta',
+            botao: 'Criar conta',
+            corpo: `
+                <div class="tx-field"><label for="cPai">Conta superior (grupo) <span class="req">*</span></label>
+                    <select id="cPai" class="tx-input">${opcoesPai(pai || '1.01')}</select></div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="cCod">Código</label><input id="cCod" class="tx-input" inputmode="decimal" maxlength="40"></div>
+                    <div class="tx-field"><label id="rotTipo">Tipo</label>
+                        <div class="tx-seg" role="radiogroup" aria-labelledby="rotTipo" id="cTipo">
+                            <button type="button" role="radio" data-t="A" aria-checked="true">Analítica</button>
+                            <button type="button" role="radio" data-t="S" aria-checked="false">Sintética</button>
+                        </div></div>
+                </div>
+                <div class="tx-field"><label for="cNome">Nome da conta <span class="req">*</span></label><input id="cNome" class="tx-input" maxlength="255" placeholder="Ex.: Equipamentos de multimídia"></div>
+                <p class="tx-hint" id="cNat" style="margin:0;"></p>`,
+            aoAbrir(f) {
+                const atualizar = () => {
+                    const p = f.querySelector('#cPai').value;
+                    f.querySelector('#cCod').value = sugerirCodigo(p);
+                    f.querySelector('#cNat').innerHTML = `<i class="fa-solid fa-circle-info"></i> Natureza: <strong>${NATUREZA[{ 1: 'ativo', 2: 'passivo', 3: 'despesa', 4: 'receita' }[p.charAt(0)]] || '—'}</strong> (herdada do grupo ${p.charAt(0)}).`;
+                };
+                f.querySelector('#cPai').addEventListener('change', atualizar);
+                f.querySelector('#cTipo').addEventListener('click', (e) => {
+                    const b = e.target.closest('[data-t]');
+                    if (!b) return;
+                    f.querySelectorAll('#cTipo [data-t]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+                });
+                atualizar();
+                setTimeout(() => f.querySelector('#cNome').focus(), 0);
+            },
+            async aoConfirmar(f) {
+                const nome = f.querySelector('#cNome').value.trim();
+                if (nome.length < 2) throw new Error('Informe o nome da conta.');
+                const r = await TX.api('/contabilidade/plano-contas', { method: 'POST', body: {
+                    pai: f.querySelector('#cPai').value,
+                    codigo: f.querySelector('#cCod').value.trim() || null,
+                    nome,
+                    tipo: f.querySelector('#cTipo [aria-checked="true"]').dataset.t
+                } });
+                msg = r.message;
+                expandidas.add(f.querySelector('#cPai').value);
+                let p = f.querySelector('#cPai').value;
+                while (p.includes('.')) { p = p.split('.').slice(0, -1).join('.'); expandidas.add(p); }
+            }
+        }).then((ok) => { if (ok) { TX.toast(msg); carregar(); } });
+    }
+
+    async function editar(id) {
+        const c = contas.find((x) => x.id === id);
+        if (!c) return;
+        const travada = c.sistema && ['1.01.01', '2.03.02', '2.03.03'].includes(c.codigo);
+        let msg = '';
+        await TX.dialogo({
+            titulo: `Editar conta ${c.codigo}`,
+            corpo: `
+                <div class="tx-modal-resumo"><span>${TX.esc(c.codigo)}</span><strong>${c.tipo === 'A' ? 'Analítica' : 'Sintética'} · ${NATUREZA[c.natureza] || ''}</strong></div>
+                <div class="tx-field"><label for="eNome">Nome da conta <span class="req">*</span></label><input id="eNome" class="tx-input" maxlength="255" value="${TX.esc(c.nome)}"></div>
+                <label class="tx-switch"><input type="checkbox" id="eAtivo" ${c.ativo ? 'checked' : ''} ${travada ? 'disabled' : ''}> Conta ativa${travada ? ' <small style="font-weight:400;color:var(--tx-muted);">(usada pelo sistema)</small>' : ''}</label>
+                ${c.tesouraria ? '<p class="tx-hint" style="margin:0;"><i class="fa-solid fa-circle-info"></i> Esta conta é movimentada pela Tesouraria. O nome da conta bancária é alterado em Bancos.</p>' : ''}`,
+            async aoConfirmar(f) {
+                const nome = f.querySelector('#eNome').value.trim();
+                if (nome.length < 2) throw new Error('Informe o nome da conta.');
+                const r = await TX.api(`/contabilidade/plano-contas/${encodeURIComponent(c.id)}`, { method: 'PUT', body: { nome, ativo: f.querySelector('#eAtivo').checked } });
+                msg = r.message;
+            }
+        }).then((ok) => { if (ok) { TX.toast(msg); carregar(); } });
+    }
+
+    async function excluir(id) {
+        const c = contas.find((x) => x.id === id);
+        if (!c) return;
+        const ok = await TX.confirmar({ titulo: 'Excluir conta', texto: `Excluir a conta ${c.codigo} - ${c.nome}? Só é possível excluir contas sem movimento.` });
+        if (!ok) return;
+        try {
+            const r = await TX.api(`/contabilidade/plano-contas/${encodeURIComponent(c.id)}`, { method: 'DELETE' });
+            TX.toast(r.message);
+            carregar();
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    }
+
+    $('btnExpandir').addEventListener('click', () => { expandidas = new Set(contas.filter((c) => c.temFilhos).map((c) => c.codigo)); render(); });
+    $('btnColapsar').addEventListener('click', () => { expandidas = new Set(); render(); });
+    $('btnNova').addEventListener('click', () => nova());
+    $('busca').addEventListener('input', TX.debounce(render, 150));
+    $('filtroGrupo').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-g]');
+        if (!b) return;
+        grupo = b.dataset.g;
+        document.querySelectorAll('#filtroGrupo [data-g]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+        if (grupo) expandidas.add(grupo);
+        render();
+    });
+    $('arvore').addEventListener('click', (e) => {
+        const t = e.target.closest('[data-tog]');
+        if (t) {
+            const k = t.dataset.tog;
+            if (expandidas.has(k)) expandidas.delete(k); else expandidas.add(k);
+            render();
+            return;
+        }
+        const a = e.target.closest('[data-add]');
+        if (a) return nova(a.dataset.add);
+        const ed = e.target.closest('[data-edit]');
+        if (ed) return editar(ed.dataset.edit);
+        const d = e.target.closest('[data-del]');
+        if (d) excluir(d.dataset.del);
+    });
+
     try {
-        const resp = await fetch('/contabilidade/plano-contas');
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) throw new Error(data.error || 'Erro ao carregar plano de contas.');
-        render(data.items || []);
-    } catch (err) {
-        document.getElementById('tbody').innerHTML = '<tr><td colspan="3">Não foi possível carregar as contas.</td></tr>';
-        setMsg(err.message, true);
-    }
-}
-
-document.getElementById('btnAdd').addEventListener('click', async () => {
-    const codigo = document.getElementById('codigo').value.trim();
-    const nome = document.getElementById('descricao').value.trim();
-    const natureza = document.getElementById('natureza').value;
-    if (!codigo || !nome) {
-        setMsg('Informe código e descrição.', true);
-        return;
-    }
-
-    try {
-        const resp = await fetch('/contabilidade/plano-contas', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ codigo, nome, natureza })
-        });
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) throw new Error(data.error || 'Erro ao adicionar conta.');
-
-        document.getElementById('codigo').value = '';
-        document.getElementById('descricao').value = '';
-        setMsg('Conta adicionada com sucesso.', false);
-        await carregar();
-    } catch (err) {
-        setMsg(err.message, true);
-    }
-});
-
-carregar();
+        const u = (JSON.parse(localStorage.getItem('ldfpAuth') || '{}').user) || {};
+        podeEditar = ['admin', 'financeiro', 'secretaria'].includes(u.role);
+        if (!podeEditar) $('btnNova').hidden = true;
+    } catch (_) { /* sem storage */ }
+    carregar();
+})();
 </script>
 </body>
 </html>

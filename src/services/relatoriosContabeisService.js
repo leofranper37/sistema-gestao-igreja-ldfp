@@ -60,11 +60,26 @@ const devedora = (nat) => nat === 'ativo' || nat === 'despesa';
 // ─── Base: plano, lançamentos, abertura ─────────────────────────────────────
 
 async function carregarBase(igrejaId) {
-    const [plano, lancs, abertura] = await Promise.all([
-        safeQuery('SELECT id, codigo, nome, natureza, ativo FROM contabilidade_plano_contas WHERE igreja_id = ?', [igrejaId]),
-        safeQuery('SELECT id, data_lancamento, historico, conta_debito, conta_credito, valor, created_at FROM contabilidade_lancamentos WHERE igreja_id = ?', [igrejaId]),
-        safeQuery('SELECT id, conta, debito, credito FROM contabilidade_balancete_abertura WHERE igreja_id = ?', [igrejaId])
-    ]);
+    // eslint-disable-next-line global-require
+    const contabil = require('./contabilService');
+    // Plano (com o padrão criado se faltar), lançamentos manuais + Tesouraria + encerramento e
+    // saldos de abertura (os do caixa/bancos vêm da Tesouraria)
+    const planoRows = await contabil.carregarPlano(igrejaId);
+    const plano = planoRows.map((c) => ({ id: c.id, codigo: c.codigo, nome: c.nome, natureza: c.natureza, ativo: c.ativo ? 1 : 0 }));
+    const lancs = (await contabil.carregarLancamentos(igrejaId)).map((l) => ({
+        id: l.id, data_lancamento: l.data, historico: l.historico, conta_debito: l.debito, conta_credito: l.credito,
+        valor: l.valor, created_at: l.criado, encerramento: l.fonte === 'encerramento', fonte: l.fonte
+    }));
+    const abertura = [];
+    const porCod = new Map(planoRows.map((c) => [c.codigo, c]));
+    const empurrar = (cod, saldo) => {
+        const c = porCod.get(cod);
+        if (!c || !saldo) return;
+        const deb = (c.natureza === 'ativo' || c.natureza === 'despesa') ? saldo : -saldo;
+        abertura.push({ conta: `${c.codigo} - ${c.nome}`, debito: deb > 0 ? deb : 0, credito: deb < 0 ? -deb : 0 });
+    };
+    (await contabil.aberturaManual(igrejaId)).forEach((saldo, cod) => empurrar(cod, saldo));
+    (await contabil.aberturaTesouraria(igrejaId)).forEach((v, cod) => empurrar(cod, v.saldo));
 
     const contas = new Map(); // key → conta
     const porCodigo = new Map();
@@ -95,7 +110,8 @@ async function carregarBase(igrejaId) {
     const marcar = (c) => {
         const linhagem = c.plano ? ancestrais(c.codigo) : [c];
         c.pl = c.natureza === 'passivo' && linhagem.some((a) => RE_PL.test(a.nome));
-        c.disponivel = c.natureza === 'ativo' && (c.codigo.startsWith('1.1.1') || linhagem.some((a) => RE_DISPONIVEL.test(a.nome)));
+        c.disponivel = c.natureza === 'ativo' && (c.codigo.startsWith('1.1.1') || /^1\.01\.0[123](\.|$)/.test(c.codigo)
+            || linhagem.some((a) => RE_DISPONIVEL.test(a.nome)));
     };
     contas.forEach(marcar);
 
@@ -125,6 +141,7 @@ async function carregarBase(igrejaId) {
         .map((l) => ({
             id: l.id, data: toISODate(l.data_lancamento), historico: l.historico || '', valor: r2(l.valor),
             debito: resolver(l.conta_debito), credito: resolver(l.conta_credito),
+            encerramento: !!l.encerramento, fonte: l.fonte || 'manual',
             criado: l.created_at ? new Date(l.created_at).getTime() || 0 : 0
         }))
         .filter((l) => l.data)
@@ -132,8 +149,8 @@ async function carregarBase(igrejaId) {
 
     const partidas = [];
     for (const l of lancamentos) {
-        partidas.push({ data: l.data, conta: l.debito, d: l.valor, c: 0, lanc: l, contra: l.credito });
-        partidas.push({ data: l.data, conta: l.credito, d: 0, c: l.valor, lanc: l, contra: l.debito });
+        partidas.push({ data: l.data, conta: l.debito, d: l.valor, c: 0, lanc: l, contra: l.credito, encerramento: l.encerramento });
+        partidas.push({ data: l.data, conta: l.credito, d: 0, c: l.valor, lanc: l, contra: l.debito, encerramento: l.encerramento });
     }
     // Saldos de abertura: data null = antes de qualquer lançamento
     let aberturaD = 0;
@@ -357,7 +374,8 @@ async function balanco(igrejaId, { data } = {}) {
 
 async function dre(igrejaId, { inicio, fim } = {}) {
     const base = await carregarBase(igrejaId);
-    const vals = saldosNaturais(base, entre(inicio, fim));
+    const noPeriodo = entre(inicio, fim);
+    const vals = saldosNaturais(base, (p) => noPeriodo(p) && !p.encerramento);
     const todas = [...base.contas.values()];
     const rec = todas.filter((c) => c.natureza === 'receita');
     const desp = todas.filter((c) => c.natureza === 'despesa');
@@ -377,7 +395,7 @@ async function dreMensal(igrejaId, { ano } = {}) {
     const base = await carregarBase(igrejaId);
     const vals = new Map();
     for (const p of base.partidas) {
-        if (!p.data || Number(p.data.slice(0, 4)) !== y) continue;
+        if (!p.data || p.encerramento || Number(p.data.slice(0, 4)) !== y) continue;
         const c = p.conta;
         if (c.natureza !== 'receita' && c.natureza !== 'despesa') continue;
         const mes = Number(p.data.slice(5, 7)) - 1;
@@ -414,8 +432,8 @@ async function fluxoContabil(igrejaId, { inicio, fim } = {}) {
 
     const categoria = (c) => {
         if (c.natureza === 'receita' || c.natureza === 'despesa') return 'operacional';
-        if (c.natureza === 'ativo') return c.codigo && !c.codigo.startsWith('1.1') ? 'investimento' : 'operacional';
-        if (c.natureza === 'passivo') return c.pl || (c.codigo && !c.codigo.startsWith('2.1')) ? 'financiamento' : 'operacional';
+        if (c.natureza === 'ativo') return c.codigo && !c.codigo.startsWith('1.1') && !c.codigo.startsWith('1.01') ? 'investimento' : 'operacional';
+        if (c.natureza === 'passivo') return c.pl || (c.codigo && !c.codigo.startsWith('2.1') && !c.codigo.startsWith('2.01')) ? 'financiamento' : 'operacional';
         return 'operacional';
     };
     const grupos = { operacional: new Map(), investimento: new Map(), financiamento: new Map() };

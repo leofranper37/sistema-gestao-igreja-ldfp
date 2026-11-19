@@ -47,6 +47,50 @@ async function ensureContasPagarTable() {
     // Lote 5: tabelas de cadastro + colunas de vínculo (rede de segurança se o SQL não foi rodado)
     await cadastrosTesouraria.ensureTabelas();
     await cadastrosTesouraria.ensureColunas('contas_pagar');
+    if (!colunaPagoCom) {
+        // de onde saiu o pagamento: 'caixa' | 'banco:N' (o lançamento fica com origem conta_pagar)
+        try {
+            await pool.query('ALTER TABLE contas_pagar ADD COLUMN pago_com VARCHAR(20) NULL');
+        } catch (e) {
+            if (!/duplicate column|already exists/i.test(String(e && e.message))) throw e;
+        }
+        colunaPagoCom = true;
+    }
+}
+
+let colunaPagoCom = false;
+
+async function getContaPagar(id, igrejaId) {
+    await ensureContasPagarTable();
+    const [rows] = await pool.query(
+        `SELECT cp.*, cc.nome AS centro_custo_nome, cc.codigo AS centro_custo_codigo, td.nome AS tipo_documento_nome
+         FROM contas_pagar cp
+         LEFT JOIN centros_custo cc ON cc.id = cp.centro_custo_id AND cc.igreja_id = cp.igreja_id
+         LEFT JOIN tipos_documento td ON td.id = cp.tipo_documento_id AND td.igreja_id = cp.igreja_id
+         WHERE cp.id = ? AND cp.igreja_id = ? LIMIT 1`,
+        [id, igrejaId]
+    );
+    return rows[0] || null;
+}
+
+async function updateContaPagar(id, igrejaId, p) {
+    await ensureContasPagarTable();
+    const [r] = await pool.query(
+        `UPDATE contas_pagar SET descricao = ?, fornecedor = ?, valor = ?, vencimento = ?, categoria = ?, observacao = ?,
+            fornecedor_id = ?, centro_custo_id = ?, tipo_documento_id = ?, numero_documento = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ? AND igreja_id = ?`,
+        [p.descricao, p.fornecedor || null, p.valor, p.vencimento, p.categoria || null, p.observacao || null,
+            p.fornecedorId || null, p.centroCustoId || null, p.tipoDocumentoId || null, p.numeroDocumento || null, id, igrejaId]
+    );
+    return r.affectedRows;
+}
+
+async function marcarPagamento(id, igrejaId, { status, dataPagamento, pagoCom }) {
+    await ensureContasPagarTable();
+    await pool.query(
+        'UPDATE contas_pagar SET status = ?, data_pagamento = ?, pago_com = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND igreja_id = ?',
+        [status, dataPagamento || null, pagoCom || null, id, igrejaId]
+    );
 }
 
 async function listContasPagar(igrejaId, filters = {}) {
@@ -54,7 +98,9 @@ async function listContasPagar(igrejaId, filters = {}) {
     const conditions = ['cp.igreja_id = ?'];
     const params = [igrejaId];
 
-    if (filters.status) {
+    if (filters.status === 'aberto') {
+        conditions.push("cp.status IN ('pendente', 'vencido')");
+    } else if (filters.status) {
         conditions.push('cp.status = ?');
         params.push(filters.status);
     }
@@ -181,6 +227,9 @@ async function getTotaisContasPagar(igrejaId) {
 }
 
 module.exports = {
+    getContaPagar,
+    updateContaPagar,
+    marcarPagamento,
     listContasPagar,
     createContaPagar,
     patchContaPagar,

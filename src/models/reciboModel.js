@@ -13,9 +13,7 @@ async function ensureReciboTable() {
             observacao TEXT NULL,
             created_by INT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            INDEX idx_recibos_igreja (igreja_id),
-            INDEX idx_recibos_data (data_recibo),
-            UNIQUE KEY uq_recibo_numero (igreja_id, numero)
+            UNIQUE (igreja_id, numero)
         )
     `);
 }

@@ -459,6 +459,26 @@ const contaPagarSchema = Joi.object({
     numeroDocumento: Joi.string().trim().max(60).allow('', null).optional().label('Nº do documento')
 });
 
+// Pagamento de conta / recebimento: data + de onde sai ('caixa' | 'banco:N')
+const pagamentoDestinoSchema = Joi.object({
+    dataPagamento: Joi.string().trim().pattern(/^\d{4}-\d{2}-\d{2}$/).required().label('Data do pagamento'),
+    pagoCom: Joi.string().trim().pattern(/^(caixa|banco:\d+)$/).required().label('Pago com')
+        .messages({ 'string.pattern.base': 'Escolha o caixa ou uma conta bancária.', 'any.required': 'Escolha o caixa ou uma conta bancária.' }),
+    contaContabil: Joi.string().trim().max(255).allow('', null).optional().label('Conta contábil')
+});
+
+// Transferência entre caixa e contas bancárias
+const transferenciaSchema = Joi.object({
+    origem: Joi.string().trim().pattern(/^(caixa|banco:\d+)$/).required().label('Origem')
+        .messages({ 'string.pattern.base': 'Escolha de onde sai o dinheiro.' }),
+    destino: Joi.string().trim().pattern(/^(caixa|banco:\d+)$/).required().label('Destino')
+        .messages({ 'string.pattern.base': 'Escolha para onde vai o dinheiro.' }),
+    valor: decimalInput.label('Valor'),
+    data: Joi.string().trim().pattern(/^\d{4}-\d{2}-\d{2}$/).required().label('Data'),
+    descricao: Joi.string().trim().max(255).allow('', null).optional().label('Descrição'),
+    doc: Joi.string().trim().max(50).allow('', null).optional().label('Documento')
+});
+
 const transacaoFiltroSchema = Joi.object({
     tipo: Joi.string().valid('entrada', 'saida').optional().label('Tipo'),
     descricao: Joi.string().trim().max(255).allow('', null).optional().label('Descrição'),
@@ -590,6 +610,8 @@ module.exports = {
     bancoContaSchema,
     bancoLancamentoSchema,
     contaPagarSchema,
+    pagamentoDestinoSchema,
+    transferenciaSchema,
     contabilidadeBalanceteSchema,
     contabilidadeEncerramentoSchema,
     contabilidadeLancamentoSchema,

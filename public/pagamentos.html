@@ -3,308 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagamentos da Igreja</title>
+    <title>LDFP - Links de Pagamento</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .wrap {
-            max-width: 980px;
-            margin: 0 auto;
-            padding: 20px 14px;
-        }
-
-        .card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
-            padding: 14px;
-            margin-bottom: 14px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 2fr auto;
-            gap: 8px;
-        }
-
-        input, select {
-            border: 1px solid #dbe3ef;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 14px;
-        }
-
-        .btn {
-            border: 0;
-            border-radius: 8px;
-            padding: 10px 12px;
-            font-weight: 700;
-            cursor: pointer;
-            background: #0f766e;
-            color: #fff;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            border-bottom: 1px solid #e2e8f0;
-            padding: 10px;
-            font-size: 13px;
-            text-align: left;
-        }
-
-        th {
-            background: #f8fafc;
-            color: #475569;
-            text-transform: uppercase;
-            font-size: 11px;
-        }
-
-        .status {
-            display: inline-block;
-            border-radius: 999px;
-            padding: 2px 8px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .status.pendente {
-            background: #fef3c7;
-            color: #854d0e;
-        }
-
-        .status.pago {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .status.aguardando_confirmacao {
-            background: #dbeafe;
-            color: #1e3a8a;
-        }
-
-        .hint {
-            margin-top: 8px;
-            font-size: 12px;
-            color: #64748b;
-        }
-
-        .row-actions {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .btn.secondary {
-            background: #334155;
-        }
-
-        .msg {
-            font-size: 13px;
-            color: #0f766e;
-        }
-
-        .msg.error {
-            color: #b91c1c;
-        }
-
-        @media (max-width: 860px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="tesouraria-ui.css">
     <script src="tema.js"></script>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-title="Pagamentos" data-shell-breadcrumb="LDFP / Tesouraria / Pagamentos" data-shell-active="pagamentos.html" data-shell-chip="Ambiente autenticado" data-shell-role="Financeiro">
-    <main class="main-content enterprise-main">
-        <div class="wrap">
-            <section class="card">
-                <h2 style="margin: 0 0 12px;">Criar link de pagamento</h2>
-                <form id="formPagamento" class="grid">
-                    <input type="text" id="descricao" placeholder="Descrição" required>
-                    <input type="number" id="valor" step="0.01" min="0" placeholder="Valor" required>
-                    <select id="provider">
-                        <option value="pix">PIX</option>
-                        <option value="cartao">Cartão</option>
-                    </select>
-                    <input type="text" id="pixKey" placeholder="Chave PIX (email, telefone, aleatória)">
-                    <button class="btn" type="submit">Criar</button>
-                </form>
-                <div class="hint">Opcional para cartão: informe um link de checkout no campo abaixo.</div>
-                <input type="url" id="cardCheckoutUrl" placeholder="https://... (Link de pagamento por cartão)" style="margin-top:10px;width:100%;">
-                <p class="msg" id="statusMsg"></p>
-            </section>
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Links de Pagamento"
+      data-shell-breadcrumb="LDFP / Tesouraria / Links de Pagamento"
+      data-shell-active="pagamentos.html"
+      data-shell-chip="Tesouraria">
 
-            <section class="card">
-                <h2 style="margin: 0 0 12px;">Links gerados</h2>
-                <table>
+<main class="main-content enterprise-main">
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>Links de Pagamento</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <a href="tesouraria_dizimos.html">Tesouraria</a><span class="sep">›</span>
+                <span class="atual">Links de Pagamento</span>
+            </nav>
+        </div>
+
+        <section class="tx-card" aria-label="Resumo">
+            <div class="tx-card-head">
+                <h3><span class="ico"><i class="fa-solid fa-link"></i></span> Cobranças por PIX ou cartão</h3>
+                <button class="tx-btn tx-btn-primary" type="button" id="btnNovo"><i class="fa-solid fa-plus"></i> Novo link</button>
+            </div>
+            <div class="tx-stats">
+                <div><span>Aguardando pagamento</span><strong id="sPend">R$ 0,00</strong></div>
+                <div><span>Para confirmar</span><strong id="sConf">R$ 0,00</strong></div>
+                <div><span>Recebido</span><strong class="pos" id="sPago">R$ 0,00</strong></div>
+                <div><span>Links criados</span><strong id="sQtd">0</strong></div>
+            </div>
+        </section>
+
+        <section class="tx-card" style="margin-top:16px;">
+            <div class="tx-toolbar">
+                <div class="tx-search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="busca" class="tx-input" type="search" placeholder="Buscar descrição ou código..." autocomplete="off" aria-label="Buscar link">
+                </div>
+                <div class="tx-seg" role="radiogroup" aria-label="Situação" id="filtro">
+                    <button type="button" role="radio" data-st="" aria-checked="true">Todos</button>
+                    <button type="button" role="radio" data-st="pendente" aria-checked="false">Aguardando</button>
+                    <button type="button" role="radio" data-st="aguardando_confirmacao" aria-checked="false">Para confirmar</button>
+                    <button type="button" role="radio" data-st="pago" aria-checked="false">Pagos</button>
+                </div>
+            </div>
+            <div class="tx-table-wrap">
+                <table class="tx-table">
                     <thead>
                         <tr>
+                            <th>Criado em</th>
                             <th>Descrição</th>
-                            <th>Valor</th>
-                            <th>Provedor</th>
-                            <th>Status</th>
-                            <th>Link</th>
-                            <th>Ação</th>
+                            <th>Forma</th>
+                            <th class="num">Valor</th>
+                            <th>Situação</th>
+                            <th class="acoes">Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="tbLinks"></tbody>
+                    <tbody id="linhas"></tbody>
                 </table>
-            </section>
-        </div>
-    </main>
+            </div>
+            <div class="tx-foot"><span id="contagem">0 link(s)</span></div>
+        </section>
+    </div>
+</main>
 
-    <script src="session.js?v=20260501"></script>
-    <script src="enterprise-shell.js?v=20260501"></script>
-    <script>
-        requireAuthSession();
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
+<script>
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const ST = {
+        pendente: ['pendente', 'Aguardando pagamento'],
+        aguardando_confirmacao: ['aguardando', 'Cliente informou pagamento'],
+        pago: ['pago', 'Pago']
+    };
+    let links = [];
+    let filtro = '';
 
-        const form = document.getElementById('formPagamento');
-        const tbLinks = document.getElementById('tbLinks');
-        const statusMsg = document.getElementById('statusMsg');
-        const providerEl = document.getElementById('provider');
-        const pixKeyEl = document.getElementById('pixKey');
-        const cardCheckoutEl = document.getElementById('cardCheckoutUrl');
+    const urlDe = (l) => `${location.origin}/pagamento_link.html?ref=${encodeURIComponent(l.reference_code)}`;
+    const detalhe = (l) => {
+        try { return typeof l.status_detail === 'string' ? JSON.parse(l.status_detail || '{}') : (l.status_detail || {}); } catch (_) { return {}; }
+    };
+    const pref = (k, v) => { try { if (v === undefined) return localStorage.getItem(k) || ''; localStorage.setItem(k, v); } catch (_) { /* opcional */ } return ''; };
 
-        // Mantem preferencia local para facilitar criacao de novos links
-        const prefPixKey = localStorage.getItem('ldfp_pref_pix_key') || '';
-        const prefCardUrl = localStorage.getItem('ldfp_pref_card_checkout_url') || '';
-        if (prefPixKey) pixKeyEl.value = prefPixKey;
-        if (prefCardUrl) cardCheckoutEl.value = prefCardUrl;
-
-        function formatCurrency(value) {
-            return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    async function carregar() {
+        $('linhas').innerHTML = Array.from({ length: 3 }, () => `<tr>${'<td><div class="tx-skel"></div></td>'.repeat(6)}</tr>`).join('');
+        try {
+            const r = await TX.api('/pagamentos/links');
+            links = Array.isArray(r) ? r : (r.items || []);
+        } catch (e) {
+            $('linhas').innerHTML = `<tr><td colspan="6"><div class="tx-empty"><strong>Não foi possível carregar</strong><span>${TX.esc(e.message)}</span></div></td></tr>`;
+            return;
         }
+        const soma = (st) => links.filter((l) => l.status === st).reduce((s, l) => s + Number(l.valor || 0), 0);
+        $('sPend').textContent = TX.money(soma('pendente'));
+        $('sConf').textContent = TX.money(soma('aguardando_confirmacao'));
+        $('sPago').textContent = TX.money(soma('pago'));
+        $('sQtd').textContent = String(links.length);
+        render();
+    }
 
-        function setStatus(message, error) {
-            statusMsg.className = error ? 'msg error' : 'msg';
-            statusMsg.textContent = message || '';
+    function render() {
+        const b = $('busca').value.trim().toLowerCase();
+        const lista = links.filter((l) => (!filtro || l.status === filtro)
+            && (!b || String(l.descricao).toLowerCase().includes(b) || String(l.reference_code || '').toLowerCase().includes(b)));
+        $('contagem').textContent = `${lista.length} link(s)`;
+        if (!lista.length) {
+            $('linhas').innerHTML = `<tr><td colspan="6"><div class="tx-empty"><span class="ico"><i class="fa-solid fa-link"></i></span>
+                <strong>${links.length ? 'Nenhum link encontrado' : 'Nenhum link criado'}</strong>
+                <span>Crie um link para receber inscrições, eventos, cantina ou ofertas por PIX ou cartão.</span></div></td></tr>`;
+            return;
         }
+        $('linhas').innerHTML = lista.map((l) => {
+            const [cls, rot] = ST[l.status] || ['pendente', l.status];
+            const pago = l.status === 'pago';
+            const acoes = [
+                `<button class="tx-btn-icon" type="button" data-copiar="${l.id}" title="Copiar link" aria-label="Copiar link"><i class="fa-regular fa-copy"></i></button>`,
+                `<a class="tx-btn-icon" href="${TX.esc(urlDe(l))}" target="_blank" rel="noopener" title="Abrir página de pagamento" aria-label="Abrir página de pagamento"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>`,
+                `<a class="tx-btn-icon" href="https://wa.me/?text=${encodeURIComponent(`${l.descricao} - ${TX.money(Number(l.valor))}\n${urlDe(l)}`)}" target="_blank" rel="noopener" title="Enviar por WhatsApp" aria-label="Enviar por WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>`,
+                pago
+                    ? `<button class="tx-btn tx-btn-ghost tx-btn-sm" type="button" data-desfazer="${l.id}"><i class="fa-solid fa-rotate-left"></i> Desfazer</button>`
+                    : `<button class="tx-btn tx-btn-primary tx-btn-sm" type="button" data-confirmar="${l.id}"><i class="fa-solid fa-check"></i> Confirmar recebimento</button>`
+            ].join('');
+            return `<tr>
+                <td>${TX.dataBR(String(l.created_at || '').slice(0, 10))}</td>
+                <td><strong>${TX.esc(l.descricao)}</strong><small style="display:block;color:var(--tx-muted);">Código ${TX.esc(l.reference_code || '')}</small></td>
+                <td>${l.provider === 'cartao' ? '<i class="fa-regular fa-credit-card"></i> Cartão' : '<i class="fa-solid fa-qrcode"></i> PIX'}</td>
+                <td class="num"><strong>${TX.money(Number(l.valor))}</strong></td>
+                <td><span class="tx-status ${cls}">${rot}</span>${pago && l.paid_at ? `<small style="display:block;color:var(--tx-muted);margin-top:3px;">em ${TX.dataBR(String(l.paid_at).slice(0, 10))}</small>` : ''}</td>
+                <td class="acoes"><div class="tx-acoes-linha">${acoes}</div></td>
+            </tr>`;
+        }).join('');
+    }
 
-        function escapeHtml(text) {
-            return String(text || '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        function providerLabel(value) {
-            return value === 'cartao' ? 'cartao' : 'pix';
-        }
-
-        function toggleProviderFields() {
-            const provider = providerEl.value;
-            pixKeyEl.style.display = provider === 'pix' ? '' : 'none';
-            cardCheckoutEl.style.display = provider === 'cartao' ? '' : 'none';
-        }
-
-        async function loadLinks() {
-            const response = await fetch('/pagamentos/links');
-            const data = await response.json().catch(() => []);
-            if (!response.ok) {
-                throw new Error(data.error || 'Nao foi possivel carregar links.');
-            }
-
-            tbLinks.innerHTML = (data || []).map((item) => `
-                <tr>
-                    <td>${escapeHtml(item.descricao)}</td>
-                    <td>${formatCurrency(item.valor)}</td>
-                    <td>${providerLabel(item.payment_method || item.provider)}</td>
-                    <td><span class="status ${item.status}">${(item.status || '').replace('_', ' ')}</span></td>
-                    <td><a href="${item.url}" target="_blank" rel="noreferrer">Abrir</a></td>
-                    <td>
-                        <div class="row-actions">
-                            <button class="btn secondary" onclick="copiarLink('${escapeHtml(item.url)}')">Copiar link</button>
-                            ${item.status === 'aguardando_confirmacao' ? `<button class="btn" onclick="marcarPago(${item.id})">Confirmar pago</button>` : ''}
-                            ${item.status === 'pendente' ? `<span style="font-size:12px;color:#64748b;">Aguardando cliente pagar</span>` : ''}
-                            ${item.status === 'pago' ? `<span style="font-size:12px;color:#166534;">Pagamento confirmado</span>` : ''}
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        async function marcarPago(id) {
-            try {
-                const response = await fetch(`/pagamentos/links/${id}/pago`, { method: 'PUT' });
-                const data = await response.json().catch(() => ({}));
-                if (!response.ok) {
-                    throw new Error(data.error || 'Nao foi possivel marcar pagamento.');
-                }
-                setStatus('Pagamento marcado como pago.');
-                await loadLinks();
-            } catch (error) {
-                setStatus(error.message, true);
-            }
-        }
-
-        async function copiarLink(url) {
-            try {
-                await navigator.clipboard.writeText(url);
-                setStatus('Link copiado para a area de transferencia.');
-            } catch (_error) {
-                setStatus('Nao foi possivel copiar o link.', true);
-            }
-        }
-
-        window.marcarPago = marcarPago;
-        window.copiarLink = copiarLink;
-
-        providerEl.addEventListener('change', toggleProviderFields);
-        toggleProviderFields();
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            setStatus('');
-
-            try {
-                const response = await fetch('/pagamentos/links', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        descricao: document.getElementById('descricao').value.trim(),
-                        valor: Number(document.getElementById('valor').value),
-                        provider: providerEl.value,
-                        pixKey: pixKeyEl.value.trim() || null,
-                        cardCheckoutUrl: cardCheckoutEl.value.trim() || null
-                    })
+    async function novo() {
+        let criado = null;
+        await TX.dialogo({
+            titulo: 'Novo link de pagamento',
+            botao: 'Criar link',
+            corpo: `
+                <div class="tx-field"><label for="lDesc">Descrição <span class="req">*</span></label>
+                    <input id="lDesc" class="tx-input" maxlength="255" placeholder="Ex: Inscrição do retiro de jovens" autocomplete="off"></div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="lValor">Valor <span class="req">*</span></label>
+                        <div class="tx-input-group"><span class="pre">R$</span><input id="lValor" class="tx-input valor" inputmode="numeric" autocomplete="off"></div></div>
+                    <div class="tx-field"><label id="rotForma">Forma <span class="req">*</span></label>
+                        <div class="tx-seg" role="radiogroup" aria-labelledby="rotForma" id="lForma">
+                            <button type="button" role="radio" data-f="pix" aria-checked="true"><i class="fa-solid fa-qrcode"></i> PIX</button>
+                            <button type="button" role="radio" data-f="cartao" aria-checked="false"><i class="fa-regular fa-credit-card"></i> Cartão</button>
+                        </div></div>
+                </div>
+                <div class="tx-field" id="campoPix"><label for="lPix">Chave PIX da igreja <span class="req">*</span></label>
+                    <input id="lPix" class="tx-input" maxlength="140" placeholder="CNPJ, e-mail, telefone ou chave aleatória" autocomplete="off"></div>
+                <div class="tx-field" id="campoCartao" style="display:none;"><label for="lCard">Link de checkout do cartão <span class="req">*</span></label>
+                    <input id="lCard" class="tx-input" type="url" maxlength="500" placeholder="https://..." autocomplete="off">
+                    <small class="tx-hint">Link gerado na sua maquininha/plataforma (Mercado Pago, PagSeguro, Stone...).</small></div>`,
+            aoAbrir: () => {
+                TX.maskMoney($('lValor'));
+                $('lPix').value = pref('ldfp_pref_pix_key');
+                $('lCard').value = pref('ldfp_pref_card_checkout_url');
+                $('lForma').addEventListener('click', (e) => {
+                    const b = e.target.closest('[data-f]');
+                    if (!b) return;
+                    $('lForma').querySelectorAll('[data-f]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+                    $('campoPix').style.display = b.dataset.f === 'pix' ? '' : 'none';
+                    $('campoCartao').style.display = b.dataset.f === 'cartao' ? '' : 'none';
                 });
-
-                const data = await response.json().catch(() => ({}));
-                if (!response.ok) {
-                    throw new Error(data.error || 'Nao foi possivel criar link de pagamento.');
-                }
-
-                if (providerEl.value === 'pix' && pixKeyEl.value.trim()) {
-                    localStorage.setItem('ldfp_pref_pix_key', pixKeyEl.value.trim());
-                }
-                if (providerEl.value === 'cartao' && cardCheckoutEl.value.trim()) {
-                    localStorage.setItem('ldfp_pref_card_checkout_url', cardCheckoutEl.value.trim());
-                }
-
-                setStatus(`Link criado com sucesso. Compartilhe: ${data.url}`);
-                form.reset();
-                if (providerEl.value === 'pix') {
-                    pixKeyEl.value = localStorage.getItem('ldfp_pref_pix_key') || '';
-                }
-                if (providerEl.value === 'cartao') {
-                    cardCheckoutEl.value = localStorage.getItem('ldfp_pref_card_checkout_url') || '';
-                }
-                toggleProviderFields();
-                await loadLinks();
-            } catch (error) {
-                setStatus(error.message, true);
+            },
+            aoConfirmar: async () => {
+                const forma = $('lForma').querySelector('[aria-checked="true"]').dataset.f;
+                const descricao = $('lDesc').value.trim();
+                const valor = TX.parseMoney($('lValor').value);
+                if (!descricao) throw new Error('Informe a descrição.');
+                if (!(valor > 0)) throw new Error('Informe um valor maior que zero.');
+                const pixKey = $('lPix').value.trim();
+                const cardCheckoutUrl = $('lCard').value.trim();
+                if (forma === 'pix' && !pixKey) throw new Error('Informe a chave PIX da igreja.');
+                if (forma === 'cartao' && !/^https:\/\//i.test(cardCheckoutUrl)) throw new Error('Informe o link de checkout do cartão (começando com https://).');
+                criado = await TX.api('/pagamentos/links', { method: 'POST', body: {
+                    descricao, valor, provider: forma, pixKey: forma === 'pix' ? pixKey : null, cardCheckoutUrl: forma === 'cartao' ? cardCheckoutUrl : null
+                } });
+                if (forma === 'pix') pref('ldfp_pref_pix_key', pixKey); else pref('ldfp_pref_card_checkout_url', cardCheckoutUrl);
             }
         });
+        if (criado) {
+            await carregar();
+            const l = links.find((x) => Number(x.id) === Number(criado.id));
+            if (l) copiar(l, 'Link criado e copiado. Agora é só enviar.');
+            else TX.toast('Link criado.');
+        }
+    }
 
-        loadLinks().catch((error) => setStatus(error.message, true));
-    </script>
+    async function copiar(l, msg) {
+        try { await navigator.clipboard.writeText(urlDe(l)); TX.toast(msg || 'Link copiado.'); } catch (_) { TX.toast(urlDe(l)); }
+    }
+
+    async function confirmar(l) {
+        let lista;
+        try { lista = await TX.destinos(true); } catch (e) { TX.toast(e.message, 'erro'); return; }
+        const d = detalhe(l);
+        let msg = '';
+        await TX.dialogo({
+            titulo: 'Confirmar recebimento',
+            botao: 'Confirmar recebimento',
+            corpo: `
+                <div class="tx-modal-resumo">
+                    <span>${TX.esc(l.descricao)}</span><span>${l.provider === 'cartao' ? 'Cartão' : 'PIX'}</span>
+                    <b class="grande">${TX.money(Number(l.valor))}</b><span>${d.clientePagoAt ? 'Cliente informou em ' + TX.dataBR(String(d.clientePagoAt).slice(0, 10)) : ''}</span>
+                </div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="cData">Data do recebimento <span class="req">*</span></label><input id="cData" class="tx-input" type="date"></div>
+                    <div class="tx-field"><label for="cDest">Recebido em <span class="req">*</span></label>
+                        <select id="cDest" class="tx-input">${TX.opcoesDestino(lista, { semCartao: true })}</select></div>
+                </div>
+                <small class="tx-hint">Confira no extrato se o valor caiu. A entrada é lançada automaticamente na conta escolhida.</small>`,
+            aoAbrir: () => {
+                $('cData').value = TX.hojeISO();
+                const salvo = pref('ldfp_link_destino');
+                if (salvo && $('cDest').querySelector(`option[value="${CSS.escape(salvo)}"]:not([disabled])`)) $('cDest').value = salvo;
+            },
+            aoConfirmar: async () => {
+                const destino = $('cDest').value;
+                if (!destino) throw new Error('Escolha onde o dinheiro entrou (caixa ou conta bancária).');
+                const r = await TX.api(`/pagamentos/links/${l.id}/pago`, { method: 'PUT', body: { destino, data: $('cData').value } });
+                pref('ldfp_link_destino', destino);
+                msg = r.message;
+            }
+        }).then((ok) => { if (ok) { TX.toast(msg); carregar(); } });
+    }
+
+    async function desfazer(l) {
+        const ok = await TX.confirmar({
+            titulo: 'Desfazer confirmação',
+            texto: `O link "${l.descricao}" volta para "Aguardando pagamento" e a entrada de ${TX.money(Number(l.valor))} é retirada do caixa/banco.`,
+            botao: 'Desfazer'
+        });
+        if (!ok) return;
+        try { const r = await TX.api(`/pagamentos/links/${l.id}/pendente`, { method: 'PUT' }); TX.toast(r.message); carregar(); } catch (e) { TX.toast(e.message, 'erro'); }
+    }
+
+    $('btnNovo').addEventListener('click', novo);
+    $('busca').addEventListener('input', TX.debounce(render, 200));
+    $('filtro').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-st]');
+        if (!b) return;
+        filtro = b.dataset.st;
+        $('filtro').querySelectorAll('[data-st]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+        render();
+    });
+    $('linhas').addEventListener('click', (e) => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        const id = Number(b.dataset.copiar || b.dataset.confirmar || b.dataset.desfazer);
+        const l = links.find((x) => Number(x.id) === id);
+        if (!l) return;
+        if (b.dataset.copiar) copiar(l);
+        else if (b.dataset.confirmar) confirmar(l);
+        else if (b.dataset.desfazer) desfazer(l);
+    });
+
+    carregar();
+})();
+</script>
 </body>
 </html>

@@ -343,27 +343,46 @@ async function carregarMovimentos(igrejaId, inicio, fim) {
         safeQuery('SELECT * FROM caixa_lancamentos WHERE igreja_id = ? AND data >= ? AND data <= ?', [igrejaId, inicio, fim]),
         safeQuery('SELECT * FROM banco_lancamentos WHERE igreja_id = ? AND data_lancamento >= ? AND data_lancamento <= ?', [igrejaId, inicio, fim]),
         safeQuery("SELECT * FROM contas_pagar WHERE igreja_id = ? AND status = 'pago' AND data_pagamento >= ? AND data_pagamento <= ?", [igrejaId, inicio, fim]),
-        safeQuery('SELECT id, nome, banco FROM banco_contas WHERE igreja_id = ?', [igrejaId])
+        safeQuery('SELECT * FROM banco_contas WHERE igreja_id = ?', [igrejaId])
     ]);
     const nomeConta = new Map(contasBanco.map((c) => [c.id, c.nome || c.banco || `Conta ${c.id}`]));
+    // Transferências internas (caixa ↔ banco, banco ↔ banco, pagamento de fatura) não são receita nem despesa:
+    // o lançamento de origem tem como conta contábil a de outra conta da igreja, e a outra ponta tem origem automática.
+    const norm = (v) => String(v || '').trim().toLowerCase();
+    const contabilDaConta = new Map(contasBanco.filter((c) => c.conta_contabil).map((c) => [c.id, norm(c.conta_contabil)]));
+    const contabeisBancos = new Set(contabilDaConta.values());
+    const CAIXA = '1.01.01 - caixa';
     const mov = [];
     // Lote 5: vínculos (centro de custo / fornecedor) — colunas podem não existir em instalações antigas
     const vinc = (r) => ({ centroCustoId: r.centro_custo_id || null, fornecedorId: r.fornecedor_id || null });
     for (const r of caixa) {
         const ent = String(r.tipo).toUpperCase() === 'ENTRADA';
+        const interno = r.origem === 'banco' || (!r.origem && contabeisBancos.has(norm(r.conta_contabil)));
         mov.push({ data: toISODate(r.data), fonte: 'Caixa', descricao: r.historico, doc: r.doc || '',
-            entrada: ent ? num(r.valor) : 0, saida: ent ? 0 : num(r.valor), ...vinc(r) });
+            entrada: ent ? num(r.valor) : 0, saida: ent ? 0 : num(r.valor), ...vinc(r), origem: r.origem || null, interno });
     }
     for (const r of banco) {
         const ent = String(r.tipo).toLowerCase() === 'entrada';
+        const cc = norm(r.conta_contabil);
+        const interno = r.origem === 'transferencia' || r.origem === 'caixa'
+            || (!r.origem && (cc === CAIXA || (contabeisBancos.has(cc) && contabilDaConta.get(r.conta_id) !== cc)));
         mov.push({ data: toISODate(r.data_lancamento), fonte: `Banco: ${nomeConta.get(r.conta_id) || r.conta_id}`, contaId: r.conta_id,
-            descricao: r.descricao, doc: '', entrada: ent ? num(r.valor) : 0, saida: ent ? 0 : num(r.valor), ...vinc(r) });
+            descricao: r.descricao, doc: r.doc || '', entrada: ent ? num(r.valor) : 0, saida: ent ? 0 : num(r.valor), ...vinc(r),
+            origem: r.origem || null, interno });
     }
     for (const r of contas) {
         mov.push({ data: toISODate(r.data_pagamento), fonte: 'Contas a Pagar', descricao: [r.descricao, r.fornecedor].filter(Boolean).join(' — '),
-            doc: r.categoria || '', entrada: 0, saida: num(r.valor), ...vinc(r), fornecedorTexto: r.fornecedor || '' });
+            doc: r.categoria || '', entrada: 0, saida: num(r.valor), ...vinc(r), fornecedorTexto: r.fornecedor || '',
+            // paga pelo caixa/banco: a saída já está no lançamento automático (não somar duas vezes)
+            duplicado: !!r.pago_com });
     }
     return mov;
+}
+
+// Receita/despesa de verdade: sem transferências internas e sem a cópia do dízimo
+// (o dízimo já entra pelas contribuições).
+function somenteReceitaDespesa(m) {
+    return !m.interno && !m.duplicado && m.origem !== 'dizimo';
 }
 
 /** Nomes dos cadastros auxiliares (Lote 5) por id. */
@@ -386,7 +405,8 @@ async function tesourariaPorCentro(igrejaId, { inicio, fim, agrupar = 'centro' }
     const hoje = toISODate(new Date());
     const ini = inicio || `${hoje.slice(0, 4)}-01-01`;
     const fi = fim || hoje;
-    const [mov, cad] = await Promise.all([carregarMovimentos(igrejaId, ini, fi), carregarCadastros(igrejaId)]);
+    const [todos, cad] = await Promise.all([carregarMovimentos(igrejaId, ini, fi), carregarCadastros(igrejaId)]);
+    const mov = todos.filter(somenteReceitaDespesa);
     const grupos = new Map();
     for (const m of mov) {
         let nome;
@@ -451,7 +471,7 @@ async function tesourariaAnual(igrejaId, { ano } = {}) {
         else m.outros += d.valor;
     }
     for (const x of mov) {
-        if (!x.data) continue;
+        if (!x.data || !somenteReceitaDespesa(x)) continue;
         const m = meses[Number(x.data.slice(5, 7)) - 1];
         if (!m) continue;
         if (x.fonte === 'Caixa') { m.caixaEntrada += x.entrada; m.caixaSaida += x.saida; }
@@ -545,7 +565,10 @@ async function tesourariaMovimento(igrejaId, { inicio, fim, fonte = 'caixa', con
         saldoAnterior += ant.reduce((s, r) => s + (String(r.tipo).toLowerCase() === 'entrada' ? num(r.total) : -num(r.total)), 0);
     } else if (fonte === 'contas') {
         rows = rows.filter((r) => r.fonte === 'Contas a Pagar');
-    } // fonte === 'geral' → tudo
+    } else {
+        // geral: visão consolidada da igreja → sem transferências internas
+        rows = rows.filter((r) => !r.interno && !r.duplicado);
+    }
 
     rows.sort((a, b) => String(a.data).localeCompare(String(b.data)));
     let saldo = round2(saldoAnterior);

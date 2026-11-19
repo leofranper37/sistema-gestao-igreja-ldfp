@@ -93,6 +93,16 @@ async function updateConta(id, igrejaId, payload) {
     return bancoModel.updateConta(id, igrejaId, dados);
 }
 
+// Contas antigas (cadastradas antes do plano de contas automático) ganham a conta contábil na hora em que precisam
+async function garantirContaContabil(igrejaId, conta, userId) {
+    if (conta.conta_contabil) return conta.conta_contabil;
+    const tipo = PREFIXO_CONTABIL[conta.tipo] ? conta.tipo : (conta.tipo === 'poupanca' || conta.tipo === 'investimento' ? 'aplicacao' : 'corrente');
+    const rotulo = await gerarContaContabil(igrejaId, tipo, conta.nome, userId);
+    await pool.query('UPDATE banco_contas SET conta_contabil = ? WHERE id = ? AND igreja_id = ?', [rotulo, conta.id, igrejaId]);
+    conta.conta_contabil = rotulo;
+    return rotulo;
+}
+
 async function deleteConta(id, igrejaId) {
     const atual = await bancoModel.getConta(id, igrejaId);
     if (!atual) return 0;
@@ -128,7 +138,9 @@ function getLancamento(id, igrejaId) {
 const ORIGEM_MSG = {
     dizimo: 'Este lançamento veio de um dízimo. Altere pelo lançamento de dízimo.',
     transferencia: 'Este lançamento é a outra ponta de uma transferência. Altere pelo lançamento de origem.',
-    caixa: 'Este lançamento veio do caixa. Altere pelo lançamento de caixa.'
+    caixa: 'Este lançamento veio do caixa. Altere pelo lançamento de caixa.',
+    conta_pagar: 'Este lançamento é o pagamento de uma conta a pagar. Para desfazer, estorne o pagamento em Contas a Pagar.',
+    link_pagamento: 'Este lançamento é o recebimento de um link de pagamento. Altere pela tela de Links de Pagamento.'
 };
 
 function exigirManual(l) {
@@ -279,6 +291,7 @@ async function sincronizarDizimo(igrejaId, dizimoId, userId) {
 
 module.exports = {
     CONTA_CAIXA,
+    garantirContaContabil,
     listContas,
     listContasComSaldo,
     getConta,

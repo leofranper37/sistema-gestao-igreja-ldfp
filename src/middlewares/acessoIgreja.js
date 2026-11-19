@@ -54,6 +54,8 @@ const MODULOS_POR_ROTA = [
     ['/api/tesouraria/', TESOURARIA('contas_pagar')],
     ['/contabilidade/', TESOURARIA('contabilidade')],
     ['/api/recibos', TESOURARIA('recibos')],
+    ['/pagamentos/links', TESOURARIA('pagamentos')],
+    ['/tesouraria/destinos', ['caixa', 'bancos', 'contas_pagar', 'pagamentos', 'financeiro', 'dizimos']],
     ['/api/escalas', ['escalas']],
     ['/api/ebd', ['ebd']],
     ['/api/batismos', ['batismos']],

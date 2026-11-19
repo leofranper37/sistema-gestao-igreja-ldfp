@@ -6,222 +6,247 @@
     <title>LDFP - Recibos</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-        @media (max-width: 900px) { .grid2 { grid-template-columns:1fr; } }
-        .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; box-shadow:0 4px 16px rgba(15,23,42,.07); }
-        .field { width:100%; padding:10px 12px; border:1px solid #dbe3ef; border-radius:8px; margin-top:6px; font-size:14px; box-sizing:border-box; }
-        .field:focus { border-color:#0f766e; outline:none; }
-        label { font-size:12px; font-weight:600; color:#64748b; display:block; margin-top:12px; }
-        .btn-primary { border:0; background:#0f766e; color:#fff; border-radius:8px; padding:10px 18px; font-weight:700; cursor:pointer; margin-top:14px; }
-        .btn-secondary { border:0; background:#1e293b; color:#fff; border-radius:8px; padding:10px 18px; font-weight:700; cursor:pointer; margin-top:14px; margin-left:8px; }
-        .btn-danger { border:0; background:#dc2626; color:#fff; border-radius:6px; padding:5px 10px; cursor:pointer; font-size:12px; }
-        .preview-box { background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:18px; line-height:1.9; min-height:160px; font-size:14px; }
-        .lista-recibos { margin-top:24px; }
-        .busca-row { display:flex; gap:10px; margin-bottom:12px; }
-        .busca-row input { flex:1; padding:9px 12px; border:1px solid #dbe3ef; border-radius:8px; font-size:13px; }
-        table { width:100%; border-collapse:collapse; font-size:13px; }
-        th { background:#f1f5f9; padding:10px 12px; text-align:left; font-weight:600; color:#475569; }
-        td { padding:10px 12px; border-bottom:1px solid #f1f5f9; }
-        tr:hover td { background:#f8fafc; }
-        .badge-num { background:#e0f2fe; color:#0369a1; border-radius:20px; padding:2px 10px; font-weight:700; font-size:12px; }
-        .msg { font-size:13px; margin-top:8px; }
-        .msg.ok { color:#15803d; }
-        .msg.err { color:#dc2626; }
-        .empty { text-align:center; color:#94a3b8; padding:24px; }
-    </style>
+    <link rel="stylesheet" href="tesouraria-ui.css">
     <script src="tema.js"></script>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-active="recibo.html" data-shell-title="Recibos" data-shell-breadcrumb="LDFP / Tesouraria / Recibos" data-shell-chip="Financeiro" data-shell-role="Tesouraria">
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Recibos"
+      data-shell-breadcrumb="LDFP / Tesouraria / Recibos"
+      data-shell-active="recibo.html"
+      data-shell-chip="Tesouraria">
+
 <main class="main-content enterprise-main">
-    <div class="enterprise-page-shell">
-        <div class="enterprise-page-hero">
-            <div>
-                <h2>Recibos</h2>
-                <p>Gere, salve e imprima recibos numerados automaticamente.</p>
-            </div>
-            <div class="enterprise-page-badge"><i class="fa-solid fa-receipt"></i> Financeiro</div>
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>Recibos</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <a href="tesouraria_dizimos.html">Tesouraria</a><span class="sep">›</span>
+                <span class="atual">Recibos</span>
+            </nav>
         </div>
 
-        <div class="grid2">
-            <!-- Formulário -->
-            <section class="card">
-                <h3 style="margin-top:0">Novo Recibo</h3>
-                <label>Favorecido *</label>
-                <input id="favorecido" class="field" type="text" placeholder="Nome do favorecido / pagador">
-                <label>Referente a *</label>
-                <input id="referente" class="field" type="text" placeholder="Ex: Contribuição mensal, Aluguel...">
-                <label>Valor (R$) *</label>
-                <input id="valor" class="field" type="number" step="0.01" min="0" placeholder="0,00">
-                <label>Data *</label>
-                <input id="data" class="field" type="date">
-                <label>Observação</label>
-                <input id="observacao" class="field" type="text" placeholder="Opcional">
-                <div>
-                    <button id="btnSalvar" class="btn-primary" type="button"><i class="fa fa-save"></i> Salvar e Gerar</button>
-                    <button id="btnImprimir" class="btn-secondary" type="button" disabled><i class="fa fa-print"></i> Imprimir</button>
-                </div>
-                <p id="msg" class="msg"></p>
-            </section>
-
-            <!-- Pré-visualização -->
-            <section class="card">
-                <h3 style="margin-top:0">Pré-visualização</h3>
-                <div id="reciboPreview" class="preview-box">
-                    Preencha os dados e clique em <strong>Salvar e Gerar</strong>.
-                </div>
-            </section>
-        </div>
-
-        <!-- Lista de recibos -->
-        <section class="card lista-recibos">
-            <h3 style="margin-top:0">Recibos Emitidos</h3>
-            <div class="busca-row">
-                <input id="busca" type="text" placeholder="Buscar por favorecido, referência ou número...">
-                <button class="btn-primary" onclick="carregarLista()" style="margin:0; padding:9px 16px;"><i class="fa fa-search"></i></button>
+        <!-- Lista -->
+        <section class="tx-card" id="secLista">
+            <div class="tx-card-head">
+                <h3><span class="ico"><i class="fa-solid fa-receipt"></i></span> Recibos emitidos</h3>
+                <button class="tx-btn tx-btn-primary" type="button" id="btnNovo"><i class="fa-solid fa-plus"></i> Novo recibo</button>
             </div>
-            <div id="tabelaWrap">
-                <p class="empty">Carregando...</p>
+            <div class="tx-toolbar">
+                <div class="tx-search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="busca" class="tx-input" type="search" placeholder="Buscar favorecido ou referente..." autocomplete="off" aria-label="Buscar recibo">
+                </div>
             </div>
+            <div class="tx-table-wrap">
+                <table class="tx-table">
+                    <thead>
+                        <tr>
+                            <th>Nº</th>
+                            <th>Data</th>
+                            <th>Favorecido</th>
+                            <th>Referente a</th>
+                            <th class="num">Valor</th>
+                            <th class="acoes">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="linhas"></tbody>
+                </table>
+            </div>
+            <div class="tx-foot">
+                <span id="contagem">0 recibo(s)</span>
+                <div class="tx-pages" id="paginas"></div>
+            </div>
+        </section>
+
+        <!-- Visualização para imprimir -->
+        <section id="secVer" style="display:none;">
+            <div class="tx-actions" style="margin:0 0 14px;">
+                <button class="tx-btn tx-btn-ghost" type="button" id="btnVoltar"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+                <button class="tx-btn tx-btn-primary" type="button" id="btnImprimir"><i class="fa-solid fa-print"></i> Imprimir / salvar PDF</button>
+            </div>
+            <article class="tx-recibo" id="recibo"></article>
         </section>
     </div>
 </main>
 
-<script src="session.js?v=20260501"></script>
-<script src="enterprise-shell.js?v=20260501"></script>
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
 <script>
-requireAuthSession();
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const LIMITE = 20;
+    let pagina = 1;
+    let recibos = [];
 
-function moeda(v) {
-    return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
+    // Valor por extenso (reais e centavos)
+    function extenso(valor) {
+        const U = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+        const D = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+        const C = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+        const ate999 = (n) => {
+            if (n === 100) return 'cem';
+            const c = Math.floor(n / 100);
+            const r = n % 100;
+            const partes = [];
+            if (c) partes.push(C[c]);
+            if (r < 20) { if (r) partes.push(U[r]); } else {
+                partes.push(D[Math.floor(r / 10)] + (r % 10 ? ' e ' + U[r % 10] : ''));
+            }
+            return partes.join(' e ');
+        };
+        const inteiro = (n) => {
+            if (n === 0) return 'zero';
+            const grupos = [['', ''], ['mil', 'mil'], ['milhão', 'milhões'], ['bilhão', 'bilhões']];
+            const partes = []; // [texto, valor do grupo]
+            let i = 0;
+            while (n > 0) {
+                const g = n % 1000;
+                if (g) {
+                    const t = i === 1 && g === 1 ? 'mil' : ate999(g) + (grupos[i][0] ? ' ' + (g === 1 ? grupos[i][0] : grupos[i][1]) : '');
+                    partes.unshift([t, g]);
+                }
+                n = Math.floor(n / 1000);
+                i++;
+            }
+            // "mil e cem", "mil e cinquenta", "mil duzentos e cinquenta", "dois milhões, trezentos mil e dez"
+            return partes.reduce((acc, [t, g], idx) => {
+                if (!idx) return t;
+                const ultimo = idx === partes.length - 1;
+                if (ultimo) return acc + (g < 100 || g % 100 === 0 ? ' e ' : ' ') + t;
+                return acc + ', ' + t;
+            }, '');
+        };
+        const total = Math.round(Number(valor) * 100);
+        const reais = Math.floor(total / 100);
+        const cent = total % 100;
+        const txt = [];
+        if (reais) txt.push(`${inteiro(reais)} ${reais === 1 ? 'real' : (reais % 1000000 === 0 ? 'de reais' : 'reais')}`);
+        if (cent) txt.push(`${ate999(cent)} ${cent === 1 ? 'centavo' : 'centavos'}`);
+        return txt.join(' e ') || 'zero real';
+    }
 
-function fmtData(s) {
-    if (!s) return '-';
-    const d = new Date(s + 'T00:00:00');
-    return d.toLocaleDateString('pt-BR');
-}
-
-function gerarHtmlRecibo({ numero, favorecido, referente, valor, data_recibo, observacao }) {
-    return [
-        '<div style="border:2px solid #0f766e;border-radius:10px;padding:18px;font-family:serif;">',
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">',
-        '<strong style="font-size:18px;color:#0f766e;">RECIBO</strong>',
-        '<span style="background:#e0f2fe;color:#0369a1;border-radius:20px;padding:3px 14px;font-weight:700;">Nº ' + numero + '</span>',
-        '</div>',
-        '<p>Recebi de <strong>' + favorecido + '</strong> o valor de <strong>' + moeda(valor) + '</strong>.</p>',
-        '<p>Referente a: <strong>' + referente + '</strong>.</p>',
-        observacao ? '<p>Obs: ' + observacao + '</p>' : '',
-        '<p>Data: <strong>' + fmtData(data_recibo) + '</strong>.</p>',
-        '<div style="margin-top:24px;border-top:1px solid #e2e8f0;padding-top:14px;">',
-        'Assinatura: ______________________________',
-        '</div></div>'
-    ].join('');
-}
-
-async function carregarLista() {
-    const busca = document.getElementById('busca').value;
-    const wrap = document.getElementById('tabelaWrap');
-    wrap.innerHTML = '<p class="empty">Carregando...</p>';
-    try {
-        const auth = JSON.parse(localStorage.getItem('ldfpAuth') || '{}');
-        const resp = await fetch('/api/recibos?limite=50&busca=' + encodeURIComponent(busca), {
-            headers: { Authorization: 'Bearer ' + auth.token }
-        });
-        const data = await resp.json();
-        if (!data.recibos || data.recibos.length === 0) {
-            wrap.innerHTML = '<p class="empty">Nenhum recibo emitido ainda.</p>';
+    async function listar() {
+        $('linhas').innerHTML = Array.from({ length: 4 }, () => `<tr>${'<td><div class="tx-skel"></div></td>'.repeat(6)}</tr>`).join('');
+        const q = new URLSearchParams({ pagina, limite: LIMITE, busca: $('busca').value.trim() });
+        let r;
+        try { r = await TX.api('/api/recibos?' + q); } catch (e) {
+            $('linhas').innerHTML = `<tr><td colspan="6"><div class="tx-empty"><strong>Não foi possível carregar</strong><span>${TX.esc(e.message)}</span></div></td></tr>`;
             return;
         }
-        let html = '<table><thead><tr><th>Nº</th><th>Favorecido</th><th>Referente</th><th>Valor</th><th>Data</th><th></th></tr></thead><tbody>';
-        data.recibos.forEach(r => {
-            html += '<tr>';
-            html += '<td><span class="badge-num">' + r.numero + '</span></td>';
-            html += '<td>' + r.favorecido + '</td>';
-            html += '<td>' + r.referente + '</td>';
-            html += '<td>' + moeda(r.valor) + '</td>';
-            html += '<td>' + fmtData(r.data_recibo) + '</td>';
-            html += '<td><button class="btn-danger" onclick="verRecibo(' + JSON.stringify(r).replace(/"/g, '&quot;') + ')">Ver</button> ';
-            html += '<button class="btn-danger" onclick="excluirRecibo(' + r.id + ')" style="background:#6b7280">Excluir</button></td>';
-            html += '</tr>';
-        });
-        html += '</tbody></table>';
-        wrap.innerHTML = html;
-    } catch (e) {
-        wrap.innerHTML = '<p class="empty err">Erro ao carregar recibos.</p>';
+        recibos = r.recibos || [];
+        const total = Number(r.total || 0);
+        const paginas = Math.max(1, Math.ceil(total / LIMITE));
+        $('contagem').textContent = `${total} recibo(s)`;
+        $('paginas').innerHTML = paginas > 1
+            ? Array.from({ length: paginas }, (_, i) => `<button type="button" class="${i + 1 === pagina ? 'atual' : ''}" data-pg="${i + 1}">${i + 1}</button>`).join('')
+            : '';
+        if (!recibos.length) {
+            $('linhas').innerHTML = `<tr><td colspan="6"><div class="tx-empty"><span class="ico"><i class="fa-solid fa-receipt"></i></span>
+                <strong>Nenhum recibo emitido</strong><span>Emita recibos de pagamentos feitos pela igreja (pregadores, músicos, serviços...).</span></div></td></tr>`;
+            return;
+        }
+        $('linhas').innerHTML = recibos.map((x) => `<tr>
+            <td><strong>${String(x.numero).padStart(4, '0')}</strong></td>
+            <td>${TX.dataBR(String(x.data_recibo).slice(0, 10))}</td>
+            <td>${TX.esc(x.favorecido)}</td>
+            <td>${TX.esc(x.referente)}</td>
+            <td class="num"><strong>${TX.money(Number(x.valor))}</strong></td>
+            <td class="acoes"><div class="tx-acoes-linha">
+                <button class="tx-btn tx-btn-ghost tx-btn-sm" type="button" data-ver="${x.id}"><i class="fa-solid fa-print"></i> Ver / imprimir</button>
+                <button class="tx-btn-icon danger" type="button" data-excluir="${x.id}" title="Excluir" aria-label="Excluir recibo ${x.numero}"><i class="fa-solid fa-trash"></i></button>
+            </div></td>
+        </tr>`).join('');
     }
-}
 
-function verRecibo(r) {
-    document.getElementById('reciboPreview').innerHTML = gerarHtmlRecibo(r);
-    document.getElementById('btnImprimir').disabled = false;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+    async function novo() {
+        let criado = null;
+        await TX.dialogo({
+            titulo: 'Novo recibo',
+            botao: 'Emitir recibo',
+            corpo: `
+                <div class="tx-field"><label for="rFav">Recebi(emos) de / Favorecido <span class="req">*</span></label>
+                    <input id="rFav" class="tx-input" maxlength="255" placeholder="Nome de quem recebeu o valor" autocomplete="off"></div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="rValor">Valor <span class="req">*</span></label>
+                        <div class="tx-input-group"><span class="pre">R$</span><input id="rValor" class="tx-input valor" inputmode="numeric" autocomplete="off"></div></div>
+                    <div class="tx-field"><label for="rData">Data <span class="req">*</span></label><input id="rData" class="tx-input" type="date"></div>
+                </div>
+                <div class="tx-field"><label for="rRef">Referente a <span class="req">*</span></label>
+                    <input id="rRef" class="tx-input" maxlength="500" placeholder="Ex: Ministração no culto de domingo" autocomplete="off"></div>
+                <small class="tx-hint" id="rExt"></small>
+                <div class="tx-field"><label for="rObs">Observação</label><textarea id="rObs" maxlength="2000" placeholder="Opcional"></textarea></div>`,
+            aoAbrir: () => {
+                $('rData').value = TX.hojeISO();
+                TX.maskMoney($('rValor'), (v) => { $('rExt').textContent = v > 0 ? `Por extenso: ${extenso(v)}.` : ''; });
+            },
+            aoConfirmar: async () => {
+                const favorecido = $('rFav').value.trim();
+                const referente = $('rRef').value.trim();
+                const valor = TX.parseMoney($('rValor').value);
+                if (!favorecido) throw new Error('Informe o favorecido.');
+                if (!(valor > 0)) throw new Error('Informe um valor maior que zero.');
+                if (!referente) throw new Error('Informe a que se refere o recibo.');
+                if (!$('rData').value) throw new Error('Informe a data.');
+                criado = await TX.api('/api/recibos', { method: 'POST', body: {
+                    favorecido, referente, valor, data_recibo: $('rData').value, observacao: $('rObs').value.trim() || null
+                } });
+            }
+        });
+        if (criado) {
+            TX.toast(`Recibo nº ${String(criado.numero).padStart(4, '0')} emitido.`);
+            pagina = 1;
+            listar();
+            ver(criado.id);
+        }
+    }
 
-async function excluirRecibo(id) {
-    if (!confirm('Excluir este recibo permanentemente?')) return;
-    const auth = JSON.parse(localStorage.getItem('ldfpAuth') || '{}');
-    await fetch('/api/recibos/' + id, {
-        method: 'DELETE',
-        headers: { Authorization: 'Bearer ' + auth.token }
+    async function ver(id) {
+        let r;
+        try { r = await TX.api(`/api/recibos/${id}`); } catch (e) { TX.toast(e.message, 'erro'); return; }
+        const data = String(r.data_recibo).slice(0, 10);
+        const [a, m, d] = data.split('-');
+        const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+        const igreja = r.igreja_nome || 'a igreja';
+        $('recibo').innerHTML = `
+            <div class="cab">
+                <div><h1>RECIBO</h1><small>${TX.esc(igreja)}</small></div>
+                <div class="num"><b>Nº ${String(r.numero).padStart(4, '0')}</b><strong>${TX.money(Number(r.valor))}</strong></div>
+            </div>
+            <p class="texto">Eu, <strong>${TX.esc(r.favorecido)}</strong>, declaro que recebi de <strong>${TX.esc(igreja)}</strong>
+                a importância de <strong>${TX.money(Number(r.valor))}</strong> (${TX.esc(extenso(r.valor))}),
+                referente a <strong>${TX.esc(r.referente)}</strong>, dando por este a mais plena quitação.</p>
+            ${r.observacao ? `<p class="obs">Obs.: ${TX.esc(r.observacao)}</p>` : ''}
+            <p style="text-align:right;margin:24px 0 0;">${Number(d)} de ${MESES[Number(m) - 1]} de ${a}.</p>
+            <div class="assin"><div class="linha">${TX.esc(r.favorecido)}<br><small>Assinatura do recebedor</small></div>
+                <div class="linha">CPF / RG</div></div>`;
+        $('secLista').style.display = 'none';
+        $('secVer').style.display = '';
+        window.scrollTo(0, 0);
+    }
+
+    async function excluir(x) {
+        const ok = await TX.confirmar({ titulo: 'Excluir recibo', texto: `Excluir o recibo nº ${String(x.numero).padStart(4, '0')} de ${x.favorecido} (${TX.money(Number(x.valor))})?` });
+        if (!ok) return;
+        try { await TX.api(`/api/recibos/${x.id}`, { method: 'DELETE' }); TX.toast('Recibo excluído.'); listar(); } catch (e) { TX.toast(e.message, 'erro'); }
+    }
+
+    $('btnNovo').addEventListener('click', novo);
+    $('btnVoltar').addEventListener('click', () => { $('secVer').style.display = 'none'; $('secLista').style.display = ''; });
+    $('btnImprimir').addEventListener('click', () => window.print());
+    $('busca').addEventListener('input', TX.debounce(() => { pagina = 1; listar(); }, 300));
+    $('paginas').addEventListener('click', (e) => { const b = e.target.closest('[data-pg]'); if (b) { pagina = Number(b.dataset.pg); listar(); } });
+    $('linhas').addEventListener('click', (e) => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        if (b.dataset.ver) ver(Number(b.dataset.ver));
+        const x = recibos.find((r) => String(r.id) === String(b.dataset.excluir));
+        if (x) excluir(x);
     });
-    carregarLista();
-}
 
-document.getElementById('btnSalvar').addEventListener('click', async () => {
-    const favorecido = document.getElementById('favorecido').value.trim();
-    const referente = document.getElementById('referente').value.trim();
-    const valor = document.getElementById('valor').value;
-    const data_recibo = document.getElementById('data').value;
-    const observacao = document.getElementById('observacao').value.trim();
-    const msg = document.getElementById('msg');
-
-    if (!favorecido || !referente || !valor || !data_recibo) {
-        msg.className = 'msg err';
-        msg.textContent = 'Preencha todos os campos obrigatórios.';
-        return;
-    }
-
-    const btn = document.getElementById('btnSalvar');
-    btn.disabled = true;
-    btn.textContent = 'Salvando...';
-    msg.textContent = '';
-
-    try {
-        const auth = JSON.parse(localStorage.getItem('ldfpAuth') || '{}');
-        const resp = await fetch('/api/recibos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + auth.token },
-            body: JSON.stringify({ favorecido, referente, valor, data_recibo, observacao })
-        });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || 'Erro ao salvar.');
-
-        const reciboCompleto = { numero: data.numero, favorecido, referente, valor, data_recibo, observacao };
-        document.getElementById('reciboPreview').innerHTML = gerarHtmlRecibo(reciboCompleto);
-        document.getElementById('btnImprimir').disabled = false;
-        msg.className = 'msg ok';
-        msg.textContent = 'Recibo Nº ' + data.numero + ' gerado e salvo com sucesso!';
-        carregarLista();
-
-        document.getElementById('favorecido').value = '';
-        document.getElementById('referente').value = '';
-        document.getElementById('valor').value = '';
-        document.getElementById('data').value = '';
-        document.getElementById('observacao').value = '';
-    } catch (e) {
-        msg.className = 'msg err';
-        msg.textContent = e.message || 'Erro ao salvar recibo.';
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa fa-save"></i> Salvar e Gerar';
-    }
-});
-
-document.getElementById('btnImprimir').addEventListener('click', () => window.print());
-document.getElementById('busca').addEventListener('keydown', e => { if (e.key === 'Enter') carregarLista(); });
-
-carregarLista();
+    listar();
+})();
 </script>
 </body>
 </html>

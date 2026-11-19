@@ -8,7 +8,9 @@ const bancoModel = () => require('../models/bancoModel');
 
 const ORIGEM_MSG = {
     dizimo: 'Este lançamento veio de um dízimo. Altere pelo lançamento de dízimo.',
-    banco: 'Este lançamento veio de um lançamento bancário (saque/depósito). Altere pela conta bancária.'
+    banco: 'Este lançamento veio de um lançamento bancário (saque/depósito). Altere pela conta bancária.',
+    conta_pagar: 'Este lançamento é o pagamento de uma conta a pagar. Para desfazer, estorne o pagamento em Contas a Pagar.',
+    link_pagamento: 'Este lançamento é o recebimento de um link de pagamento. Altere pela tela de Links de Pagamento.'
 };
 
 const TIPO_ROTULO = { dizimo: 'Dízimo', oferta: 'Oferta', missoes: 'Oferta Missionária', outros: 'Outras receitas' };

@@ -151,6 +151,64 @@
         });
     }
 
+    // Diálogo com formulário: aoConfirmar(caixa) roda ao clicar no botão; se lançar erro,
+    // a mensagem aparece dentro do diálogo e ele continua aberto.
+    function dialogo({ titulo, corpo, botao = 'Salvar', perigo = false, aoAbrir, aoConfirmar }) {
+        return new Promise((resolve) => {
+            const bg = document.createElement('div');
+            bg.className = 'tx-modal-bg aberto';
+            bg.innerHTML = `
+                <form class="tx-modal tx-modal-form" role="dialog" aria-modal="true" aria-label="${esc(titulo)}" novalidate>
+                    <header><span>${esc(titulo)}</span><button type="button" data-x aria-label="Fechar">&times;</button></header>
+                    <div class="corpo">${corpo}<div class="tx-alert erro tx-modal-erro" role="alert" hidden><i class="fa-solid fa-circle-exclamation"></i><span></span></div></div>
+                    <footer>
+                        <button type="button" class="tx-btn tx-btn-ghost" data-x>Cancelar</button>
+                        <button type="submit" class="tx-btn ${perigo ? 'tx-btn-danger' : 'tx-btn-primary'}" data-ok>${esc(botao)}</button>
+                    </footer>
+                </form>`;
+            const form = bg.querySelector('form');
+            const erro = bg.querySelector('.tx-modal-erro');
+            const fechar = (ok) => { bg.remove(); document.removeEventListener('keydown', tecla); resolve(ok); };
+            const tecla = (e) => { if (e.key === 'Escape') fechar(false); };
+            bg.addEventListener('mousedown', (e) => { if (e.target === bg) fechar(false); });
+            bg.addEventListener('click', (e) => { if (e.target.closest('[data-x]')) fechar(false); });
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = form.querySelector('[data-ok]');
+                btn.disabled = true;
+                erro.hidden = true;
+                try {
+                    if (aoConfirmar) await aoConfirmar(form);
+                    fechar(true);
+                } catch (err) {
+                    erro.querySelector('span').textContent = err.message;
+                    erro.hidden = false;
+                    btn.disabled = false;
+                }
+            });
+            document.addEventListener('keydown', tecla);
+            document.body.appendChild(bg);
+            if (aoAbrir) aoAbrir(form);
+            const primeiro = form.querySelector('.corpo input:not([type=hidden]), .corpo select');
+            (primeiro || form.querySelector('[data-ok]')).focus();
+        });
+    }
+
+    // Caixa + contas bancárias (para "pago com", "recebido em", transferências)
+    let destinosCache = null;
+    async function destinos(recarregar) {
+        if (!destinosCache || recarregar) destinosCache = (await api('/tesouraria/destinos')).items || [];
+        return destinosCache;
+    }
+    function opcoesDestino(lista, { selecionado = '', excluir = '', semCartao = false, vazio = 'Selecione...' } = {}) {
+        const op = (d) => `<option value="${esc(d.valor)}" ${d.valor === selecionado ? 'selected' : ''} ${d.disponivel === false ? 'disabled' : ''}>${esc(d.rotulo)}${d.detalhe ? ' — ' + esc(d.detalhe) : ''}</option>`;
+        const caixa = lista.filter((d) => d.valor === 'caixa' && d.valor !== excluir);
+        const contas = lista.filter((d) => d.valor !== 'caixa' && d.valor !== excluir && !(semCartao && d.tipoConta === 'cartao'));
+        return `<option value="">${esc(vazio)}</option>`
+            + (caixa.length ? `<optgroup label="Caixa">${caixa.map(op).join('')}</optgroup>` : '')
+            + (contas.length ? `<optgroup label="Contas bancárias">${contas.map(op).join('')}</optgroup>` : '');
+    }
+
     const TIPOS = {
         dizimo: 'Dízimo',
         oferta: 'Oferta',
@@ -167,6 +225,6 @@
     window.TX = {
         money, parseMoney, maskMoney, hojeISO, competenciaAtual, mesParaCompetencia,
         competenciaParaMes, dataBR, esc, debounce, api, toast, toastPendente, toastDepois,
-        confirmar, TIPOS, PUBLICOS
+        confirmar, dialogo, destinos, opcoesDestino, TIPOS, PUBLICOS
     };
 })();

@@ -464,9 +464,20 @@ async function reportPaymentAsPaidByClient(req, res) {
 }
 
 async function markPaymentAsPaid(req, res) {
-    await engagementService.markPaymentAsPaid(req.auth.igrejaId, Number(req.params.id));
-    audit('payment.link.markPaid', req, { id: Number(req.params.id) });
-    res.json({ message: 'Pagamento marcado como pago.' });
+    const b = req.body || {};
+    const destino = /^(caixa|banco:\d+)$/.test(String(b.destino || '')) ? b.destino : null;
+    const data = /^\d{4}-\d{2}-\d{2}$/.test(String(b.data || '')) ? b.data : null;
+    if (destino && !data) throw createHttpError(400, 'Informe a data do recebimento.');
+    await engagementService.markPaymentAsPaid(req.auth.igrejaId, Number(req.params.id),
+        { destino, data, contaContabil: typeof b.contaContabil === 'string' ? b.contaContabil.trim().slice(0, 255) : null }, req.auth.id);
+    audit('payment.link.markPaid', req, { id: Number(req.params.id), destino });
+    res.json({ message: destino ? 'Pagamento confirmado e lançado.' : 'Pagamento confirmado.' });
+}
+
+async function unmarkPaymentAsPaid(req, res) {
+    await engagementService.unmarkPaymentAsPaid(req.auth.igrejaId, Number(req.params.id));
+    audit('payment.link.unmarkPaid', req, { id: Number(req.params.id) });
+    res.json({ message: 'Confirmação desfeita. O recebimento foi retirado do caixa/banco.' });
 }
 
 async function getMemberAppContext(req, res) {
@@ -563,6 +574,7 @@ async function getAuthMe(req, res) {
 }
 
 module.exports = {
+    unmarkPaymentAsPaid,
     approveAutocadastro,
     createAutocadastro,
     createPaymentLink,

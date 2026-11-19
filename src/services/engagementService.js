@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const config = require('../config');
 const { getRoleInfo, getVisibleFeatures } = require('../config/roles');
 const engagementModel = require('../models/engagementModel');
+const { pool } = require('../config/db');
+const { createHttpError } = require('../utils/httpError');
 
 const DEFAULT_TEMPLATES = [
     {
@@ -315,8 +317,31 @@ async function listPaymentLinks(igrejaId) {
     return engagementModel.listPaymentLinks(igrejaId);
 }
 
-async function markPaymentAsPaid(igrejaId, id) {
+async function markPaymentAsPaid(igrejaId, id, opcoes = {}, userId = null) {
+    const [rows] = await pool.query('SELECT id, descricao, valor, status FROM payment_links WHERE id = ? AND igreja_id = ? LIMIT 1', [id, igrejaId]);
+    const link = rows[0];
+    if (!link) throw createHttpError(404, 'Link de pagamento não encontrado.');
+    // Recebimento lançado no caixa ou numa conta bancária (opcional, mas recomendado)
+    if (opcoes.destino) {
+        await require('./lancamentoAutomaticoService').registrar(igrejaId, 'link_pagamento', id, {
+            destino: opcoes.destino,
+            data: opcoes.data,
+            historico: `Link de pagamento: ${link.descricao}`.slice(0, 255),
+            valor: Number(link.valor),
+            tipo: 'entrada',
+            contaContabil: opcoes.contaContabil || null,
+            userId
+        });
+    }
     await engagementModel.markPaymentAsPaid(id, igrejaId);
+}
+
+// Desfaz a confirmação: tira o recebimento do caixa/banco e volta para pendente
+async function unmarkPaymentAsPaid(igrejaId, id) {
+    const [rows] = await pool.query('SELECT id FROM payment_links WHERE id = ? AND igreja_id = ? LIMIT 1', [id, igrejaId]);
+    if (!rows[0]) throw createHttpError(404, 'Link de pagamento não encontrado.');
+    await require('./lancamentoAutomaticoService').remover(igrejaId, 'link_pagamento', id);
+    await pool.query("UPDATE payment_links SET status = 'pendente', paid_at = NULL WHERE id = ? AND igreja_id = ?", [id, igrejaId]);
 }
 
 async function getPaymentLinkPublic(referenceCode) {
@@ -501,6 +526,7 @@ function getMemberPermissions(role) {
 }
 
 module.exports = {
+    unmarkPaymentAsPaid,
     approveAutocadastro,
     createAutocadastro,
     createPaymentLink,

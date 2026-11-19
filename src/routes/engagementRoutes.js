@@ -48,6 +48,7 @@ const {
     listWhatsAppLogs,
     listWhatsAppTemplates,
     markPaymentAsPaid,
+    unmarkPaymentAsPaid,
     reportPaymentAsPaidByClient,
     rejectAutocadastro,
     submitPublicVisitorByToken,
@@ -102,5 +103,6 @@ router.put('/pagamentos/publico/:referenceCode/cliente-pago', reportPaymentAsPai
 router.get('/pagamentos/links', requireAuth, authorize(['admin', 'secretaria', 'financeiro']), listPaymentLinks);
 router.post('/pagamentos/links', requireAuth, authorize(['admin', 'secretaria', 'financeiro']), validateBody(pagamentoLinkSchema), createPaymentLink);
 router.put('/pagamentos/links/:id/pago', requireAuth, authorize(['admin', 'secretaria', 'financeiro']), markPaymentAsPaid);
+router.put('/pagamentos/links/:id/pendente', requireAuth, authorize(['admin', 'financeiro']), unmarkPaymentAsPaid);
 
 module.exports = router;

@@ -107,7 +107,9 @@
     const ORIGEM = {
         dizimo: { rotulo: 'Dízimo', ico: 'fa-coins', titulo: 'Lançado automaticamente pelo dízimo', link: (l) => `dizimo_lancamento.html?id=${encodeURIComponent(l.origem_id)}` },
         transferencia: { rotulo: 'Transferência', ico: 'fa-right-left', titulo: 'Outra ponta de uma transferência', link: (l) => `banco_lancamento.html?id=${encodeURIComponent(l.origem_id)}` },
-        caixa: { rotulo: 'Caixa', ico: 'fa-cash-register', titulo: 'Depósito/saque lançado pelo caixa', link: (l) => `caixa_lancamento.html?id=${encodeURIComponent(l.origem_id)}` }
+        caixa: { rotulo: 'Caixa', ico: 'fa-cash-register', titulo: 'Depósito/saque lançado pelo caixa', link: (l) => `caixa_lancamento.html?id=${encodeURIComponent(l.origem_id)}` },
+        conta_pagar: { rotulo: 'Conta paga', ico: 'fa-file-invoice-dollar', titulo: 'Pagamento de uma conta a pagar', link: () => 'contas_pagar.html' },
+        link_pagamento: { rotulo: 'Link', ico: 'fa-link', titulo: 'Recebimento de um link de pagamento', link: () => 'pagamentos.html' }
     };
     const st = { mes: qs.get('mes') || TX.hojeISO().slice(0, 7), periodo: 'mes', tipo: '', busca: '', pagina: 1, ordem: { campo: 'data', desc: true }, conta: null };
 

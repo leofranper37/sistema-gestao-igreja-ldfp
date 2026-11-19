@@ -6,342 +6,320 @@
     <title>LDFP - Contas a Pagar</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .wrap { max-width: 1200px; margin: 0 auto; padding: 18px 14px 40px; }
-        .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
-        .kpi { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 16px; box-shadow: 0 4px 14px rgba(15,23,42,.07); }
-        .kpi small { display: block; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-        .kpi strong { display: block; font-size: 1.55rem; font-weight: 800; }
-        .kpi.aberto strong { color: #0369a1; }
-        .kpi.vencido strong { color: #dc2626; }
-        .kpi.pendente strong { color: #d97706; }
-        .kpi.pago strong { color: #16a34a; }
-        .main-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(330px, 1fr); gap: 14px; }
-        .main-grid > * { min-width: 0; }
-        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 6px 20px rgba(15,23,42,.08); padding: 16px; }
-        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-        .card-header h2 { margin: 0; font-size: 15px; color: #155e75; }
-        .filtros { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
-        .filtros input, .filtros select { max-width: 170px; min-width: 130px; margin: 0; }
-        input, select, textarea { width: 100%; border: 1px solid #dbe3ef; border-radius: 8px; padding: 9px 12px; font-size: 13.5px; box-sizing: border-box; margin-bottom: 6px; }
-        textarea { resize: vertical; min-height: 55px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .form-row .full { grid-column: 1/-1; }
-        .btn { border: 0; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; color: #fff; }
-        .btn-primary { background: #0f766e; width: 100%; margin-top: 4px; }
-        .btn-del { background: #dc2626; padding: 5px 8px; font-size: 11px; }
-        .btn-pay { background: #16a34a; padding: 5px 8px; font-size: 11px; }
-        table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-        th, td { border-bottom: 1px solid #f1f5f9; padding: 9px 8px; text-align: left; vertical-align: top; }
-        td { word-break: break-word; }
-        th { background: #f8fafc; color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 700; }
-        .badge-pendente { background: #fef9c3; color: #a16207; }
-        .badge-pago { background: #dcfce7; color: #15803d; }
-        .badge-vencido { background: #fee2e2; color: #b91c1c; }
-        .badge-cancelado { background: #f1f5f9; color: #64748b; }
-        .msg { font-size: 13px; min-height: 18px; margin-top: 6px; }
-        .msg.ok { color: #0f766e; } .msg.error { color: #b91c1c; }
-        .venc-red { color: #b91c1c; font-weight: 700; }
-        .pag { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; align-items: center; }
-        .pag button { border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
-        .pag button:disabled { opacity: .45; cursor: not-allowed; }
-        .pag span { font-size: 12px; color: #64748b; }
-        @media (max-width: 1180px) { .main-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 1000px) { .kpis { grid-template-columns: repeat(2,1fr); } }
-        @media (max-width: 600px) { .kpis { grid-template-columns: 1fr; } .filtros input, .filtros select { max-width: 100%; } }
-    </style>
+    <link rel="stylesheet" href="tesouraria-ui.css">
     <script src="tema.js"></script>
 </head>
-<body class="theme-petroleo enterprise-shell-page" data-shell-title="Contas a Pagar" data-shell-breadcrumb="LDFP / Tesouraria / Contas a Pagar" data-shell-active="contas_pagar.html" data-shell-chip="Tesouraria ativa">
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Contas a Pagar"
+      data-shell-breadcrumb="LDFP / Tesouraria / Contas a Pagar"
+      data-shell-active="contas_pagar.html"
+      data-shell-chip="Tesouraria">
+
 <main class="main-content enterprise-main">
-<div class="enterprise-page-shell" style="padding-bottom: 30px;">
-    <div class="enterprise-page-hero" style="margin-bottom: 14px;">
-        <div>
+    <div class="tx-page">
+        <div class="tx-titlebar">
             <h2>Contas a Pagar</h2>
-            <p>Controle de duplicatas, vencimentos e pagamentos com visao operacional da tesouraria.</p>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <a href="tesouraria_dizimos.html">Tesouraria</a><span class="sep">›</span>
+                <span class="atual">Contas a Pagar</span>
+            </nav>
         </div>
-        <div class="enterprise-page-badge"><i class="fa-solid fa-file-invoice-dollar"></i> Tesouraria</div>
-    </div>
 
-<div class="wrap" style="padding: 0; max-width: 100%;">
+        <section class="tx-card" aria-label="Resumo">
+            <div class="tx-card-head">
+                <h3><span class="ico"><i class="fa-solid fa-file-invoice-dollar"></i></span> Compromissos da igreja</h3>
+                <button class="tx-btn tx-btn-primary" type="button" id="btnNova"><i class="fa-solid fa-plus"></i> Nova conta</button>
+            </div>
+            <div class="tx-stats">
+                <div><span>Em aberto</span><strong id="sAberto">R$ 0,00</strong></div>
+                <div><span>Vencidas</span><strong class="neg" id="sVencido">R$ 0,00</strong></div>
+                <div><span>A vencer</span><strong id="sPendente">R$ 0,00</strong></div>
+                <div><span>Pagas</span><strong class="pos" id="sPago">R$ 0,00</strong></div>
+            </div>
+        </section>
 
-    <!-- KPIs -->
-    <div class="kpis">
-        <div class="kpi aberto"><small>Total em aberto</small><strong id="kpiAberto">R$ 0,00</strong></div>
-        <div class="kpi vencido"><small>Vencido</small><strong id="kpiVencido">R$ 0,00</strong></div>
-        <div class="kpi pendente"><small>A vencer</small><strong id="kpiPendente">R$ 0,00</strong></div>
-        <div class="kpi pago"><small>Pago no período</small><strong id="kpiPago">R$ 0,00</strong></div>
-    </div>
-
-    <div class="main-grid">
-
-        <!-- Lista -->
-        <section class="card">
-            <div class="card-header">
-                <h2><i class="fa-solid fa-file-invoice-dollar"></i> Contas a pagar</h2>
-                <div class="filtros">
-                    <select id="filtroStatus">
-                        <option value="">Todos status</option>
-                        <option value="pendente">Pendente</option>
-                        <option value="vencido">Vencido</option>
-                        <option value="pago">Pago</option>
-                        <option value="cancelado">Cancelado</option>
-                    </select>
-                    <input type="date" id="filtroVencDe" placeholder="Venc. de">
-                    <input type="date" id="filtroVencAte" placeholder="Venc. até">
-                    <input type="text" id="filtroDesc" placeholder="Buscar..." style="max-width:150px;">
-                    <button class="btn" style="background:#0284c7;" type="button" id="btnFiltrar">Filtrar</button>
+        <section class="tx-card" style="margin-top:16px;">
+            <div class="tx-toolbar">
+                <div class="tx-search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="busca" class="tx-input" type="search" placeholder="Buscar descrição..." autocomplete="off" aria-label="Buscar conta">
+                </div>
+                <div class="tx-seg" role="radiogroup" aria-label="Situação" id="filtroStatus">
+                    <button type="button" role="radio" data-st="aberto" aria-checked="true">Em aberto</button>
+                    <button type="button" role="radio" data-st="vencido" aria-checked="false">Vencidas</button>
+                    <button type="button" role="radio" data-st="pago" aria-checked="false">Pagas</button>
+                    <button type="button" role="radio" data-st="" aria-checked="false">Todas</button>
                 </div>
             </div>
-            <div style="overflow-x:auto;">
-                <table>
+            <div class="tx-table-wrap">
+                <table class="tx-table">
                     <thead>
                         <tr>
-                            <th>Descrição</th>
                             <th>Vencimento</th>
-                            <th>Valor</th>
-                            <th>Status</th>
-                            <th></th>
+                            <th>Descrição</th>
+                            <th>Classificação</th>
+                            <th class="num">Valor</th>
+                            <th>Situação</th>
+                            <th class="acoes">Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="tbContas"></tbody>
+                    <tbody id="linhas"></tbody>
                 </table>
             </div>
-            <div class="pag">
-                <button id="btnAnterior" type="button" disabled>&#8592; Anterior</button>
-                <span id="pagInfo">Pág 1</span>
-                <button id="btnProximo" type="button" disabled>Próxima &#8594;</button>
+            <div class="tx-foot">
+                <span id="contagem">0 conta(s)</span>
+                <div class="tx-pages" id="paginas"></div>
             </div>
-            <p class="msg" id="msgLista"></p>
         </section>
-
-        <!-- Formulário -->
-        <section class="card">
-            <div class="card-header">
-                <h2><i class="fa-solid fa-plus"></i> Nova conta a pagar</h2>
-            </div>
-            <form id="formConta">
-                <div class="form-row">
-                    <input class="full" type="text" id="descricao" placeholder="Descrição *" required>
-                    <select id="fornecedorId" title="Fornecedor cadastrado"><option value="">Fornecedor cadastrado…</option></select>
-                    <input type="text" id="fornecedor" placeholder="…ou digite o fornecedor">
-                    <input type="text" id="valor" placeholder="Valor (ex: 150,00) *" required>
-                    <input type="date" id="vencimento" required>
-                    <select id="centroCustoId" title="Centro de custo"><option value="">Centro de custo…</option></select>
-                    <input type="text" id="categoria" placeholder="Categoria (ex: Aluguel, Água, Luz)">
-                    <select id="tipoDocumentoId" title="Tipo de documento"><option value="">Tipo de documento…</option></select>
-                    <input type="text" id="numeroDocumento" placeholder="Nº do documento" maxlength="60">
-                    <p class="full" style="margin:0;font-size:12px;color:#64748b;">Fornecedores, centros de custo e tipos de documento são cadastrados em <a href="tesouraria_cadastros.html">Tesouraria → Fornecedores e Centros de Custo</a>.</p>
-                    <textarea class="full" id="observacao" placeholder="Observação (opcional)"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-floppy-disk"></i> Registrar
-                </button>
-            </form>
-            <p class="msg" id="msgForm"></p>
-        </section>
-
     </div>
-</div>
-</div>
 </main>
 
-<script src="session.js?v=20260501"></script>
-<script src="enterprise-shell.js?v=20260501"></script>
-<script src="cadastros-tesouraria.js?v=20261111"></script>
+<datalist id="dlFornecedores"></datalist>
+<datalist id="dlCategorias"></datalist>
+
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
 <script>
-    requireAuthSession();
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const ST = { pendente: 'A vencer', vencido: 'Vencida', pago: 'Paga' };
+    let status = 'aberto';
+    let pagina = 1;
+    let fornecedores = [];
+    let centros = [];
+    let contas = [];
 
-    const esc = (v) => String(v === null || v === undefined ? '' : v)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-    CadastrosTesouraria.preencher(document.getElementById('fornecedorId'), 'fornecedores', { vazio: 'Fornecedor cadastrado…' });
-    CadastrosTesouraria.preencher(document.getElementById('centroCustoId'), 'centros-custo', { vazio: 'Centro de custo…' });
-    CadastrosTesouraria.preencher(document.getElementById('tipoDocumentoId'), 'tipos-documento', { vazio: 'Tipo de documento…' });
-
-    const tbContas = document.getElementById('tbContas');
-    const msgLista = document.getElementById('msgLista');
-    const msgForm = document.getElementById('msgForm');
-    const btnAnterior = document.getElementById('btnAnterior');
-    const btnProximo = document.getElementById('btnProximo');
-    const pagInfo = document.getElementById('pagInfo');
-
-    let currentPage = 1;
-    let totalPages = 1;
-
-    function setMsg(el, text, isError = false) {
-        el.className = isError ? 'msg error' : 'msg ok';
-        el.textContent = text || '';
+    async function carregarCadastros() {
+        const pega = (u) => TX.api(u).then((r) => r.items || []).catch(() => []);
+        const [f, c, cats] = await Promise.all([
+            pega('/api/tesouraria/fornecedores'), pega('/api/tesouraria/centros-custo'), pega('/caixa/contas-sugeridas')
+        ]);
+        fornecedores = f;
+        centros = c;
+        $('dlFornecedores').innerHTML = f.map((x) => `<option value="${TX.esc(x.nome)}">`).join('');
+        $('dlCategorias').innerHTML = cats.filter((x) => x.natureza === 'despesa')
+            .map((x) => `<option value="${TX.esc(x.rotulo)}">`).join('');
     }
 
-    function fmtVal(v) {
-        return 'R$ ' + Number(v).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    async function totais() {
+        try {
+            const t = await TX.api('/contas-pagar/totais');
+            $('sAberto').textContent = TX.money(t.totalAberto || 0);
+            $('sVencido').textContent = TX.money(t.totalVencido || 0);
+            $('sPendente').textContent = TX.money(t.totalPendente || 0);
+            $('sPago').textContent = TX.money(t.totalPago || 0);
+        } catch (_) { /* os cards ficam zerados */ }
     }
 
-    function fmtDate(s) {
-        if (!s) return '-';
-        const d = new Date(String(s).slice(0, 10) + 'T12:00:00');
-        return d.toLocaleDateString('pt-BR');
-    }
-
-    function isVencida(vencimento, status) {
-        if (status !== 'pendente') return false;
-        return new Date(String(vencimento).slice(0, 10) + 'T23:59:59') < new Date();
-    }
-
-    async function loadTotais() {
-        const r = await fetch('/contas-pagar/totais');
-        const d = await r.json().catch(() => ({}));
-        if (r.ok) {
-            document.getElementById('kpiAberto').textContent = fmtVal(d.totalAberto);
-            document.getElementById('kpiVencido').textContent = fmtVal(d.totalVencido);
-            document.getElementById('kpiPendente').textContent = fmtVal(d.totalPendente);
-            document.getElementById('kpiPago').textContent = fmtVal(d.totalPago);
-        }
-    }
-
-    async function loadLista(page = 1) {
-        const params = new URLSearchParams({ page, limit: 50 });
-        const status = document.getElementById('filtroStatus').value;
-        const vencDe = document.getElementById('filtroVencDe').value;
-        const vencAte = document.getElementById('filtroVencAte').value;
-        const descricao = document.getElementById('filtroDesc').value.trim();
-
-        if (status) params.set('status', status);
-        if (vencDe) params.set('vencimentoDe', vencDe);
-        if (vencAte) params.set('vencimentoAte', vencAte);
-        if (descricao) params.set('descricao', descricao);
-
-        const r = await fetch(`/contas-pagar?${params}`);
-        const d = await r.json().catch(() => ({ items: [], meta: { page: 1, totalPages: 1 } }));
-
-        if (!r.ok) {
-            setMsg(msgLista, d.error || 'Erro ao carregar.', true);
+    async function listar() {
+        $('linhas').innerHTML = Array.from({ length: 4 }, () => `<tr>${'<td><div class="tx-skel"></div></td>'.repeat(6)}</tr>`).join('');
+        const q = new URLSearchParams({ page: pagina, limit: 25 });
+        if (status) q.set('status', status);
+        const busca = $('busca').value.trim();
+        if (busca) q.set('descricao', busca);
+        let r;
+        try {
+            r = await TX.api('/contas-pagar?' + q);
+        } catch (e) {
+            $('linhas').innerHTML = `<tr><td colspan="6"><div class="tx-empty"><strong>Não foi possível carregar</strong><span>${TX.esc(e.message)}</span></div></td></tr>`;
             return;
         }
-
-        const items = d.items || [];
-        totalPages = d.meta?.totalPages || 1;
-        currentPage = d.meta?.page || 1;
-        pagInfo.textContent = `Pág ${currentPage} de ${totalPages}`;
-        btnAnterior.disabled = currentPage <= 1;
-        btnProximo.disabled = currentPage >= totalPages;
-
-        if (!items.length) {
-            tbContas.innerHTML = '<tr><td colspan="5" style="color:#94a3b8;text-align:center;padding:20px;">Nenhuma conta encontrada.</td></tr>';
+        contas = r.items || [];
+        const meta = r.meta || { total: contas.length, totalPages: 1 };
+        $('contagem').textContent = `${meta.total} conta(s)`;
+        $('paginas').innerHTML = meta.totalPages > 1
+            ? Array.from({ length: meta.totalPages }, (_, i) => `<button type="button" class="${i + 1 === pagina ? 'atual' : ''}" data-pg="${i + 1}">${i + 1}</button>`).join('')
+            : '';
+        if (!contas.length) {
+            $('linhas').innerHTML = `<tr><td colspan="6"><div class="tx-empty">
+                <span class="ico"><i class="fa-regular fa-circle-check"></i></span>
+                <strong>${status === 'pago' ? 'Nenhuma conta paga ainda' : 'Nenhuma conta em aberto'}</strong>
+                <span>Cadastre as contas da igreja (luz, água, aluguel...) para acompanhar os vencimentos.</span></div></td></tr>`;
             return;
         }
-
-        tbContas.innerHTML = items.map(item => {
-            const vencida = isVencida(item.vencimento, item.status);
-            const statusDisplay = vencida ? 'vencido' : item.status;
-
-            return `
-            <tr>
-                <td>
-                    <strong>${esc(item.descricao)}</strong>
-                    ${item.fornecedor ? `<br><small style="color:#64748b">${esc(item.fornecedor)}</small>` : ''}
-                    ${item.categoria || item.centro_custo_nome ? `<br><span style="font-size:10px;color:#94a3b8">${esc([item.centro_custo_nome, item.categoria].filter(Boolean).join(' · '))}</span>` : ''}
-                    ${item.tipo_documento_nome || item.numero_documento ? `<br><span style="font-size:10px;color:#94a3b8">${esc([item.tipo_documento_nome, item.numero_documento].filter(Boolean).join(' nº '))}</span>` : ''}
-                </td>
-                <td class="${vencida ? 'venc-red' : ''}">${fmtDate(item.vencimento)}</td>
-                <td style="font-weight:700;">${fmtVal(item.valor)}</td>
-                <td><span class="badge badge-${statusDisplay}">${statusDisplay.charAt(0).toUpperCase() + statusDisplay.slice(1)}</span></td>
-                <td style="white-space:nowrap;">
-                    ${item.status !== 'pago' && item.status !== 'cancelado' ? `<button class="btn btn-pay" onclick="marcarPago(${item.id})" title="Marcar como pago"><i class="fa-solid fa-check"></i></button>` : ''}
-                    <button class="btn btn-del" onclick="excluir(${item.id})" title="Excluir">×</button>
-                </td>
-            </tr>`;
-        }).join('');
-
-        setMsg(msgLista, '');
+        $('linhas').innerHTML = contas.map(linha).join('');
     }
 
-    async function refresh() {
-        await Promise.all([loadLista(currentPage), loadTotais()]);
+    function origemPagamento(c) {
+        if (!c.pago_com) return c.data_pagamento ? 'Baixa manual' : '';
+        if (c.pago_com === 'caixa') return 'Pago pelo caixa';
+        return 'Pago pelo banco';
     }
 
-    window.marcarPago = async function(id) {
-        const hoje = new Date().toISOString().slice(0, 10);
-        const r = await fetch(`/contas-pagar/${id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'pago', dataPagamento: hoje })
+    function linha(c) {
+        const venc = String(c.vencimento || '').slice(0, 10);
+        const pago = c.status === 'pago';
+        const sub = pago
+            ? `Pago em ${TX.dataBR(String(c.data_pagamento || '').slice(0, 10))} · ${origemPagamento(c)}`
+            : (c.fornecedor || '');
+        const acoes = pago
+            ? `<button class="tx-btn tx-btn-ghost tx-btn-sm" type="button" data-estornar="${c.id}"><i class="fa-solid fa-rotate-left"></i> Estornar</button>`
+            : `<button class="tx-btn tx-btn-primary tx-btn-sm tx-btn-pagar" type="button" data-pagar="${c.id}"><i class="fa-solid fa-check"></i> Pagar</button>
+               <button class="tx-btn-icon" type="button" data-editar="${c.id}" title="Editar" aria-label="Editar ${TX.esc(c.descricao)}"><i class="fa-solid fa-pen"></i></button>
+               <button class="tx-btn-icon danger" type="button" data-excluir="${c.id}" title="Excluir" aria-label="Excluir ${TX.esc(c.descricao)}"><i class="fa-solid fa-trash"></i></button>`;
+        return `<tr>
+            <td>${TX.dataBR(venc)}</td>
+            <td><strong>${TX.esc(c.descricao)}</strong>${sub ? `<small style="display:block;color:var(--tx-muted);">${TX.esc(sub)}</small>` : ''}</td>
+            <td>${TX.esc(c.categoria || '—')}${c.centro_custo_nome ? `<small style="display:block;color:var(--tx-muted);">${TX.esc(c.centro_custo_nome)}</small>` : ''}</td>
+            <td class="num"><strong>${TX.money(Number(c.valor))}</strong></td>
+            <td><span class="tx-status ${c.status}">${ST[c.status] || c.status}</span></td>
+            <td class="acoes"><div class="tx-acoes-linha">${acoes}</div></td>
+        </tr>`;
+    }
+
+    function atualizar() { listar(); totais(); }
+
+    // ── Nova / editar conta ────────────────────────────────────────────
+    async function formConta(c) {
+        const v = c || {};
+        const optCentros = '<option value="">Nenhum</option>' + centros.map((x) =>
+            `<option value="${x.id}" ${Number(v.centro_custo_id) === Number(x.id) ? 'selected' : ''}>${TX.esc([x.codigo, x.nome].filter(Boolean).join(' - '))}</option>`).join('');
+        await TX.dialogo({
+            titulo: c ? 'Editar conta' : 'Nova conta a pagar',
+            botao: 'Salvar',
+            corpo: `
+                <div class="tx-field"><label for="fDesc">Descrição <span class="req">*</span></label>
+                    <input id="fDesc" class="tx-input" maxlength="255" placeholder="Ex: Conta de luz de novembro" value="${TX.esc(v.descricao || '')}"></div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="fValor">Valor <span class="req">*</span></label>
+                        <div class="tx-input-group"><span class="pre">R$</span><input id="fValor" class="tx-input valor" inputmode="numeric" autocomplete="off"></div></div>
+                    <div class="tx-field"><label for="fVenc">Vencimento <span class="req">*</span></label>
+                        <input id="fVenc" class="tx-input" type="date" value="${TX.esc(String(v.vencimento || '').slice(0, 10))}"></div>
+                </div>
+                <div class="tx-field"><label for="fForn">Fornecedor / favorecido</label>
+                    <input id="fForn" class="tx-input" list="dlFornecedores" maxlength="255" autocomplete="off" placeholder="Ex: Energisa" value="${TX.esc(v.fornecedor || '')}"></div>
+                <div class="tx-field"><label for="fCat">Classificação (conta contábil)</label>
+                    <input id="fCat" class="tx-input" list="dlCategorias" maxlength="255" autocomplete="off" placeholder="Digite para buscar..." value="${TX.esc(v.categoria || '')}">
+                    <small class="tx-hint">É a conta usada no caixa/banco quando a conta for paga.</small></div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="fCentro">Centro de custo</label><select id="fCentro" class="tx-input">${optCentros}</select></div>
+                    <div class="tx-field"><label for="fDoc">Nº do documento</label>
+                        <input id="fDoc" class="tx-input" maxlength="80" placeholder="Ex: boleto, NF" value="${TX.esc(v.numero_documento || '')}"></div>
+                </div>
+                <div class="tx-field"><label for="fObs">Observação</label><textarea id="fObs" maxlength="2000" placeholder="Opcional">${TX.esc(v.observacao || '')}</textarea></div>`,
+            aoAbrir: () => {
+                const m = TX.maskMoney($('fValor'));
+                if (v.valor) m.set(Number(v.valor));
+                if (!v.vencimento) $('fVenc').value = TX.hojeISO();
+            },
+            aoConfirmar: async () => {
+                const descricao = $('fDesc').value.trim();
+                const valor = TX.parseMoney($('fValor').value);
+                if (!descricao) throw new Error('Informe a descrição.');
+                if (!(valor > 0)) throw new Error('Informe um valor maior que zero.');
+                if (!$('fVenc').value) throw new Error('Informe o vencimento.');
+                const nomeForn = $('fForn').value.trim();
+                const forn = fornecedores.find((f) => f.nome.toLowerCase() === nomeForn.toLowerCase());
+                const body = {
+                    descricao, valor: String(valor), vencimento: $('fVenc').value,
+                    fornecedor: nomeForn || null, fornecedorId: forn ? forn.id : null,
+                    categoria: $('fCat').value.trim() || null,
+                    centroCustoId: $('fCentro').value ? Number($('fCentro').value) : null,
+                    numeroDocumento: $('fDoc').value.trim() || null,
+                    observacao: $('fObs').value.trim() || null
+                };
+                if (c) await TX.api(`/contas-pagar/${c.id}`, { method: 'PUT', body });
+                else await TX.api('/contas-pagar', { method: 'POST', body });
+            }
+        }).then((ok) => { if (ok) { TX.toast(c ? 'Conta atualizada.' : 'Conta cadastrada.'); atualizar(); } });
+    }
+
+    // ── Pagar ─────────────────────────────────────────────────────────
+    async function pagar(c) {
+        let lista;
+        try { lista = await TX.destinos(true); } catch (e) { TX.toast(e.message, 'erro'); return; }
+        const temAlgum = lista.some((d) => d.disponivel !== false);
+        let msg = '';
+        await TX.dialogo({
+            titulo: 'Pagar conta',
+            botao: 'Confirmar pagamento',
+            corpo: `
+                <div class="tx-modal-resumo">
+                    <span>${TX.esc(c.descricao)}${c.fornecedor ? ' · ' + TX.esc(c.fornecedor) : ''}</span><span>Vence ${TX.dataBR(String(c.vencimento).slice(0, 10))}</span>
+                    <b class="grande">${TX.money(Number(c.valor))}</b><span class="tx-status ${c.status}">${ST[c.status] || ''}</span>
+                </div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="pData">Data do pagamento <span class="req">*</span></label>
+                        <input id="pData" class="tx-input" type="date"></div>
+                    <div class="tx-field"><label for="pCom">Pago com <span class="req">*</span></label>
+                        <select id="pCom" class="tx-input">${TX.opcoesDestino(lista, { semCartao: false })}</select></div>
+                </div>
+                <small class="tx-hint">${temAlgum
+                    ? 'A saída é lançada automaticamente no caixa ou no extrato da conta escolhida. Se precisar desfazer, use “Estornar”.'
+                    : 'Cadastre uma conta bancária ou inicie o caixa para poder registrar o pagamento.'}</small>`,
+            aoAbrir: () => {
+                $('pData').value = TX.hojeISO();
+                const salvo = (() => { try { return localStorage.getItem('ldfp_cp_pago_com'); } catch (_) { return null; } })();
+                const opt = salvo && $('pCom').querySelector(`option[value="${CSS.escape(salvo)}"]:not([disabled])`);
+                if (opt) $('pCom').value = salvo;
+            },
+            aoConfirmar: async () => {
+                const pagoCom = $('pCom').value;
+                if (!pagoCom) throw new Error('Escolha o caixa ou a conta bancária de onde saiu o dinheiro.');
+                const r = await TX.api(`/contas-pagar/${c.id}/pagar`, { method: 'POST', body: { dataPagamento: $('pData').value, pagoCom } });
+                try { localStorage.setItem('ldfp_cp_pago_com', pagoCom); } catch (_) { /* opcional */ }
+                msg = r.message;
+            }
+        }).then((ok) => { if (ok) { TX.toast(msg || 'Conta paga.'); atualizar(); } });
+    }
+
+    async function estornar(c) {
+        const ok = await TX.confirmar({
+            titulo: 'Estornar pagamento',
+            texto: `O pagamento de "${c.descricao}" (${TX.money(Number(c.valor))}) será desfeito e a saída retirada do caixa/banco. A conta volta a ficar em aberto.`,
+            botao: 'Estornar'
         });
+        if (!ok) return;
+        try {
+            const r = await TX.api(`/contas-pagar/${c.id}/estornar`, { method: 'POST' });
+            TX.toast(r.message);
+            atualizar();
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    }
 
-        if (r.ok) {
-            setMsg(msgLista, 'Marcado como pago!');
-            refresh();
-        } else {
-            const d = await r.json().catch(() => ({}));
-            setMsg(msgLista, d.error || 'Erro.', true);
-        }
-    };
+    async function excluir(c) {
+        const ok = await TX.confirmar({ titulo: 'Excluir conta', texto: `Excluir "${c.descricao}" de ${TX.money(Number(c.valor))}? Esta ação não pode ser desfeita.` });
+        if (!ok) return;
+        try {
+            await TX.api(`/contas-pagar/${c.id}`, { method: 'DELETE' });
+            TX.toast('Conta excluída.');
+            atualizar();
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    }
 
-    window.excluir = async function(id) {
-        if (!confirm('Remover esta conta?')) return;
-        const r = await fetch(`/contas-pagar/${id}`, { method: 'DELETE' });
-        if (r.ok) {
-            setMsg(msgLista, 'Removido.');
-            refresh();
-        } else {
-            const d = await r.json().catch(() => ({}));
-            setMsg(msgLista, d.error || 'Erro ao remover.', true);
-        }
-    };
-
-    document.getElementById('btnFiltrar').addEventListener('click', () => {
-        currentPage = 1;
-        refresh();
+    // ── Eventos ───────────────────────────────────────────────────────
+    $('btnNova').addEventListener('click', () => formConta(null));
+    $('busca').addEventListener('input', TX.debounce(() => { pagina = 1; listar(); }, 300));
+    $('filtroStatus').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-st]');
+        if (!b) return;
+        status = b.dataset.st;
+        pagina = 1;
+        $('filtroStatus').querySelectorAll('[data-st]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+        listar();
+    });
+    $('paginas').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-pg]');
+        if (b) { pagina = Number(b.dataset.pg); listar(); }
+    });
+    $('linhas').addEventListener('click', (e) => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        const id = Number(b.dataset.pagar || b.dataset.editar || b.dataset.excluir || b.dataset.estornar);
+        const c = contas.find((x) => Number(x.id) === id);
+        if (!c) return;
+        if (b.dataset.pagar) pagar(c);
+        else if (b.dataset.editar) formConta(c);
+        else if (b.dataset.excluir) excluir(c);
+        else if (b.dataset.estornar) estornar(c);
     });
 
-    btnAnterior.addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadLista(currentPage); } });
-    btnProximo.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; loadLista(currentPage); } });
-
-    document.getElementById('formConta').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        setMsg(msgForm, '');
-
-        const valorRaw = document.getElementById('valor').value.trim().replace(',', '.');
-        const valor = parseFloat(valorRaw);
-        if (!valor || valor <= 0) {
-            setMsg(msgForm, 'Informe um valor válido.', true);
-            return;
-        }
-
-        const body = {
-            descricao: document.getElementById('descricao').value.trim(),
-            fornecedor: document.getElementById('fornecedor').value.trim() || null,
-            valor,
-            vencimento: document.getElementById('vencimento').value,
-            categoria: document.getElementById('categoria').value.trim() || null,
-            observacao: document.getElementById('observacao').value.trim() || null,
-            fornecedorId: document.getElementById('fornecedorId').value || null,
-            centroCustoId: document.getElementById('centroCustoId').value || null,
-            tipoDocumentoId: document.getElementById('tipoDocumentoId').value || null,
-            numeroDocumento: document.getElementById('numeroDocumento').value.trim() || null
-        };
-
-        const r = await fetch('/contas-pagar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const d = await r.json().catch(() => ({}));
-
-        if (!r.ok) {
-            setMsg(msgForm, d.error || 'Erro ao registrar.', true);
-            return;
-        }
-
-        setMsg(msgForm, 'Conta registrada!');
-        document.getElementById('formConta').reset();
-        currentPage = 1;
-        refresh();
-    });
-
-    refresh();
+    TX.toastPendente();
+    carregarCadastros();
+    atualizar();
+})();
 </script>
 </body>
 </html>

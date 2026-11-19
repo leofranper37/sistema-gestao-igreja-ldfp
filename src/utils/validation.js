@@ -419,8 +419,17 @@ const bancoContaSchema = Joi.object({
     banco: Joi.string().trim().max(120).allow('', null).optional().label('Banco'),
     agencia: Joi.string().trim().max(20).allow('', null).optional().label('Agência'),
     conta: Joi.string().trim().max(30).allow('', null).optional().label('Conta'),
-    tipo: Joi.string().valid('corrente', 'poupanca', 'caixa_interno', 'investimento', 'outro').optional().default('corrente').label('Tipo'),
+    tipo: Joi.string().valid('corrente', 'aplicacao', 'cartao', 'poupanca', 'caixa_interno', 'investimento', 'outro').optional().default('corrente').label('Tipo'),
     saldoInicial: decimalInput.label('Saldo inicial'),
+    // cadastro novo (conta corrente / aplicação / cartão)
+    bancoCodigo: Joi.string().trim().pattern(/^\d{1,5}$/).allow('', null).optional().label('Código do banco'),
+    digito: Joi.string().trim().max(5).allow('', null).optional().label('Dígito'),
+    finalCartao: Joi.string().trim().pattern(/^\d{4}$/).allow('', null).optional().label('Final do cartão')
+        .messages({ 'string.pattern.base': 'Final do cartão: informe os 4 últimos dígitos.' }),
+    saldoData: Joi.string().trim().pattern(/^\d{4}-\d{2}-\d{2}$/).allow('', null).optional().label('Data do saldo'),
+    saldoTipo: Joi.string().valid('credito', 'debito').optional().label('Tipo do saldo'),
+    contaContabil: Joi.string().trim().max(255).allow('', null).optional().label('Conta contábil'),
+    compartilhado: Joi.boolean().optional().label('Compartilhado com congregações'),
     ativo: Joi.boolean().optional().default(true).label('Ativo'),
     observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação')
 });
@@ -431,6 +440,8 @@ const bancoLancamentoSchema = Joi.object({
     valor: decimalInput.label('Valor'),
     dataLancamento: Joi.string().trim().pattern(/^\d{4}-\d{2}-\d{2}$/).required().label('Data'),
     observacao: Joi.string().trim().max(2000).allow('', null).optional().label('Observação'),
+    doc: Joi.string().trim().max(50).allow('', null).optional().label('Documento'),
+    contaContabil: Joi.string().trim().max(255).allow('', null).optional().label('Conta contábil'),
     centroCustoId: idVinculo.label('Centro de custo'),
     fornecedorId: idVinculo.label('Fornecedor')
 });

@@ -3,6 +3,14 @@ const financeModel = require('../models/financeModel');
 const { pool } = require('../config/db');
 const { createHttpError } = require('../utils/httpError');
 
+const banco = () => require('./bancoService'); // evita dependência circular
+const bancoModel = () => require('../models/bancoModel');
+
+const ORIGEM_MSG = {
+    dizimo: 'Este lançamento veio de um dízimo. Altere pelo lançamento de dízimo.',
+    banco: 'Este lançamento veio de um lançamento bancário (saque/depósito). Altere pela conta bancária.'
+};
+
 const TIPO_ROTULO = { dizimo: 'Dízimo', oferta: 'Oferta', missoes: 'Oferta Missionária', outros: 'Outras receitas' };
 
 // Contas de despesa mais usadas por igrejas (sugestões; o usuário pode digitar outra)
@@ -92,38 +100,125 @@ async function createLancamento(igrejaId, userId, payload) {
     const estado = await caixaModel.getEstado(igrejaId);
     exigirConfigurado(estado);
     exigirNaCompetencia(estado, payload.data);
-    return caixaModel.createLancamento(igrejaId, userId, montar(payload));
+    const dados = montar(payload);
+    const conta = await contaBancariaDe(igrejaId, dados.contaContabil);
+    if (conta) exigirDataBanco(conta, dados.data);
+    const id = await caixaModel.createLancamento(igrejaId, userId, dados);
+    await espelharNoBanco(igrejaId, id, userId);
+    return id;
 }
 
 async function updateLancamento(id, igrejaId, payload) {
     const atual = await caixaModel.getLancamento(id, igrejaId);
     if (!atual) throw createHttpError(404, 'Lançamento não encontrado.');
-    if (atual.origem) throw createHttpError(409, 'Este lançamento veio de um dízimo. Altere pelo lançamento de dízimo.');
+    if (atual.origem) throw createHttpError(409, ORIGEM_MSG[atual.origem] || 'Este lançamento foi gerado automaticamente.');
     const estado = await caixaModel.getEstado(igrejaId);
     exigirConfigurado(estado);
     if (atual.data && atual.data < estado.inicio) {
         throw createHttpError(409, `Este lançamento é de uma competência já encerrada (a ativa é ${estado.competenciaAtiva}).`);
     }
     exigirNaCompetencia(estado, payload.data);
-    await caixaModel.updateLancamento(id, igrejaId, montar(payload));
+    const dados = montar(payload);
+    const conta = await contaBancariaDe(igrejaId, dados.contaContabil);
+    if (conta) exigirDataBanco(conta, dados.data);
+    await caixaModel.updateLancamento(id, igrejaId, dados);
+    await espelharNoBanco(igrejaId, id, null);
 }
 
 async function deleteLancamento(id, igrejaId) {
     const atual = await caixaModel.getLancamento(id, igrejaId);
     if (!atual) return 0;
-    if (atual.origem) throw createHttpError(409, 'Este lançamento veio de um dízimo. Exclua pelo lançamento de dízimo.');
+    if (atual.origem) throw createHttpError(409, ORIGEM_MSG[atual.origem] || 'Este lançamento foi gerado automaticamente.');
     const estado = await caixaModel.getEstado(igrejaId);
     if (estado.configurado && atual.data && atual.data < estado.inicio) {
         throw createHttpError(409, `Este lançamento é de uma competência já encerrada (a ativa é ${estado.competenciaAtiva}).`);
     }
-    return caixaModel.deleteLancamento(id, igrejaId);
+    const n = await caixaModel.deleteLancamento(id, igrejaId);
+    await espelharNoBanco(igrejaId, id, null);
+    return n;
+}
+
+// ── Integração com bancos (saque / depósito) ────────────────────────────────
+
+const CONTA_CAIXA = '1.01.01 - Caixa';
+
+async function contaBancariaDe(igrejaId, contaContabil) {
+    if (!contaContabil || contaContabil === CONTA_CAIXA) return null;
+    return bancoModel().findContaPorContabil(igrejaId, contaContabil);
+}
+
+function exigirDataBanco(conta, data) {
+    const abertura = bancoModel().isoData(conta.saldo_data);
+    if (abertura && data < abertura) {
+        throw createHttpError(400, `A data é anterior ao saldo de abertura da conta "${conta.nome}".`);
+    }
+}
+
+// Lançamento de caixa com a conta contábil de um banco: a outra ponta vai para o banco (tipo invertido)
+async function espelharNoBanco(igrejaId, caixaId, userId) {
+    const l = await caixaModel.getLancamento(caixaId, igrejaId);
+    const conta = l && !l.origem ? await contaBancariaDe(igrejaId, l.conta_contabil) : null;
+    if (!conta) {
+        await bancoModel().sincronizarOrigem(igrejaId, 'caixa', caixaId, null);
+        return;
+    }
+    await bancoModel().sincronizarOrigem(igrejaId, 'caixa', caixaId, {
+        contaId: conta.id,
+        dataLancamento: l.data,
+        doc: l.doc,
+        descricao: l.historico,
+        tipo: String(l.tipo).toUpperCase() === 'ENTRADA' ? 'saida' : 'entrada',
+        valor: Number(l.valor),
+        contaContabil: CONTA_CAIXA,
+        userId
+    });
+}
+
+// O banco pede para lançar no caixa: só dentro da competência ativa
+async function validarDataEspelho(igrejaId, data) {
+    const estado = await caixaModel.getEstado(igrejaId);
+    if (!estado.configurado) {
+        throw createHttpError(409, 'Para lançar um saque/depósito no caixa, informe antes o saldo inicial do caixa.');
+    }
+    if (!data || data < estado.inicio || data >= estado.fim) {
+        throw createHttpError(400, `Saque/depósito no caixa: a data precisa estar na competência ativa do caixa (${estado.competenciaAtiva}).`);
+    }
+}
+
+// Antes de alterar/excluir no banco: o espelho no caixa não pode estar num mês fechado
+async function exigirEspelhoAberto(igrejaId, bancoLancId) {
+    const [rows] = await pool.query(
+        "SELECT data FROM caixa_lancamentos WHERE igreja_id = ? AND origem = 'banco' AND origem_id = ? LIMIT 1",
+        [igrejaId, bancoLancId]
+    );
+    if (!rows[0]) return;
+    const data = bancoModel().isoData(rows[0].data);
+    const estado = await caixaModel.getEstado(igrejaId);
+    if (estado.configurado && data && data < estado.inicio) {
+        throw createHttpError(409, `Este lançamento tem a outra ponta no caixa, numa competência já encerrada (a ativa é ${estado.competenciaAtiva}).`);
+    }
+}
+
+async function espelharDoBanco(igrejaId, bancoLancId, dados) {
+    await caixaModel.sincronizarOrigem(igrejaId, 'banco', bancoLancId, dados ? { ...dados, observacao: null } : null);
 }
 
 // Sugestões para o campo "Conta Contábil": plano de contas da igreja (se houver),
 // contas dos tipos de receita e contas de despesa comuns.
-async function contasSugeridas(igrejaId) {
+async function contasSugeridas(igrejaId, { incluirBancos = true } = {}) {
     const vistos = new Set();
     const out = [];
+    if (incluirBancos) {
+        const contas = await bancoModel().listContas(igrejaId).catch(() => []);
+        contas.filter((c) => c.conta_contabil && Number(c.ativo) !== 0).forEach((c) => {
+            vistos.add(c.conta_contabil.toLowerCase());
+            out.push({
+                rotulo: c.conta_contabil,
+                natureza: 'transferencia',
+                detalhe: c.tipo === 'cartao' ? `Pagamento da fatura: ${c.nome}` : `Depósito / saque: ${c.nome}`
+            });
+        });
+    }
     const add = (codigo, nome, natureza) => {
         const rotulo = codigo ? `${codigo} - ${nome}` : nome;
         const k = rotulo.toLowerCase();
@@ -196,5 +291,8 @@ module.exports = {
     updateLancamento,
     deleteLancamento,
     contasSugeridas,
-    sincronizarDizimo
+    sincronizarDizimo,
+    validarDataEspelho,
+    exigirEspelhoAberto,
+    espelharDoBanco
 };

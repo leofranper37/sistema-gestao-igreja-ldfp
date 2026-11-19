@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Nova Conta</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="tesouraria-ui.css">
+    <script src="tema.js"></script>
+</head>
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Contas Bancárias"
+      data-shell-breadcrumb="LDFP / Tesouraria / Bancos e Contas"
+      data-shell-active="tesouraria_bancos.html"
+      data-shell-chip="Tesouraria">
+
+<main class="main-content enterprise-main">
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2 id="titulo">Nova conta</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <a href="tesouraria_dizimos.html">Tesouraria</a><span class="sep">›</span>
+                <a href="tesouraria_bancos.html">Contas Bancárias</a><span class="sep">›</span>
+                <span class="atual" id="crumbAtual">Nova conta</span>
+            </nav>
+        </div>
+
+        <div id="alerta"></div>
+
+        <!-- Passo 1: escolher o tipo -->
+        <section id="escolha" style="display:none;" aria-labelledby="escTitulo">
+            <p class="tx-sub" id="escTitulo">Que tipo de conta você quer cadastrar?</p>
+            <div class="tx-tipos-conta">
+                <a class="tx-tipo-conta" href="?tipo=corrente">
+                    <span class="ico"><i class="fa-solid fa-building-columns"></i></span>
+                    <strong>Conta corrente</strong>
+                    <span>Conta do dia a dia: recebe dízimos e ofertas, paga contas, faz transferências.</span>
+                </a>
+                <a class="tx-tipo-conta" href="?tipo=aplicacao">
+                    <span class="ico"><i class="fa-solid fa-piggy-bank"></i></span>
+                    <strong>Aplicação</strong>
+                    <span>Poupança, CDB ou fundo: dinheiro guardado que rende e sai da conta corrente.</span>
+                </a>
+                <a class="tx-tipo-conta" href="?tipo=cartao">
+                    <span class="ico"><i class="fa-solid fa-credit-card"></i></span>
+                    <strong>Cartão de crédito</strong>
+                    <span>Cartão da igreja: cada compra vira despesa e a fatura é paga pela conta corrente.</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Passo 2: formulário do tipo -->
+        <form id="form" novalidate style="display:none;">
+            <p class="tx-sub" id="trocarTipo"></p>
+
+            <section class="tx-section">
+                <h3 id="sec1">1. Banco</h3>
+                <div class="tx-field" id="campoBanco">
+                    <label for="banco">Banco <span class="req">*</span></label>
+                    <div class="tx-ac">
+                        <div class="tx-input-group">
+                            <span class="pre"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input id="banco" class="tx-input" type="text" placeholder="Código ou nome do banco" autocomplete="off" maxlength="120"
+                                   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="bancoLista">
+                        </div>
+                        <div class="tx-ac-list" id="bancoLista" role="listbox"></div>
+                    </div>
+                    <small class="tx-hint">Digite o nome do banco ou o código dele, como 341.</small>
+                    <span class="erro">Escolha o banco na lista ou informe o código.</span>
+                    <button type="button" class="tx-link" id="btnManual">Não achou o banco? Informar código</button>
+                    <div class="tx-grid c3" id="manual" style="display:none;margin-top:10px;">
+                        <div class="tx-field" id="campoCodigo">
+                            <label for="bancoCodigo">Código do banco</label>
+                            <input id="bancoCodigo" class="tx-input" inputmode="numeric" maxlength="5" placeholder="Ex: 999" autocomplete="off">
+                            <span class="erro">Use só números (até 5).</span>
+                        </div>
+                        <div class="tx-field" style="grid-column: span 2;">
+                            <label for="bancoNome">Nome do banco</label>
+                            <input id="bancoNome" class="tx-input" maxlength="120" placeholder="Ex: Cooperativa de Crédito Local" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tx-section">
+                <h3 id="sec2">2. Dados da conta</h3>
+                <div class="tx-grid c4" id="dadosConta">
+                    <div class="tx-field" id="campoNome">
+                        <label for="nome" id="rotNome">Nome da conta <span class="req">*</span></label>
+                        <input id="nome" class="tx-input" maxlength="255" autocomplete="off" placeholder="Ex: BB Movimento">
+                        <span class="erro">Dê um nome para reconhecer a conta.</span>
+                    </div>
+                    <div class="tx-field so-conta" id="campoAgencia">
+                        <label for="agencia">Agência <span class="req">*</span></label>
+                        <input id="agencia" class="tx-input" maxlength="20" autocomplete="off" inputmode="numeric">
+                        <span class="erro">Informe a agência.</span>
+                    </div>
+                    <div class="tx-field so-conta" id="campoConta">
+                        <label for="conta">Conta <span class="req">*</span></label>
+                        <input id="conta" class="tx-input" maxlength="30" autocomplete="off" inputmode="numeric">
+                        <span class="erro">Informe o número da conta.</span>
+                    </div>
+                    <div class="tx-field so-conta" id="campoDigito">
+                        <label for="digito">Dígito <span class="req">*</span></label>
+                        <input id="digito" class="tx-input" maxlength="5" autocomplete="off">
+                        <span class="erro">Informe o dígito.</span>
+                    </div>
+                    <div class="tx-field so-cartao" id="campoFinal">
+                        <label for="finalCartao">Final do cartão <span class="req">*</span></label>
+                        <input id="finalCartao" class="tx-input" maxlength="4" inputmode="numeric" autocomplete="off" placeholder="0000">
+                        <small class="tx-hint">Só o final (4 dígitos) para você reconhecer o cartão.</small>
+                        <span class="erro">Informe os 4 últimos dígitos.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tx-section">
+                <h3 id="sec3">3. Contabilidade e saldo de abertura</h3>
+                <div class="tx-field" id="campoContabil" style="max-width:560px;">
+                    <label for="contabil">Conta contábil</label>
+                    <div class="tx-input-group">
+                        <input id="contabil" class="tx-input" readonly value="Criar automaticamente" aria-describedby="contabilDica">
+                        <button class="pos tx-link-btn" type="button" id="btnContabil">escolher outra</button>
+                    </div>
+                    <small class="tx-hint" id="contabilDica">O sistema cria a conta no plano de contas com o próximo código livre.</small>
+                </div>
+                <div class="tx-grid c3" style="margin-top:14px;">
+                    <div class="tx-field" id="campoSaldo">
+                        <label for="saldo" id="rotSaldo">Saldo inicial <span class="req">*</span></label>
+                        <div class="tx-input-group">
+                            <span class="pre">R$</span>
+                            <input id="saldo" class="tx-input" type="text" inputmode="numeric" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="tx-field so-conta" id="campoSaldoTipo">
+                        <label id="rotSaldoTipo">Tipo <span class="req">*</span></label>
+                        <div class="tx-seg cd" role="radiogroup" aria-labelledby="rotSaldoTipo" id="saldoTipo">
+                            <button type="button" role="radio" data-tipo="credito" aria-checked="true" class="on">Crédito</button>
+                            <button type="button" role="radio" data-tipo="debito" aria-checked="false">Débito</button>
+                        </div>
+                    </div>
+                    <div class="tx-field" id="campoData">
+                        <label for="saldoData" id="rotData">Data do saldo <span class="req">*</span></label>
+                        <input id="saldoData" class="tx-input" type="date">
+                        <span class="erro">Informe a data.</span>
+                    </div>
+                </div>
+                <small class="tx-hint so-cartao" style="margin-top:8px;display:block;">Informe o que está na última fatura fechada ainda não paga. Se não houver fatura em aberto, deixe R$ 0,00.</small>
+                <small class="tx-hint so-conta" style="margin-top:8px;display:block;">Saldo do extrato no dia escolhido. Lançamentos só podem ser feitos a partir dessa data.</small>
+            </section>
+
+            <section class="tx-section">
+                <label class="tx-check">
+                    <input type="checkbox" id="compartilhado">
+                    <span><b>Banco compartilhado com congregações</b><br>
+                    <small>Permitir que esse banco seja usado pelas congregações para lançamentos de dízimo e depósitos.</small></span>
+                </label>
+            </section>
+
+            <div class="tx-alert info so-cartao"><i class="fa-solid fa-circle-info"></i>
+                <span><b>Como o cartão é lançado:</b> cada compra vira uma despesa classificada. O pagamento da fatura é lançado na conta corrente, escolhendo este cartão como conta contábil, e não como despesa de novo.</span>
+            </div>
+
+            <section class="tx-section so-edicao" style="display:none;">
+                <label class="tx-check">
+                    <input type="checkbox" id="ativo" checked>
+                    <span><b>Conta ativa</b><br>
+                    <small>Desmarque para esconder a conta das listas e dos lançamentos. O histórico continua guardado.</small></span>
+                </label>
+            </section>
+
+            <div class="tx-alert info so-edicao" style="display:none;"><i class="fa-solid fa-circle-info"></i>
+                <span id="avisoEdicao"></span>
+            </div>
+
+            <div class="tx-actions">
+                <button class="tx-btn tx-btn-primary" type="submit" id="btnSalvar"><i class="fa-solid fa-floppy-disk"></i> <span id="txtSalvar">Salvar conta</span></button>
+                <a class="tx-btn tx-btn-ghost" href="tesouraria_bancos.html">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
+<script src="bancos-br.js"></script>
+<script>
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const qs = new URLSearchParams(location.search);
+    const editId = qs.get('id');
+    const TIPOS = {
+        corrente: { titulo: 'Nova conta corrente', editar: 'Editar conta corrente', pergunta: 'Não é conta corrente?', salvar: 'Salvar conta' },
+        aplicacao: { titulo: 'Nova aplicação', editar: 'Editar aplicação', pergunta: 'Não é aplicação?', salvar: 'Salvar aplicação' },
+        cartao: { titulo: 'Novo cartão de crédito', editar: 'Editar cartão de crédito', pergunta: 'Não é cartão?', salvar: 'Salvar cartão' }
+    };
+    const st = { tipo: qs.get('tipo'), saldo: 0, saldoTipo: 'credito', bancoEscolhido: null, ac: [], acAtivo: -1, manual: false, ativo: true };
+    const saldo = TX.maskMoney($('saldo'), (v) => { st.saldo = v; });
+
+    // ── Banco (busca por código ou nome) ─────────────────────────────────
+    const BANCOS = (window.LDFP_BANCOS || []).map(([codigo, nome]) => ({ codigo, nome, rotulo: `${codigo} - ${nome}` }));
+    const semAcento = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+    function renderAc() {
+        $('bancoLista').innerHTML = st.ac.length
+            ? st.ac.map((b, i) => `<div class="tx-ac-item ${i === st.acAtivo ? 'ativo' : ''}" role="option" data-i="${i}" aria-selected="${i === st.acAtivo}">
+                <span>${TX.esc(b.nome)}</span><small>${TX.esc(b.codigo)}</small></div>`).join('')
+            : '<div class="tx-ac-vazio">Nenhum banco encontrado. Use "Não achou o banco? Informar código".</div>';
+        $('bancoLista').classList.add('aberta');
+        $('banco').setAttribute('aria-expanded', 'true');
+    }
+    function fecharAc() {
+        $('bancoLista').classList.remove('aberta');
+        $('banco').setAttribute('aria-expanded', 'false');
+    }
+    function abrirAc() {
+        const q = semAcento($('banco').value.trim());
+        st.ac = BANCOS.filter((b) => !q || b.codigo.includes(q) || semAcento(b.nome).includes(q)).slice(0, 12);
+        st.acAtivo = st.ac.length ? 0 : -1;
+        renderAc();
+    }
+    function escolherBanco(b) {
+        st.bancoEscolhido = b;
+        $('banco').value = b.rotulo;
+        fecharAc();
+        $('campoBanco').classList.remove('invalido');
+        if (!$('nome').value.trim() && st.tipo !== 'cartao') $('nome').placeholder = `Ex: ${b.nome} Movimento`;
+        $('nome').focus();
+    }
+    $('banco').addEventListener('input', () => { st.bancoEscolhido = null; abrirAc(); });
+    // abre a lista ao clicar/teclar (não no foco automático da página)
+    $('banco').addEventListener('click', abrirAc);
+    $('banco').addEventListener('keydown', (e) => { if (e.key === 'ArrowDown' && !$('bancoLista').classList.contains('aberta')) { e.preventDefault(); abrirAc(); } });
+    $('banco').addEventListener('blur', () => setTimeout(fecharAc, 150));
+    $('banco').addEventListener('keydown', (e) => {
+        if (!$('bancoLista').classList.contains('aberta') || !st.ac.length) return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); st.acAtivo = (st.acAtivo + 1) % st.ac.length; renderAc(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); st.acAtivo = (st.acAtivo - 1 + st.ac.length) % st.ac.length; renderAc(); }
+        else if (e.key === 'Enter' && st.acAtivo >= 0) { e.preventDefault(); escolherBanco(st.ac[st.acAtivo]); }
+        else if (e.key === 'Escape') fecharAc();
+    });
+    $('bancoLista').addEventListener('mousedown', (e) => {
+        const it = e.target.closest('[data-i]');
+        if (it) { e.preventDefault(); escolherBanco(st.ac[Number(it.dataset.i)]); }
+    });
+    function modoManual(on) {
+        st.manual = on;
+        $('manual').style.display = on ? '' : 'none';
+        $('banco').disabled = on;
+        $('btnManual').textContent = on ? 'Voltar para a busca de bancos' : 'Não achou o banco? Informar código';
+        $('campoBanco').classList.remove('invalido');
+        if (on) $('bancoCodigo').focus();
+    }
+    $('btnManual').addEventListener('click', () => modoManual(!st.manual));
+
+    // ── Conta contábil: automática ou escolhida ──────────────────────────
+    let contabilManual = false;
+    $('btnContabil').addEventListener('click', () => {
+        contabilManual = !contabilManual;
+        const inp = $('contabil');
+        inp.readOnly = !contabilManual;
+        inp.value = contabilManual ? '' : 'Criar automaticamente';
+        inp.placeholder = contabilManual ? 'Ex: 1.01.02.05 - Banco do Brasil' : '';
+        $('btnContabil').textContent = contabilManual ? 'criar automaticamente' : 'escolher outra';
+        $('contabilDica').textContent = contabilManual
+            ? 'Informe o código e o nome da conta do seu plano de contas. Ela não pode ser usada por outra conta bancária.'
+            : 'O sistema cria a conta no plano de contas com o próximo código livre.';
+        if (contabilManual) inp.focus();
+    });
+
+    // ── Crédito / Débito do saldo ────────────────────────────────────────
+    function setSaldoTipo(t) {
+        st.saldoTipo = t;
+        document.querySelectorAll('#saldoTipo [data-tipo]').forEach((b) => {
+            const on = b.dataset.tipo === t;
+            b.classList.toggle('on', on);
+            b.setAttribute('aria-checked', String(on));
+        });
+    }
+    $('saldoTipo').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-tipo]');
+        if (b) setSaldoTipo(b.dataset.tipo);
+    });
+    $('finalCartao').addEventListener('input', () => { $('finalCartao').value = $('finalCartao').value.replace(/\D/g, '').slice(0, 4); });
+    $('bancoCodigo').addEventListener('input', () => { $('bancoCodigo').value = $('bancoCodigo').value.replace(/\D/g, '').slice(0, 5); });
+    ['nome', 'agencia', 'conta', 'digito', 'finalCartao', 'saldoData'].forEach((id) =>
+        $(id).addEventListener('input', () => $(id).closest('.tx-field').classList.remove('invalido')));
+
+    // ── Mostrar o formulário do tipo ─────────────────────────────────────
+    function montarTipo(tipo) {
+        const t = TIPOS[tipo];
+        const cartao = tipo === 'cartao';
+        document.title = `LDFP - ${editId ? t.editar : t.titulo}`;
+        $('titulo').textContent = editId ? t.editar : t.titulo;
+        $('crumbAtual').textContent = editId ? 'Editar conta' : 'Nova conta';
+        $('trocarTipo').innerHTML = editId ? '' : `${t.pergunta} <a href="banco_conta.html">Trocar o tipo</a>`;
+        $('sec1').textContent = cartao ? '1. Banco emissor' : '1. Banco';
+        $('sec2').textContent = cartao ? '2. Dados do cartão' : '2. Dados da conta';
+        $('sec3').textContent = cartao ? '3. Contabilidade e fatura inicial' : '3. Contabilidade e saldo de abertura';
+        $('rotNome').innerHTML = `${cartao ? 'Nome do cartão' : 'Nome da conta'} <span class="req">*</span>`;
+        $('rotSaldo').innerHTML = `${cartao ? 'Fatura em aberto' : 'Saldo inicial'} <span class="req">*</span>`;
+        $('rotData').innerHTML = `${cartao ? 'Data da fatura' : 'Data do saldo'} <span class="req">*</span>`;
+        $('dadosConta').className = `tx-grid ${cartao ? 'c2' : 'c4'}`;
+        document.querySelectorAll('.so-conta').forEach((el) => { el.style.display = cartao ? 'none' : ''; });
+        document.querySelectorAll('.so-cartao').forEach((el) => { el.style.display = cartao ? '' : 'none'; });
+        $('txtSalvar').textContent = editId ? 'Salvar alterações' : t.salvar;
+        $('escolha').style.display = 'none';
+        $('form').style.display = '';
+    }
+
+    // ── Validar e salvar ─────────────────────────────────────────────────
+    function validar() {
+        const cartao = st.tipo === 'cartao';
+        const codigoOk = /^\d{1,5}$/.test($('bancoCodigo').value.trim());
+        const regras = [
+            ['campoBanco', st.manual ? (codigoOk && $('bancoNome').value.trim().length >= 2) : !!st.bancoEscolhido],
+            ['campoNome', $('nome').value.trim().length >= 2],
+            ['campoData', /^\d{4}-\d{2}-\d{2}$/.test($('saldoData').value)]
+        ];
+        if (cartao) regras.push(['campoFinal', /^\d{4}$/.test($('finalCartao').value)]);
+        else {
+            regras.push(['campoAgencia', !!$('agencia').value.trim()]);
+            regras.push(['campoConta', !!$('conta').value.trim()]);
+            regras.push(['campoDigito', !!$('digito').value.trim()]);
+        }
+        if (st.manual) $('campoCodigo').classList.toggle('invalido', !codigoOk);
+        let primeiro = null;
+        regras.forEach(([id, ok]) => {
+            $(id).classList.toggle('invalido', !ok);
+            if (!ok && !primeiro) primeiro = $(id).querySelector('input:not([disabled])') || $('bancoCodigo');
+        });
+        if (primeiro) primeiro.focus();
+        return !primeiro;
+    }
+
+    let salvando = false;
+    $('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (salvando || !validar()) return;
+        const cartao = st.tipo === 'cartao';
+        const corpo = {
+            tipo: st.tipo,
+            banco: st.manual ? $('bancoNome').value.trim() : st.bancoEscolhido.nome,
+            bancoCodigo: st.manual ? $('bancoCodigo').value.trim() : st.bancoEscolhido.codigo,
+            nome: $('nome').value.trim(),
+            agencia: cartao ? null : $('agencia').value.trim(),
+            conta: cartao ? null : $('conta').value.trim(),
+            digito: cartao ? null : $('digito').value.trim(),
+            finalCartao: cartao ? $('finalCartao').value : null,
+            contaContabil: contabilManual ? $('contabil').value.trim() : '',
+            saldoInicial: st.saldo.toFixed(2),
+            saldoTipo: cartao ? 'debito' : st.saldoTipo,
+            saldoData: $('saldoData').value,
+            compartilhado: $('compartilhado').checked,
+            ativo: editId ? $('ativo').checked : true
+        };
+        salvando = true;
+        $('btnSalvar').disabled = true;
+        try {
+            const r = editId
+                ? await TX.api(`/banco/contas/${encodeURIComponent(editId)}`, { method: 'PUT', body: corpo })
+                : await TX.api('/banco/contas', { method: 'POST', body: corpo });
+            TX.toastDepois(r.message || 'Conta salva.');
+            location.href = 'tesouraria_bancos.html';
+        } catch (err) {
+            TX.toast(err.message, 'erro');
+        } finally {
+            salvando = false;
+            $('btnSalvar').disabled = false;
+        }
+    });
+
+    // ── Edição: carregar a conta ─────────────────────────────────────────
+    async function carregarEdicao() {
+        let c;
+        try {
+            c = await TX.api(`/banco/contas/${encodeURIComponent(editId)}`);
+        } catch (e) {
+            $('alerta').innerHTML = `<div class="tx-alert erro"><i class="fa-solid fa-circle-exclamation"></i><span>${TX.esc(e.message)}</span></div>`;
+            return;
+        }
+        st.tipo = TIPOS[c.tipo] ? c.tipo : 'corrente';
+        st.ativo = Number(c.ativo) !== 0;
+        $('ativo').checked = st.ativo;
+        montarTipo(st.tipo);
+        const doCatalogo = BANCOS.find((b) => b.codigo === c.banco_codigo);
+        if (doCatalogo) escolherBancoSemFoco(doCatalogo);
+        else if (c.banco) {
+            modoManual(true);
+            $('bancoCodigo').value = c.banco_codigo || '';
+            $('bancoNome').value = c.banco;
+        }
+        $('nome').value = c.nome || '';
+        $('agencia').value = c.agencia || '';
+        $('conta').value = c.conta || '';
+        $('digito').value = c.digito || '';
+        $('finalCartao').value = c.final_cartao || '';
+        const s = Number(c.saldo_inicial || 0);
+        saldo.set(Math.abs(s));
+        setSaldoTipo(s < 0 ? 'debito' : 'credito');
+        $('saldoData').value = c.saldo_data ? String(c.saldo_data).slice(0, 10) : '';
+        $('compartilhado').checked = Number(c.compartilhado) === 1;
+        if (c.conta_contabil) {
+            contabilManual = true;
+            $('contabil').readOnly = false;
+            $('contabil').value = c.conta_contabil;
+            $('btnContabil').style.display = 'none';
+            $('contabilDica').textContent = 'Conta do plano de contas ligada a esta conta bancária.';
+        }
+        document.querySelectorAll('.so-edicao').forEach((el) => { el.style.display = ''; });
+        $('avisoEdicao').textContent = 'Alterar o saldo de abertura recalcula o saldo da conta em todos os meses.';
+    }
+    function escolherBancoSemFoco(b) {
+        st.bancoEscolhido = b;
+        $('banco').value = b.rotulo;
+    }
+
+    // ── Início ───────────────────────────────────────────────────────────
+    if (editId) carregarEdicao();
+    else if (TIPOS[st.tipo]) {
+        montarTipo(st.tipo);
+        $('saldoData').value = TX.hojeISO();
+        $('banco').focus();
+    } else {
+        $('escolha').style.display = '';
+    }
+})();
+</script>
+</body>
+</html>

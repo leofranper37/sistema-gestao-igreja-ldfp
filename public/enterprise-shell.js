@@ -136,6 +136,8 @@
         'banco.html': 'bancos',
         'tesouraria_bancos.html': 'bancos',
         'importacao_extrato.html': 'bancos',
+        'banco_conta.html': 'bancos',
+        'banco_lancamento.html': 'bancos',
         // Tesouraria — outros
         'pagamentos.html': 'pagamentos',
         'contas_pagar.html': 'contas_pagar',
@@ -746,8 +748,8 @@
         ];
 
         const bancosLinks = [
-            ['tesouraria_bancos.html', 'fa-solid fa-building-columns', 'Bancos', 'bancos'],
             ['bancos_lancamentos.html', 'fa-solid fa-file-invoice-dollar', 'Lançamentos Bancários', 'bancos'],
+            ['tesouraria_bancos.html', 'fa-solid fa-building-columns', 'Contas Bancárias', 'bancos'],
             ['importacao_extrato.html', 'fa-solid fa-file-import', 'Importar Extrato', 'bancos']
         ];
 
@@ -805,7 +807,7 @@
                 </div>` : ''}
 
                 ${allowedBancosLinks.length ? `<button class="sub-dropdown-btn ${bancosActive ? 'active' : ''}" type="button">
-                    <span><i class="fa-solid fa-building-columns icon-left"></i> Bancos</span>
+                    <span><i class="fa-solid fa-building-columns icon-left"></i> Bancos e Contas</span>
                     <i class="fa-solid fa-chevron-right arrow"></i>
                 </button>
                 <div class="sub-dropdown-container" style="${bancosActive ? 'display: block;' : 'display: none;'}">

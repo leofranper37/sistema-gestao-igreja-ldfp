@@ -6,558 +6,278 @@
     <title>LDFP - Lançamentos Bancários</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .bl-wrap { padding: 24px 28px 48px; }
-
-        .bl-hero {
-            background: linear-gradient(135deg, #0f172a 0%, #0b3340 50%, #115e59 100%);
-            border-radius: 16px;
-            color: #e2e8f0;
-            padding: 18px 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 16px 34px rgba(15, 23, 42, .2);
-        }
-        .bl-hero h2 { margin: 0 0 6px; font-size: 22px; }
-        .bl-hero p { margin: 0; color: #bfdbfe; font-size: 13px; }
-
-        /* ── Escolha do banco ── */
-        .bl-section-header {
-            background: linear-gradient(135deg, #0ea5e9, #0f766e);
-            border-radius: 12px 12px 0 0;
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-        .bl-section-header h3 {
-            margin: 0;
-            font-size: 15px;
-            font-weight: 700;
-            color: #ecfeff;
-        }
-        .bl-search-row {
-            display: flex;
-            gap: 8px;
-        }
-        .bl-search-row input {
-            flex: 1;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-size: 13.5px;
-        }
-        .bl-search-row button {
-            background: #0f172a;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 16px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-        .bl-table-wrap {
-            background: #fff;
-            border: 1px solid #dbe6f3;
-            border-top: none;
-            border-radius: 0 0 12px 12px;
-            overflow-x: auto;
-            margin-bottom: 32px;
-            box-shadow: 0 10px 24px rgba(15,23,42,.08);
-        }
-        .bl-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13.5px;
-        }
-        .bl-table thead tr { background: #f8f9fa; }
-        .bl-table th {
-            padding: 11px 14px;
-            text-align: left;
-            color: #555;
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .bl-table td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; }
-        .bl-table tbody tr { cursor: pointer; transition: background .15s; }
-        .bl-table tbody tr:hover { background: #f0fdf4; }
-        .bl-table tbody tr.selected { background: #d1fae5; }
-        .bl-table .badge-tipo {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 99px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-        .bl-table .badge-corrente    { background: #dbeafe; color: #1d4ed8; }
-        .bl-table .badge-poupanca    { background: #dcfce7; color: #15803d; }
-        .bl-table .badge-caixa_interno { background: #fef9c3; color: #a16207; }
-        .bl-table .badge-investimento { background: #f3e8ff; color: #7e22ce; }
-        .bl-table .badge-outro       { background: #f1f5f9; color: #475569; }
-
-        /* ── Painel de lançamentos ── */
-        #painelLancamentos { display: none; }
-        .bl-panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .bl-panel-title { margin: 0; font-size: 17px; color: #0f172a; }
-        .bl-panel-saldo {
-            font-size: 15px;
-            font-weight: 700;
-        }
-        .bl-panel-saldo.positivo { color: #15803d; }
-        .bl-panel-saldo.negativo { color: #b91c1c; }
-
-        .bl-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-        .bl-card {
-            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-            border: 1px solid #dbe6f3;
-            border-radius: 12px;
-            padding: 18px;
-            box-shadow: 0 8px 20px rgba(15,23,42,.08);
-        }
-        .bl-card h4 { margin: 0 0 14px; font-size: 14px; color: #374151; }
-        .bl-field { margin-bottom: 10px; }
-        .bl-field label {
-            display: block;
-            font-size: 12px;
-            font-weight: 700;
-            color: #6b7280;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-        .bl-field input, .bl-field select {
-            width: 100%;
-            border: 1px solid #dbe3ef;
-            border-radius: 8px;
-            padding: 9px 12px;
-            font-size: 13.5px;
-            box-sizing: border-box;
-        }
-        .bl-btn-primary {
-            background: #0f766e;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 18px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 4px;
-        }
-        .bl-btn-primary:hover { background: #0d6460; }
-        .bl-msg { font-size: 12.5px; margin-top: 8px; min-height: 18px; }
-        .bl-msg.ok { color: #065f46; }
-        .bl-msg.error { color: #b91c1c; }
-
-        .bl-historico { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; box-shadow: 0 4px 14px rgba(15,23,42,.07); }
-        .bl-historico { border-color: #dbe6f3; box-shadow: 0 8px 20px rgba(15,23,42,.08); }
-        .bl-historico-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
-        .bl-historico-top h4 { margin: 0; font-size: 14px; }
-        .bl-historico-top input { border: 1px solid #dbe3ef; border-radius: 8px; padding: 8px 12px; font-size: 13px; width: 220px; }
-        .bl-hist-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .bl-hist-table th { padding: 9px 10px; background: #f8fafc; color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        .bl-hist-table td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; }
-        .bl-hist-table .tag-entrada { color: #15803d; font-weight: 700; }
-        .bl-hist-table .tag-saida   { color: #b91c1c; font-weight: 700; }
-        .bl-hist-table .btn-del {
-            background: #fee2e2;
-            color: #b91c1c;
-            border: none;
-            border-radius: 6px;
-            padding: 4px 9px;
-            font-size: 11px;
-            cursor: pointer;
-        }
-        .bl-vazio { text-align: center; padding: 36px; color: #9ca3af; font-size: 13px; }
-
-        @media (max-width: 860px) { .bl-grid { grid-template-columns: 1fr; } }
-    </style>
+    <link rel="stylesheet" href="tesouraria-ui.css">
     <script src="tema.js"></script>
 </head>
-<body class="theme-petroleo enterprise-shell-page"
+<body class="theme-petroleo enterprise-shell-page tx-ui"
       data-shell-title="Lançamentos Bancários"
-      data-shell-breadcrumb="LDFP / Tesouraria / Bancos / Lançamentos Bancários"
+      data-shell-breadcrumb="LDFP / Tesouraria / Bancos e Contas"
       data-shell-active="bancos_lancamentos.html"
       data-shell-chip="Tesouraria">
+
 <main class="main-content enterprise-main">
-<div class="bl-wrap">
-
-    <section class="bl-hero">
-        <h2><i class="fa-solid fa-money-bill-transfer"></i> Lancamentos Bancarios</h2>
-        <p>Controle profissional de entradas e saidas com resumo em tempo real no padrao visual LDFP.</p>
-    </section>
-
-    <!-- ── Escolha o Banco ──────────────────────────────────────────── -->
-    <div id="tela-escolha">
-        <div class="pagina-topo" style="margin-bottom:20px;">
-            <div>
-                <div class="breadcrumb">LDFP <span>/</span> Tesouraria <span>/</span> Bancos <span>/</span> Lançamentos Bancários</div>
-                <h1>Escolha o Banco</h1>
-            </div>
-            <div style="align-self:center;">
-                <button class="btn-primario" onclick="location.href='banco.html'" style="white-space:nowrap;">
-                    <i class="fa-solid fa-plus"></i> Nova Conta
-                </button>
-            </div>
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2 id="titulo">Lançamentos Bancários</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <a href="tesouraria_dizimos.html">Tesouraria</a><span class="sep">›</span>
+                <a href="bancos_lancamentos.html">Lançamentos Bancários</a><span class="sep" id="crumbSep" style="display:none;">›</span>
+                <span class="atual" id="crumbConta"></span>
+            </nav>
         </div>
 
-        <div class="bl-section-header">
-            <h3><i class="fa-solid fa-building-columns"></i> Bancos</h3>
-            <div class="bl-search-row">
-                <input id="searchBanco" type="text" placeholder="Pesquisar banco...">
-                <button id="btnBuscar"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </div>
-        </div>
+        <!-- Escolher o banco -->
+        <section id="escolha" style="display:none;" aria-labelledby="escTitulo">
+            <p class="tx-sub" id="escTitulo">Selecione o banco para ver e fazer lançamentos.</p>
+            <div class="tx-total-geral" id="totalGeral"></div>
+            <div id="contas" class="tx-contas"></div>
+        </section>
 
-        <div class="bl-table-wrap">
-            <table class="bl-table">
-                <thead>
-                    <tr>
-                        <th>Banco</th>
-                        <th>Tipo</th>
-                        <th>Agência / Conta</th>
-                        <th style="text-align:right;">Saldo Inicial</th>
-                    </tr>
-                </thead>
-                <tbody id="tbBancos">
-                    <tr><td colspan="4" class="bl-vazio">Carregando...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- ── Painel de Lançamentos ──────────────────────────────────────── -->
-    <div id="painelLancamentos">
-        <div class="bl-panel-header">
-            <div style="display:flex;align-items:center;gap:14px;">
-                <button onclick="voltarParaLista()" title="Voltar" style="background:none;border:none;cursor:pointer;font-size:1.25rem;color:#0f766e;">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </button>
-                <h2 class="bl-panel-title" id="painelNomeBanco">—</h2>
-            </div>
-            <span class="bl-panel-saldo positivo" id="painelSaldo">R$ 0,00</span>
-        </div>
-
-        <div class="bl-grid">
-            <!-- Novo lançamento -->
-            <div class="bl-card">
-                <h4><i class="fa-solid fa-pen-to-square"></i> Novo Lançamento</h4>
-                <div class="bl-field">
-                    <label>Data</label>
-                    <input type="date" id="lancData">
+        <!-- Lançamentos da conta -->
+        <div id="conteudo" style="display:none;">
+            <section class="tx-card" aria-label="Resumo da conta">
+                <div class="tx-card-head">
+                    <h3><span class="ico"><i class="fa-solid fa-building-columns" id="icoConta"></i></span> <span id="nomeConta"></span></h3>
+                    <div class="tx-mes-nav" role="group" aria-label="Mês">
+                        <button class="tx-btn-icon" type="button" id="mesAnt" title="Mês anterior" aria-label="Mês anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                        <strong id="mesRotulo"></strong>
+                        <button class="tx-btn-icon" type="button" id="mesProx" title="Próximo mês" aria-label="Próximo mês"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
                 </div>
-                <div class="bl-field">
-                    <label>Descrição *</label>
-                    <input type="text" id="lancDescricao" placeholder="Ex: Depósito oferta">
+                <div class="tx-stats">
+                    <div><span>Saldo anterior</span><strong id="sAnterior">R$ 0,00</strong></div>
+                    <div><span>Créditos</span><strong class="pos" id="sCreditos">R$ 0,00</strong></div>
+                    <div><span>Débitos</span><strong class="neg" id="sDebitos">R$ 0,00</strong></div>
+                    <div><span id="rotAtual">Saldo no fim do mês</span><strong class="destaque" id="sAtual">R$ 0,00</strong></div>
                 </div>
-                <div class="bl-field">
-                    <label>Valor (R$) *</label>
-                    <input type="text" id="lancValor" placeholder="0,00">
-                </div>
-                <div class="bl-field">
-                    <label>Tipo *</label>
-                    <select id="lancTipo">
-                        <option value="entrada">🟢 Crédito (Entrada)</option>
-                        <option value="saida">🔴 Débito (Saída)</option>
+            </section>
+
+            <section class="tx-card" style="margin-top:16px;">
+                <div class="tx-toolbar">
+                    <div class="tx-search">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <input id="busca" class="tx-input" type="search" placeholder="Buscar..." autocomplete="off" aria-label="Buscar na descrição, documento ou conta">
+                    </div>
+                    <select id="fTipo" class="tx-input" style="width:auto;" aria-label="Tipo">
+                        <option value="">Créditos e débitos</option>
+                        <option value="entrada">Só créditos</option>
+                        <option value="saida">Só débitos</option>
                     </select>
+                    <select id="fPeriodo" class="tx-input" style="width:auto;" aria-label="Período">
+                        <option value="mes">Mês selecionado</option>
+                        <option value="todos">Todo o período</option>
+                    </select>
+                    <a class="tx-btn tx-btn-primary" id="btnNovo" href="#"><i class="fa-solid fa-plus"></i> Novo</a>
                 </div>
-                <div class="bl-field">
-                    <label>Centro de custo</label>
-                    <select id="lancCentroCusto"><option value="">— nenhum —</option></select>
-                </div>
-                <div class="bl-field">
-                    <label>Fornecedor</label>
-                    <select id="lancFornecedor"><option value="">— nenhum —</option></select>
-                </div>
-                <button class="bl-btn-primary" id="btnSalvarLanc">
-                    <i class="fa-solid fa-floppy-disk"></i> Registrar Lançamento
-                </button>
-                <div class="bl-msg" id="msgLanc"></div>
-            </div>
 
-            <!-- Resumo -->
-            <div class="bl-card" style="display:flex;flex-direction:column;gap:10px;">
-                <h4><i class="fa-solid fa-chart-pie"></i> Resumo da Conta</h4>
-                <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9;">
-                    <span style="color:#6b7280;font-size:13px;">Saldo Inicial</span>
-                    <strong id="rSaldoInicial">R$ 0,00</strong>
+                <div class="tx-table-wrap">
+                    <table class="tx-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-ord="data">Data <i class="fa-solid fa-sort-down"></i></th>
+                                <th>Descrição</th>
+                                <th class="sortable num" data-ord="valor">Valor <i class="fa-solid fa-sort"></i></th>
+                                <th>Classificação</th>
+                                <th class="acoes">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="linhas"></tbody>
+                    </table>
                 </div>
-                <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9;">
-                    <span style="color:#15803d;font-size:13px;">Total Entradas</span>
-                    <strong id="rEntradas" style="color:#15803d;">R$ 0,00</strong>
+                <div class="tx-foot">
+                    <span id="contagem">0 registro(s)</span>
+                    <div class="tx-pages" id="paginas"></div>
                 </div>
-                <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9;">
-                    <span style="color:#b91c1c;font-size:13px;">Total Saídas</span>
-                    <strong id="rSaidas" style="color:#b91c1c;">R$ 0,00</strong>
-                </div>
-                <div style="display:flex;justify-content:space-between;padding:14px 0;">
-                    <span style="font-weight:700;font-size:14px;">Saldo Atual</span>
-                    <strong id="rSaldoAtual" style="font-size:16px;">R$ 0,00</strong>
-                </div>
-            </div>
-        </div>
-
-        <!-- Histórico -->
-        <div class="bl-historico">
-            <div class="bl-historico-top">
-                <h4><i class="fa-solid fa-list"></i> Histórico de Lançamentos</h4>
-                <input type="text" id="filtroHistorico" placeholder="Filtrar descrição...">
-            </div>
-            <div style="overflow-x:auto;">
-                <table class="bl-hist-table">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Descrição</th>
-                            <th>Tipo</th>
-                            <th style="text-align:right;">Valor</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbHistorico">
-                        <tr><td colspan="5" class="bl-vazio">Nenhum lançamento.</td></tr>
-                    </tbody>
-                </table>
-            </div>
+            </section>
         </div>
     </div>
-
-</div>
 </main>
 
-<script src="session.js?v=20260501"></script>
-<script src="enterprise-shell.js?v=20260501"></script>
-<script src="cadastros-tesouraria.js?v=20261111"></script>
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
 <script>
-    requireAuthSession();
-    const escHtml = (v) => String(v === null || v === undefined ? '' : v)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    CadastrosTesouraria.preencher(document.getElementById('lancCentroCusto'), 'centros-custo');
-    CadastrosTesouraria.preencher(document.getElementById('lancFornecedor'), 'fornecedores');
-
-    const tipoLabels = {
-        corrente: 'Corrente', poupanca: 'Poupança',
-        caixa_interno: 'Caixa', investimento: 'Investimento', outro: 'Outro'
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const qs = new URLSearchParams(location.search);
+    const contaId = qs.get('conta');
+    const POR_PAGINA = 20;
+    const ICO = { corrente: 'fa-building-columns', aplicacao: 'fa-piggy-bank', cartao: 'fa-credit-card' };
+    const ORIGEM = {
+        dizimo: { rotulo: 'Dízimo', ico: 'fa-coins', titulo: 'Lançado automaticamente pelo dízimo', link: (l) => `dizimo_lancamento.html?id=${encodeURIComponent(l.origem_id)}` },
+        transferencia: { rotulo: 'Transferência', ico: 'fa-right-left', titulo: 'Outra ponta de uma transferência', link: (l) => `banco_lancamento.html?id=${encodeURIComponent(l.origem_id)}` },
+        caixa: { rotulo: 'Caixa', ico: 'fa-cash-register', titulo: 'Depósito/saque lançado pelo caixa', link: (l) => `caixa_lancamento.html?id=${encodeURIComponent(l.origem_id)}` }
     };
+    const st = { mes: qs.get('mes') || TX.hojeISO().slice(0, 7), periodo: 'mes', tipo: '', busca: '', pagina: 1, ordem: { campo: 'data', desc: true }, conta: null };
 
-    function fmt(v) {
-        return 'R$ ' + Number(v).toLocaleString('pt-br', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    function mesMais(mes, d) {
+        const [a, m] = mes.split('-').map(Number);
+        const x = new Date(a, m - 1 + d, 1);
+        return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}`;
     }
 
-    function fmtData(d) {
-        if (!d) return '-';
-        return d.substring(0, 10).split('-').reverse().join('/');
-    }
-
-    // ── Lista de bancos ──────────────────────────────────────────────────────
-    let _bancos = [];
-
-    async function carregarBancos(filtro = '') {
-        const tb = document.getElementById('tbBancos');
-        tb.innerHTML = `<tr><td colspan="4" class="bl-vazio">Carregando...</td></tr>`;
+    // ── Escolher banco ───────────────────────────────────────────────────
+    async function mostrarEscolha() {
+        $('escolha').style.display = '';
+        $('contas').innerHTML = '<div class="tx-conta"><div class="tx-skel" style="height:70px;"></div></div>';
+        let contas;
         try {
-            const r = await fetch('/banco/contas');
-            const dados = await r.json();
-            _bancos = dados;
-
-            const lista = filtro
-                ? dados.filter(b => (b.nome + ' ' + (b.banco || '')).toLowerCase().includes(filtro.toLowerCase()))
-                : dados;
-
-            if (!lista.length) {
-                tb.innerHTML = `<tr><td colspan="4" class="bl-vazio">Nenhum resultado foi encontrado.</td></tr>`;
-                return;
-            }
-
-            tb.innerHTML = lista.map(b => `
-                <tr data-id="${b.id}" data-nome="${b.nome}" data-saldo="${b.saldo_inicial}">
-                    <td>
-                        <strong>${b.nome}</strong>
-                        ${b.banco ? `<br><small style="color:#9ca3af;">${b.banco}</small>` : ''}
-                    </td>
-                    <td><span class="badge-tipo badge-${b.tipo}">${tipoLabels[b.tipo] || b.tipo}</span></td>
-                    <td style="color:#6b7280;font-size:12px;">
-                        ${b.agencia ? 'Ag ' + b.agencia : '-'}
-                        ${b.conta   ? ' • C ' + b.conta : ''}
-                    </td>
-                    <td style="text-align:right;font-weight:700;">${fmt(b.saldo_inicial)}</td>
-                </tr>
-            `).join('');
-
-            tb.querySelectorAll('tr[data-id]').forEach(row => {
-                row.addEventListener('click', () => abrirConta(
-                    Number(row.dataset.id),
-                    row.dataset.nome,
-                    Number(row.dataset.saldo)
-                ));
-            });
-        } catch {
-            tb.innerHTML = `<tr><td colspan="4" class="bl-vazio">Erro ao carregar bancos.</td></tr>`;
-        }
-    }
-
-    document.getElementById('btnBuscar').addEventListener('click', () => {
-        carregarBancos(document.getElementById('searchBanco').value.trim());
-    });
-    document.getElementById('searchBanco').addEventListener('keydown', e => {
-        if (e.key === 'Enter') carregarBancos(e.target.value.trim());
-    });
-
-    // ── Painel de lançamentos ────────────────────────────────────────────────
-    let _contaAtiva = null;
-    let _lancamentos = [];
-
-    async function abrirConta(id, nome, saldoInicial) {
-        _contaAtiva = { id, nome, saldoInicial };
-        document.getElementById('painelNomeBanco').textContent = nome;
-        document.getElementById('rSaldoInicial').textContent = fmt(saldoInicial);
-
-        // data padrão hoje
-        const hoje = new Date().toISOString().substring(0, 10);
-        document.getElementById('lancData').value = hoje;
-
-        document.getElementById('tela-escolha').style.display = 'none';
-        document.getElementById('painelLancamentos').style.display = 'block';
-
-        await carregarLancamentos();
-    }
-
-    function voltarParaLista() {
-        _contaAtiva = null;
-        document.getElementById('painelLancamentos').style.display = 'none';
-        document.getElementById('tela-escolha').style.display = 'block';
-        document.getElementById('msgLanc').textContent = '';
-    }
-
-    async function carregarLancamentos() {
-        if (!_contaAtiva) return;
-        try {
-            const r = await fetch(`/banco/contas/${_contaAtiva.id}/lancamentos`);
-            const data = await r.json();
-            _lancamentos = data.lancamentos || [];
-
-            // Atualizar saldo painel
-            const saldoAtual = Number(data.saldo);
-            const saldoEl = document.getElementById('painelSaldo');
-            saldoEl.textContent = fmt(saldoAtual);
-            saldoEl.className = 'bl-panel-saldo ' + (saldoAtual >= 0 ? 'positivo' : 'negativo');
-            document.getElementById('rSaldoAtual').textContent = fmt(saldoAtual);
-            document.getElementById('rSaldoAtual').style.color = saldoAtual >= 0 ? '#15803d' : '#b91c1c';
-
-            // Totais
-            const entradas = _lancamentos.filter(l => l.tipo === 'entrada').reduce((s, l) => s + Number(l.valor), 0);
-            const saidas   = _lancamentos.filter(l => l.tipo === 'saida').reduce((s, l) => s + Number(l.valor), 0);
-            document.getElementById('rEntradas').textContent = fmt(entradas);
-            document.getElementById('rSaidas').textContent   = fmt(saidas);
-
-            renderHistorico();
-        } catch {
-            document.getElementById('tbHistorico').innerHTML = `<tr><td colspan="5" class="bl-vazio">Erro ao carregar lançamentos.</td></tr>`;
-        }
-    }
-
-    function renderHistorico(filtro = '') {
-        const tb = document.getElementById('tbHistorico');
-        const lista = filtro
-            ? _lancamentos.filter(l => l.descricao.toLowerCase().includes(filtro.toLowerCase()))
-            : _lancamentos;
-
-        if (!lista.length) {
-            tb.innerHTML = `<tr><td colspan="5" class="bl-vazio">Nenhum lançamento encontrado.</td></tr>`;
+            contas = (await TX.api('/banco/contas?saldo=1')).filter((c) => Number(c.ativo) !== 0);
+        } catch (e) {
+            $('contas').innerHTML = `<section class="tx-card" style="grid-column:1/-1;"><div class="tx-empty"><strong>Não foi possível carregar</strong><span>${TX.esc(e.message)}</span></div></section>`;
             return;
         }
-
-        tb.innerHTML = lista.map(l => `
-            <tr>
-                <td>${fmtData(l.data_lancamento)}</td>
-                <td>${escHtml(l.descricao)}${l.centro_custo_nome ? `<br><small style="color:#64748b">${escHtml(l.centro_custo_nome)}</small>` : ''}</td>
-                <td><span class="tag-${l.tipo}">${l.tipo === 'entrada' ? '🟢 Entrada' : '🔴 Saída'}</span></td>
-                <td style="text-align:right;font-weight:700;">${fmt(l.valor)}</td>
-                <td>
-                    <button class="btn-del" onclick="excluirLancamento(${l.id})">×</button>
-                </td>
-            </tr>
-        `).join('');
+        if (!contas.length) {
+            $('contas').innerHTML = `<section class="tx-card" style="grid-column:1/-1;"><div class="tx-empty">
+                <div class="ico"><i class="fa-solid fa-building-columns"></i></div>
+                <strong>Nenhuma conta cadastrada</strong><span>Cadastre uma conta para começar a lançar.</span>
+                <a class="tx-btn tx-btn-primary" href="banco_conta.html" style="margin-top:12px;"><i class="fa-solid fa-plus"></i> Nova conta</a></div></section>`;
+            return;
+        }
+        const disponivel = contas.filter((c) => c.tipo !== 'cartao').reduce((s, c) => s + Number(c.saldo_atual || 0), 0);
+        $('totalGeral').innerHTML = `Saldo disponível nos bancos: <b>${TX.money(disponivel)}</b>`;
+        $('contas').innerHTML = contas.map((c) => {
+            const cartao = c.tipo === 'cartao';
+            const saldo = Number(c.saldo_atual || 0);
+            const valor = cartao ? Math.max(0, -saldo) : saldo;
+            const sub = cartao ? `Cartão · final ${c.final_cartao || '----'}`
+                : [c.banco, c.agencia && `Ag. ${c.agencia}`, c.conta && `C/C ${c.conta}${c.digito ? '-' + c.digito : ''}`].filter(Boolean).join(' · ');
+            return `<a class="tx-conta" href="bancos_lancamentos.html?conta=${encodeURIComponent(c.id)}">
+                <div class="tx-conta-topo"><span class="ico"><i class="fa-solid ${ICO[c.tipo] || ICO.corrente}"></i></span>
+                    <div><strong>${TX.esc(c.nome)}</strong><small>${TX.esc(sub || 'Conta bancária')}</small></div></div>
+                <div class="tx-conta-saldo"><span>${cartao ? 'Fatura em aberto' : 'Saldo atual'}</span>
+                    <b class="${cartao ? (valor > 0 ? 'tx-valor-neg' : '') : saldo < 0 ? 'tx-valor-neg' : 'tx-valor-pos'}">${TX.money(valor)}</b></div>
+            </a>`;
+        }).join('');
     }
 
-    document.getElementById('filtroHistorico').addEventListener('input', e => {
-        renderHistorico(e.target.value.trim());
-    });
-
-    // ── Salvar lançamento ────────────────────────────────────────────────────
-    document.getElementById('btnSalvarLanc').addEventListener('click', async () => {
-        const msgEl = document.getElementById('msgLanc');
-        msgEl.textContent = '';
-
-        const descricao = document.getElementById('lancDescricao').value.trim();
-        const valorRaw  = document.getElementById('lancValor').value.trim().replace(',', '.');
-        const tipo      = document.getElementById('lancTipo').value;
-        const data      = document.getElementById('lancData').value;
-
-        if (!descricao || !valorRaw || !data) {
-            msgEl.className = 'bl-msg error';
-            msgEl.textContent = 'Preencha descrição, valor e data.';
-            return;
-        }
-        const valor = parseFloat(valorRaw);
-        if (isNaN(valor) || valor <= 0) {
-            msgEl.className = 'bl-msg error';
-            msgEl.textContent = 'Valor inválido.';
-            return;
-        }
-
+    // ── Lançamentos da conta ─────────────────────────────────────────────
+    async function carregar() {
+        $('linhas').innerHTML = Array.from({ length: 4 }, () => `<tr>${'<td><div class="tx-skel"></div></td>'.repeat(5)}</tr>`).join('');
+        const p = new URLSearchParams({ mes: st.mes, page: st.pagina, limit: POR_PAGINA, ordem: st.ordem.campo, dir: st.ordem.desc ? 'desc' : 'asc' });
+        if (st.periodo === 'todos') p.set('periodo', 'todos');
+        if (st.tipo) p.set('tipo', st.tipo);
+        if (st.busca) p.set('busca', st.busca);
+        let r;
         try {
-            const r = await fetch(`/banco/contas/${_contaAtiva.id}/lancamentos`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    descricao, tipo, valor, dataLancamento: data,
-                    centroCustoId: document.getElementById('lancCentroCusto').value || null,
-                    fornecedorId: document.getElementById('lancFornecedor').value || null
-                })
-            });
-            const d = await r.json();
-            if (!r.ok) throw new Error(d.error || d.message || 'Erro');
+            r = await TX.api(`/banco/contas/${encodeURIComponent(contaId)}/lancamentos?${p}`);
+        } catch (e) {
+            if (e.status === 404) { location.href = 'bancos_lancamentos.html'; return; }
+            $('linhas').innerHTML = `<tr><td colspan="5"><div class="tx-empty"><strong>Não foi possível carregar</strong><span>${TX.esc(e.message)}</span></div></td></tr>`;
+            return;
+        }
+        st.conta = r.conta;
+        const cartao = r.conta.tipo === 'cartao';
+        $('nomeConta').textContent = r.conta.nome;
+        $('icoConta').className = `fa-solid ${ICO[r.conta.tipo] || ICO.corrente}`;
+        $('crumbConta').textContent = r.conta.nome;
+        $('crumbSep').style.display = '';
+        $('titulo').textContent = `Lançamentos Bancários - ${r.conta.nome}`;
+        document.title = `LDFP - ${r.conta.nome}`;
+        $('mesRotulo').textContent = TX.mesParaCompetencia(st.mes);
+        const s = r.resumo;
+        // no cartão o "saldo" é dívida: mostra positivo como fatura
+        const ver = (v) => TX.money(cartao ? -v : v);
+        $('sAnterior').textContent = ver(s.saldoAnterior);
+        $('sCreditos').textContent = TX.money(s.creditos);
+        $('sDebitos').textContent = TX.money(s.debitos);
+        $('sAtual').textContent = ver(s.saldoAtual);
+        $('rotAtual').textContent = cartao ? 'Fatura no fim do mês' : 'Saldo no fim do mês';
+        $('btnNovo').href = `banco_lancamento.html?conta=${encodeURIComponent(contaId)}`;
+        renderLinhas(r.items || [], cartao);
+        renderPaginas(r.meta || {});
+    }
 
-            msgEl.className = 'bl-msg ok';
-            msgEl.textContent = 'Lançamento registrado!';
-            document.getElementById('lancDescricao').value = '';
-            document.getElementById('lancValor').value = '';
-            await carregarLancamentos();
+    function renderLinhas(itens, cartao) {
+        if (!itens.length) {
+            $('linhas').innerHTML = `<tr><td colspan="5"><div class="tx-empty">
+                <div class="ico"><i class="fa-solid fa-receipt"></i></div>
+                <strong>Nenhum lançamento ${st.periodo === 'mes' ? 'em ' + TX.esc(TX.mesParaCompetencia(st.mes)) : ''}</strong>
+                <span>${st.busca || st.tipo ? 'Tente buscar com outros termos.' : 'Clique em <b>Novo</b> para registrar um crédito ou débito.'}</span>
+            </div></td></tr>`;
+            return;
+        }
+        $('linhas').innerHTML = itens.map((l) => {
+            const credito = l.tipo === 'entrada';
+            const o = ORIGEM[l.origem];
+            const badge = o ? `<span class="tx-origem" title="${o.titulo}"><i class="fa-solid ${o.ico}"></i> ${o.rotulo}</span>` : '';
+            const doc = l.doc ? `<span class="sub">Doc.: ${TX.esc(l.doc)}</span>` : '';
+            const acoes = o
+                ? `<a class="tx-btn-icon" href="${o.link(l)}" title="Abrir a origem" aria-label="Abrir o lançamento de origem"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>`
+                : `<a class="tx-btn-icon" href="banco_lancamento.html?id=${encodeURIComponent(l.id)}" title="Editar" aria-label="Editar ${TX.esc(l.descricao)}"><i class="fa-solid fa-pen"></i></a>
+                   <button class="tx-btn-icon danger" type="button" data-excluir="${TX.esc(l.id)}" data-nome="${TX.esc(l.descricao)}" title="Excluir" aria-label="Excluir ${TX.esc(l.descricao)}"><i class="fa-solid fa-trash"></i></button>`;
+            return `<tr>
+                <td>${TX.dataBR(l.data_lancamento)}</td>
+                <td>${TX.esc(l.descricao)}${badge}${doc}</td>
+                <td class="num"><span class="${credito ? 'tx-valor-pos' : 'tx-valor-neg'}">${credito ? '' : '- '}${TX.money(l.valor)}</span></td>
+                <td>${l.conta_contabil ? TX.esc(l.conta_contabil) : '<span class="sub">—</span>'}</td>
+                <td class="acoes">${acoes}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderPaginas(meta) {
+        $('contagem').textContent = `${Number(meta.total || 0)} registro(s)`;
+        const tp = Number(meta.totalPages || 1);
+        if (tp <= 1) { $('paginas').innerHTML = ''; return; }
+        const atual = Number(meta.page || 1);
+        const ini = Math.max(1, atual - 2), fim = Math.min(tp, ini + 4);
+        let html = `<button type="button" data-pag="${atual - 1}" ${atual === 1 ? 'disabled' : ''} aria-label="Anterior">‹</button>`;
+        for (let i = ini; i <= fim; i++) html += `<button type="button" data-pag="${i}" class="${i === atual ? 'atual' : ''}">${i}</button>`;
+        html += `<button type="button" data-pag="${atual + 1}" ${atual === tp ? 'disabled' : ''} aria-label="Próxima">›</button>`;
+        $('paginas').innerHTML = html;
+    }
+
+    function irMes(d) {
+        st.mes = mesMais(st.mes, d);
+        st.pagina = 1;
+        const u = new URL(location.href);
+        u.searchParams.set('mes', st.mes);
+        history.replaceState(null, '', u);
+        carregar();
+    }
+    $('mesAnt').addEventListener('click', () => irMes(-1));
+    $('mesProx').addEventListener('click', () => irMes(1));
+    $('fTipo').addEventListener('change', () => { st.tipo = $('fTipo').value; st.pagina = 1; carregar(); });
+    $('fPeriodo').addEventListener('change', () => { st.periodo = $('fPeriodo').value; st.pagina = 1; carregar(); });
+    $('busca').addEventListener('input', TX.debounce(() => { st.busca = $('busca').value.trim(); st.pagina = 1; carregar(); }, 300));
+    document.querySelectorAll('th.sortable').forEach((th) => th.addEventListener('click', () => {
+        const campo = th.dataset.ord;
+        st.ordem = { campo, desc: st.ordem.campo === campo ? !st.ordem.desc : true };
+        document.querySelectorAll('th.sortable i').forEach((i) => { i.className = 'fa-solid fa-sort'; });
+        th.querySelector('i').className = `fa-solid ${st.ordem.desc ? 'fa-sort-down' : 'fa-sort-up'}`;
+        st.pagina = 1;
+        carregar();
+    }));
+    $('paginas').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-pag]');
+        if (!b || b.disabled) return;
+        st.pagina = Number(b.dataset.pag);
+        carregar();
+    });
+    $('linhas').addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-excluir]');
+        if (!b) return;
+        const ok = await TX.confirmar({ titulo: 'Excluir lançamento', texto: `Excluir "${b.dataset.nome}"? Se for uma transferência, saque ou depósito, a outra ponta também é excluída.` });
+        if (!ok) return;
+        try {
+            await TX.api(`/banco/lancamentos/${encodeURIComponent(b.dataset.excluir)}`, { method: 'DELETE' });
+            TX.toast('Lançamento excluído.');
+            carregar();
         } catch (err) {
-            msgEl.className = 'bl-msg error';
-            msgEl.textContent = err.message;
+            TX.toast(err.message, 'erro');
         }
     });
 
-    // ── Excluir lançamento ───────────────────────────────────────────────────
-    window.excluirLancamento = async function(id) {
-        if (!confirm('Remover este lançamento?')) return;
-        try {
-            const r = await fetch(`/banco/lancamentos/${id}`, { method: 'DELETE' });
-            if (!r.ok) throw new Error('Erro ao remover.');
-            await carregarLancamentos();
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
-    // ── Init ─────────────────────────────────────────────────────────────────
-    carregarBancos();
+    TX.toastPendente();
+    if (contaId) {
+        $('conteudo').style.display = '';
+        carregar();
+    } else {
+        mostrarEscolha();
+    }
+})();
 </script>
 </body>
 </html>

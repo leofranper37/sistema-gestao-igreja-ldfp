@@ -175,7 +175,7 @@
         const lista = $('acLista');
         lista.innerHTML = st.ac.length
             ? st.ac.map((c, i) => `<div class="tx-ac-item ${i === st.acAtivo ? 'ativo' : ''}" role="option" data-i="${i}" aria-selected="${i === st.acAtivo}">
-                    <span>${TX.esc(c.rotulo)}</span><small>${c.natureza === 'receita' ? 'Receita' : 'Despesa'}</small></div>`).join('')
+                    <span>${TX.esc(c.rotulo)}</span><small>${c.natureza === 'receita' ? 'Receita' : c.natureza === 'despesa' ? 'Despesa' : TX.esc(c.detalhe || 'Transferência')}</small></div>`).join('')
             : '<div class="tx-ac-vazio">Nenhuma conta sugerida com esse texto. O que você digitou será usado como conta.</div>';
         lista.classList.add('aberta');
         $('conta').setAttribute('aria-expanded', 'true');
@@ -333,7 +333,10 @@
             try {
                 const l = await TX.api(`/caixa/lancamentos/${encodeURIComponent(editId)}`);
                 if (l.origem) {
-                    erroFatal(`<div class="tx-alert info"><i class="fa-solid fa-circle-info"></i><span>Este lançamento foi gerado por um dízimo. <a href="dizimo_lancamento.html?id=${encodeURIComponent(l.origem_id)}">Abra o dízimo</a> para alterar.</span></div>`);
+                    const link = l.origem === 'banco'
+                        ? `foi gerado por um lançamento bancário (saque/depósito). <a href="banco_lancamento.html?id=${encodeURIComponent(l.origem_id)}">Abra o lançamento bancário</a> para alterar.`
+                        : `foi gerado por um dízimo. <a href="dizimo_lancamento.html?id=${encodeURIComponent(l.origem_id)}">Abra o dízimo</a> para alterar.`;
+                    erroFatal(`<div class="tx-alert info"><i class="fa-solid fa-circle-info"></i><span>Este lançamento ${link}</span></div>`);
                     return;
                 }
                 $('data').value = l.data;

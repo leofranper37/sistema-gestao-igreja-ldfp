@@ -12,6 +12,12 @@ async function sincronizarCaixa(igrejaId, dizimoId, userId) {
     } catch (e) {
         logger.error('caixa_sync_dizimo_falhou', { igrejaId, dizimoId, erro: e && e.message });
     }
+    // destino "banco:N" → entrada na conta bancária
+    try {
+        await require('./bancoService').sincronizarDizimo(igrejaId, dizimoId, userId);
+    } catch (e) {
+        logger.error('banco_sync_dizimo_falhou', { igrejaId, dizimoId, erro: e && e.message });
+    }
 }
 
 async function getSaldo(igrejaId) {

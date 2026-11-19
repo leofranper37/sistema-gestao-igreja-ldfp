@@ -199,11 +199,14 @@
         }
         $('linhas').innerHTML = itens.map((l) => {
             const credito = String(l.tipo).toUpperCase() === 'ENTRADA';
-            const origem = l.origem === 'dizimo' ? '<span class="tx-origem" title="Lançado automaticamente pelo dízimo"><i class="fa-solid fa-coins"></i> Dízimo</span>' : '';
+            const origem = l.origem === 'dizimo' ? '<span class="tx-origem" title="Lançado automaticamente pelo dízimo"><i class="fa-solid fa-coins"></i> Dízimo</span>'
+                : l.origem === 'banco' ? '<span class="tx-origem" title="Saque/depósito lançado pela conta bancária"><i class="fa-solid fa-building-columns"></i> Banco</span>' : '';
             const doc = l.doc ? `<span class="sub">Doc.: ${TX.esc(l.doc)}</span>` : '';
             let acoes;
             if (l.origem === 'dizimo') {
                 acoes = `<a class="tx-btn-icon" href="dizimo_lancamento.html?id=${encodeURIComponent(l.origem_id)}" title="Abrir o dízimo" aria-label="Abrir o lançamento de dízimo"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>`;
+            } else if (l.origem === 'banco') {
+                acoes = `<a class="tx-btn-icon" href="banco_lancamento.html?id=${encodeURIComponent(l.origem_id)}" title="Abrir o lançamento bancário" aria-label="Abrir o lançamento bancário de origem"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>`;
             } else if (editavel(l)) {
                 acoes = `<a class="tx-btn-icon" href="caixa_lancamento.html?id=${encodeURIComponent(l.id)}" title="Editar" aria-label="Editar ${TX.esc(l.historico)}"><i class="fa-solid fa-pen"></i></a>
                     <button class="tx-btn-icon danger" type="button" data-excluir="${TX.esc(l.id)}" data-nome="${TX.esc(l.historico)}" title="Excluir" aria-label="Excluir ${TX.esc(l.historico)}"><i class="fa-solid fa-trash"></i></button>`;

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - SPED Contábil (ECD)</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="tesouraria-ui.css">
+    <script src="tema.js"></script>
+</head>
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="SPED Contábil (ECD)"
+      data-shell-breadcrumb="LDFP / Contabilidade / SPED Contábil"
+      data-shell-active="sped_ecd.html"
+      data-shell-chip="Contabilidade">
+
+<main class="main-content enterprise-main">
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>SPED Contábil — ECD</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <span>Contabilidade</span><span class="sep">›</span>
+                <span class="atual">SPED Contábil (ECD)</span>
+            </nav>
+        </div>
+
+        <div class="tx-enc-layout">
+            <div>
+                <section class="tx-card">
+                    <div class="tx-card-head">
+                        <h3><span class="ico"><i class="fa-solid fa-building"></i></span> Dados da entidade</h3>
+                        <button class="tx-btn tx-btn-ghost" type="button" id="btnConfig"><i class="fa-solid fa-pen"></i> Editar</button>
+                    </div>
+                    <div class="tx-card-body" id="entidade"><div class="tx-skel" style="height:60px;"></div></div>
+                </section>
+
+                <section class="tx-card" style="margin-top:16px;">
+                    <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-file-export"></i></span> Gerar escrituração</h3>
+                        <span class="tx-tag" id="leiaute">Leiaute 9</span></div>
+                    <form class="tx-card-body" id="form" novalidate>
+                        <div class="tx-grid c3">
+                            <div class="tx-field"><label for="fAno">Ano-base <span class="req">*</span></label><select id="fAno" class="tx-input"></select></div>
+                            <div class="tx-field"><label for="fIni">Data inicial <span class="req">*</span></label><input id="fIni" type="date" class="tx-input"></div>
+                            <div class="tx-field"><label for="fFin">Data final <span class="req">*</span></label><input id="fFin" type="date" class="tx-input"></div>
+                            <div class="tx-field"><label for="fLivro">Nº de ordem do livro <span class="req">*</span></label><input id="fLivro" type="number" min="1" class="tx-input" value="1"></div>
+                            <div class="tx-field" style="grid-column:span 2;"><label for="fNat">Natureza do livro</label><input id="fNat" class="tx-input" maxlength="80" value="DIARIO GERAL"></div>
+                        </div>
+                        <div class="tx-field" style="margin-top:14px;"><label id="rotFin">Finalidade da escrituração</label>
+                            <div class="tx-seg" role="radiogroup" aria-labelledby="rotFin" id="fFinal">
+                                <button type="button" role="radio" data-v="0" aria-checked="true">Original</button>
+                                <button type="button" role="radio" data-v="1" aria-checked="false">Substituta</button>
+                            </div></div>
+                        <div class="tx-field" id="campoHash" hidden style="margin-top:14px;"><label for="fHash">Hash da ECD substituída <span class="req">*</span></label>
+                            <input id="fHash" class="tx-input" maxlength="40" placeholder="40 caracteres, do recibo de entrega" style="text-transform:uppercase;font-family:ui-monospace,monospace;"></div>
+                        <div class="tx-grid c2" style="margin-top:14px;">
+                            <div class="tx-field"><label for="fSitEsp">Situação especial</label><select id="fSitEsp" class="tx-input"></select></div>
+                            <div class="tx-field"><label for="fSitIni">Situação no início do período</label><select id="fSitIni" class="tx-input"></select></div>
+                        </div>
+                        <div class="tx-grid c3" style="margin-top:14px;">
+                            <label class="tx-switch"><input type="checkbox" id="fGrande"> Entidade de grande porte</label>
+                            <label class="tx-switch"><input type="checkbox" id="fMudanca"> Houve mudança no plano de contas</label>
+                            <label class="tx-switch"><input type="checkbox" id="fDescentr"> Escrituração descentralizada</label>
+                        </div>
+                        <div class="tx-actions" style="margin-top:18px;justify-content:flex-end;flex-wrap:wrap;">
+                            <button class="tx-btn tx-btn-ghost" type="button" id="btnPlano"><i class="fa-solid fa-sitemap"></i> Validar plano de contas</button>
+                            <button class="tx-btn tx-btn-ghost" type="button" id="btnValidar"><i class="fa-solid fa-list-check"></i> Validar escrituração</button>
+                            <button class="tx-btn tx-btn-primary" type="submit" id="btnGerar"><i class="fa-solid fa-file-arrow-down"></i> Gerar arquivo ECD</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="tx-card" style="margin-top:16px;" id="cardStatus" hidden>
+                    <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-clipboard-check"></i></span> Status da validação</h3></div>
+                    <div class="tx-card-body" id="status"></div>
+                </section>
+
+                <section class="tx-card" style="margin-top:16px;">
+                    <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-clock-rotate-left"></i></span> Arquivos gerados</h3></div>
+                    <div class="tx-table-wrap">
+                        <table class="tx-table">
+                            <thead><tr><th>Ano</th><th>Período</th><th>Livro</th><th>Finalidade</th><th class="num">Linhas</th><th>Gerado em</th><th class="acoes">Ações</th></tr></thead>
+                            <tbody id="historico"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="tx-card" style="margin-top:16px;">
+                    <div class="tx-card-head">
+                        <h3><span class="ico"><i class="fa-solid fa-diagram-project"></i></span> Mapeamento para o plano referencial</h3>
+                        <div style="display:flex;gap:8px;">
+                            <button class="tx-btn tx-btn-ghost" type="button" id="btnRef"><i class="fa-solid fa-chevron-down"></i> Mostrar contas</button>
+                            <button class="tx-btn tx-btn-primary" type="button" id="btnRefSalvar" hidden><i class="fa-solid fa-floppy-disk"></i> Salvar mapeamento</button>
+                        </div>
+                    </div>
+                    <div class="tx-card-body" style="padding-bottom:0;">
+                        <p class="tx-hint" style="margin:0 0 12px;"><i class="fa-solid fa-circle-info"></i> Opcional na ECD e usado pela ECF: ligue cada conta analítica ao código do plano referencial da Receita
+                            (<span id="planoRefNome">imunes e isentas</span>). Peça os códigos ao contador; contas mapeadas: <strong id="refQtd">—</strong>.</p>
+                    </div>
+                    <div class="tx-table-wrap" id="refWrap" hidden style="max-height:520px;overflow:auto;">
+                        <table class="tx-table">
+                            <thead><tr><th>Conta</th><th>Descrição</th><th>Natureza</th><th>Código referencial</th></tr></thead>
+                            <tbody id="refLinhas"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="tx-card" aria-label="Como entregar">
+                <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-route"></i></span> Como entregar a ECD</h3></div>
+                <div class="tx-card-body" style="font-size:13px;line-height:1.55;">
+                    <ul class="tx-check-list">
+                        <li><i class="fa-solid fa-1"></i>Encerre o exercício na Contabilidade</li>
+                        <li><i class="fa-solid fa-2"></i>Preencha os dados da entidade e cadastre o contador e o responsável legal em <a href="dirigentes.html">Dirigentes e Conselheiros</a></li>
+                        <li><i class="fa-solid fa-3"></i>Valide e gere o arquivo aqui</li>
+                        <li><i class="fa-solid fa-4"></i>Importe o TXT no <strong>PVA do SPED Contábil</strong> (programa da Receita) e rode a validação</li>
+                        <li><i class="fa-solid fa-5"></i>Assine com o certificado digital do responsável e do contador e transmita</li>
+                    </ul>
+                    <div class="tx-alert warn"><i class="fa-solid fa-user-shield"></i>
+                        <span>O arquivo segue o leiaute oficial, mas a responsabilidade técnica pela entrega é do contador: revise no PVA antes de assinar.
+                            Igrejas imunes só são obrigadas à ECD em situações específicas (ex.: receitas acima do limite legal) — confirme com o contador.</span></div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</main>
+
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
+<script>
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    let tabelas = null;
+    let cfg = null;
+    let fechado = null;
+    let refs = [];
+    const UFS = 'AC AL AM AP BA CE DF ES GO MA MG MS MT PA PB PE PI PR RJ RN RO RR RS SC SE SP TO'.split(' ');
+    const cnpjFmt = (c) => String(c || '').replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    const NAT = { ativo: 'Ativo', passivo: 'Passivo/PL', despesa: 'Despesa', receita: 'Receita' };
+
+    async function iniciar() {
+        try {
+            const [t, c, e] = await Promise.all([
+                TX.api('/contabilidade/sped/tabelas'), TX.api('/contabilidade/sped/config'), TX.api('/contabilidade/encerramento')
+            ]);
+            tabelas = t;
+            cfg = c;
+            fechado = e.ultimoExercicioFechado;
+        } catch (err) {
+            $('entidade').innerHTML = `<div class="tx-alert erro"><i class="fa-solid fa-circle-exclamation"></i><span>${TX.esc(err.message)}</span></div>`;
+            return;
+        }
+        $('leiaute').textContent = `Leiaute ${tabelas.leiaute}`;
+        $('fSitEsp').innerHTML = ['', '1', '2', '3', '4', '5'].filter((k) => tabelas.situacoesEspeciais[k] !== undefined).map((k) => [k, tabelas.situacoesEspeciais[k]]).map(([k, n]) => `<option value="${k}">${k ? `${k} - ` : ''}${TX.esc(n)}</option>`).join('');
+        $('fSitIni').innerHTML = Object.entries(tabelas.situacoesInicio).map(([k, n]) => `<option value="${k}">${k} - ${TX.esc(n)}</option>`).join('');
+        const anoAtual = new Date().getFullYear();
+        const anos = [];
+        for (let a = anoAtual; a >= 2020; a -= 1) anos.push(a);
+        $('fAno').innerHTML = anos.map((a) => `<option value="${a}" ${a === (fechado || anoAtual - 1) ? 'selected' : ''}>${a}${fechado && a <= fechado ? ' — encerrado' : ' — aberto'}</option>`).join('');
+        datasDoAno();
+        renderEntidade();
+        historico();
+        carregarRef();
+    }
+
+    function renderEntidade() {
+        const falta = [];
+        if (!cfg.cnpj) falta.push('CNPJ');
+        if (!cfg.codMun) falta.push('código IBGE do município');
+        if (!cfg.dtArq) falta.push('data de registro do estatuto');
+        $('entidade').innerHTML = `
+            <div class="tx-grid c3" style="font-size:13px;">
+                <div><span class="tx-hint" style="margin:0;">Entidade</span><strong style="display:block;">${TX.esc(cfg.nome || '—')}</strong></div>
+                <div><span class="tx-hint" style="margin:0;">CNPJ</span><strong style="display:block;" class="tx-cod">${cfg.cnpj ? cnpjFmt(cfg.cnpj) : '—'}</strong></div>
+                <div><span class="tx-hint" style="margin:0;">Município / UF</span><strong style="display:block;">${TX.esc(cfg.municipio || '—')}${cfg.uf ? ` / ${TX.esc(cfg.uf)}` : ''}${cfg.codMun ? ` <span class="tx-cod">(${cfg.codMun})</span>` : ''}</strong></div>
+            </div>
+            ${falta.length ? `<div class="tx-alert warn" style="margin-top:12px;"><i class="fa-solid fa-triangle-exclamation"></i><span>Falta preencher: ${falta.join(', ')}.</span></div>` : ''}`;
+        $('planoRefNome').textContent = (tabelas.planosReferenciais[cfg.codPlanRef] || 'imunes e isentas').toLowerCase();
+    }
+
+    function datasDoAno() {
+        const a = $('fAno').value;
+        $('fIni').value = `${a}-01-01`;
+        $('fFin').value = `${a}-12-31`;
+    }
+
+    function parametros() {
+        return {
+            ano: Number($('fAno').value), dtIni: $('fIni').value, dtFin: $('fFin').value,
+            numLivro: Number($('fLivro').value) || 1, natLivro: $('fNat').value.trim() || 'DIARIO GERAL',
+            finalidade: $('fFinal').querySelector('[aria-checked="true"]').dataset.v,
+            hashSubstituida: $('fHash').value.trim() || null,
+            sitEspecial: $('fSitEsp').value, sitIniPer: $('fSitIni').value,
+            grandePorte: $('fGrande').checked, mudancaPlano: $('fMudanca').checked, descentralizada: $('fDescentr').checked
+        };
+    }
+
+    function mostrarStatus(titulo, r, extra = '') {
+        $('cardStatus').hidden = false;
+        const lista = (arr, cls, ico) => arr.map((x) => `<li style="display:flex;gap:8px;"><i class="fa-solid ${ico}" style="color:var(--tx-${cls});margin-top:3px;"></i><span>${TX.esc(x)}</span></li>`).join('');
+        $('status').innerHTML = `
+            <div class="tx-alert ${r.ok ? 'info' : 'erro'}" style="margin-bottom:12px;"><i class="fa-solid fa-${r.ok ? 'circle-check' : 'circle-xmark'}"></i>
+                <span><strong>${TX.esc(titulo)}:</strong> ${r.ok ? 'nenhum erro encontrado.' : `${r.erros.length} erro(s) a corrigir antes de gerar.`} ${extra}</span></div>
+            ${r.erros.length ? `<ul class="tx-check-list">${lista(r.erros, 'danger', 'fa-circle-xmark')}</ul>` : ''}
+            ${r.avisos.length ? `<strong style="font-size:13px;">Avisos</strong><ul class="tx-check-list">${lista(r.avisos, 'warn', 'fa-triangle-exclamation')}</ul>` : ''}`;
+        $('cardStatus').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async function validarPlano() {
+        try {
+            const r = await TX.api('/contabilidade/sped/validar-plano');
+            mostrarStatus('Plano de contas', r, `${r.contas} contas, ${r.analiticas} analíticas, ${r.mapeadas} mapeadas no referencial.`);
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    }
+
+    async function validar() {
+        try {
+            const r = await TX.api('/contabilidade/sped/ecd/validar', { method: 'POST', body: parametros() });
+            mostrarStatus('Escrituração', r, r.ok ? `${r.lancamentos} lançamento(s) no período.` : '');
+            return r;
+        } catch (e) { TX.toast(e.message, 'erro'); return null; }
+    }
+
+    async function gerar(ev) {
+        ev.preventDefault();
+        const v = await validar();
+        if (!v || !v.ok) return;
+        const btn = $('btnGerar');
+        btn.disabled = true;
+        try {
+            const r = await TX.api('/contabilidade/sped/ecd/gerar', { method: 'POST', body: parametros() });
+            TX.toast(r.message);
+            await historico();
+            baixar(r.id);
+        } catch (e) { TX.toast(e.message, 'erro'); }
+        btn.disabled = false;
+    }
+
+    async function baixar(id) {
+        try {
+            const r = await fetch(`/contabilidade/sped/arquivos/${encodeURIComponent(id)}/download`);
+            if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `Erro ${r.status}`);
+            const nome = (/filename="([^"]+)"/.exec(r.headers.get('Content-Disposition') || '') || [])[1] || 'SPED-ECD.txt';
+            const url = URL.createObjectURL(await r.blob());
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nome;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    }
+
+    async function historico() {
+        let itens = [];
+        try { itens = (await TX.api('/contabilidade/sped/arquivos?tipo=ECD')).items || []; } catch (e) { TX.toast(e.message, 'erro'); }
+        $('historico').innerHTML = itens.length ? itens.map((a) => `<tr>
+            <td><strong>${a.ano}</strong></td>
+            <td style="white-space:nowrap;">${TX.dataBR(a.dtIni)} a ${TX.dataBR(a.dtFin)}</td>
+            <td>${a.numLivro || '—'}</td>
+            <td>${a.finalidade}</td>
+            <td class="num">${a.linhas}</td>
+            <td style="white-space:nowrap;">${a.criado ? TX.dataBR(String(a.criado).slice(0, 10)) : '—'}${a.usuario ? `<small style="display:block;color:var(--tx-muted);">${TX.esc(a.usuario)}</small>` : ''}</td>
+            <td class="acoes"><div class="tx-acoes-linha">
+                <button type="button" class="tx-btn-icon" data-baixar="${TX.esc(a.id)}" title="Baixar TXT" aria-label="Baixar arquivo de ${a.ano}"><i class="fa-solid fa-download"></i></button>
+                <button type="button" class="tx-btn-icon" data-del="${TX.esc(a.id)}" title="Excluir do histórico" aria-label="Excluir arquivo de ${a.ano}"><i class="fa-solid fa-trash"></i></button>
+            </div></td></tr>`).join('')
+            : '<tr><td colspan="7"><div class="tx-empty"><span class="ico"><i class="fa-regular fa-file-lines"></i></span><strong>Nenhum arquivo gerado</strong><span>Os arquivos da ECD ficam guardados aqui para baixar de novo.</span></div></td></tr>';
+    }
+
+    async function carregarRef() {
+        try { refs = (await TX.api('/contabilidade/sped/referencial')).items || []; } catch (_) { refs = []; }
+        $('refQtd').textContent = `${refs.filter((r) => r.referencial).length} de ${refs.length}`;
+        $('refLinhas').innerHTML = refs.map((r) => `<tr style="${r.ativo ? '' : 'opacity:.55'}">
+            <td><span class="tx-cod">${TX.esc(r.codigo)}</span></td><td>${TX.esc(r.nome)}</td><td>${NAT[r.natureza] || ''}</td>
+            <td><input class="tx-input" data-ref="${TX.esc(r.codigo)}" value="${TX.esc(r.referencial)}" maxlength="60" placeholder="Ex.: 1.01.01.01.01" style="height:32px;max-width:220px;font-family:ui-monospace,monospace;" aria-label="Código referencial de ${TX.esc(r.nome)}"></td></tr>`).join('');
+    }
+
+    async function salvarRef() {
+        const itens = [...document.querySelectorAll('[data-ref]')].map((i) => ({ codigo: i.dataset.ref, referencial: i.value.trim() }));
+        try {
+            const r = await TX.api('/contabilidade/sped/referencial', { method: 'PUT', body: { itens } });
+            TX.toast(r.message);
+            carregarRef();
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    }
+
+    async function editarConfig() {
+        let msg = '';
+        await TX.dialogo({
+            titulo: 'Dados da entidade para o SPED',
+            corpo: `
+                <div class="tx-field"><label for="cNome">Nome da entidade (como no CNPJ) <span class="req">*</span></label><input id="cNome" class="tx-input" maxlength="255" value="${TX.esc(cfg.nome || '')}"></div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="cCnpj">CNPJ <span class="req">*</span></label><input id="cCnpj" class="tx-input" inputmode="numeric" maxlength="18" value="${TX.esc(cnpjFmt(cfg.cnpj))}"></div>
+                    <div class="tx-field"><label for="cDtArq">Registro do estatuto em cartório <span class="req">*</span></label><input id="cDtArq" type="date" class="tx-input" value="${TX.esc(cfg.dtArq || '')}"></div>
+                    <div class="tx-field"><label for="cMun">Município <span class="req">*</span></label><input id="cMun" class="tx-input" maxlength="120" value="${TX.esc(cfg.municipio || '')}"></div>
+                    <div class="tx-field"><label for="cUf">UF <span class="req">*</span></label><select id="cUf" class="tx-input"><option value="">Selecione...</option>${UFS.map((u) => `<option ${u === cfg.uf ? 'selected' : ''}>${u}</option>`).join('')}</select></div>
+                    <div class="tx-field"><label for="cCodMun">Código IBGE do município <span class="req">*</span></label><input id="cCodMun" class="tx-input" inputmode="numeric" maxlength="7" placeholder="7 dígitos" value="${TX.esc(cfg.codMun || '')}"></div>
+                    <div class="tx-field"><label for="cDtConv">Registro de conversão (se houver)</label><input id="cDtConv" type="date" class="tx-input" value="${TX.esc(cfg.dtArqConv || '')}"></div>
+                    <div class="tx-field"><label for="cIe">Inscrição estadual</label><input id="cIe" class="tx-input" maxlength="30" value="${TX.esc(cfg.ie || '')}"></div>
+                    <div class="tx-field"><label for="cIm">Inscrição municipal</label><input id="cIm" class="tx-input" maxlength="30" value="${TX.esc(cfg.im || '')}"></div>
+                </div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="cTrib">Forma de tributação</label><select id="cTrib" class="tx-input">
+                        <option value="imune" ${cfg.formaTributacao !== 'isenta' ? 'selected' : ''}>Imune (templos de qualquer culto)</option>
+                        <option value="isenta" ${cfg.formaTributacao === 'isenta' ? 'selected' : ''}>Isenta</option></select></div>
+                    <div class="tx-field"><label for="cRef">Plano referencial</label><select id="cRef" class="tx-input">${Object.entries(tabelas.planosReferenciais).map(([k, n]) => `<option value="${k}" ${String(cfg.codPlanRef) === k ? 'selected' : ''}>${k} - ${TX.esc(n)}</option>`).join('')}</select></div>
+                </div>
+                <p class="tx-hint" style="margin:0;"><i class="fa-solid fa-circle-info"></i> O código IBGE do município está no site do IBGE ou no cartão CNPJ da Receita.</p>`,
+            async aoConfirmar(f) {
+                const g = (s) => f.querySelector(s).value.trim();
+                const r = await TX.api('/contabilidade/sped/config', { method: 'PUT', body: {
+                    nome: g('#cNome'), cnpj: g('#cCnpj'), uf: g('#cUf'), municipio: g('#cMun'), codMun: g('#cCodMun'),
+                    dtArq: g('#cDtArq'), dtArqConv: g('#cDtConv') || null, ie: g('#cIe') || null, im: g('#cIm') || null,
+                    formaTributacao: g('#cTrib'), codPlanRef: g('#cRef')
+                } });
+                cfg = r;
+                msg = r.message;
+            }
+        }).then((ok) => { if (ok) { TX.toast(msg); renderEntidade(); } });
+    }
+
+    $('fAno').addEventListener('change', datasDoAno);
+    $('fFinal').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-v]');
+        if (!b) return;
+        $('fFinal').querySelectorAll('[data-v]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+        $('campoHash').hidden = b.dataset.v !== '1';
+    });
+    $('btnConfig').addEventListener('click', editarConfig);
+    $('btnPlano').addEventListener('click', validarPlano);
+    $('btnValidar').addEventListener('click', validar);
+    $('form').addEventListener('submit', gerar);
+    $('btnRef').addEventListener('click', () => {
+        const ab = $('refWrap').hidden;
+        $('refWrap').hidden = !ab;
+        $('btnRefSalvar').hidden = !ab;
+        $('btnRef').innerHTML = `<i class="fa-solid fa-chevron-${ab ? 'up' : 'down'}"></i> ${ab ? 'Ocultar contas' : 'Mostrar contas'}`;
+    });
+    $('btnRefSalvar').addEventListener('click', salvarRef);
+    $('historico').addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-baixar]');
+        if (b) return baixar(b.dataset.baixar);
+        const d = e.target.closest('[data-del]');
+        if (!d) return;
+        const ok = await TX.confirmar({ titulo: 'Excluir arquivo', texto: 'Excluir este arquivo do histórico? A contabilidade não é alterada; você pode gerar de novo.' });
+        if (!ok) return;
+        try {
+            const r = await TX.api(`/contabilidade/sped/arquivos/${encodeURIComponent(d.dataset.del)}`, { method: 'DELETE' });
+            TX.toast(r.message);
+            historico();
+        } catch (err) { TX.toast(err.message, 'erro'); }
+    });
+
+    iniciar();
+})();
+</script>
+</body>
+</html>

@@ -851,6 +851,9 @@ a.tx-conta:hover, a.tx-conta:focus-visible { border-color: var(--tx-accent); box
 }
 
 
+/* Atributo hidden sempre vence o display dos componentes */
+.tx-ui [hidden] { display: none !important; }
+
 /* ── Contabilidade ────────────────────────────────────────────────────── */
 .tx-cod { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; letter-spacing: .02em; color: var(--tx-muted); white-space: nowrap; }
 .tx-tree { list-style: none; margin: 0; padding: 0; }

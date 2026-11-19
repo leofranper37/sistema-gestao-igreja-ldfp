@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - SPED ECF</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="tesouraria-ui.css">
+    <script src="tema.js"></script>
+    <style>
+        @media print {
+            .enterprise-shell-sidebar, aside.enterprise-shell-sidebar, header, .tx-titlebar nav, .no-print { display: none !important; }
+            .enterprise-main, main { margin: 0 !important; width: 100% !important; }
+            .tx-card { break-inside: avoid; box-shadow: none !important; }
+        }
+        .ecf-linha.n1 td { font-weight: 800; }
+        .ecf-linha.n2 td { font-weight: 700; }
+        .ecf-linha.n3 td:first-child { padding-left: 28px; }
+    </style>
+</head>
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="SPED ECF"
+      data-shell-breadcrumb="LDFP / Contabilidade / SPED ECF"
+      data-shell-active="sped_ecf.html"
+      data-shell-chip="Contabilidade">
+
+<main class="main-content enterprise-main">
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>SPED ECF — Escrituração Contábil Fiscal</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <span>Contabilidade</span><span class="sep">›</span>
+                <span class="atual">SPED ECF</span>
+            </nav>
+        </div>
+
+        <section class="tx-card">
+            <div class="tx-card-head">
+                <h3><span class="ico"><i class="fa-solid fa-file-invoice"></i></span> Ficha da ECF</h3>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;" class="no-print">
+                    <label for="fAno" class="tx-hint" style="margin:0;">Ano-calendário</label>
+                    <select id="fAno" class="tx-input" style="width:auto;"></select>
+                    <button class="tx-btn tx-btn-ghost" type="button" id="btnImprimir"><i class="fa-solid fa-print"></i> Imprimir ficha</button>
+                    <button class="tx-btn tx-btn-primary" type="button" id="btnEcd"><i class="fa-solid fa-download"></i> Baixar ECD do ano</button>
+                </div>
+            </div>
+            <div class="tx-card-body" id="cabecalho"><div class="tx-skel" style="height:60px;"></div></div>
+        </section>
+
+        <div class="tx-enc-layout" style="margin-top:16px;">
+            <div>
+                <section class="tx-card">
+                    <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-scale-balanced"></i></span> Balanço patrimonial em 31/12 <small id="anoBal" style="font-weight:400;color:var(--tx-muted);"></small></h3></div>
+                    <div class="tx-abertura" style="padding:0 16px 16px;gap:16px;">
+                        <div class="tx-table-wrap"><table class="tx-table"><thead><tr><th>Ativo</th><th class="num">Saldo</th></tr></thead><tbody id="bAtivo"></tbody></table></div>
+                        <div class="tx-table-wrap"><table class="tx-table"><thead><tr><th>Passivo e Patrimônio Social</th><th class="num">Saldo</th></tr></thead><tbody id="bPassivo"></tbody></table></div>
+                    </div>
+                </section>
+                <section class="tx-card" style="margin-top:16px;">
+                    <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-chart-column"></i></span> Demonstração do resultado</h3></div>
+                    <div class="tx-table-wrap"><table class="tx-table"><thead><tr><th>Conta</th><th class="num">Valor</th></tr></thead><tbody id="dre"></tbody></table></div>
+                    <div class="tx-total-linha"><span id="resRot">Resultado do exercício</span><strong id="resVal">R$ 0,00</strong></div>
+                </section>
+                <section class="tx-card" style="margin-top:16px;">
+                    <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-user-tie"></i></span> Dirigentes e conselheiros</h3>
+                        <a class="tx-btn tx-btn-ghost no-print" href="dirigentes.html"><i class="fa-solid fa-pen"></i> Gerenciar</a></div>
+                    <div class="tx-table-wrap"><table class="tx-table"><thead><tr><th>Nome</th><th>CPF</th><th>Qualificação / cargo</th><th class="num">Remuneração anual</th></tr></thead><tbody id="dirig"></tbody></table></div>
+                </section>
+            </div>
+
+            <aside>
+                <section class="tx-card">
+                    <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-list-check"></i></span> Pré-requisitos</h3></div>
+                    <div class="tx-card-body"><ul class="tx-check-list" id="prereq" style="margin:0;"></ul>
+                        <div id="pronto" style="margin-top:12px;"></div></div>
+                </section>
+                <section class="tx-card" style="margin-top:16px;">
+                    <div class="tx-card-head"><h3><span class="ico"><i class="fa-solid fa-route"></i></span> Como entregar a ECF</h3></div>
+                    <div class="tx-card-body" style="font-size:13px;line-height:1.55;">
+                        <ul class="tx-check-list">
+                            <li><i class="fa-solid fa-1"></i>Gere e transmita a ECD do ano (a ECF usa os saldos dela)</li>
+                            <li><i class="fa-solid fa-2"></i>No <strong>PVA da ECF</strong>, crie a escrituração e use <em>Recuperar ECD</em> com o arquivo baixado aqui</li>
+                            <li><i class="fa-solid fa-3"></i>Informe a forma de tributação (imune/isenta), os dirigentes e as remunerações desta ficha</li>
+                            <li><i class="fa-solid fa-4"></i>Valide, assine com certificado digital e transmita</li>
+                        </ul>
+                        <div class="tx-alert info"><i class="fa-solid fa-circle-info"></i>
+                            <span>Prazo usual: último dia útil de julho do ano seguinte. A obrigatoriedade para igrejas imunes depende do caso — confirme com o contador.</span></div>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </div>
+</main>
+
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
+<script>
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    let ficha = null;
+    const cnpjFmt = (c) => String(c || '').replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    const cpfFmt = (c) => String(c || '').replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+
+    async function iniciar() {
+        let fechado = null;
+        try { fechado = (await TX.api('/contabilidade/encerramento')).ultimoExercicioFechado; } catch (_) { /* segue */ }
+        const anoAtual = new Date().getFullYear();
+        const anos = [];
+        for (let a = anoAtual; a >= 2020; a -= 1) anos.push(a);
+        $('fAno').innerHTML = anos.map((a) => `<option ${a === (fechado || anoAtual - 1) ? 'selected' : ''}>${a}</option>`).join('');
+        carregar();
+    }
+
+    const linhas = (arr) => arr.length
+        ? arr.map((l) => `<tr class="ecf-linha n${l.nivel}"><td><span class="tx-cod">${TX.esc(l.codigo)}</span> ${TX.esc(l.nome)}</td><td class="num">${TX.money(l.valor)}</td></tr>`).join('')
+        : '<tr><td colspan="2" style="color:var(--tx-muted);">Sem saldos.</td></tr>';
+
+    async function carregar() {
+        try {
+            ficha = await TX.api(`/contabilidade/sped/ecf?ano=${$('fAno').value}`);
+        } catch (e) {
+            $('cabecalho').innerHTML = `<div class="tx-alert erro"><i class="fa-solid fa-circle-exclamation"></i><span>${TX.esc(e.message)}</span></div>`;
+            return;
+        }
+        const en = ficha.entidade;
+        $('cabecalho').innerHTML = `<div class="tx-grid c3" style="font-size:13px;">
+            <div><span class="tx-hint" style="margin:0;">Entidade</span><strong style="display:block;">${TX.esc(en.nome || '—')}</strong></div>
+            <div><span class="tx-hint" style="margin:0;">CNPJ</span><strong style="display:block;" class="tx-cod">${en.cnpj ? cnpjFmt(en.cnpj) : '—'}</strong></div>
+            <div><span class="tx-hint" style="margin:0;">Forma de tributação</span><strong style="display:block;">${en.formaTributacao === 'isenta' ? 'Isenta' : 'Imune'} · Ano-calendário ${ficha.ano}</strong></div>
+        </div>`;
+        $('prereq').innerHTML = ficha.prerequisitos.map((p) => `<li style="display:flex;gap:8px;"><i class="fa-solid fa-${p.ok ? 'circle-check' : 'circle-xmark'}" style="color:var(--tx-${p.ok ? 'success' : 'danger'});margin-top:3px;"></i><span>${TX.esc(p.texto)}</span></li>`).join('');
+        $('pronto').innerHTML = ficha.pronto
+            ? '<span class="tx-status pago"><i class="fa-solid fa-circle-check"></i> Pronto para preencher a ECF</span>'
+            : '<span class="tx-status vencido"><i class="fa-solid fa-triangle-exclamation"></i> Resolva os itens pendentes</span>';
+        $('btnEcd').disabled = !ficha.ecd;
+        $('btnEcd').title = ficha.ecd ? '' : 'Gere a ECD deste ano em SPED Contábil (ECD)';
+        $('anoBal').textContent = `de ${ficha.ano}`;
+        $('bAtivo').innerHTML = linhas(ficha.balanco.ativo);
+        $('bPassivo').innerHTML = linhas(ficha.balanco.passivo);
+        $('dre').innerHTML = linhas([...ficha.dre.receitas, ...ficha.dre.despesas]);
+        const res = ficha.dre.resultado;
+        $('resRot').textContent = res >= 0 ? 'Superávit do exercício' : 'Déficit do exercício';
+        $('resVal').textContent = TX.money(Math.abs(res));
+        $('resVal').className = res >= 0 ? 'tx-valor-pos' : 'tx-valor-neg';
+        $('dirig').innerHTML = ficha.dirigentes.length
+            ? ficha.dirigentes.map((d) => `<tr><td><strong>${TX.esc(d.nome)}</strong>${d.responsavelLegal ? ' <span class="tx-status aguardando">Resp. legal</span>' : ''}</td>
+                <td><span class="tx-cod">${cpfFmt(d.cpf)}</span></td><td>${TX.esc(d.qualificacaoNome)}${d.cargo ? ` · ${TX.esc(d.cargo)}` : ''}</td>
+                <td class="num">${TX.money(d.remuneracao)}</td></tr>`).join('')
+            : '<tr><td colspan="4"><div class="tx-empty"><span class="ico"><i class="fa-solid fa-users"></i></span><strong>Nenhum dirigente cadastrado</strong><span>Cadastre a diretoria em Dirigentes e Conselheiros.</span></div></td></tr>';
+    }
+
+    $('fAno').addEventListener('change', carregar);
+    $('btnImprimir').addEventListener('click', () => window.print());
+    $('btnEcd').addEventListener('click', async () => {
+        if (!ficha || !ficha.ecd) return;
+        try {
+            const r = await fetch(`/contabilidade/sped/arquivos/${encodeURIComponent(ficha.ecd.id)}/download`);
+            if (!r.ok) throw new Error(`Erro ${r.status}`);
+            const nome = (/filename="([^"]+)"/.exec(r.headers.get('Content-Disposition') || '') || [])[1] || 'SPED-ECD.txt';
+            const url = URL.createObjectURL(await r.blob());
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nome;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    });
+
+    iniciar();
+})();
+</script>
+</body>
+</html>

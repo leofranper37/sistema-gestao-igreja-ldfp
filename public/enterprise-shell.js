@@ -149,6 +149,9 @@
         'balancete_abertura.html': 'contabilidade',
         'lancamentos_contabeis.html': 'contabilidade',
         'encerramento_exercicio.html': 'contabilidade',
+        'sped_ecd.html': 'contabilidade',
+        'sped_ecf.html': 'contabilidade',
+        'dirigentes.html': 'contabilidade',
         // Gráficos
         'graficos_secretaria.html': 'graficos',
         'graficos_tesouraria.html': 'graficos',
@@ -887,7 +890,10 @@
                         ['plano_contas.html', 'fa-solid fa-list-ol', 'Plano de Contas', 'contabilidade'],
                         ['balancete_abertura.html', 'fa-solid fa-book-open', 'Balancete de Abertura', 'contabilidade'],
                         ['lancamentos_contabeis.html', 'fa-solid fa-clipboard-list', 'Lançamentos Contábeis', 'contabilidade'],
-                        ['encerramento_exercicio.html', 'fa-solid fa-flag-checkered', 'Encerramento do Exercício', 'contabilidade']
+                        ['encerramento_exercicio.html', 'fa-solid fa-flag-checkered', 'Encerramento do Exercício', 'contabilidade'],
+                        ['sped_ecd.html', 'fa-solid fa-file-export', 'SPED Contábil (ECD)', 'contabilidade'],
+                        ['sped_ecf.html', 'fa-solid fa-file-invoice', 'SPED ECF', 'contabilidade'],
+                        ['dirigentes.html', 'fa-solid fa-user-tie', 'Dirigentes e Conselheiros', 'contabilidade']
                     ], activePath, false, user)}
 
                     ${renderLegacyGroup('Gráficos', 'fa-solid fa-chart-column', [

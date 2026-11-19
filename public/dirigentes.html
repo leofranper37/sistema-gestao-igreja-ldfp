@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFP - Dirigentes e Conselheiros</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="tesouraria-ui.css">
+    <script src="tema.js"></script>
+</head>
+<body class="theme-petroleo enterprise-shell-page tx-ui"
+      data-shell-title="Dirigentes e Conselheiros"
+      data-shell-breadcrumb="LDFP / Contabilidade / Dirigentes e Conselheiros"
+      data-shell-active="dirigentes.html"
+      data-shell-chip="Contabilidade">
+
+<main class="main-content enterprise-main">
+    <div class="tx-page">
+        <div class="tx-titlebar">
+            <h2>Dirigentes e Conselheiros</h2>
+            <nav class="tx-crumbs" aria-label="Caminho">
+                <span>Contabilidade</span><span class="sep">›</span>
+                <span class="atual">Dirigentes e Conselheiros</span>
+            </nav>
+        </div>
+
+        <div class="tx-alert info" style="margin-bottom:16px;">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Cadastre a diretoria, o conselho fiscal e o <strong>contador</strong>. Quem estiver marcado como <strong>signatário</strong> assina a ECD
+                (com certificado digital, no programa da Receita). Os dirigentes também são informados na ECF.</span>
+        </div>
+
+        <section class="tx-card">
+            <div class="tx-card-head">
+                <h3><span class="ico"><i class="fa-solid fa-user-tie"></i></span> Cadastro</h3>
+                <button class="tx-btn tx-btn-primary" type="button" id="btnNovo"><i class="fa-solid fa-plus"></i> Novo dirigente</button>
+            </div>
+            <div class="tx-table-wrap">
+                <table class="tx-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>CPF</th>
+                            <th>Qualificação</th>
+                            <th>Mandato</th>
+                            <th>Assinatura</th>
+                            <th class="acoes">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="linhas"><tr><td colspan="6"><div class="tx-skel" style="height:120px;"></div></td></tr></tbody>
+                </table>
+            </div>
+            <div class="tx-foot"><span class="tx-hint" style="margin:0;" id="resumo"></span><span class="tx-count" id="contagem"></span></div>
+        </section>
+    </div>
+</main>
+
+<script src="session.js"></script>
+<script src="enterprise-shell.js"></script>
+<script src="tesouraria-ui.js"></script>
+<script>
+(function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    let itens = [];
+    let QUALIF = {};
+    const cpfFmt = (c) => String(c || '').replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+
+    async function carregar() {
+        try {
+            const [t, r] = await Promise.all([TX.api('/contabilidade/sped/tabelas'), TX.api('/contabilidade/dirigentes')]);
+            QUALIF = t.qualificacoes;
+            itens = r.items || [];
+        } catch (e) {
+            $('linhas').innerHTML = `<tr><td colspan="6"><div class="tx-empty"><strong>Não foi possível carregar</strong><span>${TX.esc(e.message)}</span></div></td></tr>`;
+            return;
+        }
+        render();
+    }
+
+    function render() {
+        $('contagem').textContent = `${itens.length} registro(s)`;
+        const temContador = itens.some((d) => d.ativo && d.qualificacao === 900 && d.assinaEcd);
+        const temResp = itens.some((d) => d.ativo && d.responsavelLegal);
+        $('resumo').innerHTML = [
+            `<i class="fa-solid fa-${temResp ? 'circle-check' : 'triangle-exclamation'}" style="color:var(--tx-${temResp ? 'success' : 'warn'})"></i> Responsável legal`,
+            `<i class="fa-solid fa-${temContador ? 'circle-check' : 'triangle-exclamation'}" style="color:var(--tx-${temContador ? 'success' : 'warn'})"></i> Contador signatário`
+        ].join(' &nbsp;·&nbsp; ');
+        if (!itens.length) {
+            $('linhas').innerHTML = `<tr><td colspan="6"><div class="tx-empty"><span class="ico"><i class="fa-solid fa-users"></i></span>
+                <strong>Nenhum dirigente cadastrado</strong><span>Comece pelo presidente (responsável legal) e pelo contador da igreja.</span></div></td></tr>`;
+            return;
+        }
+        $('linhas').innerHTML = itens.map((d) => `<tr style="${d.ativo ? '' : 'opacity:.55'}">
+            <td><strong>${TX.esc(d.nome)}</strong>${d.cargo ? `<small style="display:block;color:var(--tx-muted);">${TX.esc(d.cargo)}</small>` : ''}</td>
+            <td style="white-space:nowrap;"><span class="tx-cod">${cpfFmt(d.cpf)}</span></td>
+            <td>${TX.esc(d.qualificacaoNome)}${d.qualificacao === 900 && d.crc ? `<small style="display:block;color:var(--tx-muted);">CRC ${TX.esc(d.crc)}/${TX.esc(d.ufCrc)}</small>` : ''}</td>
+            <td style="white-space:nowrap;">${d.inicioMandato ? TX.dataBR(d.inicioMandato) : '—'}${d.fimMandato ? ` a ${TX.dataBR(d.fimMandato)}` : ''}</td>
+            <td>${d.assinaEcd ? '<span class="tx-status pago">Signatário</span>' : '<span class="tx-tag">Não assina</span>'}${d.responsavelLegal ? ' <span class="tx-status aguardando">Resp. legal</span>' : ''}${d.ativo ? '' : ' <span class="tx-tag">Inativo</span>'}</td>
+            <td class="acoes"><div class="tx-acoes-linha">
+                <button type="button" class="tx-btn-icon" data-edit="${TX.esc(d.id)}" title="Editar" aria-label="Editar ${TX.esc(d.nome)}"><i class="fa-solid fa-pen"></i></button>
+                <button type="button" class="tx-btn-icon" data-del="${TX.esc(d.id)}" title="Excluir" aria-label="Excluir ${TX.esc(d.nome)}"><i class="fa-solid fa-trash"></i></button>
+            </div></td></tr>`).join('');
+    }
+
+    async function formulario(id) {
+        const v = itens.find((x) => x.id === id) || { qualificacao: 203, assinaEcd: true, ativo: true, remuneracao: 0 };
+        const opts = Object.entries(QUALIF).map(([k, n]) => `<option value="${k}" ${Number(k) === Number(v.qualificacao) ? 'selected' : ''}>${k} - ${TX.esc(n)}</option>`).join('');
+        let msg = '';
+        let remun;
+        await TX.dialogo({
+            titulo: id ? 'Editar dirigente' : 'Novo dirigente',
+            corpo: `
+                <div class="tx-field"><label for="dNome">Nome completo <span class="req">*</span></label><input id="dNome" class="tx-input" maxlength="255" value="${TX.esc(v.nome || '')}"></div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="dCpf">CPF <span class="req">*</span></label><input id="dCpf" class="tx-input" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" value="${TX.esc(cpfFmt(v.cpf || ''))}"></div>
+                    <div class="tx-field"><label for="dCargo">Cargo</label><input id="dCargo" class="tx-input" maxlength="120" placeholder="Ex.: Presidente, Tesoureiro" value="${TX.esc(v.cargo || '')}"></div>
+                </div>
+                <div class="tx-field"><label for="dQual">Qualificação <span class="req">*</span></label><select id="dQual" class="tx-input">${opts}</select></div>
+                <div class="tx-grid c2" id="blocoCrc">
+                    <div class="tx-field"><label for="dCrc">Nº do CRC <span class="req">*</span></label><input id="dCrc" class="tx-input" maxlength="30" placeholder="Ex.: 1SP123456/O-7" value="${TX.esc(v.crc || '')}"></div>
+                    <div class="tx-field"><label for="dUfCrc">UF do CRC <span class="req">*</span></label><input id="dUfCrc" class="tx-input" maxlength="2" style="text-transform:uppercase" value="${TX.esc(v.ufCrc || '')}"></div>
+                    <div class="tx-field"><label for="dCrcSeq">Nº da certidão de regularidade (DHP)</label><input id="dCrcSeq" class="tx-input" maxlength="30" value="${TX.esc(v.crcSeq || '')}"></div>
+                    <div class="tx-field"><label for="dCrcVal">Validade da certidão</label><input id="dCrcVal" type="date" class="tx-input" value="${TX.esc(v.crcValidade || '')}"></div>
+                </div>
+                <div class="tx-grid c2">
+                    <div class="tx-field"><label for="dEmail">E-mail</label><input id="dEmail" type="email" class="tx-input" maxlength="255" value="${TX.esc(v.email || '')}"></div>
+                    <div class="tx-field"><label for="dFone">Telefone</label><input id="dFone" class="tx-input" maxlength="30" value="${TX.esc(v.telefone || '')}"></div>
+                    <div class="tx-field"><label for="dIni">Início do mandato</label><input id="dIni" type="date" class="tx-input" value="${TX.esc(v.inicioMandato || '')}"></div>
+                    <div class="tx-field"><label for="dFim">Fim do mandato</label><input id="dFim" type="date" class="tx-input" value="${TX.esc(v.fimMandato || '')}"></div>
+                </div>
+                <div class="tx-field"><label for="dRem">Remuneração anual (informada na ECF)</label><input id="dRem" class="tx-input" inputmode="numeric"></div>
+                <div class="tx-grid c2">
+                    <label class="tx-switch"><input type="checkbox" id="dAssina" ${v.assinaEcd ? 'checked' : ''}> Signatário da ECD</label>
+                    <label class="tx-switch"><input type="checkbox" id="dResp" ${v.responsavelLegal ? 'checked' : ''}> Responsável legal</label>
+                </div>
+                <label class="tx-switch"><input type="checkbox" id="dAtivo" ${v.ativo !== false ? 'checked' : ''}> Ativo</label>`,
+            aoAbrir(f) {
+                remun = TX.maskMoney(f.querySelector('#dRem'));
+                remun.set(v.remuneracao || 0);
+                const cpf = f.querySelector('#dCpf');
+                cpf.addEventListener('input', () => {
+                    const d = cpf.value.replace(/\D/g, '').slice(0, 11);
+                    cpf.value = d.replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1-$2');
+                });
+                const crc = () => { f.querySelector('#blocoCrc').hidden = f.querySelector('#dQual').value !== '900'; };
+                f.querySelector('#dQual').addEventListener('change', crc);
+                crc();
+            },
+            async aoConfirmar(f) {
+                const g = (s) => f.querySelector(s).value.trim();
+                const contador = g('#dQual') === '900';
+                const body = {
+                    nome: g('#dNome'), cpf: g('#dCpf'), qualificacao: Number(g('#dQual')), cargo: g('#dCargo') || null,
+                    email: g('#dEmail') || null, telefone: g('#dFone') || null,
+                    crc: contador ? g('#dCrc') || null : null, ufCrc: contador ? g('#dUfCrc').toUpperCase() || null : null,
+                    crcSeq: contador ? g('#dCrcSeq') || null : null, crcValidade: contador ? g('#dCrcVal') || null : null,
+                    inicioMandato: g('#dIni') || null, fimMandato: g('#dFim') || null, remuneracao: remun.get(),
+                    assinaEcd: f.querySelector('#dAssina').checked, responsavelLegal: f.querySelector('#dResp').checked,
+                    ativo: f.querySelector('#dAtivo').checked
+                };
+                if (body.nome.length < 3) throw new Error('Informe o nome completo.');
+                if (body.cpf.replace(/\D/g, '').length !== 11) throw new Error('Informe o CPF.');
+                const r = await TX.api(id ? `/contabilidade/dirigentes/${encodeURIComponent(id)}` : '/contabilidade/dirigentes', { method: id ? 'PUT' : 'POST', body });
+                msg = r.message;
+            }
+        }).then((ok) => { if (ok) { TX.toast(msg); carregar(); } });
+    }
+
+    async function excluir(id) {
+        const d = itens.find((x) => x.id === id);
+        if (!d) return;
+        const ok = await TX.confirmar({ titulo: 'Excluir dirigente', texto: `Excluir ${d.nome}? Se a pessoa só deixou o cargo, prefira editar e marcar como inativa.` });
+        if (!ok) return;
+        try {
+            const r = await TX.api(`/contabilidade/dirigentes/${encodeURIComponent(id)}`, { method: 'DELETE' });
+            TX.toast(r.message);
+            carregar();
+        } catch (e) { TX.toast(e.message, 'erro'); }
+    }
+
+    $('btnNovo').addEventListener('click', () => formulario());
+    $('linhas').addEventListener('click', (e) => {
+        const ed = e.target.closest('[data-edit]');
+        if (ed) return formulario(ed.dataset.edit);
+        const d = e.target.closest('[data-del]');
+        if (d) excluir(d.dataset.del);
+    });
+    carregar();
+})();
+</script>
+</body>
+</html>

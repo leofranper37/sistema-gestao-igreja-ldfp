@@ -2,7 +2,7 @@
  * Service Worker para LDFP Igreja PWA - Versão Corrigida
  */
 
-const CACHE_NAME = 'ldfp-v20';
+const CACHE_NAME = 'ldfp-v21';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -66,9 +66,10 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 3. NAVEGAÇÃO (Páginas HTML): Network-first com fallback para cache
+  // cache: 'no-cache' = ignora o cache HTTP do navegador e confere com o servidor
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      fetch(request.url, { cache: 'no-cache', credentials: 'same-origin' })
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
@@ -89,7 +90,7 @@ self.addEventListener('fetch', (event) => {
   // 4. CSS/JS: Network-first — sempre busca versão nova do servidor
   if (url.pathname.endsWith('.css') || url.pathname.endsWith('.js')) {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-cache' })
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             const responseClone = networkResponse.clone();
